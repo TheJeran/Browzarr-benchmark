@@ -1,37 +1,27 @@
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { Canvas } from '@react-three/fiber';
-import { VolumeShader } from './VolumeShader'
-// import { Perf } from 'r3f-perf'
+import { Center, OrbitControls, Environment } from '@react-three/drei'
 
-import {
-  AccumulativeShadows,
-  RandomizedLight,
-  // Environment,
-  OrbitControls } from '@react-three/drei'
-
-import './CanvasGeometry.css'
+// import { d_store } from './ZarrLoaderLRU'
+// d_store.then(store => console.log(store.contents()))
+// import { local_node } from './ZarrLoaderLRU';
+// console.log(local_node)
 
 export function CanvasGeometry() {
   return (
     <div className='canvas'>
       <Canvas shadows camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
-      // frameloop="demand"
+      frameloop="demand"
       >
-        {/* <Perf position="bottom-left" style={{ bottom: '3.25rem' }} /> */}
-          <VolumeShader />          
-          <OrbitControls 
-            enableDamping={true} 
-            enablePan={false} 
-            enableZoom={true} 
-            minPolarAngle={0} 
-            maxPolarAngle={Math.PI}
-            target={new THREE.Vector3(0,1,0)}
-          />
-          <ambientLight intensity={0.5} />
-          <AccumulativeShadows temporal frames={100} color="black" colorBlend={0.5} opacity={0.5} scale={10} alphaTest={0.85}>
-            <RandomizedLight amount={4} radius={5} ambient={0.5} position={[5, 3, 2]} bias={0.001} />
-          </AccumulativeShadows>
+        <Center top position={[-1, 0, 1]}>
+          <mesh rotation={[0, Math.PI / 4, 0]}>
+            <boxGeometry args={[1, 1, 1]} />
+            <meshStandardMaterial color="indianred" />
+          </mesh>
+        </Center>
+      <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} />
+      <Environment preset="city" />
       </Canvas>
     </div>
   )
