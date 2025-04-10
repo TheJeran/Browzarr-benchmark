@@ -7,9 +7,9 @@ export const d_store = zarr.tryWithConsolidated(
 );
 // console.log(d_store)
 
-const local_store = new zarr.FetchStore("http://localhost:5173/GlobalForcingTiny.zarr");
+// const local_store = new zarr.FetchStore("http://localhost:5173/GlobalForcingTiny.zarr");
 // ! note that for local dev you only use `http` without the `s`.
 // ? log a file with proper metadata, set consolidated=true when saving your zarr file
-export const local_node = await zarr.open.v2(local_store);
+// export const local_node = await zarr.open.v2(local_store);
 // export const arr = await zarr.open(local_node.resolve("t2m"), { kind: "array" });
-console.log(local_node)
+// console.log(local_node)

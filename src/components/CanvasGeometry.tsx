@@ -3,8 +3,8 @@ THREE.Cache.enabled = true;
 import { Canvas } from '@react-three/fiber';
 import { Center, OrbitControls, Environment } from '@react-three/drei'
 
-// import { d_store } from './ZarrLoaderLRU'
-// d_store.then(store => console.log(store.contents()))
+import { d_store } from './ZarrLoaderLRU'
+d_store.then(store => console.log(store.contents()))
 // import { local_node } from './ZarrLoaderLRU';
 // console.log(local_node)
 
