@@ -2,15 +2,41 @@ import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { Canvas } from '@react-three/fiber';
 import { Center, OrbitControls, Environment } from '@react-three/drei'
-import * as zarr from 'zarrita'
+// import * as zarr from 'zarrita'
 import { arr, variables } from './ZarrLoaderLRU'
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+// import { useEffect, useState } from 'react';
+import { Leva, useControls } from 'leva'
 import './placeholder.css'
-
-
 arr.then(event=>console.log(typeof(event)))
+
+const lightTheme = {
+  colors: {
+    elevation1: '#f2f2f2e6',
+    elevation2: '#ffffffd9',
+    elevation3: '#f7f7f7cc',
+    accent1: '#cccccccc',
+    accent2: '#e6e6e6cc',
+    accent3: '#ccccccbf',
+    highlight1: '#b3b3b3e6',
+    highlight2: '#000000d9', 
+    highlight3: '#000000b3', 
+  },
+  sizes: {
+    titleBarHeight: '28px',
+  },
+  space: {
+    xs: '2px',
+    sm: '4px',
+    md: '8px',
+    // rowGap: '4px',
+    // colGap: '4px'
+  },
+}
 export function CanvasGeometry() {
-  const [useVariable,setUseVariable] = useState(null)
+  const [_useVariable, setUseVariable] = useState<string | null>(null)
+  const { variable } = useControls({ variable: { value: null, options: variables } })
+  console.log(variable)
 
   return (
     <>
@@ -42,6 +68,7 @@ export function CanvasGeometry() {
         ))}
 
     </select>
+    <Leva theme={lightTheme} />
     </>
   )
 }
