@@ -1,6 +1,6 @@
 import { useSetAtom } from "jotai";
 import { uiAtom } from '../state';
-import { logoSF } from "../assets/index";
+// import { logoSF } from "../assets/index";
 
 import './AboutModal.css'
 
