@@ -1,4 +1,4 @@
-import { logoBGC_MPI, logoBGC, logoMPI } from "../assets/index";
+import { logoBGC_MPI, logoBGC, logoMPI } from "@/assets/index";
 
 import './Footer.css';
 
