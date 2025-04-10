@@ -1,7 +1,7 @@
 import { createPortal } from "react-dom";
 import { useAtomValue } from "jotai";
-import AboutModal from "./AboutModal";
-import {uiAtom } from "../state";
+import AboutModal from "@/components/AboutModal";
+import {uiAtom } from "@/state";
 
 const mountElement = document.getElementById("overlays");
 
