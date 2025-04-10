@@ -1,8 +1,12 @@
 //This File will have functions converting the array information into 2D or 3D textures that we will pass to the corresponding 2D or 3D object
 import * as THREE from 'three'
 
-
-function ArrayTo2D(array: object){
+interface Array2D {
+    shape: [number, number];
+    data: number[];
+}
+// ? Please, try when possible to define the types of your variables. Otherwise building will fail.
+export function ArrayTo2D(array: Array2D){
     //We assume there is no slicing here. That will occur in the ZarrLoader stage. This is just pure data transfer
     const shape = array.shape;
     const data = array.data;

@@ -1,6 +1,6 @@
 import * as zarr from "zarrita";
 
-function GetZarrVariables(obj: Object) {
+function GetZarrVariables(obj: Record<string, any>) {
 	//Parses out variables in a Zarr group for variable list
     const result = [];
     
@@ -14,7 +14,7 @@ function GetZarrVariables(obj: Object) {
             }
         }
     }
-    
+    //? we will need to filter out for lon (longitude, X), lat (latitude, Y), time (depth, altitude).
     return result;
 }
 
