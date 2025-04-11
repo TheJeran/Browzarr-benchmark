@@ -75,8 +75,10 @@ void main() {
         cond = flip ? !cond : cond;
 
         if (cond) {
-            vec4 col = texture(cmap, vec2(d, 0.5));
+            //vec4 col = texture(cmap, vec2(d, 0.5));  Uncomment this when we have cmap implemented
+            vec4 col = vec4(d, 0.,0., 1.);
             float alpha = col.a / intensity;
+
             accumColor.rgb += (1.0 - alphaAcc) * alpha * col.rgb;
             alphaAcc += alpha * (1.0 - alphaAcc);
 
