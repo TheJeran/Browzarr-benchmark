@@ -18,7 +18,7 @@ function GetZarrVariables(obj: Record<string, any>) {
     return result;
 }
 
-async function GetVariables(storePath: string){
+export async function GetVariables(storePath: string){
 	const d_store = zarr.tryWithConsolidated(
 		new zarr.FetchStore(storePath)
 	);
@@ -26,7 +26,7 @@ async function GetVariables(storePath: string){
 	return GetZarrVariables(group.store.contents())
 }
 
-async function GetArray(storePath: string, variable: string ){
+export async function GetArray(storePath: string, variable: string ){
 	const d_store = zarr.tryWithConsolidated(
 		new zarr.FetchStore(storePath)
 	);
