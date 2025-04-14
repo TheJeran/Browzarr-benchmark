@@ -13,12 +13,12 @@ export function minMax(values: number[]): { min: number | undefined, max: number
     return { min, max };
 }
 
-export function updateTexture(
-  texture: THREE.DataTexture | null, 
-  palette: string, 
-  alpha: number, 
-  nan_color: string, 
-  nan_alpha: number
+export function GetColorMapTexture(
+  texture: THREE.DataTexture | null = null, 
+  palette: string = "Spectral", 
+  alpha: number = 1, 
+  nan_color: string = "#000000", 
+  nan_alpha: number = 0
 ): THREE.DataTexture {
   const unitInterval = Array.from({ length: 255 }, (_, index) => index / 254);
   const rgbv = unitInterval.map(value => evaluate_cmap(value, palette, false));
