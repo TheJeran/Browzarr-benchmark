@@ -2,30 +2,8 @@
 precision highp float;
 precision highp sampler3D;
 
-// out vec4 color;
-// uniform sampler3D map;
-
-
-// float random(vec3 seed) {
-//     return fract(sin(dot(seed, vec3(127.1, 311.7, 74.7))) * 43758.5453123);
-// }
-
-// void main() {
-//     // Generate pseudo-random 3D texture coordinates in [0, 1]
-//     vec3 texCoord = vec3(
-//         random(vec3(gl_FragCoord.xy, 0.0)),
-//         random(vec3(gl_FragCoord.xy, 1.0)),
-//         random(vec3(gl_FragCoord.xy, 2.0))
-//     );
-
-//     // Sample the 3D texture
-//     float sampleValue = texture(map, texCoord).r;
-
-//     // Output the sampled value as grayscale with full opacity
-//     color = vec4(vec3(sampleValue), 1.0);
-// }
-
-
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
 
 in vec3 vOrigin;
 in vec3 vDirection;
@@ -33,14 +11,19 @@ in vec3 vDirection;
 out vec4 color;
 
 uniform sampler3D map;
-uniform float steps;
+uniform sampler2D cmap;
+
+uniform vec3 scale;
 uniform float threshold;
+uniform float steps;
 uniform bool flip;
+uniform vec4 flatBounds;
+uniform vec2 vertBounds;
+uniform float intensity;
 
 vec2 hitBox(vec3 orig, vec3 dir) {
-    // Hardcoded scale: vec3(1.0, 1.0, 1.0)
-    vec3 box_min = vec3(-0.5); // -(1.0 * 0.5)
-    vec3 box_max = vec3(0.5);  // (1.0 * 0.5)
+    vec3 box_min = vec3(-(scale * 0.5));
+    vec3 box_max = vec3(scale * 0.5);
     vec3 inv_dir = 1.0 / dir;
     vec3 tmin_tmp = (box_min - orig) * inv_dir;
     vec3 tmax_tmp = (box_max - orig) * inv_dir;
@@ -51,8 +34,8 @@ vec2 hitBox(vec3 orig, vec3 dir) {
     return vec2(t0, t1);
 }
 
-float sample1(vec3 p) {
-    return texture(map, p).r;
+float sample1( vec3 p ) {
+    return texture( map, p ).r;
 }
 
 #define epsilon 0.0001
@@ -60,7 +43,7 @@ float sample1(vec3 p) {
 void main() {
     vec3 rayDir = normalize(vDirection);
     vec2 bounds = hitBox(vOrigin, rayDir);
-    
+
     if (bounds.x > bounds.y) discard;
 
     bounds.x = max(bounds.x, 0.0);
@@ -68,22 +51,31 @@ void main() {
     vec3 p = vOrigin + bounds.x * rayDir;
     vec3 inc = 1.0 / abs(rayDir);
     float delta = min(inc.x, min(inc.y, inc.z));
-    delta /= steps; 
+    delta /= steps;
 
     vec4 accumColor = vec4(0.0);
     float alphaAcc = 0.0;
     for (float t = bounds.x; t < bounds.y; t += delta) {
-        // Hardcoded flatBounds: vec4(0.5, -0.5, 0.5, -0.5)
+        if (p.x > -flatBounds.x || p.x < -flatBounds.y) {
+            p += rayDir * delta;
+            continue;
+        }
+        if (-p.z > -flatBounds.z || -p.z < -flatBounds.w) {
+            p += rayDir * delta;
+            continue;
+        }
+        if (p.y < vertBounds.x || p.y > vertBounds.y) {
+            p += rayDir * delta;
+            continue;
+        }
 
-        // Hardcoded scale: vec3(1.0, 2.0, 1.0)
-        float d = sample1(p / 1.0 + 0.5);
+        float d = sample1(p / scale + 0.5);
 
-        // Hardcoded threshold: 0.1, flip: false
         bool cond = (d > threshold) || (d == 0.0 && threshold == 0.0);
         cond = flip ? !cond : cond;
 
         if (cond) {
-            vec4 col = vec4(d, 0.0, 0.0, 1.0);
+            vec4 col = texture(cmap, vec2(d, 0.5));
             // Hardcoded intensity: 1.0
             float alpha = col.a / 1.0;
 

@@ -17,8 +17,6 @@ function ArrayTo2D(array: Array){
     const width = shape[0];
     const height = shape[1];
 
-    const textureData = new Uint8Array(width * height);
-
     const maxVal = data.reduce((a, b) => {
         if (isNaN(a)) return b;
         if (isNaN(b)) return a;
@@ -33,15 +31,7 @@ function ArrayTo2D(array: Array){
 
     const normed = data.map((i)=>(i-minVal)/(maxVal-minVal))
 
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            const srcIdx = y * width + x;
-            // Assuming data is normalized 0-1 or 0-255
-            const value = normed[srcIdx];
-            textureData[srcIdx] = value*255;     // We use single values cause we use luminance format. All coloring will be handled in the shader
-        }
-    }
-
+    const textureData = new Uint8Array(normed.map((i)=>i*255))
     const texture = new THREE.DataTexture(
         textureData,
         width,
@@ -58,12 +48,8 @@ function ArrayTo2D(array: Array){
 function ArrayTo3D(array: Array){
     const shape = array.shape;
     const data = array.data;
+    const [lz,ly,lx] = shape
 
-    const width = shape[0];
-    const height = shape[1];
-    const depth = shape[2]; //Need to verify this order. Might need to have a function that reorders the array when loaded in Zarr to specify correct order
-
-    const textureData = new Uint8Array(width * height * depth);
 
     const maxVal = data.reduce((a, b) => {
         if (isNaN(a)) return b;
@@ -78,18 +64,8 @@ function ArrayTo3D(array: Array){
     });
 
     const normed = data.map((i)=>(i-minVal)/(maxVal-minVal))
-
-    for (let z = 0; z < depth; z++) {
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                const srcIdx = z * width * height + y * width + x;
-                // Assuming data is normalized 0-1 or 0-255
-                const value = normed[srcIdx];
-                textureData[srcIdx] = value*255;     // We use single values cause we use luminance format. All coloring will be handled in the shader
-            }
-        }
-    }
-    const volTexture = new THREE.Data3DTexture(textureData, width, height, depth);
+    const textureData = new Uint8Array(normed.map((i)=>i*255));   
+    const volTexture = new THREE.Data3DTexture(textureData, lx, ly, lz);
     volTexture.format = THREE.RedFormat;
     volTexture.minFilter = THREE.NearestFilter;
     volTexture.magFilter = THREE.NearestFilter;
@@ -103,5 +79,5 @@ function ArrayTo3D(array: Array){
 export function ArrayToTexture(array: Array){
     const shape = array.shape;
     const texture = shape.length == 3 ? ArrayTo3D(array) : ArrayTo2D(array);
-    return texture;
+    return [texture, shape];
 }
