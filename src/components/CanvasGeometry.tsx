@@ -11,7 +11,9 @@ import { lightTheme } from '@/utils/levaTheme'
 import { ArrayToTexture } from './TextureMakers';
 import { DataCube } from './PlotObjects';
 
+
 const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
+
 
 export function CanvasGeometry() {
   const { variable } = useControls({ variable: { value: "Default", options: variables, label:"Select Variable" } })
@@ -29,7 +31,6 @@ export function CanvasGeometry() {
         setShape(new THREE.Vector3(2, shapeRatio, 2))
       })
   }}, [variable])
-  
 
   return (
     <>

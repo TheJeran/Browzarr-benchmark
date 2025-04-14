@@ -3,11 +3,10 @@ import { useRef } from 'react'
 import * as THREE from 'three'
 import vertexShader from '@/utils/shaders/vertex.glsl';
 import fragmentShader from '@/utils/shaders/fragment.glsl';
-import { useFrame } from '@react-three/fiber';
 import { useControls } from 'leva';
 import { GetColorMapTexture } from '@/utils/colormap';
 import { useState } from 'react';
-import { invalidate } from "@react-three/fiber";
+import { useThree, useFrame } from '@react-three/fiber';
 
 const colormaps = ['viridis', 'plasma', 'inferno', 'magma', 'Accent', 'Blues',
   'CMRmap', 'twilight', 'tab10', 'gist_earth', 'cividis',
@@ -24,8 +23,8 @@ interface DataCubeProps {
 const DataCube = ({ volTexture, shape }: DataCubeProps ) => {
     const meshRef = useRef<THREE.Mesh>(null);
     const materialRef = useRef<THREE.ShaderMaterial | null>(null);
+    const { invalidate } = useThree();
     const [colormap,setColormap] = useState<THREE.DataTexture>(GetColorMapTexture())
-
     const { threshold, steps, flip, cmap } = useControls({
         threshold: {
           value: 0, // Default value
@@ -80,8 +79,7 @@ const DataCube = ({ volTexture, shape }: DataCubeProps ) => {
       },[])
   // Use geometry once, avoid recreating -- Using a sphere to avoid the weird angles you get with cube
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(4, 8), []);
-
-
+    
     // Update shader material's uniforms when props change
     useEffect(() => {
       if (materialRef.current) {
@@ -101,11 +99,11 @@ const DataCube = ({ volTexture, shape }: DataCubeProps ) => {
     }, [volTexture, threshold, steps, shape, flip, colormap ]); //lo_tbounds, latbounds, intensity
 
     // Update camera position in the shader when moved
-    useFrame(({ camera }) => {
-        if (materialRef.current) {
-        materialRef.current.uniforms.cameraPos.value = camera.position;
+    useFrame(() => {
+      if (materialRef.current) {
+        // Force material update on each frame if needed
         materialRef.current.needsUpdate = true;
-        }
+      }
     });
     useEffect(()=>{
       setColormap(GetColorMapTexture(colormap,cmap));
@@ -114,7 +112,6 @@ const DataCube = ({ volTexture, shape }: DataCubeProps ) => {
 
   return (
     <>
-    
     <mesh ref={meshRef} rotation-y={Math.PI / 2} geometry={geometry}>
       <primitive attach="material" object={shaderMaterial} />
     </mesh>
