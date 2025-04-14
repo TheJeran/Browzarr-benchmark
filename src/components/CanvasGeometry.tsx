@@ -10,7 +10,6 @@ import { Leva, useControls } from 'leva'
 import { lightTheme } from '@/utils/levaTheme'
 import { ArrayToTexture } from './TextureMakers';
 import { DataCube } from './PlotObjects';
-import { Perf } from 'r3f-perf';
 
 const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
 
@@ -38,7 +37,6 @@ export function CanvasGeometry() {
       <Canvas shadows camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
       frameloop="demand"
       >
-        <Perf position="top-left" />
         <DataCube volTexture={texture} shape={shape}/>
         <Center top position={[-1, 0, 1]}>
           {/* <mesh rotation={[0, Math.PI / 4, 0]}>
