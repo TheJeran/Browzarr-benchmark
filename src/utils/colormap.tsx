@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 // https://github.com/vasturiano/three-globe/blob/master/src/utils/color-utils.js
 import { evaluate_cmap } from 'js-colormaps-es';
-import { NestedArray } from 'zarr';
 // import { rgbToHex } from './updateColorbar';
 
 export function minMax(values: number[]): { min: number | undefined, max: number | undefined } {
