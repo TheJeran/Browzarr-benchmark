@@ -25,7 +25,7 @@ const DataCube = ({ volTexture, shape }: DataCubeProps ) => {
     const materialRef = useRef<THREE.ShaderMaterial | null>(null);
     const { invalidate } = useThree();
     const [colormap,setColormap] = useState<THREE.DataTexture>(GetColorMapTexture())
-    const { threshold, steps, flip, cmap } = useControls({
+    const { threshold, steps, flip, cmap, xMax,xMin,yMax,yMin,zMax,zMin } = useControls({
         threshold: {
           value: 0, // Default value
           min: 0,   // Minimum value
@@ -48,12 +48,48 @@ const DataCube = ({ volTexture, shape }: DataCubeProps ) => {
           value: "Spectral",
           options:colormaps,
           label: 'ColorMap'
+        },
+        xMax: {
+          value:1,
+          min:-1,
+          max:1,
+          step:0.01
+        },
+        xMin: {
+          value:-1,
+          min:-1,
+          max:1,
+          step:0.01
+        }
+        ,
+        yMax: {
+          value:1,
+          min:-1,
+          max:1,
+          step:0.01
+        },
+        yMin: {
+          value:-1,
+          min:-1,
+          max:1,
+          step:0.01
+        },
+        zMax: {
+          value:1,
+          min:-1,
+          max:1,
+          step:0.01
+        },
+        zMin: {
+          value:-1,
+          min:-1,
+          max:1,
+          step:0.01
         }
       });
 
-  // Create the shader material only once
-    const shaderMaterial = useMemo(() => {
-      const material = new THREE.ShaderMaterial({
+  // We need to check if moving this outside of useMemo means it's creating a ton of materials. This was how it was done in THREE Journey when I was doing that, so I know it's not stricly speaking wrong
+    const shaderMaterial = new THREE.ShaderMaterial({
         glslVersion: THREE.GLSL3,
         uniforms: {
             map: { value: volTexture },
@@ -61,11 +97,10 @@ const DataCube = ({ volTexture, shape }: DataCubeProps ) => {
             cameraPos: { value: new THREE.Vector3() },
             threshold: {value: threshold},
             scale: {value: shape},
-            flatBounds:{value: new THREE.Vector4(-1,1,-1,1)},
-            vertBounds:{value: new THREE.Vector2(-1,1)},
+            flatBounds:{value: new THREE.Vector4(xMin,xMax,yMin,yMax)},
+            vertBounds:{value: new THREE.Vector2(zMin,zMax)},
             steps: { value: steps },
             flip: {value: flip }
-
         },
         vertexShader,
         fragmentShader,
@@ -74,40 +109,12 @@ const DataCube = ({ volTexture, shape }: DataCubeProps ) => {
         depthWrite: false,
         side: THREE.BackSide,
         });
-        materialRef.current = material
-        return material
-      },[])
+        
   // Use geometry once, avoid recreating -- Using a sphere to avoid the weird angles you get with cube
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(4, 8), []);
-    
-    // Update shader material's uniforms when props change
-    useEffect(() => {
-      if (materialRef.current) {
-        materialRef.current.uniforms.map.value = volTexture;
-        materialRef.current.uniforms.threshold.value = threshold;
-        materialRef.current.uniforms.steps.value = steps;
-        materialRef.current.uniforms.scale.value = shape;
-        materialRef.current.uniforms.flip.value = flip;
-        materialRef.current.uniforms.cmap.value = colormap;
-        // materialRef.current.uniforms.flatBounds.value = lo_tbounds;
-        // materialRef.current.uniforms.vertBounds.value = latbounds;
-        // materialRef.current.uniforms.intensity.value = intensity;
-        // Trigger material update
-        materialRef.current.needsUpdate = true;
-        invalidate(); //The needsUpdate sets the texture to re-render next time it is called. But if the camera is stationary it won't render. invalidate forces a re-render
-      }
-    }, [volTexture, threshold, steps, shape, flip, colormap ]); //lo_tbounds, latbounds, intensity
 
-    // Update camera position in the shader when moved
-    useFrame(() => {
-      if (materialRef.current) {
-        // Force material update on each frame if needed
-        materialRef.current.needsUpdate = true;
-      }
-    });
     useEffect(()=>{
       setColormap(GetColorMapTexture(colormap,cmap));
-      invalidate();
     },[cmap])
 
   return (
