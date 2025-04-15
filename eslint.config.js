@@ -1,46 +1,34 @@
-import js from '@eslint/js';
+import js from "@eslint/js";
+import globals from "globals";
+import eslint from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import reactPlugin from "eslint-plugin-react";
 import reactHooks from 'eslint-plugin-react-hooks';
-import reactRefresh from 'eslint-plugin-react-refresh';
-import typescript from '@typescript-eslint/eslint-plugin';
-import typescriptParser from '@typescript-eslint/parser';
+// import reactThree from '@react-three/eslint-plugin';
 
-export default [
-  js.configs.recommended,
-  {
-    files: ['**/*.{ts,tsx}'],
-    languageOptions: {
-      ecmaVersion: 2020,
-      sourceType: 'module',
-      parser: typescriptParser,
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true
-        }
-      },
-      globals: {
-        document: 'readonly',
-        window: 'readonly',
-        console: 'readonly',
-        fetch: 'readonly',
-        WebAssembly: 'readonly'
-      }
-    },
+import { defineConfig } from "eslint/config";
+export default defineConfig([
+  { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
+    ignores: ['dist/*', 'node_modules/*', 'src/utils/metadata.tsx', 'src/utils/updateColorbar.tsx'],
     plugins: {
-      '@typescript-eslint': typescript,
-      'react-refresh': reactRefresh,
-      'react-hooks': reactHooks
+      js
     },
     rules: {
-      ...typescript.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true }
-      ]
+      'react-hooks/exhaustive-deps': 'off',
     },
-    settings: {
-      react: {
-        version: 'detect'
+    extends: ["js/recommended"]
+  },
+  { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        React: true
       }
     }
-  }
-];
+  },
+  eslint.configs.recommended,
+  tseslint.configs.recommended,
+  reactPlugin.configs.flat.recommended,
+  reactHooks.configs['recommended-latest'],
+  // reactThree.configs.recommended
+]);

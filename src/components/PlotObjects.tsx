@@ -8,8 +8,6 @@ import { GetColorMapTexture } from '@/utils/colormap';
 import pointVert from '@/utils/shaders/pointVertex.glsl';
 import pointFrag from '@/utils/shaders/pointFrag.glsl';
 
-
-
 const colormaps = ['viridis', 'plasma', 'inferno', 'magma', 'Accent', 'Blues',
   'CMRmap', 'twilight', 'tab10', 'gist_earth', 'cividis',
   'Spectral', 'gist_stern', 'gnuplot', 'gnuplot2', 'ocean', 'turbo',
@@ -120,11 +118,11 @@ export const DataCube = ({ volTexture, shape }: DataCubeProps ) => {
 
     useEffect(()=>{
       setColormap(GetColorMapTexture(colormap,cmap));
-    },[cmap])
+    },[cmap, colormap])
 
   return (
     <>
-    <mesh ref={meshRef} rotation-y={Math.PI / 2} geometry={geometry}>
+    <mesh ref={meshRef} rotation={[0, Math.PI / 2, 0]} geometry={geometry}>
       <primitive attach="material" object={shaderMaterial} />
     </mesh>
     </>
@@ -220,7 +218,7 @@ export const PointCloud = ({texture} : PCProps )=>{
 
   useEffect(()=>{
     setColormap(GetColorMapTexture(colormap,cmap));
-  },[cmap])
+  },[cmap, colormap])
   return (
     <points geometry={geometry} material={shaderMaterial}/>
   );

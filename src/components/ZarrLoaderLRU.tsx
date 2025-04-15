@@ -1,17 +1,15 @@
 import * as zarr from "zarrita";
 
-function GetZarrVariables(obj: Record<string, any>) {
+function GetZarrVariables(obj: Record<string, { path?: string; kind?: string }>) {
 	//Parses out variables in a Zarr group for variable list
     const result = [];
     
-    for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
-            const item = obj[key];
-            if (item.path && 
-                item.path.length > 1 && 
-                item.kind === 'array') {
-                result.push(item.path.substring(1));
-            }
+    for (const key of Object.keys(obj)) {
+        const item = obj[key];
+        if (item.path && 
+            item.path.length > 1 && 
+            item.kind === 'array') {
+            result.push(item.path.substring(1));
         }
     }
     //? we will need to filter out for lon (longitude, X), lat (latitude, Y), time (depth, altitude).

@@ -40,6 +40,7 @@ export function CanvasGeometry() {
           data: result.data,
           shape: result.shape
         })
+        console.log(_shape)
         if (texture instanceof THREE.DataTexture || texture instanceof THREE.Data3DTexture) {
           setTexture(texture)
         } else {
