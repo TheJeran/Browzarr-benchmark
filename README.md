@@ -1,4 +1,4 @@
-# ViZarrDev
+# ViZarrStores
 
 Stay tuned for updates! 🚀
 
