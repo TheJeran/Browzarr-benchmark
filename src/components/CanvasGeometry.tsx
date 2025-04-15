@@ -29,8 +29,8 @@ export function CanvasGeometry() {
     } 
   })
   const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
-  const [_shape, setShape] = useState<THREE.Vector2 | THREE.Vector3>(new THREE.Vector3(2, 2, 2))
-
+  const [_shape, setShape] = useState<THREE.Vector3>(new THREE.Vector3(2, 2, 2))
+  // because, volTexture is expected to be a THREE.Vector3
   useEffect(() => {
     if (variable != "Default") {
       //Need to add a check somewhere here to swap to 2D or 3D based on shape. Probably export two variables from GetArray
@@ -47,7 +47,7 @@ export function CanvasGeometry() {
           setTexture(null);
         }
         const shapeRatio = result.shape[1] / result.shape[2] * 2;
-        setShape(new THREE.Vector3(2, shapeRatio, 2))
+        setShape(new THREE.Vector3(2, shapeRatio, 2));
       })
     }
       else{
@@ -63,7 +63,7 @@ export function CanvasGeometry() {
       <Canvas shadows camera={{ position: [4.5, 2, 4.5], fov: 50 }}
       frameloop="demand"
       >
-        {plotter == "volume" && <DataCube volTexture={texture} shape={shape}/>}
+        {plotter == "volume" && <DataCube volTexture={texture} shape={_shape}/>}
         {plotter == "point-cloud" && <PointCloud texture={texture} />}
         <Center top position={[-1, 0, 1]}>
           {/* <mesh rotation={[0, Math.PI / 4, 0]}>
