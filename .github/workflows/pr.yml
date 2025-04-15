@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup repo
-        uses: ./.github/actions/setup
+        uses: ./.github/actions
 
       - name: prChecks
         run: pnpm prChecks
@@ -46,7 +46,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup repo
-        uses: ./.github/actions/setup
+        uses: ./.github/actions
         with:
           node: ${{ matrix.node }}
 
