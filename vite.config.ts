@@ -6,6 +6,9 @@ import path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), glsl()],
+  build: {
+    target: 'esnext', // support modern features
+  },
   server: {
     watch: {
       ignored: ['**/public/**'],

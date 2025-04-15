@@ -26,18 +26,35 @@ export async function GetVariables(storePath: string){
 	return GetZarrVariables(group.store.contents())
 }
 
-export async function GetArray(storePath: string, variable: string ){
-	const d_store = zarr.tryWithConsolidated(
-		new zarr.FetchStore(storePath)
-	);
-	//Will need to add dependencies in here to check if it is a group or direct array
-	const group = await d_store.then(store => zarr.open(store, {kind: 'group'}))
-	const outVar = await zarr.open(group.resolve(variable), {kind:"array"})
-	
-	const arr = await zarr.get(outVar)
+// Define interface using Data Types from zarrita
+// type NumericDataType = zarr.NumberDataType | zarr.BigintDataType;
+// ?TODO: support more types, see https://github.com/manzt/zarrita.js/blob/0e809ef7cd4d1703e2112227e119b8b6a2cc9804/packages/zarrita/src/metadata.ts#L50
 
-	return arr	
+interface ZarrArrayResult {
+    data: Float32Array | Float64Array | Int32Array | Uint32Array
+    shape: number[];
+    dtype: string;
+}
 
+export async function GetArray(storePath: string, variable: string): Promise<ZarrArrayResult> {
+    const d_store = zarr.tryWithConsolidated(
+        new zarr.FetchStore(storePath)
+    );
+    const group = await d_store.then(store => zarr.open(store, {kind: 'group'}))
+    const outVar = await zarr.open(group.resolve(variable), {kind:"array"})
+    // Type check using zarr.Array.is
+    if (outVar.is("number") || outVar.is("bigint")) {
+        const chunk = await zarr.get(outVar)
+        const typedArray = new Float32Array(chunk.data);
+       // TypeScript will now infer the correct numeric type
+        return {
+            data: typedArray,
+            shape: chunk.shape,
+            dtype: outVar.dtype
+        }
+    } else {
+        throw new Error(`Unsupported data type: Only numeric arrays are supported. Got: ${outVar.dtype}`)
+    }
 }
 
 //For now we export variables. But we will import these functions over to the plotting component eventually

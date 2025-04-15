@@ -21,7 +21,7 @@ const AboutModal = () => {
           &times;
         </button>
         {/* <img src={logoSF} alt="SeasFire" width={"80%"}/> */}
-        <h1>ViZarrDev</h1>
+        <h1>ViZarrStores</h1>
         <a> builds on the lessons learned from the visualization prototype from the SeasFire project. </a>
 
         <p>

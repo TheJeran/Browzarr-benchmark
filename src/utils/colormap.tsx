@@ -41,7 +41,7 @@ export function GetColorMapTexture(
 
   if (texture) {
     // Update the existing texture data
-    texture.image.data.set(colData);
+    (texture.image.data as Uint8Array).set(colData);
     texture.needsUpdate = true;
     return texture;
   } else {
@@ -52,22 +52,21 @@ export function GetColorMapTexture(
   }
 }
 
-
-export function genRand(count: number) {
-  const data = Array.from({ length: count }, () =>
-      Array.from({ length: count }, () =>
-          Array.from({ length: count }, () => {
-              // Randomly insert NaN values (e.g., 10% chance)
-              if (Math.random() < 0.6) {
-                  return NaN;
-              }
-              return Math.random();
-          })
-      )
-  );
-  const nested = new NestedArray(data, [count, count, count], '<f4');
-  return nested;
-}
+// export function genRand(count: number) {
+//   const data = Array.from({ length: count }, () =>
+//       Array.from({ length: count }, () =>
+//           Array.from({ length: count }, () => {
+//               // Randomly insert NaN values (e.g., 10% chance)
+//               if (Math.random() < 0.6) {
+//                   return NaN;
+//               }
+//               return Math.random();
+//           })
+//       )
+//   );
+//   const nested = new NestedArray(data, [count, count, count], '<f4');
+//   return nested;
+// }
 
 export function hexToRgb(hex: string) {
   // Remove the hash at the start if it's there

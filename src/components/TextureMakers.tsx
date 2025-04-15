@@ -2,9 +2,8 @@
 import * as THREE from 'three'
 
 interface Array {
+    data: Float32Array | Float64Array | Int32Array | Uint32Array;
     shape: number[];
-    data: number[];
-    stride:number[]
 }
 
 
@@ -12,7 +11,7 @@ interface Array {
 function ArrayTo2D(array: Array){
     //We assume there is no slicing here. That will occur in the ZarrLoader stage. This is just pure data transfer
     const shape = array.shape;
-    const data = array.data;
+    const data = Array.from(array.data);
 
     const width = shape[0];
     const height = shape[1];
@@ -47,7 +46,7 @@ function ArrayTo2D(array: Array){
 
 function ArrayTo3D(array: Array){
     const shape = array.shape;
-    const data = array.data;
+    const data = Array.from(array.data);
     const [lz,ly,lx] = shape
 
 
@@ -76,20 +75,36 @@ function ArrayTo3D(array: Array){
 
 }
 
-export function ArrayToTexture(array: Array){
-    const shape = array.shape;
-    const texture = shape.length == 3 ? ArrayTo3D(array) : ArrayTo2D(array);
-    return [texture, shape];
+export function ArrayToTexture(array: Array) {
+    if (!array || !array.shape || !array.data) {
+        console.error('Invalid array data received');
+        return [DefaultCube(), [2, 2, 2]];
+    }
+
+    try {
+        const shape = array.shape;
+        const texture = shape.length === 3 ? ArrayTo3D(array) : ArrayTo2D(array);
+        return [texture, shape];
+    } catch (error) {
+        console.error('Error creating texture:', error);
+        return [DefaultCube(), [2, 2, 2]];
+    }
 }
 
-export function DefaultCube(){
-    const data = Array.from({ length: 1000 }, () => Math.random() < 0.2 ? NaN : Math.random());
-    const shape = [10,10,10]
-    const array = {
-        data,
-        shape,
-        stride:[1,1,1]
+export function DefaultCube() {
+    // Create a Float32Array instead of regular array
+    const data = new Float32Array(1000);
+    // Fill with random values
+    for (let i = 0; i < data.length; i++) {
+        data[i] = Math.random() < 0.2 ? NaN : Math.random();
     }
-    const texture = ArrayTo3D(array)
-    return texture
+    
+    const shape = [10, 10, 10];
+    const array: Array = {
+        data,
+        shape
+    };
+    
+    const texture = ArrayTo3D(array);
+    return texture;
 }
