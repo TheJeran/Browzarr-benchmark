@@ -81,3 +81,15 @@ export function ArrayToTexture(array: Array){
     const texture = shape.length == 3 ? ArrayTo3D(array) : ArrayTo2D(array);
     return [texture, shape];
 }
+
+export function DefaultCube(){
+    const data = Array.from({ length: 1000 }, () => Math.random() < 0.2 ? NaN : Math.random());
+    const shape = [10,10,10]
+    const array = {
+        data,
+        shape,
+        stride:[1,1,1]
+    }
+    const texture = ArrayTo3D(array)
+    return texture
+}
