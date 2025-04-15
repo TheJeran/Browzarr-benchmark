@@ -170,20 +170,22 @@ export const PointCloud = ({texture} : PCProps )=>{
   const { positions, values } = useMemo(() => {
     const positions = [];
     const values = [];
-
+    const aspectRatio = width/height
+    let depthRatio = depth/height;
+    depthRatio = depthRatio > 10 ? 10: depthRatio;
     // Generate grid points based on texture shape
     for (let z = 0; z < depth; z++) {
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
           const index = x + y * width + z * width * height;
           const value = (data as number[])[index] || 0;
-          const aspectRatio = width/height
+
           // Skip zero or invalid values if needed
           if (value > 0) {
             // Normalize coordinates to [-0.5, 0.5] range
             const px = ((x / (width - 1)) - 0.5) * aspectRatio;
             const py = (y / (height - 1)) - 0.5;
-            const pz = (z / (depth - 1)) - 0.5;
+            const pz = ((z / (depth - 1)) - 0.5) * depthRatio;
 
             positions.push(px, py, pz);
             values.push(value);
