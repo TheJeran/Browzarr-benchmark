@@ -16,7 +16,19 @@ export default [
         ecmaFeatures: {
           jsx: true
         }
+      },
+      globals: {
+        document: 'readonly',
+        window: 'readonly',
+        console: 'readonly',
+        fetch: 'readonly',
+        WebAssembly: 'readonly'
       }
+    },
+    env: {
+      browser: true,
+      es2020: true,
+      node: true
     },
     plugins: {
       '@typescript-eslint': typescript,
