@@ -25,11 +25,6 @@ export default [
         WebAssembly: 'readonly'
       }
     },
-    env: {
-      browser: true,
-      es2020: true,
-      node: true
-    },
     plugins: {
       '@typescript-eslint': typescript,
       'react-refresh': reactRefresh,
