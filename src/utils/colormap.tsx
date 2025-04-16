@@ -41,7 +41,7 @@ export function GetColorMapTexture(
 
   if (texture) {
     // Update the existing texture data
-    texture.image.data.set(colData);
+    (texture.image.data as Uint8Array).set(colData);
     texture.needsUpdate = true;
     return texture;
   } else {
@@ -52,30 +52,29 @@ export function GetColorMapTexture(
   }
 }
 
-
-export function genRand(count: number) {
-  const data = Array.from({ length: count }, () =>
-      Array.from({ length: count }, () =>
-          Array.from({ length: count }, () => {
-              // Randomly insert NaN values (e.g., 10% chance)
-              if (Math.random() < 0.6) {
-                  return NaN;
-              }
-              return Math.random();
-          })
-      )
-  );
-  const nested = new NestedArray(data, [count, count, count], '<f4');
-  return nested;
-}
+// export function genRand(count: number) {
+//   const data = Array.from({ length: count }, () =>
+//       Array.from({ length: count }, () =>
+//           Array.from({ length: count }, () => {
+//               // Randomly insert NaN values (e.g., 10% chance)
+//               if (Math.random() < 0.6) {
+//                   return NaN;
+//               }
+//               return Math.random();
+//           })
+//       )
+//   );
+//   const nested = new NestedArray(data, [count, count, count], '<f4');
+//   return nested;
+// }
 
 export function hexToRgb(hex: string) {
   // Remove the hash at the start if it's there
   hex = hex.replace(/^#/, '');
   // Parse the r, g, b values
-  let bigint = parseInt(hex, 16);
-  let r = (bigint >> 16) & 255;
-  let g = (bigint >> 8) & 255;
-  let b = bigint & 255;
+  const bigint = parseInt(hex, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
   return [r, g, b];
 }

@@ -5,11 +5,8 @@ import vertexShader from '@/utils/shaders/vertex.glsl';
 import fragmentShader from '@/utils/shaders/fragment.glsl';
 import { useControls } from 'leva';
 import { GetColorMapTexture } from '@/utils/colormap';
-import { useThree } from '@react-three/fiber';
 import pointVert from '@/utils/shaders/pointVertex.glsl';
 import pointFrag from '@/utils/shaders/pointFrag.glsl';
-
-
 
 const colormaps = ['viridis', 'plasma', 'inferno', 'magma', 'Accent', 'Blues',
   'CMRmap', 'twilight', 'tab10', 'gist_earth', 'cividis',
@@ -121,11 +118,11 @@ export const DataCube = ({ volTexture, shape }: DataCubeProps ) => {
 
     useEffect(()=>{
       setColormap(GetColorMapTexture(colormap,cmap));
-    },[cmap])
+    },[cmap, colormap])
 
   return (
     <>
-    <mesh ref={meshRef} rotation-y={Math.PI / 2} geometry={geometry}>
+    <mesh ref={meshRef} rotation={[0, Math.PI / 2, 0]} geometry={geometry}>
       <primitive attach="material" object={shaderMaterial} />
     </mesh>
     </>
@@ -179,8 +176,7 @@ export const PointCloud = ({texture} : PCProps )=>{
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
           const index = x + y * width + z * width * height;
-          const value = data[index] || 0;
-
+          const value = (data as number[])[index] || 0;
           // Skip zero or invalid values if needed
           if (value > 0) {
             // Normalize coordinates to [-0.5, 0.5] range
@@ -222,7 +218,7 @@ export const PointCloud = ({texture} : PCProps )=>{
 
   useEffect(()=>{
     setColormap(GetColorMapTexture(colormap,cmap));
-  },[cmap])
+  },[cmap, colormap])
   return (
     <points geometry={geometry} material={shaderMaterial}/>
   );

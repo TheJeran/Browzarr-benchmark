@@ -1,5 +1,5 @@
 export function updateMetadataDescription(
-  meta: Record<string, any>,
+  meta: Record<string, string | number | boolean | string[]>,
   containerId: string,
   nameId: string,
   unitsId: string,
