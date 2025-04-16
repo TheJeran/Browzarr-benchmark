@@ -20,29 +20,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Checkout repo
+      - name: Checkout repo 🛎️
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup repo
+      - name: Setup repo 🔧
         uses: ./.github/actions
 
       - name: Build site
         run: pnpm buildRepo
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          path: ./dist
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    needs: update-gh-pages
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          folder: dist
+          branch: gh-pages
+          clean: true
