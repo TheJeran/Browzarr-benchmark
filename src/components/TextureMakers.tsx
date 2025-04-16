@@ -42,7 +42,7 @@ function ArrayTo2D(array: Array){
 
     // Update texture
     texture.needsUpdate = true;
-    return texture
+    return [texture, {maxVal,minVal}]
 }
 
 function ArrayTo3D(array: Array){
@@ -72,14 +72,15 @@ function ArrayTo3D(array: Array){
     volTexture.unpackAlignment = 1;
     volTexture.needsUpdate = true;
 
-    return volTexture
+    return [volTexture, {maxVal,minVal}]
 
 }
 
 export function ArrayToTexture(array: Array){
     const shape = array.shape;
-    const texture = shape.length == 3 ? ArrayTo3D(array) : ArrayTo2D(array);
-    return [texture, shape];
+    const [texture,scales] = shape.length == 3 ? ArrayTo3D(array) : ArrayTo2D(array);
+    console.log(scales)
+    return [texture, shape, scales];
 }
 
 export function DefaultCube(){
@@ -90,6 +91,6 @@ export function DefaultCube(){
         shape,
         stride:[1,1,1]
     }
-    const texture = ArrayTo3D(array)
+    const [texture,scaling] = ArrayTo3D(array)
     return texture
 }
