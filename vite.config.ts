@@ -6,6 +6,7 @@ import path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), glsl()],
+  base: '/ViZarrStores/',
   build: {
     target: 'esnext', // support modern features
   },
