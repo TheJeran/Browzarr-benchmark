@@ -1,12 +1,12 @@
 import * as THREE from 'three'
-import { Canvas, createPortal, useThree } from '@react-three/fiber';
-import { Center, Html, Hud, OrthographicCamera, PerspectiveCamera, Text } from '@react-three/drei'
+// ! don't import things that are not used in the code, build will fail
+// import { Canvas, createPortal, useThree } from '@react-three/fiber';
+// import { Center, Html, Text } from '@react-three/drei'
+import { Hud, OrthographicCamera, Text } from '@react-three/drei'
 import { useMemo, useState, useEffect } from 'react';
 import { GetTimeSeries } from './ZarrLoaderLRU';
 
-
-
-const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
+// const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
 
 interface timeSeriesLocs{
   uv:THREE.Vector2;
@@ -29,7 +29,7 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
     const {variable, storePath} = DSInfo;
     const {maxVal,minVal} = scaling;
     const [timeSeries, setTimeSeries] = useState<number[]>([0]);
-    const [xLabls,setXLabels] = useState();
+    // const [xLabls,setXLabels] = useState();
     const [yLabels, setYLabels] = useState();
     const verticleScale = 2;
     const horizontalScale = 5;
@@ -72,12 +72,14 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
         yMax = (yMax-0.5)*verticleScale
         const step = (maxVal-minVal)/3;
         let yLabels = Array.from({ length: 3 }, (_, i) => Math.round(minVal + step * i))
-        let yPos = yLabels.map((val,ind)=>{
+        let yPos = yLabels.map(val => {
             return (((val-minVal)/(maxVal-minVal))-0.5)*verticleScale
         })
         yPos = [yMin, ...yPos.slice(1), yMax]
         yLabels = [Math.ceil(minVal),...yLabels.slice(1), Math.floor(maxVal)]
-
+        // console unused variables
+        console.log(xPos,xMin,xMax,yPos,yMin,yMax)
+        
         setYLabels({
             positions:yPos,
             labels:yLabels

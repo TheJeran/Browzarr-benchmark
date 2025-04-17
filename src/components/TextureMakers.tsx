@@ -94,8 +94,8 @@ export function DefaultCube() {
     const array: Array = {
         data,
         shape,
-        stride:[1,1,1]
     }
-    const [texture,scaling] = ArrayTo3D(array)
+    const [texture, scaling] = ArrayTo3D(array)
+    console.log(scaling)
     return texture
 }

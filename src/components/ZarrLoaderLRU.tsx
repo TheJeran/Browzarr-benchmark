@@ -94,8 +94,7 @@ export async function GetTimeSeries({TimeSeriesObject}:GetTimeSeries){
 	//This is a complicated logic check but it works bb
 	const sliceSize = parseUVCoords({normal,uv})
 	const slice = sliceSize.map((value, index) =>
-		value === null || shape[index] === null ? null : value * shape[index]
-	  );
+		value === null || shape[index] === null ? null : value * shape[index]);
 	const arr = await zarr.get(outVar,slice)
 	return arr
 }

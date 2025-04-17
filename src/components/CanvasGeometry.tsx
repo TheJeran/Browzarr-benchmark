@@ -36,7 +36,7 @@ export function CanvasGeometry() {
     } 
   })
   const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
-  const [shape, setShape] = useState<THREE.Vector2 | THREE.Vector3>(new THREE.Vector3(2, 2, 2))
+  const [shape, setShape] = useState<THREE.Vector3 | THREE.Vector3>(new THREE.Vector3(2, 2, 2))
   const [timeSeriesLocs,setTimeSeriesLocs] = useState<TimeSeriesLocs>({uv:new THREE.Vector2(.5,.5), normal:new THREE.Vector3(0,0,1)})
   const [valueScales,setValueScales] = useState({maxVal:1,minVal:-1})
   const [showTimeSeries,setShowTimeSeries] = useState<boolean>(false)
@@ -46,25 +46,35 @@ export function CanvasGeometry() {
       //Need to add a check somewhere here to swap to 2D or 3D based on shape. Probably export two variables from GetArray
       GetArray(storeURL, variable).then((result) => {
         // result now contains: { data: TypedArray, shape: number[], dtype: string }
-        const [texture, _shape,scaling] = ArrayToTexture({
+        const [texture, shape, scaling] = ArrayToTexture({
           data: result.data,
           shape: result.shape
         })
-        console.log(_shape)
+        console.log(shape)
         if (texture instanceof THREE.DataTexture || texture instanceof THREE.Data3DTexture) {
           setTexture(texture)
         } else {
           console.error("Invalid texture type returned from ArrayToTexture");
           setTexture(null);
         }
-        setValueScales(scaling)
+        // norrow down type before using it!
+        if (
+          typeof scaling === 'object' &&
+          'maxVal' in scaling &&
+          'minVal' in scaling
+        ) {
+          setValueScales(scaling as { maxVal: number; minVal: number });
+        }
         const shapeRatio = result.shape[1] / result.shape[2] * 2;
         setShape(new THREE.Vector3(2, shapeRatio, 2));
       })
     }
       else{
         const texture = DefaultCube();
-        setTexture(texture)
+        // again need to check type before using it
+        if (texture instanceof THREE.Data3DTexture || texture instanceof THREE.DataTexture) {
+          setTexture(texture);
+        }
         setShape(new THREE.Vector3(2, 2, 2))
       }
   }, [variable])
@@ -80,7 +90,7 @@ export function CanvasGeometry() {
           <Center top position={[-1, 0, 1]}/>
           {plotter == "volume" && <>
             <DataCube volTexture={texture} shape={shape}/>
-            <mesh onClick={()=>setShowTimeSeries(x=>true)}>
+            <mesh onClick={() => setShowTimeSeries(true)}>
               <UVCube shape={shape} setTimeSeriesLocs={setTimeSeriesLocs}/>
             </mesh>
             
