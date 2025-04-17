@@ -122,11 +122,38 @@ export const DataCube = ({ volTexture, shape }: DataCubeProps ) => {
 
   return (
     <>
-    <mesh ref={meshRef} rotation={[0, Math.PI / 2, 0]} geometry={geometry}>
+    <mesh ref={meshRef} geometry={geometry}>
       <primitive attach="material" object={shaderMaterial} />
     </mesh>
     </>
   )
+}
+
+interface TimeSeriesLocs{
+  uv:THREE.Vector2;
+  normal:THREE.Vector3
+}
+
+export const UVCube = ({shape,setTimeSeriesLocs} : {shape:THREE.Vector3, setTimeSeriesLocs:React.Dispatch<React.SetStateAction<TimeSeriesLocs>>} )=>{
+  //This function will put an invisible cube in the scene to get coordinates for timeseries. ATM only for volume render. Will need different idea for PointCloud
+
+  function TimeSeriesLocs(event){
+    const uv = event.uv;
+    const normal = event.normal;
+    setTimeSeriesLocs({
+      uv,
+      normal
+    })
+  }
+
+
+  return (
+    <mesh scale={shape} onClick={TimeSeriesLocs}>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshBasicMaterial transparent opacity={0} />
+    </mesh>
+    )
+
 }
 
 export const PointCloud = ({texture} : PCProps )=>{
@@ -147,7 +174,6 @@ export const PointCloud = ({texture} : PCProps )=>{
     scalePoints:{
       value:false,
       label:"Scale Points By Value"
-
     }
     }
   )
