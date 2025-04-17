@@ -55,14 +55,13 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
         }
         }, [timeSeriesLocs, variable]);
 
-    const material = useMemo(()=>{
-        const shaderMaterial = new THREE.ShaderMaterial({
+    const material = new THREE.ShaderMaterial({
                 glslVersion: THREE.GLSL3,
                 uniforms: {
                     cmap:{value: colormap},
                     width: { value: width},
                     aspect: {value : window.innerWidth / window.innerHeight},
-                    thickness:{value:.01},
+                    thickness:{value:width/50},
                     miter:{value:1},
 
                 },
@@ -80,9 +79,7 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
                 `,
                 depthWrite: false,
                 });
-            return shaderMaterial;
-            
-    },[colormap])
+
 
     const geometry = useMemo(() => {
         //Need to convert whatever timeseries is into vectors. Depends on the camera and scene zoom. 
@@ -138,7 +135,7 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
         geometry.setAttribute('next', new THREE.Float32BufferAttribute(next, 3));
         geometry.setAttribute('normed', new THREE.Float32BufferAttribute(normValues, 1));
         geometry.setIndex(new THREE.Uint16BufferAttribute(indices, 1));
-        console.log(normed.length,directions.length)
+        console.log(positions)
         return geometry
     },[timeSeries])
     const aspect = window.innerWidth / window.innerHeight;
@@ -194,6 +191,7 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
             </mesh>
             {yLabels && yLabels.labels.map((value,index)=>(
                 <Text
+                    key={`y-${index}`}
                     position={[-2.6,yLabels.positions[index],0]}
                     color="black"
                     fontSize={.1}
