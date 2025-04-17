@@ -30,31 +30,36 @@ interface AxisLabels{
 }
 
 export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:timeSeriesLocs, DSInfo:DSInfo,scaling:scaling}){
-    //This function will take in some coords, get the timeseries from zarr loader and create a new THREE scene with a static camera. Need to create a graph basically
     const {uv,normal} = timeSeriesLocs;
     const {variable, storePath} = DSInfo;
     const {maxVal,minVal,colormap} = scaling;
     const [timeSeries, setTimeSeries] = useState<number[]>([0]);
     // const [xLabls,setXLabels] = useState();
     const [yLabels, setYLabels] = useState<AxisLabels>();
+
+    //Adjust scale of plot
     const verticalScale = 2;
     const horizontalScale = 5;
+
+    
     const {width} = useControls({
         width:{value:5,
         min:1,
         max:15,
         step:1,
         label:"Line Width"
-    }
+        }
     })
+
     const splineResolution = 3;
     
     useEffect(() => {
+        //Get timeSeries slice
         if (uv && normal ) {
             GetTimeSeries({ TimeSeriesObject: { uv, normal, variable, storePath } })
             .then((data) => setTimeSeries(data.data as number[]));
         }
-        }, [timeSeriesLocs, variable]);
+    }, [timeSeriesLocs, variable]);
 
     const material = new THREE.ShaderMaterial({
                 glslVersion: THREE.GLSL3,
@@ -66,7 +71,7 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
                     miter:{value:1},
 
                 },
-                vertexShader,
+                vertexShader,//Vertex shader is saved to file as it's quite long
                 fragmentShader:`
                 out vec4 Color;
                 uniform sampler2D cmap;
@@ -79,13 +84,12 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
                 }
                 `,
                 depthWrite: false,
-                });
+    });
+
 
     const lineObj = useMemo(() => {
-        //Need to convert whatever timeseries is into vectors. Depends on the camera and scene zoom. 
-        //Currently this creates a new one each time coords changes. Will need to fix later
-    
-        const normed = timeSeries.map((i)=>(i-minVal)/(maxVal-minVal))
+          
+        const normed = timeSeries.map((i)=>(i-minVal)/(maxVal-minVal)) //This normalizes the line plot based off the values from the main plot. Makes sure we can see the different variabilities in different locations
         const size = timeSeries.length;
         const vecs = [];
         for (let i=0 ; i<size ; i++){
@@ -93,8 +97,8 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
             const y = (normed[i]-.5)*verticalScale;
             vecs.push(new THREE.Vector2(x,y))
         }
-        const curve = new THREE.SplineCurve(vecs)
-        const points = curve.getPoints(vecs.length*splineResolution)
+        const curve = new THREE.SplineCurve(vecs) //Using 2D spline since the camera doesn't move for the HUD. 
+        const points = curve.getPoints(vecs.length*splineResolution)//Here we specify 
         const geometry = new THREE.BufferGeometry().setFromPoints( points );
         const material = new THREE.LineBasicMaterial({ color: 0xff0000, linewidth:5 }); 
         const obj = new THREE.Line(geometry,material);
@@ -102,16 +106,15 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
     },[timeSeries])
 
     const geometry = useMemo(() => {
-        //Need to convert whatever timeseries is into vectors. Depends on the camera and scene zoom. 
-        //Currently this creates a new one each time coords changes. Will need to fix later
-    
+
+        //This method basically creates two lines on top of eachother then draws triangles between them /\/\/\/\/\/\
         const normed = timeSeries.map((i) => (i - minVal) / (maxVal - minVal));
         const size = timeSeries.length;
         const vecs = []
         for (let i = 0; i < size; i++) {
             const x = (i / (size - 1))  * horizontalScale - (horizontalScale /2);
             const y = (normed[i] - 0.5)  * verticalScale;
-            vecs.push(new THREE.Vector2(x,y)) // 3D points (z = 0 for 2D)
+            vecs.push(new THREE.Vector2(x,y))
         }
 
         const curve = new THREE.SplineCurve(vecs)
@@ -120,7 +123,7 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
 
         if (path.length < 2) return new THREE.BufferGeometry(); // Need at least 2 points
 
-        // Step 2: Duplicate vertices and compute attributes
+        //Duplicate vertices and compute attributes
         const numPoints = path.length;
         const positions = [];
         const directions = [];
@@ -129,6 +132,7 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
         const normValues = []
         const indices = [];
 
+        //This loop is to generate the attributes for the shader. Notice how it's double. BEcause we are creating two lines 
         for (let i = 0; i < numPoints; i++) {
             const point = path[i];
             const prevPoint = path[Math.max(0, i - 1)];
@@ -142,17 +146,17 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
 
         }
 
-        // Step 3: Create triangle indices
+        //Create triangle indices
         for (let i = 0; i < numPoints - 1; i++) {
-            const i0 = i * 2;     // First vertex of current point (+1)
-            const i1 = i0 + 1;    // Second vertex of current point (-1)
-            const i2 = i0 + 2;    // First vertex of next point (+1)
-            const i3 = i0 + 3;    // Second vertex of next point (-1)
+            const i0 = i * 2;     
+            const i1 = i0 + 1;    
+            const i2 = i0 + 2;    
+            const i3 = i0 + 3;    
             indices.push(i0, i1, i2); // First triangle
             indices.push(i1, i3, i2); // Second triangle
         }
 
-        // Step 4: Create geometry
+        //Create geometry
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
         geometry.setAttribute('direction', new THREE.Float32BufferAttribute(directions, 1));
@@ -162,9 +166,12 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
         geometry.setIndex(new THREE.Uint16BufferAttribute(indices, 1));
         return geometry
     },[timeSeries])
+
+    //Camera Settings
     const aspect = window.innerWidth / window.innerHeight;
     const frustumSize = 5;
 
+    //Axis label making 4 ticks on y-axis. 10 on x-axis eventually
     useEffect(()=>{
         const xMin = 0;
         const xMax = timeSeries.length;
@@ -203,9 +210,15 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
             position={[0, 0, 5]}
             zoom={1}
         />
+
         <group position={[0,-1,0]}> 
+            {/* New Line */}
             <mesh geometry={geometry} material={material} />
+
+            {/* Old Line */}
             <primitive object={lineObj} />
+
+            {/* Axis: Should be replaced by lines */}
             <mesh position={[-2.5,0,0]}>
                 <boxGeometry args={[.02,2,1]} />
                 <meshBasicMaterial color={'black'} />
@@ -214,6 +227,8 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
                 <boxGeometry args={[5,.02,1]} />
                 <meshBasicMaterial color={'black'} />
             </mesh>
+
+            {/* Labels */}
             {yLabels && yLabels.labels.map((value,index)=>(
                 <Text
                     key={`y-${index}`}

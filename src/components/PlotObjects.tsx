@@ -17,7 +17,6 @@ interface DataCubeProps {
   volTexture: THREE.Data3DTexture | THREE.DataTexture | null,
   shape : THREE.Vector3,
   colormap: THREE.DataTexture
-
 }
 
 interface PCProps {
@@ -27,8 +26,6 @@ interface PCProps {
 
 export const DataCube = ({ volTexture, shape, colormap }: DataCubeProps ) => {
     const meshRef = useRef<THREE.Mesh>(null);
-    // const materialRef = useRef<THREE.ShaderMaterial | null>(null);
-    // const { invalidate } = useThree();
     const { threshold, steps, flip, xMax,xMin,yMax,yMin,zMax,zMin } = useControls({
         threshold: {
           value: 0, // Default value
@@ -94,25 +91,25 @@ export const DataCube = ({ volTexture, shape, colormap }: DataCubeProps ) => {
 
   // We need to check if moving this outside of useMemo means it's creating a ton of materials. This was how it was done in THREE Journey when I was doing that, so I know it's not stricly speaking wrong
     const shaderMaterial = new THREE.ShaderMaterial({
-        glslVersion: THREE.GLSL3,
-        uniforms: {
-            map: { value: volTexture },
-            cmap:{value: colormap},
-            cameraPos: { value: new THREE.Vector3() },
-            threshold: {value: threshold},
-            scale: {value: shape},
-            flatBounds:{value: new THREE.Vector4(xMin,xMax,yMin,yMax)},
-            vertBounds:{value: new THREE.Vector2(zMin,zMax)},
-            steps: { value: steps },
-            flip: {value: flip }
-        },
-        vertexShader,
-        fragmentShader,
-        transparent: true,
-        blending: THREE.NormalBlending,
-        depthWrite: false,
-        side: THREE.BackSide,
-        });
+      glslVersion: THREE.GLSL3,
+      uniforms: {
+          map: { value: volTexture },
+          cmap:{value: colormap},
+          cameraPos: { value: new THREE.Vector3() },
+          threshold: {value: threshold},
+          scale: {value: shape},
+          flatBounds:{value: new THREE.Vector4(xMin,xMax,yMin,yMax)},
+          vertBounds:{value: new THREE.Vector2(zMin,zMax)},
+          steps: { value: steps },
+          flip: {value: flip }
+      },
+      vertexShader,
+      fragmentShader,
+      transparent: true,
+      blending: THREE.NormalBlending,
+      depthWrite: false,
+      side: THREE.BackSide,
+    });
         
   // Use geometry once, avoid recreating -- Using a sphere to avoid the weird angles you get with cube
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(4, 8), []);
@@ -142,8 +139,6 @@ export const UVCube = ({shape,setTimeSeriesLocs} : {shape:THREE.Vector3, setTime
       normal
     })
   }
-
-
   return (
     <mesh scale={shape} onClick={TimeSeriesLocs}>
       <boxGeometry args={[1, 1, 1]} />
@@ -168,7 +163,7 @@ export const PointCloud = ({textures} : {textures:PCProps} )=>{
     }
     }
   )
-  // Extract data and shape from Data3DTexture
+  //Extract data and shape from Data3DTexture
   const { data, width, height, depth } = useMemo(() => {
     if (!(texture instanceof THREE.Data3DTexture)) {
       console.warn('Provided texture is not a Data3DTexture');
@@ -188,7 +183,7 @@ export const PointCloud = ({textures} : {textures:PCProps} )=>{
     const aspectRatio = width/height
     let depthRatio = depth/height;
     depthRatio = depthRatio > 10 ? 10: depthRatio;
-    // Generate grid points based on texture shape
+    //Generate grid points based on texture shape
     for (let z = 0; z < depth; z++) {
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
@@ -196,7 +191,7 @@ export const PointCloud = ({textures} : {textures:PCProps} )=>{
           const value = (data as number[])[index] || 0;
           // Skip zero or invalid values if needed
           if (value > 0) {
-            // Normalize coordinates to [-0.5, 0.5] range
+            // Normalize coordinates acceptable range
             const px = ((x / (width - 1)) - 0.5) * aspectRatio;
             const py = (y / (height - 1)) - 0.5;
             const pz = ((z / (depth - 1)) - 0.5) * depthRatio;
@@ -221,17 +216,17 @@ export const PointCloud = ({textures} : {textures:PCProps} )=>{
 
 
   const shaderMaterial = new THREE.ShaderMaterial({
-        glslVersion: THREE.GLSL3,
-        uniforms: {
-          pointSize: {value: pointScale},
-          cmap: {value: colormap},
-          scalePoints:{value: scalePoints}
-        },
-        vertexShader:pointVert,
-        fragmentShader:pointFrag,
-        blending: THREE.NoBlending,
-        depthWrite: true,
-        });
+    glslVersion: THREE.GLSL3,
+    uniforms: {
+      pointSize: {value: pointScale},
+      cmap: {value: colormap},
+      scalePoints:{value: scalePoints}
+    },
+    vertexShader:pointVert,
+    fragmentShader:pointFrag,
+    blending: THREE.NoBlending,
+    depthWrite: true,
+  });
 
   return (
     <points geometry={geometry} material={shaderMaterial} />
