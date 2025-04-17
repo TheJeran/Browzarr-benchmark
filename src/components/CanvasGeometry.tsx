@@ -104,6 +104,9 @@ export function CanvasGeometry() {
             <TimeSeries timeSeriesLocs={timeSeriesLocs} DSInfo={{variable:variable, storePath:storeURL}} scaling={valueScales}/>
             <Html
             fullscreen
+            style={{
+              pointerEvents: 'none', // Prevents capturing mouse events
+            }}
             >
               <button style={{
                   position: 'absolute',
@@ -114,7 +117,9 @@ export function CanvasGeometry() {
                   color: 'white',
                   border: 'none',
                   borderRadius: '4px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  pointerEvents: 'auto'
+
                 }}
                 onClick={()=>setShowTimeSeries(false)}
               >

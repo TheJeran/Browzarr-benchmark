@@ -6,8 +6,6 @@ import { Hud, OrthographicCamera, Text } from '@react-three/drei'
 import { useMemo, useState, useEffect } from 'react';
 import { GetTimeSeries } from './ZarrLoaderLRU';
 
-// const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
-
 interface timeSeriesLocs{
   uv:THREE.Vector2;
   normal:THREE.Vector3
@@ -23,6 +21,11 @@ interface scaling{
     minVal:number
 }
 
+interface AxisLabels{
+    labels:number[]
+    positions:number[]
+}
+
 export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:timeSeriesLocs, DSInfo:DSInfo,scaling:scaling}){
     //This function will take in some coords, get the timeseries from zarr loader and create a new THREE scene with a static camera. Need to create a graph basically
     const {uv,normal} = timeSeriesLocs;
@@ -30,14 +33,14 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
     const {maxVal,minVal} = scaling;
     const [timeSeries, setTimeSeries] = useState<number[]>([0]);
     // const [xLabls,setXLabels] = useState();
-    const [yLabels, setYLabels] = useState();
+    const [yLabels, setYLabels] = useState<AxisLabels>();
     const verticleScale = 2;
     const horizontalScale = 5;
     
     useEffect(() => {
         if (uv && normal ) {
             GetTimeSeries({ TimeSeriesObject: { uv, normal, variable, storePath } })
-            .then((data) => setTimeSeries(data.data));
+            .then((data) => setTimeSeries(data.data as number[]));
         }
         }, [timeSeriesLocs, variable]);
 
@@ -47,14 +50,15 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
     
         const normed = timeSeries.map((i)=>(i-minVal)/(maxVal-minVal))
         const size = timeSeries.length;
-        const positions = new Float32Array(size*3);
+        const vecs = [];
         for (let i=0 ; i<size ; i++){
-            positions[i*3] = i/size*horizontalScale-horizontalScale/2;
-            positions[i*3+1] = (normed[i]-.5)*verticleScale;
-            positions[i*3+2] = 0;
+            const x = i/size*horizontalScale-horizontalScale/2;
+            const y = (normed[i]-.5)*verticleScale;
+            vecs.push(new THREE.Vector2(x,y))
         }
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        const curve = new THREE.SplineCurve(vecs)
+        const points = curve.getPoints(vecs.length*3)
+        const geometry = new THREE.BufferGeometry().setFromPoints( points );
         const material = new THREE.LineBasicMaterial({ color: 0xff0000, linewidth:5 }); 
         const obj = new THREE.Line(geometry,material);
         return obj;
@@ -118,7 +122,8 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
                     anchorX="right" 
                     anchorY="middle"
                 >
-                    {Math.round(value*100)/100}
+                    {/* Will need to revist this as labels may not always be numbers */}
+                    {Math.round(value*100)/100} 
                 </Text>
             ))}
         </group>

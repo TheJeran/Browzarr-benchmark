@@ -137,7 +137,7 @@ interface TimeSeriesLocs{
 export const UVCube = ({shape,setTimeSeriesLocs} : {shape:THREE.Vector3, setTimeSeriesLocs:React.Dispatch<React.SetStateAction<TimeSeriesLocs>>} )=>{
   //This function will put an invisible cube in the scene to get coordinates for timeseries. ATM only for volume render. Will need different idea for PointCloud
 
-  function TimeSeriesLocs(event){
+  function TimeSeriesLocs(event: { uv: THREE.Vector2; normal: THREE.Vector3 }){
     const uv = event.uv;
     const normal = event.normal;
     setTimeSeriesLocs({
@@ -246,6 +246,6 @@ export const PointCloud = ({texture} : PCProps )=>{
     setColormap(GetColorMapTexture(colormap,cmap));
   },[cmap, colormap])
   return (
-    <points geometry={geometry} material={shaderMaterial}/>
+    <points geometry={geometry} material={shaderMaterial} />
   );
 }
