@@ -41,7 +41,7 @@ function ArrayTo2D(array: Array){
 
     // Update texture
     texture.needsUpdate = true;
-    return texture
+    return [texture, {maxVal,minVal}]
 }
 
 function ArrayTo3D(array: Array){
@@ -71,24 +71,15 @@ function ArrayTo3D(array: Array){
     volTexture.unpackAlignment = 1;
     volTexture.needsUpdate = true;
 
-    return volTexture
+    return [volTexture, {maxVal,minVal}]
 
 }
 
-export function ArrayToTexture(array: Array) {
-    if (!array || !array.shape || !array.data) {
-        console.error('Invalid array data received');
-        return [DefaultCube(), [2, 2, 2]];
-    }
-
-    try {
-        const shape = array.shape;
-        const texture = shape.length === 3 ? ArrayTo3D(array) : ArrayTo2D(array);
-        return [texture, shape];
-    } catch (error) {
-        console.error('Error creating texture:', error);
-        return [DefaultCube(), [2, 2, 2]];
-    }
+export function ArrayToTexture(array: Array){
+    const shape = array.shape;
+    const [texture,scales] = shape.length == 3 ? ArrayTo3D(array) : ArrayTo2D(array);
+    console.log(scales)
+    return [texture, shape, scales];
 }
 
 export function DefaultCube() {
@@ -102,9 +93,9 @@ export function DefaultCube() {
     const shape = [10, 10, 10];
     const array: Array = {
         data,
-        shape
-    };
-    
-    const texture = ArrayTo3D(array);
-    return texture;
+        shape,
+    }
+    const [texture, scaling] = ArrayTo3D(array)
+    console.log(scaling)
+    return texture
 }
