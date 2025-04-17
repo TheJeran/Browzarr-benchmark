@@ -11,8 +11,13 @@ import { lightTheme } from '@/utils/levaTheme'
 import { ArrayToTexture, DefaultCube } from './TextureMakers';
 import { DataCube, PointCloud, UVCube } from './PlotObjects';
 import { TimeSeries } from './TimeSeries';
+import { GetColorMapTexture } from '@/utils/colormap';
 
-console.log(DataCube)
+const colormaps = ['viridis', 'plasma', 'inferno', 'magma', 'Accent', 'Blues',
+  'CMRmap', 'twilight', 'tab10', 'gist_earth', 'cividis',
+  'Spectral', 'gist_stern', 'gnuplot', 'gnuplot2', 'ocean', 'turbo',
+  'GnBu', 'afmhot', 'cubehelix', 'hot', 'spring','terrain', 'winter', 'Wistia',
+]
 
 const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
 
@@ -23,7 +28,7 @@ interface TimeSeriesLocs{
 
 
 export function CanvasGeometry() {
-  const { variable, plotter } = useControls({ 
+  const { variable, plotter, cmap } = useControls({ 
     variable: { 
       value: "Default", 
       options: variables, 
@@ -33,13 +38,25 @@ export function CanvasGeometry() {
       value:"volume",
       options:["volume","point-cloud"],
       label:"Select Plot Style"
-    } 
+    },
+    cmap: {
+      value: "Spectral",
+      options:colormaps,
+      label: 'ColorMap'
+  }, 
   })
+
   const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
   const [shape, setShape] = useState<THREE.Vector3 | THREE.Vector3>(new THREE.Vector3(2, 2, 2))
   const [timeSeriesLocs,setTimeSeriesLocs] = useState<TimeSeriesLocs>({uv:new THREE.Vector2(.5,.5), normal:new THREE.Vector3(0,0,1)})
   const [valueScales,setValueScales] = useState({maxVal:1,minVal:-1})
   const [showTimeSeries,setShowTimeSeries] = useState<boolean>(false)
+  const [colormap,setColormap] = useState<THREE.DataTexture>(GetColorMapTexture())
+
+  useEffect(()=>{
+    setColormap(GetColorMapTexture(colormap,cmap));
+  },[cmap, colormap])
+
 
   useEffect(() => {
     if (variable != "Default") {
@@ -50,7 +67,6 @@ export function CanvasGeometry() {
           data: result.data,
           shape: result.shape
         })
-        console.log(shape)
         if (texture instanceof THREE.DataTexture || texture instanceof THREE.Data3DTexture) {
           setTexture(texture)
         } else {
@@ -89,19 +105,19 @@ export function CanvasGeometry() {
         
           <Center top position={[-1, 0, 1]}/>
           {plotter == "volume" && <>
-            <DataCube volTexture={texture} shape={shape}/>
+            <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
             <mesh onClick={() => setShowTimeSeries(true)}>
               <UVCube shape={shape} setTimeSeriesLocs={setTimeSeriesLocs}/>
             </mesh>
             
           </>}
-          {plotter == "point-cloud" && <PointCloud texture={texture} />}
+          {plotter == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
           
           <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={false}/>
           <Environment preset="city" />
           {showTimeSeries && <>
           
-            <TimeSeries timeSeriesLocs={timeSeriesLocs} DSInfo={{variable:variable, storePath:storeURL}} scaling={valueScales}/>
+            <TimeSeries timeSeriesLocs={timeSeriesLocs} DSInfo={{variable:variable, storePath:storeURL}} scaling={{...valueScales,colormap}}/>
             <Html
             fullscreen
             style={{

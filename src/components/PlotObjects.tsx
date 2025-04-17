@@ -1,10 +1,9 @@
-import {  useEffect, useMemo } from 'react'
-import { useState, useRef } from 'react'
+import {  useMemo } from 'react'
+import {  useRef } from 'react'
 import * as THREE from 'three'
 import vertexShader from '@/utils/shaders/vertex.glsl';
 import fragmentShader from '@/utils/shaders/fragment.glsl';
 import { useControls } from 'leva';
-import { GetColorMapTexture } from '@/utils/colormap';
 import pointVert from '@/utils/shaders/pointVertex.glsl';
 import pointFrag from '@/utils/shaders/pointFrag.glsl';
 
@@ -16,19 +15,21 @@ const colormaps = ['viridis', 'plasma', 'inferno', 'magma', 'Accent', 'Blues',
 
 interface DataCubeProps {
   volTexture: THREE.Data3DTexture | THREE.DataTexture | null,
-  shape : THREE.Vector3
+  shape : THREE.Vector3,
+  colormap: THREE.DataTexture
+
 }
 
 interface PCProps {
-  texture: THREE.Data3DTexture | THREE.DataTexture | null
+  texture: THREE.Data3DTexture | THREE.DataTexture | null,
+  colormap: THREE.DataTexture
 }
 
-export const DataCube = ({ volTexture, shape }: DataCubeProps ) => {
+export const DataCube = ({ volTexture, shape, colormap }: DataCubeProps ) => {
     const meshRef = useRef<THREE.Mesh>(null);
     // const materialRef = useRef<THREE.ShaderMaterial | null>(null);
     // const { invalidate } = useThree();
-    const [colormap,setColormap] = useState<THREE.DataTexture>(GetColorMapTexture())
-    const { threshold, steps, flip, cmap, xMax,xMin,yMax,yMin,zMax,zMin } = useControls({
+    const { threshold, steps, flip, xMax,xMin,yMax,yMin,zMax,zMin } = useControls({
         threshold: {
           value: 0, // Default value
           min: 0,   // Minimum value
@@ -116,10 +117,6 @@ export const DataCube = ({ volTexture, shape }: DataCubeProps ) => {
   // Use geometry once, avoid recreating -- Using a sphere to avoid the weird angles you get with cube
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(4, 8), []);
 
-    useEffect(()=>{
-      setColormap(GetColorMapTexture(colormap,cmap));
-    },[cmap, colormap])
-
   return (
     <>
     <mesh ref={meshRef} geometry={geometry}>
@@ -156,19 +153,13 @@ export const UVCube = ({shape,setTimeSeriesLocs} : {shape:THREE.Vector3, setTime
 
 }
 
-export const PointCloud = ({texture} : PCProps )=>{
-  const [colormap,setColormap] = useState<THREE.DataTexture>(GetColorMapTexture())
-  const {cmap,pointScale,scalePoints} = useControls(
-    {
-      cmap: {
-        value: "Spectral",
-        options:colormaps,
-        label: 'ColorMap'
-    },
+export const PointCloud = ({textures} : {textures:PCProps} )=>{
+  const {texture, colormap } = textures;
+  const {pointScale,scalePoints} = useControls({
     pointScale:{
       value:1,
       min:1,
-      max:20,
+      max:40,
       step:1
     },
     scalePoints:{
@@ -242,9 +233,6 @@ export const PointCloud = ({texture} : PCProps )=>{
         depthWrite: true,
         });
 
-  useEffect(()=>{
-    setColormap(GetColorMapTexture(colormap,cmap));
-  },[cmap, colormap])
   return (
     <points geometry={geometry} material={shaderMaterial} />
   );
