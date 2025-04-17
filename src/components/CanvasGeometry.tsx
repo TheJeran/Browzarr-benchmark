@@ -46,7 +46,7 @@ export function CanvasGeometry() {
   }, 
   })
 
-  const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
+  const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null) //Main Texture
   const [shape, setShape] = useState<THREE.Vector3 | THREE.Vector3>(new THREE.Vector3(2, 2, 2))
   const [timeSeriesLocs,setTimeSeriesLocs] = useState<TimeSeriesLocs>({uv:new THREE.Vector2(.5,.5), normal:new THREE.Vector3(0,0,1)})
   const [valueScales,setValueScales] = useState({maxVal:1,minVal:-1})
@@ -56,7 +56,6 @@ export function CanvasGeometry() {
   useEffect(()=>{
     setColormap(GetColorMapTexture(colormap,cmap));
   },[cmap, colormap])
-
 
   useEffect(() => {
     if (variable != "Default") {
@@ -74,7 +73,6 @@ export function CanvasGeometry() {
           console.error("Invalid texture type returned from ArrayToTexture");
           setTexture(null);
         }
-        // norrow down type before using it!
         if (
           typeof scaling === 'object' &&
           'maxVal' in scaling &&
@@ -98,53 +96,61 @@ export function CanvasGeometry() {
 
   return (
     <>
-    
     <div className='canvas'>
       <Canvas shadows
       frameloop="demand"
       >
-        
-          <Center top position={[-1, 0, 1]}/>
-          {plotter == "volume" && <>
-            <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
-            <mesh onClick={() => setShowTimeSeries(true)}>
-              <UVCube shape={shape} setTimeSeriesLocs={setTimeSeriesLocs}/>
-            </mesh>
-            
-          </>}
-          {plotter == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
-          
-          <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={false}/>
-          <Environment preset="city" />
-          {showTimeSeries && <>
-          
-            <TimeSeries timeSeriesLocs={timeSeriesLocs} DSInfo={{variable:variable, storePath:storeURL}} scaling={{...valueScales,colormap}}/>
-            <Html
-            fullscreen
-            style={{
-              pointerEvents: 'none', // Prevents capturing mouse events
-            }}
-            >
-              <button style={{
-                  position: 'absolute',
-                  bottom: '100px',
-                  right: '100px',
-                  padding: '8px 16px',
-                  backgroundColor: '#3498db',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  pointerEvents: 'auto'
+        <Center top position={[-1, 0, 1]}/>
 
-                }}
-                onClick={()=>setShowTimeSeries(false)}
-              >
-                Hide Time Series
-              </button>
-            </Html>
+        {/* Volume Plots */}
+        {plotter == "volume" && <>
+          <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
+          <mesh onClick={() => setShowTimeSeries(true)}>
+            <UVCube shape={shape} setTimeSeriesLocs={setTimeSeriesLocs}/>
+          </mesh>
           
-          </>}
+        </>}
+
+        {/* Point Clouds Plots */}
+        {plotter == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
+        
+
+        {/* Time Series Plots */}
+        {showTimeSeries && <>
+        
+          <TimeSeries timeSeriesLocs={timeSeriesLocs} DSInfo={{variable:variable, storePath:storeURL}} scaling={{...valueScales,colormap}}/>
+          <Html
+          fullscreen
+          style={{
+            pointerEvents: 'none', // Prevents capturing mouse events
+          }}
+          >
+            {/* Stand in button to remove time-series stuff */}
+            <button style={{
+                position: 'absolute',
+                bottom: '100px',
+                right: '100px',
+                padding: '8px 16px',
+                backgroundColor: '#3498db',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                pointerEvents: 'auto'
+
+              }}
+              onClick={()=>setShowTimeSeries(false)}
+            >
+              Hide Time Series
+            </button>
+          </Html>
+        </>}
+
+
+
+        <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={false}/>
+        <Environment preset="city" />
+        
       </Canvas>
     </div>
     <Leva theme={lightTheme} />
