@@ -78,7 +78,6 @@ function ArrayTo3D(array: Array){
 export function ArrayToTexture(array: Array){
     const shape = array.shape;
     const [texture,scales] = shape.length == 3 ? ArrayTo3D(array) : ArrayTo2D(array);
-    console.log(scales)
     return [texture, shape, scales];
 }
 

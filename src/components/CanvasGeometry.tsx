@@ -63,10 +63,11 @@ export function CanvasGeometry() {
       //Need to add a check somewhere here to swap to 2D or 3D based on shape. Probably export two variables from GetArray
       GetArray(storeURL, variable).then((result) => {
         // result now contains: { data: TypedArray, shape: number[], dtype: string }
-        const [texture, _, scaling] = ArrayToTexture({
+        const [texture, shape, scaling] = ArrayToTexture({
           data: result.data,
           shape: result.shape
         })
+        console.log(`logging the shape since we will want to use it in the future for 2D vs 3D actions ${shape}`)
         if (texture instanceof THREE.DataTexture || texture instanceof THREE.Data3DTexture) {
           setTexture(texture)
         } else {
