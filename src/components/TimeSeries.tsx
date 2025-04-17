@@ -47,6 +47,7 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
         label:"Line Width"
     }
     })
+    const splineResolution = 3;
     
     useEffect(() => {
         if (uv && normal ) {
@@ -61,7 +62,7 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
                     cmap:{value: colormap},
                     width: { value: width},
                     aspect: {value : window.innerWidth / window.innerHeight},
-                    thickness:{value:width/50},
+                    thickness:{value:width/100},
                     miter:{value:1},
 
                 },
@@ -80,6 +81,25 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
                 depthWrite: false,
                 });
 
+    const lineObj = useMemo(() => {
+        //Need to convert whatever timeseries is into vectors. Depends on the camera and scene zoom. 
+        //Currently this creates a new one each time coords changes. Will need to fix later
+    
+        const normed = timeSeries.map((i)=>(i-minVal)/(maxVal-minVal))
+        const size = timeSeries.length;
+        const vecs = [];
+        for (let i=0 ; i<size ; i++){
+            const x = i/size*horizontalScale-horizontalScale/2;
+            const y = (normed[i]-.5)*verticalScale;
+            vecs.push(new THREE.Vector2(x,y))
+        }
+        const curve = new THREE.SplineCurve(vecs)
+        const points = curve.getPoints(vecs.length*splineResolution)
+        const geometry = new THREE.BufferGeometry().setFromPoints( points );
+        const material = new THREE.LineBasicMaterial({ color: 0xff0000, linewidth:5 }); 
+        const obj = new THREE.Line(geometry,material);
+        return obj;
+    },[timeSeries])
 
     const geometry = useMemo(() => {
         //Need to convert whatever timeseries is into vectors. Depends on the camera and scene zoom. 
@@ -87,12 +107,16 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
     
         const normed = timeSeries.map((i) => (i - minVal) / (maxVal - minVal));
         const size = timeSeries.length;
-        const path = [];
+        const vecs = []
         for (let i = 0; i < size; i++) {
             const x = (i / (size - 1))  * horizontalScale - (horizontalScale /2);
             const y = (normed[i] - 0.5)  * verticalScale;
-            path.push([x, y, 0]); // 3D points (z = 0 for 2D)
+            vecs.push(new THREE.Vector2(x,y)) // 3D points (z = 0 for 2D)
         }
+
+        const curve = new THREE.SplineCurve(vecs)
+        const points = curve.getPoints(vecs.length*splineResolution)
+        const path = points.map((i)=>[i.x,i.y,0])
 
         if (path.length < 2) return new THREE.BufferGeometry(); // Need at least 2 points
 
@@ -114,7 +138,8 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
             directions.push(1.0, -1.0);
             previous.push(...prevPoint, ...prevPoint);
             next.push(...nextPoint, ...nextPoint);
-            normValues.push(normed[i],normed[i])
+            normValues.push(...Array(splineResolution*2).fill(normed[i]));
+
         }
 
         // Step 3: Create triangle indices
@@ -135,7 +160,6 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
         geometry.setAttribute('next', new THREE.Float32BufferAttribute(next, 3));
         geometry.setAttribute('normed', new THREE.Float32BufferAttribute(normValues, 1));
         geometry.setIndex(new THREE.Uint16BufferAttribute(indices, 1));
-        console.log(positions)
         return geometry
     },[timeSeries])
     const aspect = window.innerWidth / window.innerHeight;
@@ -181,6 +205,7 @@ export function TimeSeries({timeSeriesLocs,DSInfo,scaling} : {timeSeriesLocs:tim
         />
         <group position={[0,-1,0]}> 
             <mesh geometry={geometry} material={material} />
+            <primitive object={lineObj} />
             <mesh position={[-2.5,0,0]}>
                 <boxGeometry args={[.02,2,1]} />
                 <meshBasicMaterial color={'black'} />

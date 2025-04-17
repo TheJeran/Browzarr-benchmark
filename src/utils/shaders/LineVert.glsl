@@ -48,7 +48,7 @@ void main() {
 
     // Compute normal in view space
     vec2 normal = vec2(-dir.y, dir.x);
-    normal *= len; // Scale by thickness
+    normal *= min(len,thickness); // Scale by thickness
     normal.x /= aspect; // Adjust for aspect ratio to ensure uniform thickness
 
     // Apply offset in view space
