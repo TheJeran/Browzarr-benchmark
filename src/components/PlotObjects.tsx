@@ -128,24 +128,47 @@ interface TimeSeriesLocs{
   normal:THREE.Vector3
 }
 
-export const UVCube = ({shape,setTimeSeriesLocs} : {shape:THREE.Vector3, setTimeSeriesLocs:React.Dispatch<React.SetStateAction<TimeSeriesLocs>>} )=>{
-  //This function will put an invisible cube in the scene to get coordinates for timeseries. ATM only for volume render. Will need different idea for PointCloud
+import { useState } from 'react'
 
-  function TimeSeriesLocs(event: { uv: THREE.Vector2; normal: THREE.Vector3 }){
-    const uv = event.uv;
-    const normal = event.normal;
+export const UVCube = ({shape,setTimeSeriesLocs} : {shape:THREE.Vector3, setTimeSeriesLocs:React.Dispatch<React.SetStateAction<TimeSeriesLocs>>} )=>{
+  const [clickPoint, setClickPoint] = useState<THREE.Vector3 | null>(null);
+  console.log("logging the click point", clickPoint)
+
+  function TimeSeriesLocs(event: THREE.Intersection){
+    const point = event.point;
+    const uv = event.uv!;
+    const normal = event.normal!;
+    
+    setClickPoint(point);
     setTimeSeriesLocs({
       uv,
       normal
-    })
-  }
-  return (
-    <mesh scale={shape} onClick={TimeSeriesLocs}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshBasicMaterial transparent opacity={0} />
-    </mesh>
-    )
+    });
 
+    // Optional: Remove the point after some time
+    // setTimeout(() => setClickPoint(null), 2000);
+  }
+
+  return (
+    <>
+      <mesh scale={shape} onClick={(e) => {
+        e.stopPropagation();
+        if (e.intersections.length > 0) {
+          TimeSeriesLocs(e.intersections[0]);
+        }
+      }}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
+
+      {clickPoint && (
+        <mesh position={clickPoint} scale={0.01}>
+          <boxGeometry />
+          <meshBasicMaterial color="#ff0000" />
+        </mesh>
+      )}
+    </>
+  )
 }
 
 export const PointCloud = ({textures} : {textures:PCProps} )=>{

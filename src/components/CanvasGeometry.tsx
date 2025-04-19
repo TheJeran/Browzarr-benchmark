@@ -6,11 +6,13 @@ import { Center, OrbitControls, Environment, Html } from '@react-three/drei'
 import { variables, GetArray } from '@/components/ZarrLoaderLRU'
 import { useEffect, useState } from 'react';
 // import { useEffect, useState } from 'react';
-import { Leva, useControls } from 'leva'
-import { lightTheme } from '@/utils/levaTheme'
+import { useControls } from 'leva'
+// import { Leva } from 'leva'
+// import { lightTheme } from '@/utils/levaTheme'
 import { ArrayToTexture, DefaultCube } from './TextureMakers';
 import { DataCube, PointCloud, UVCube } from './PlotObjects';
 import { TimeSeries } from './TimeSeries';
+import { PlaneAxis } from './PlaneAxis';
 import { GetColorMapTexture } from '@/utils/colormap';
 
 const colormaps = ['viridis', 'plasma', 'inferno', 'magma', 'Accent', 'Blues',
@@ -105,14 +107,24 @@ export function CanvasGeometry() {
         {/* Volume Plots */}
         {plotter == "volume" && <>
           <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
-          <mesh onClick={() => setShowTimeSeries(true)}>
+          <UVCube shape={shape} setTimeSeriesLocs={setTimeSeriesLocs}/>
+
+          {/* <mesh onClick={() => setShowTimeSeries(true)}>
             <UVCube shape={shape} setTimeSeriesLocs={setTimeSeriesLocs}/>
-          </mesh>
+          </mesh> */}
           
         </>}
 
         {/* Point Clouds Plots */}
         {plotter == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
+        {/* <PlaneAxis /> */}
+        
+        <PlaneAxis 
+          data={[[0,0,0], [1,1,0], [2,0,0], [3,1,0], [4,0,0], [5,1,0], [6,-1.5,0]]} 
+          lineColor="orangered"
+          lineWidth={1}
+        />
+
         
 
         {/* Time Series Plots */}
@@ -153,7 +165,7 @@ export function CanvasGeometry() {
         
       </Canvas>
     </div>
-    <Leva theme={lightTheme} />
+    {/* <Leva theme={lightTheme} /> */}
     </>
   )
 }
