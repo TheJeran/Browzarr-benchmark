@@ -106,3 +106,8 @@ svg {
 .button-about a:active {
   color: #c7c2c2; /* Change to the color you want */
 }
+
+.plot-canvas {
+  border-top: 1px solid #333;
+  box-shadow: 0 -2px 10px #00000080;
+}
