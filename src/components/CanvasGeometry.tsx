@@ -6,11 +6,14 @@ import { Center, OrbitControls, Environment, Html } from '@react-three/drei'
 import { variables, GetArray } from '@/components/ZarrLoaderLRU'
 import { useEffect, useState } from 'react';
 // import { useEffect, useState } from 'react';
-import { Leva, useControls } from 'leva'
-import { lightTheme } from '@/utils/levaTheme'
+import { useControls } from 'leva'
+// import { Leva } from 'leva'
+// import { lightTheme } from '@/utils/levaTheme'
 import { ArrayToTexture, DefaultCube } from './TextureMakers';
 import { DataCube, PointCloud, UVCube } from './PlotObjects';
 import { TimeSeries } from './TimeSeries';
+// import { PlaneAxis } from './PlaneAxis';
+import { PlotArea } from './PlotArea'
 import { GetColorMapTexture } from '@/utils/colormap';
 
 const colormaps = ['viridis', 'plasma', 'inferno', 'magma', 'Accent', 'Blues',
@@ -97,7 +100,7 @@ export function CanvasGeometry() {
   return (
     <>
     <div className='canvas'>
-      <Canvas shadows
+      <Canvas shadows camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
       frameloop="demand"
       >
         <Center top position={[-1, 0, 1]}/>
@@ -105,55 +108,57 @@ export function CanvasGeometry() {
         {/* Volume Plots */}
         {plotter == "volume" && <>
           <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
-          <mesh onClick={() => setShowTimeSeries(true)}>
+          <UVCube shape={shape} setTimeSeriesLocs={setTimeSeriesLocs}/>
+          {/* <mesh onClick={() => setShowTimeSeries(true)}>
             <UVCube shape={shape} setTimeSeriesLocs={setTimeSeriesLocs}/>
-          </mesh>
-          
+          </mesh> */}
         </>}
-
         {/* Point Clouds Plots */}
         {plotter == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
         
-
         {/* Time Series Plots */}
-        {showTimeSeries && <>
-        
-          <TimeSeries timeSeriesLocs={timeSeriesLocs} DSInfo={{variable:variable, storePath:storeURL}} scaling={{...valueScales,colormap}}/>
-          <Html
-          fullscreen
-          style={{
-            pointerEvents: 'none', // Prevents capturing mouse events
-          }}
-          >
-            {/* Stand in button to remove time-series stuff */}
-            <button style={{
-                position: 'absolute',
-                bottom: '100px',
-                right: '100px',
-                padding: '8px 16px',
-                backgroundColor: '#3498db',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                pointerEvents: 'auto'
-
-              }}
-              onClick={()=>setShowTimeSeries(false)}
-            >
-              Hide Time Series
-            </button>
-          </Html>
-        </>}
-
-
-
         <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={false}/>
         <Environment preset="city" />
         
       </Canvas>
     </div>
-    <Leva theme={lightTheme} />
+    {showTimeSeries && <>
+        
+        <TimeSeries timeSeriesLocs={timeSeriesLocs} DSInfo={{variable:variable, storePath:storeURL}} scaling={{...valueScales,colormap}}/>
+        <Html
+        fullscreen
+        style={{
+          pointerEvents: 'none', // Prevents capturing mouse events
+        }}
+        >
+          {/* Stand in button to remove time-series stuff */}
+          <button style={{
+              position: 'absolute',
+              bottom: '100px',
+              right: '100px',
+              padding: '8px 16px',
+              backgroundColor: '#3498db',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              pointerEvents: 'auto'
+
+            }}
+            onClick={()=>setShowTimeSeries(false)}
+          >
+            Hide Time Series
+          </button>
+        </Html>
+      </>}
+    <PlotArea 
+      data={[[-5,0,0], [1,5,0], [2,0,0], [3,1,0], [4,0,0], [5,1,0], [60,-1.5,0]]}
+      // now we need to add the time series data to the plot area
+      // data={timeSeries} // but it needs to be in the right format
+      lineColor="orangered"
+      lineWidth={5}
+      />
+    {/* <Leva theme={lightTheme} /> */}
     </>
   )
 }
