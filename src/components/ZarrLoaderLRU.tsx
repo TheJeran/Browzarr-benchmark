@@ -107,10 +107,16 @@ interface TimeSeriesInfo{
 	normal:THREE.Vector3
 }
 
+interface CacheValue {
+	data: Float32Array;
+	shape: number[];
+	stride: number[];
+  }
+  
 export class ZarrDataset{
 	private storePath: string;
 	private variable: string;
-	private cache: QuickLRU<string,{maxSize:number}>;
+	private cache: QuickLRU<string,CacheValue>;
 
 	constructor(storePath: string){
 		this.storePath = storePath;
