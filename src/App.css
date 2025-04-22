@@ -207,3 +207,16 @@ html, body, #root {
     padding: 0 5px;
   }
 }
+
+.loading{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background-color: rgba(255, 255, 255, 0.596);
+  z-index: 10;
+  padding: 20px;
+  font-size: 48px;
+  color: #222222;
+  border-radius: 20px;
+  transform: translate(-50%,-50%);
+}
