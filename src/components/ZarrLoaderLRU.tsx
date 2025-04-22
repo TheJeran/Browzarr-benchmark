@@ -110,7 +110,7 @@ interface TimeSeriesInfo{
 export class ZarrDataset{
 	private storePath: string;
 	private variable: string;
-	private cache: QuickLRU<string,any>;
+	private cache: QuickLRU<string,{maxSize:number}>;
 
 	constructor(storePath: string){
 		this.storePath = storePath;
