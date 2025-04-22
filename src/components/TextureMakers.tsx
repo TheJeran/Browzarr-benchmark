@@ -63,7 +63,7 @@ function ArrayTo3D(array: Array){
     });
 
     const normed = data.map((i)=>(i-minVal)/(maxVal-minVal))
-    const textureData = new Uint8Array(normed.map((i)=>i*255));   
+    const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254));   
     const volTexture = new THREE.Data3DTexture(textureData, lx, ly, lz);
     volTexture.format = THREE.RedFormat;
     volTexture.minFilter = THREE.NearestFilter;
