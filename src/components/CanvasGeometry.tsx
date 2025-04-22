@@ -56,6 +56,7 @@ export function CanvasGeometry() {
   const [showTimeSeries,setShowTimeSeries] = useState<boolean>(false)
   const [colormap,setColormap] = useState<THREE.DataTexture>(GetColorMapTexture())
   const [timeSeries, setTimeSeries] = useState<number[]>([0]);
+  const [showLoading, setShowLoading] = useState<boolean>(false);
 
 
   const ZarrDS = useMemo(()=>new ZarrDataset(storeURL),[])
@@ -68,6 +69,7 @@ export function CanvasGeometry() {
   //DATA LOADING
   useEffect(() => {
     if (variable != "Default") {
+      setShowLoading(true);
       //Need to add a check somewhere here to swap to 2D or 3D based on shape. Probably export two variables from GetArray
       ZarrDS.GetArray(variable).then((result) => {
         // result now contains: { data: TypedArray, shape: number[], dtype: string }
@@ -91,6 +93,7 @@ export function CanvasGeometry() {
         }
         const shapeRatio = result.shape[1] / result.shape[2] * 2;
         setShape(new THREE.Vector3(2, shapeRatio, 2));
+        setShowLoading(false)
       })
     }
       else{
@@ -112,6 +115,11 @@ export function CanvasGeometry() {
 
   return (
     <>
+    <div className='messages'>
+      {showLoading && <div className='loading'>
+        Loading...
+      </div>}
+    </div>
     <div className='canvas'>
       <Canvas shadows camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
       frameloop="demand"

@@ -1,5 +1,6 @@
 import * as zarr from "zarrita";
 import * as THREE from 'three';
+import QuickLRU from 'quick-lru';
 
 function GetZarrVariables(obj: Record<string, { path?: string; kind?: string }>) {
 	//Parses out variables in a Zarr group for variable list
@@ -84,8 +85,6 @@ function parseUVCoords({normal,uv}:{normal:THREE.Vector3,uv:THREE.Vector2}){
 	}
 }
 
-
-
 export async function GetTimeSeries({TimeSeriesObject}:GetTimeSeries){
 	const {uv,normal,variable, storePath} = TimeSeriesObject
 	const d_store = zarr.tryWithConsolidated(
@@ -102,6 +101,7 @@ export async function GetTimeSeries({TimeSeriesObject}:GetTimeSeries){
 	return arr
 }
 
+
 interface TimeSeriesInfo{
 	uv:THREE.Vector2,
 	normal:THREE.Vector3
@@ -110,21 +110,21 @@ interface TimeSeriesInfo{
 export class ZarrDataset{
 	private storePath: string;
 	private variable: string;
-	private cache: { [key: string]: any };
+	private cache: QuickLRU<string,any>;
 
 	constructor(storePath: string){
 		this.storePath = storePath;
 		this.variable = "Default";
-		this.cache = {};
+		this.cache = new QuickLRU({maxSize: 2000});
 	}
 
 	async GetArray(variable: string){
 		//This checks if variable is stored in cache
 		this.variable = variable;
 		let outVar = null;
-		if (this.cache.hasOwnProperty(variable)){
+		if (this.cache.has(variable)){
 			console.log("Using Cache")
-			return this.cache[variable]
+			return this.cache.get(variable)
 		}
 		const d_store = zarr.tryWithConsolidated(
 			new zarr.FetchStore(this.storePath)
@@ -137,7 +137,7 @@ export class ZarrDataset{
 		if (outVar.is("number") || outVar.is("bigint")) {
 			const chunk = await zarr.get(outVar)
 			const typedArray = new Float32Array(chunk.data);
-			this.cache[variable] = chunk;
+			this.cache.set(variable, chunk);
 			// TypeScript will now infer the correct numeric type
 			return {
 				data: typedArray,
@@ -151,10 +151,10 @@ export class ZarrDataset{
 
 	async GetTimeSeries(TimeSeriesInfo:TimeSeriesInfo){
 		const {uv,normal} = TimeSeriesInfo
-		if (!this.cache[this.variable]){
+		if (!this.cache.has(this.variable)){
 			return [0]
 		}
-		const {data,shape,stride} = this.cache[this.variable]
+		const {data,shape,stride} = this.cache.get(this.variable)
 		//This is a complicated logic check but it works bb
 		const sliceSize = parseUVCoords({normal,uv})
 

@@ -32,6 +32,7 @@
     "jotai": "^2.10.0",
     "js-colormaps-es": "^0.0.5",
     "leva": "^0.10.0",
+    "quick-lru": "^7.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "three": "^0.175.0",
