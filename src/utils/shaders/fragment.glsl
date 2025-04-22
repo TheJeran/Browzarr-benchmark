@@ -76,8 +76,8 @@ void main() {
 
         if (cond) {
             vec4 col = texture(cmap, vec2(d, 0.5));
-            // Change this later back to intensity then delete comment
-            float alpha = 1.;
+            // Change this later back to use intensity then delete comment. Or maybe we don't need intensity
+            float alpha = float(col.a > 0.);
 
             accumColor.rgb += (1.0 - alphaAcc) * alpha * col.rgb;
             alphaAcc += alpha * (1.0 - alphaAcc);

@@ -38,7 +38,6 @@ export function GetColorMapTexture(
   colData[lastIndex + 1] = to_nan[1];
   colData[lastIndex + 2] = to_nan[2];
   colData[lastIndex + 3] = nan_alpha;
-
   if (texture) {
     // Update the existing texture data
     (texture.image.data as Uint8Array).set(colData);

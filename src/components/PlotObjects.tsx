@@ -245,8 +245,10 @@ export const PointCloud = ({textures} : {textures:PCProps} )=>{
     },
     vertexShader:pointVert,
     fragmentShader:pointFrag,
-    blending: THREE.NoBlending,
     depthWrite: true,
+    transparent: true,
+    blending:THREE.NormalBlending,
+    side:THREE.DoubleSide,
   });
 
   return (
