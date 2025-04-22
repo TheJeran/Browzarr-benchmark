@@ -17,9 +17,11 @@ export function GetColorMapTexture(
   palette: string = "Spectral", 
   alpha: number = 1, 
   nan_color: string = "#000000", 
-  nan_alpha: number = 0
+  nan_alpha: number = 0,
+  reverse: boolean = false
 ): THREE.DataTexture {
-  const unitInterval = Array.from({ length: 255 }, (_, index) => index / 254);
+  let unitInterval = Array.from({ length: 255 }, (_, index) => index / 254);
+  unitInterval = reverse ? unitInterval.reverse() : unitInterval
   const rgbv = unitInterval.map(value => evaluate_cmap(value, palette, false));
   const colData = new Uint8Array((rgbv.length + 1) * 4);
 

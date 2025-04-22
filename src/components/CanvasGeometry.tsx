@@ -10,7 +10,7 @@ import { useControls } from 'leva'
 // import { Leva } from 'leva'
 // import { lightTheme } from '@/utils/levaTheme'
 import { ArrayToTexture, DefaultCube } from './TextureMakers';
-import { DataCube, PointCloud, UVCube } from './PlotObjects';
+import { DataCube, PointCloud, UVCube, PlotLine } from './PlotObjects';
 import { TimeSeries } from './TimeSeries';
 // import { PlaneAxis } from './PlaneAxis';
 import { PlotArea } from './PlotArea'
@@ -31,7 +31,7 @@ interface TimeSeriesLocs{
 
 
 export function CanvasGeometry() {
-  const { variable, plotter, cmap } = useControls({ 
+  const { variable, plotter, cmap, flipCmap } = useControls({ 
     variable: { 
       value: "Default", 
       options: variables, 
@@ -47,6 +47,11 @@ export function CanvasGeometry() {
       options:colormaps,
       label: 'ColorMap'
   }, 
+  flipCmap:{
+    value:false,
+    label:"Invert Colors"
+
+  }
   })
 
   const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null) //Main Texture
@@ -62,8 +67,8 @@ export function CanvasGeometry() {
   const ZarrDS = useMemo(()=>new ZarrDataset(storeURL),[])
 
   useEffect(()=>{
-    setColormap(GetColorMapTexture(colormap,cmap));
-  },[cmap, colormap])
+    setColormap(GetColorMapTexture(colormap,cmap,1,"#000000",0,flipCmap));
+  },[cmap, colormap,flipCmap])
 
 
   //DATA LOADING
@@ -172,13 +177,17 @@ export function CanvasGeometry() {
           </button>
         </Html>
       </>}
-    <PlotArea 
-      data={[[-5,0,0], [1,5,0], [2,0,0], [3,1,0], [4,0,0], [5,1,0], [60,-1.5,0]]}
-      // now we need to add the time series data to the plot area
-      // data={timeSeries} // but it needs to be in the right format
-      lineColor="orangered"
-      lineWidth={5}
-      />
+      
+    <PlotArea >
+        <PlotLine 
+          data={timeSeries} 
+          lineWidth={5}
+          color='orangered'
+          range={[[-100,100],[-10,10]]}
+          scaling={{...valueScales,colormap}}
+        />
+
+    </PlotArea>
     {/* <Leva theme={lightTheme} /> */}
     </>
   )

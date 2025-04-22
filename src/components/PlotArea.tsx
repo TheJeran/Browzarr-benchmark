@@ -1,15 +1,10 @@
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { FixedTicks } from './FixedTicks'
-import { PlotLine } from './PlotLine'
 
-interface PlotAreaProps {
-  data: [number, number, number][]
-  lineColor?: string
-  lineWidth?: number
-}
 
-export function PlotArea({ data, lineColor = 'orangered', lineWidth = 2 }: PlotAreaProps) {
+
+export function PlotArea({children}: {children: React.ReactNode}) {
   return (
     <div 
       className='plot-canvas'
@@ -26,18 +21,12 @@ export function PlotArea({ data, lineColor = 'orangered', lineWidth = 2 }: PlotA
         camera={{ position: [0, 0, 15] }}
         frameloop="demand"
       >
-        <PlotLine
-          data={data}
-          color={lineColor}
-          showPoints={true}
-          pointSize={1}
-          pointColor="white"
-          lineWidth={lineWidth}
-        />
+        {children}
+
         <FixedTicks color="white" />
         <OrbitControls 
           enableRotate={false} 
-          enablePan={true}
+          enablePan={false}
           enableZoom={true}
           zoomSpeed={0.85}
         />
