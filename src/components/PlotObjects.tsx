@@ -132,8 +132,6 @@ import { useState } from 'react'
 
 export const UVCube = ({shape,setTimeSeriesLocs} : {shape:THREE.Vector3, setTimeSeriesLocs:React.Dispatch<React.SetStateAction<TimeSeriesLocs>>} )=>{
   const [clickPoint, setClickPoint] = useState<THREE.Vector3 | null>(null);
-  console.log("logging the click point", clickPoint)
-
   function TimeSeriesLocs(event: THREE.Intersection){
     const point = event.point;
     const uv = event.uv!;

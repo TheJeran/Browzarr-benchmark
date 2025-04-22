@@ -3,8 +3,8 @@ THREE.Cache.enabled = true;
 import { Canvas } from '@react-three/fiber';
 import { Center, OrbitControls, Environment, Html } from '@react-three/drei'
 // import * as zarr from 'zarrita'
-import { variables, GetArray } from '@/components/ZarrLoaderLRU'
-import { useEffect, useState } from 'react';
+import { variables, ZarrDataset } from '@/components/ZarrLoaderLRU'
+import { useEffect, useState, useMemo } from 'react';
 // import { useEffect, useState } from 'react';
 import { useControls } from 'leva'
 // import { Leva } from 'leva'
@@ -55,15 +55,21 @@ export function CanvasGeometry() {
   const [valueScales,setValueScales] = useState({maxVal:1,minVal:-1})
   const [showTimeSeries,setShowTimeSeries] = useState<boolean>(false)
   const [colormap,setColormap] = useState<THREE.DataTexture>(GetColorMapTexture())
+  const [timeSeries, setTimeSeries] = useState<number[]>([0]);
+
+
+  const ZarrDS = useMemo(()=>new ZarrDataset(storeURL),[])
 
   useEffect(()=>{
     setColormap(GetColorMapTexture(colormap,cmap));
   },[cmap, colormap])
 
+
+  //DATA LOADING
   useEffect(() => {
     if (variable != "Default") {
       //Need to add a check somewhere here to swap to 2D or 3D based on shape. Probably export two variables from GetArray
-      GetArray(storeURL, variable).then((result) => {
+      ZarrDS.GetArray(variable).then((result) => {
         // result now contains: { data: TypedArray, shape: number[], dtype: string }
         const [texture, shape, scaling] = ArrayToTexture({
           data: result.data,
@@ -96,6 +102,13 @@ export function CanvasGeometry() {
         setShape(new THREE.Vector3(2, 2, 2))
       }
   }, [variable])
+
+  //TIMESERIES
+  useEffect(()=>{
+    if(ZarrDS){
+      ZarrDS.GetTimeSeries(timeSeriesLocs).then((e)=> setTimeSeries(e))
+    }
+  },[timeSeriesLocs])
 
   return (
     <>
