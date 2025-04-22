@@ -138,7 +138,7 @@ export class ZarrDataset{
 			const chunk = await zarr.get(outVar)
 			const typedArray = new Float32Array(chunk.data);
 			this.cache[variable] = chunk;
-		   // TypeScript will now infer the correct numeric type
+			// TypeScript will now infer the correct numeric type
 			return {
 				data: typedArray,
 				shape: chunk.shape,
