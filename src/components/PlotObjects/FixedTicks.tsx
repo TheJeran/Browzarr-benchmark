@@ -16,6 +16,8 @@ interface FixedTicksProps {
   showGrid?: boolean;
   gridOpacity?: number;
   coords?: [string,string];
+  xDimArray: number[];
+  yRange: number[];
 }
 
 export function FixedTicks({ 
@@ -24,10 +26,19 @@ export function FixedTicks({
   fontSize = 12,
   showGrid = true,
   gridOpacity = 0.5,
+  xDimArray = [0,0,0],
+  yRange = [0,1],
 }: FixedTicksProps) {
 
-  const { camera, viewport, size, scene } = useThree()
+  const { camera, viewport, size } = useThree()
   const [bounds, setBounds] = useState<ViewportBounds>({ left: 0, right: 0, top: 0, bottom: 0 })
+
+  const xTickCount = 10;
+  const yTickCount = 8;
+
+  const xDimSize = xDimArray.length;
+  const yDimSize = (yRange[1]-yRange[0])
+
   const initialBounds = useMemo<ViewportBounds>(()=>{
     const worldWidth = viewport.width 
     const worldHeight = viewport.height 
@@ -60,16 +71,14 @@ export function FixedTicks({
     if (camera.zoom !== zoom) {
       setZoom(camera.zoom) // this is not working properly
     }
-    const worldWidth = viewport.width / camera.zoom
-    const worldHeight = viewport.height / camera.zoom
-    
+    const worldWidth = window.innerWidth / camera.zoom
+    const worldHeight = window.innerHeight*0.15 / camera.zoom
     const newBounds = {
       left: -worldWidth / 2 + camera.position.x,
       right: worldWidth / 2 + camera.position.x,
       top: worldHeight / 2 + camera.position.y,
       bottom: -worldHeight / 2 + camera.position.y
     }
-    console.log(viewport)
     if (JSON.stringify(bounds) != JSON.stringify(newBounds)){ 
       setBounds(newBounds) //This was firing every frame. Changed to only fire if it's different
     }
@@ -81,9 +90,9 @@ export function FixedTicks({
       {showGrid && (
         <>
           {/* Vertical grid lines */}
-          {Array.from({ length: 10 }, (_, i) => {
-            if (i === 0 || i === 9) return null; // Skip edges
-            const x = initialBounds.left + (initialBounds.right - initialBounds.left) * (i / 9)
+          {Array.from({ length: xTickCount }, (_, i) => {
+            if (i === 0 || i === xTickCount-1) return null; // Skip edges
+            const x = initialBounds.left + (initialBounds.right - initialBounds.left) * (i / (xTickCount-1))
             return (
               <line key={`vgrid-${i}`}>
                 <bufferGeometry>
@@ -107,9 +116,9 @@ export function FixedTicks({
           })}
 
           {/* Horizontal grid lines */}
-          {Array.from({ length: 8 }, (_, i) => {
-            if (i === 0 || i === 7) return null; // Skip edges
-            const y = initialBounds.bottom + (initialBounds.top - initialBounds.bottom) * (i / 7)
+          {Array.from({ length: yTickCount }, (_, i) => {
+            if (i === 0 || i === yTickCount-1) return null; // Skip edges
+            const y = initialBounds.bottom + (initialBounds.top - initialBounds.bottom) * (i / (yTickCount-1))
             return (
               <line key={`hgrid-${i}`}>
                 <bufferGeometry>
@@ -135,8 +144,9 @@ export function FixedTicks({
         </>
       )}
       {/* Top Edge Ticks */}
-      {Array.from({ length: 10 }, (_, i) => {
-        const x = initialBounds.left + (initialBounds.right - initialBounds.left) * (i / 9)
+      {Array.from({ length: xTickCount }, (_, i) => {
+        const x = initialBounds.left + (initialBounds.right - initialBounds.left) * (i / (xTickCount-1))
+        const normX = x/(initialBounds.right - initialBounds.left)+.5;
         return (
           <group key={`top-tick-${i}`} position={[x, bounds.top, 0]}>
             <line>
@@ -150,7 +160,7 @@ export function FixedTicks({
             </line>
 
             {/* Only show labels for non-edge ticks */}
-            {i !== 0 && i !== 9 && (
+            {i !== 0 && i !== xTickCount-1 && (
               <Text
                 position={[0, sizes.tickSize/4 - sizes.labelOffset, 0]}
                 fontSize={sizes.fontSize/zoom**2}
@@ -158,7 +168,7 @@ export function FixedTicks({
                 anchorX="center"
                 anchorY="top"
               >
-                {x.toFixed(1)}
+                {Math.round(normX*xDimSize).toFixed()}
                 {/* do x.toString() when is not a number */}
               </Text>
             )}
@@ -167,8 +177,9 @@ export function FixedTicks({
       })}
 
       {/* Right Edge Ticks */}
-      {Array.from({ length: 8 }, (_, i) => {
-        const y = initialBounds.bottom + (initialBounds.top - initialBounds.bottom) * (i / 7)
+      {Array.from({ length: yTickCount }, (_, i) => {
+        const y = initialBounds.bottom + (initialBounds.top - initialBounds.bottom) * (i / (yTickCount-1))
+        const normY = y/(initialBounds.top - initialBounds.bottom)+.5
         return (
           <group key={`right-tick-${i}`} position={[bounds.right, y, 0]}>
             <line>
@@ -181,7 +192,7 @@ export function FixedTicks({
               <lineBasicMaterial color={color} />
             </line>
             {/* Only show labels for non-edge ticks */}
-            {i !== 0 && i !== 7 && (
+            {i !== 0 && i !== yTickCount-1 && (
               <Text
                 position={[-sizes.tickSize - sizes.labelOffset, 0, 0]}
                 fontSize={sizes.fontSize/zoom**2}
@@ -189,7 +200,7 @@ export function FixedTicks({
                 anchorX="right"
                 anchorY="middle"
               >
-                {y.toFixed(1)}
+                {(yRange[0]+(normY*yDimSize)).toFixed(1)}
               </Text>
             )}
           </group>

@@ -118,6 +118,7 @@ export class ZarrDataset{
 		this.storePath = storePath;
 		this.variable = "Default";
 		this.cache = new QuickLRU({maxSize: 2000});
+		this.dimNames = ["","",""]
 	}
 
 	async GetArray(variable: string){

@@ -49,7 +49,9 @@ export function CanvasGeometry() {
   const [timeSeries, setTimeSeries] = useState<number[]>([0]);
   const [showLoading, setShowLoading] = useState<boolean>(false);
   const [metadata,setMetadata] = useState<unknown>(null)
-  const [dimArrays,setDimArrays] = useState([null,null,null])
+
+  const [dimArrays,setDimArrays] = useState([[0],[0],[0]])
+  const [plotDim,setPlotDim] = useState<number>(0)
 
   const ZarrDS = useMemo(()=>new ZarrDataset(storeURL),[])
 
@@ -104,6 +106,12 @@ export function CanvasGeometry() {
   useEffect(()=>{
     if(ZarrDS){
       ZarrDS.GetTimeSeries(timeSeriesLocs).then((e)=> setTimeSeries(e))
+      const plotDim = (timeSeriesLocs.normal.toArray()).map((val, idx) => {
+        if (Math.abs(val) > 0) {
+          return idx;
+        }
+        return null;}).filter(idx => idx !== null);
+        setPlotDim(2-plotDim[0])
     }
   },[timeSeriesLocs])
 
@@ -145,7 +153,7 @@ export function CanvasGeometry() {
           range={[[-100,100],[-10,10]]}
           scaling={{...valueScales,colormap}}
         />
-        <FixedTicks color='white' />
+        <FixedTicks color='white' xDimArray={dimArrays[plotDim]} yRange={[valueScales.minVal,valueScales.maxVal]}/>
     </PlotArea>
     {/* <Leva theme={lightTheme} /> */}
     </>
