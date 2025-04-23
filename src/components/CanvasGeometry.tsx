@@ -56,7 +56,6 @@ export function CanvasGeometry() {
     setColormap(GetColorMapTexture(colormap,cmap,1,"#000000",0,flipCmap));
   },[cmap, colormap,flipCmap])
 
-
   //DATA LOADING
   useEffect(() => {
     if (variable != "Default") {
@@ -121,9 +120,6 @@ export function CanvasGeometry() {
         {plotter == "volume" && <>
           <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
           <UVCube shape={shape} setTimeSeriesLocs={setTimeSeriesLocs}/>
-          {/* <mesh onClick={() => setShowTimeSeries(true)}>
-            <UVCube shape={shape} setTimeSeriesLocs={setTimeSeriesLocs}/>
-          </mesh> */}
         </>}
         {/* Point Clouds Plots */}
         {plotter == "point-cloud" && <PointCloud textures={{texture,colormap}} />}

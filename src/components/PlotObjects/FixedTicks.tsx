@@ -1,6 +1,6 @@
 import { Text } from '@react-three/drei'
 import { useThree, useFrame } from '@react-three/fiber'
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 
 interface ViewportBounds {
   left: number;
@@ -15,6 +15,7 @@ interface FixedTicksProps {
   fontSize?: number;
   showGrid?: boolean;
   gridOpacity?: number;
+  coords?: [string,string];
 }
 
 
@@ -23,10 +24,10 @@ export function FixedTicks({
   tickSize = 4,
   fontSize = 12,
   showGrid = true,
-  gridOpacity = 0.5
+  gridOpacity = 0.5,
 }: FixedTicksProps) {
 
-  const { camera, viewport, size } = useThree()
+  const { camera, viewport, size, scene } = useThree()
   const [bounds, setBounds] = useState<ViewportBounds>({ left: 0, right: 0, top: 0, bottom: 0 })
   const initialBounds = useMemo<ViewportBounds>(()=>{
     const worldWidth = viewport.width 
@@ -38,6 +39,7 @@ export function FixedTicks({
       top: worldHeight / 2 + camera.position.y,
       bottom: -worldHeight / 2 + camera.position.y
     }
+    console.log("called")
     return newBounds;
   },[])
 
@@ -55,6 +57,7 @@ export function FixedTicks({
 
   // Update bounds when camera moves
   // TODO: update bounds when camera zooms
+
   useFrame(() => {
     if (camera.zoom !== zoom) {
       setZoom(camera.zoom) // this is not working properly
@@ -68,7 +71,10 @@ export function FixedTicks({
       top: worldHeight / 2 + camera.position.y,
       bottom: -worldHeight / 2 + camera.position.y
     }
-    setBounds(newBounds)
+    console.log(bounds)
+    if (JSON.stringify(bounds) != JSON.stringify(newBounds)){ 
+      setBounds(newBounds) //This was firing every frame. Changed to only fire if it's different
+    }
   })
 
   return (
