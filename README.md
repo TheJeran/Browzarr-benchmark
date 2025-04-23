@@ -8,17 +8,20 @@ Stay tuned for updates! 🚀
 ***
 
 # Wishlist/Todo
+
+_*Not essential_
+
 ### Data
 - [ ] Add zarr url input
 - [ ] Get metadata from ds/variable
 - [ ] Handle 2D variables
-- [ ] Export to zarr (Like analysis data)
+- [ ] _Export to zarr (Like analysis data)*_
 
 ### Plot Window
 - [ ] Feed coords into and apply to ticks
 - [ ] move ticks with camera
 - [ ] Add position/coords of click/timeseries
-- [ ] Resize the canvas/window
+- [ ] _Resize the canvas/window*_
 - [ ] Selectable points with information (Value and coords)
 - [ ] Scale axis'
 
@@ -38,7 +41,7 @@ Stay tuned for updates! 🚀
   - [ ] Max
 - [ ] Two Variable Calculations
   - [ ] Correlation
-- [ ] Window operations
+- [ ] _Window operations*_
   - [ ] RaoQ
   - [ ] Min/Max/Mean
   - [ ] Gaussian smooth
@@ -46,7 +49,7 @@ Stay tuned for updates! 🚀
 
 ### Misc.
 - [ ] Export view as image (w/ and w/out background)
-- [ ] Animations?
+- [ ] _Animations?*_
 
 ### Bugs/Fixes
 - [ ] 
