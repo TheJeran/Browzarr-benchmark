@@ -112,6 +112,7 @@ export class ZarrDataset{
 	private storePath: string;
 	private variable: string;
 	private cache: QuickLRU<string,any>;
+	private dimNames: string[];
 
 	constructor(storePath: string){
 		this.storePath = storePath;
@@ -120,20 +121,19 @@ export class ZarrDataset{
 	}
 
 	async GetArray(variable: string){
-		//This checks if variable is stored in cache
+		//Check if cached
 		this.variable = variable;
-		let outVar = null;
 		if (this.cache.has(variable)){
-			console.log("Using Cache")
 			return this.cache.get(variable)
 		}
+
 		const d_store = zarr.tryWithConsolidated(
 			new zarr.FetchStore(this.storePath)
 		);
-	
+		//We may move this up to constructor
 		const group = await d_store.then(store => zarr.open(store, {kind: 'group'}))
-		
-		outVar = await zarr.open(group.resolve(variable), {kind:"array"})
+		const outVar = await zarr.open(group.resolve(variable), {kind:"array"})
+
 		// Type check using zarr.Array.is
 		if (outVar.is("number") || outVar.is("bigint")) {
 			const chunk = await zarr.get(outVar)
@@ -148,6 +148,40 @@ export class ZarrDataset{
 		} else {
 			throw new Error(`Unsupported data type: Only numeric arrays are supported. Got: ${outVar.dtype}`)
 		}
+	}
+
+	async GetAttributes(variable:string){
+		const cacheName = `${variable}_meta`
+		if (this.cache.has(cacheName)){
+			return this.cache.get(cacheName)
+		}
+		const d_store = zarr.tryWithConsolidated(
+			new zarr.FetchStore(this.storePath)
+		);
+
+		const group = await d_store.then(store => zarr.open(store, {kind: 'group'}));
+		const outVar = await zarr.open(group.resolve(variable), {kind:"array"});
+		const meta = outVar.attrs;
+		this.cache.set(cacheName,meta);
+		const dims = [];
+		for (const dim of meta._ARRAY_DIMENSIONS as string[]){ //Put the dimension arrays in the cache to access later
+			if (!this.cache.has(dim)){
+				const dimArray = await zarr.open(group.resolve(dim), {kind:"array"}).then((result)=>zarr.get(result));
+				this.cache.set(dim,dimArray.data);
+			}
+			dims.push(dim)
+		}
+		this.dimNames = dims;
+		return meta;
+	}
+
+	GetDimArrays(){
+		const dimArr = [];
+
+		for (const dim of this.dimNames){
+			dimArr.push(this.cache.get(dim));
+		}
+		return dimArr;
 	}
 
 	async GetTimeSeries(TimeSeriesInfo:TimeSeriesInfo){
