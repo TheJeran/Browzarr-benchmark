@@ -52,7 +52,7 @@ _*Not essential_
 - [ ] _Animations?*_
 
 ### Bugs/Fixes
-- [ ] 
+- [ ] Verify Timeslices are in correct positions
      
   
  
