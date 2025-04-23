@@ -18,7 +18,6 @@ interface FixedTicksProps {
   coords?: [string,string];
 }
 
-
 export function FixedTicks({ 
   color = 'white',
   tickSize = 4,
@@ -39,7 +38,6 @@ export function FixedTicks({
       top: worldHeight / 2 + camera.position.y,
       bottom: -worldHeight / 2 + camera.position.y
     }
-    console.log("called")
     return newBounds;
   },[])
 
@@ -71,7 +69,7 @@ export function FixedTicks({
       top: worldHeight / 2 + camera.position.y,
       bottom: -worldHeight / 2 + camera.position.y
     }
-    console.log(bounds)
+    console.log(viewport)
     if (JSON.stringify(bounds) != JSON.stringify(newBounds)){ 
       setBounds(newBounds) //This was firing every frame. Changed to only fire if it's different
     }
