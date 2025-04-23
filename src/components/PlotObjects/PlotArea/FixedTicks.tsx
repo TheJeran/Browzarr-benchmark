@@ -23,7 +23,7 @@ export function FixedTicks({
   tickSize = 4,
   fontSize = 12,
   showGrid = true,
-  gridOpacity = 0.1
+  gridOpacity = 0.5
 }: FixedTicksProps) {
   const { camera, viewport, size } = useThree()
   const [bounds, setBounds] = useState<ViewportBounds>({ left: 0, right: 0, top: 0, bottom: 0 })
@@ -59,7 +59,7 @@ export function FixedTicks({
   })
 
   return (
-    <group>
+    <group >
       {/* Grid Lines */}
       {showGrid && (
         <>
@@ -108,8 +108,9 @@ export function FixedTicks({
                   color={color} 
                   opacity={gridOpacity} 
                   transparent 
-                  dashSize={0.5}
+                  dashSize={0.}
                   gapSize={0.5}
+                  linewidth={1}
                 />
               </line>
             )

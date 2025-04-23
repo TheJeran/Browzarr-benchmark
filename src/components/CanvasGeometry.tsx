@@ -2,24 +2,12 @@ import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { Canvas } from '@react-three/fiber';
 import { Center, OrbitControls, Environment } from '@react-three/drei'
-// import * as zarr from 'zarrita'
 import { variables, ZarrDataset } from '@/components/ZarrLoaderLRU'
 import { useEffect, useState, useMemo } from 'react';
-// import { useEffect, useState } from 'react';
 import { useControls } from 'leva'
-// import { Leva } from 'leva'
-// import { lightTheme } from '@/utils/levaTheme'
-import { ArrayToTexture, DefaultCube } from './Textures/TextureMakers';
-import { DataCube, PointCloud, UVCube, PlotLine } from './PlotObjects/PlotObjects';
-// import { PlaneAxis } from './PlaneAxis';
-import { PlotArea } from './PlotObjects/PlotArea/PlotArea'
-import { GetColorMapTexture } from '@/components/Textures/colormap';
+import { DataCube, PointCloud, UVCube, PlotLine, PlotArea } from './PlotObjects';
+import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from './Textures';
 
-const colormaps = ['viridis', 'plasma', 'inferno', 'magma', 'Accent', 'Blues',
-  'CMRmap', 'twilight', 'tab10', 'gist_earth', 'cividis',
-  'Spectral', 'gist_stern', 'gnuplot', 'gnuplot2', 'ocean', 'turbo',
-  'GnBu', 'afmhot', 'cubehelix', 'hot', 'spring','terrain', 'winter', 'Wistia',
-]
 
 const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
 

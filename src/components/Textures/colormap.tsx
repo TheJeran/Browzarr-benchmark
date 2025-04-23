@@ -3,6 +3,12 @@ import * as THREE from 'three';
 import { evaluate_cmap } from 'js-colormaps-es';
 // import { rgbToHex } from './updateColorbar';
 
+export const colormaps = ['viridis', 'plasma', 'inferno', 'magma', 'Accent', 'Blues',
+  'CMRmap', 'twilight', 'tab10', 'gist_earth', 'cividis',
+  'Spectral', 'gist_stern', 'gnuplot', 'gnuplot2', 'ocean', 'turbo',
+  'GnBu', 'afmhot', 'cubehelix', 'hot', 'spring','terrain', 'winter', 'Wistia',
+]
+
 export function minMax(values: number[]): { min: number | undefined, max: number | undefined } {
     // Filter out NaN values
     const validValues = values.filter(value => !isNaN(value));
