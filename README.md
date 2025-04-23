@@ -13,17 +13,18 @@ _*Not essential_
 
 ### Data
 - [ ] Add zarr url input
-- [ ] Get metadata from ds/variable
+- [x] Get metadata from ds/variable
 - [ ] Handle 2D variables
 - [ ] _Export to zarr (Like analysis data)*_
 
 ### Plot Window
-- [ ] Feed coords into and apply to ticks
-- [ ] move ticks with camera
+- [x] Feed coords into and apply to ticks
+- [x] move ticks with camera
 - [ ] Add position/coords of click/timeseries
 - [ ] _Resize the canvas/window*_
 - [ ] Selectable points with information (Value and coords)
 - [ ] Scale axis'
+- [ ] Add option to enable/disable timeseries selection to prevent misclicks
 
 ### UI
 - [ ] Breakup UI into seperate windows or sections
@@ -53,6 +54,8 @@ _*Not essential_
 
 ### Bugs/Fixes
 - [ ] Verify Timeslices are in correct positions
+- [ ] Scale the timeseries selection with plot resolution
+
      
   
  
