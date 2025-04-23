@@ -45,9 +45,11 @@ export const PlotLine = ({
 
   const geometry = useMemo(() => {
     if (!data || data.length === 0) return null;
-    const xCoords = linspace(range[0][0],range[0][1],data.length)
+    const viewWidth = window.innerWidth;
+    const viewHeight = window.innerHeight*0.15; //Use 15% here because the plot area is 15vh in CSS
+    const xCoords = linspace(-viewWidth/2,viewWidth/2,data.length)
     const normed = data.map((i) => (i - minVal) / (maxVal - minVal));
-    const points = normed.map((val,idx) => new THREE.Vector3(xCoords[idx], (val-.5)*10, 0)); //I have the vertical scale hardcoded here because of used range. Will change later with range logic
+    const points = normed.map((val,idx) => new THREE.Vector3(xCoords[idx], (val-.5)*viewHeight, 0)); //I have the vertical scale hardcoded here because of used range. Will change later with range logic
    // Choose interpolation method
    if (interpolation === 'curved') {
     const curve = new THREE.CatmullRomCurve3(points);

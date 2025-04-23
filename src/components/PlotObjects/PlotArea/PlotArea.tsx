@@ -1,7 +1,5 @@
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
-import { FixedTicks } from './FixedTicks'
-
 
 
 export function PlotArea({children}: {children: React.ReactNode}) {
@@ -18,15 +16,14 @@ export function PlotArea({children}: {children: React.ReactNode}) {
       }}
     >
       <Canvas
+      orthographic
         camera={{ position: [0, 0, 15] }}
         frameloop="demand"
       >
         {children}
-
-        <FixedTicks color="white" />
         <OrbitControls 
           enableRotate={false} 
-          enablePan={false}
+          enablePan={true}
           enableZoom={true}
           zoomSpeed={0.85}
         />

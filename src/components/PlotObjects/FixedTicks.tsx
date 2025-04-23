@@ -1,6 +1,6 @@
 import { Text } from '@react-three/drei'
 import { useThree, useFrame } from '@react-three/fiber'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 
 interface ViewportBounds {
   left: number;
@@ -25,8 +25,22 @@ export function FixedTicks({
   showGrid = true,
   gridOpacity = 0.5
 }: FixedTicksProps) {
+
   const { camera, viewport, size } = useThree()
   const [bounds, setBounds] = useState<ViewportBounds>({ left: 0, right: 0, top: 0, bottom: 0 })
+  const initialBounds = useMemo<ViewportBounds>(()=>{
+    const worldWidth = viewport.width 
+    const worldHeight = viewport.height 
+    
+    const newBounds = {
+      left: -worldWidth / 2 + camera.position.x,
+      right: worldWidth / 2 + camera.position.x,
+      top: worldHeight / 2 + camera.position.y,
+      bottom: -worldHeight / 2 + camera.position.y
+    }
+    return newBounds;
+  },[])
+
   const [zoom, setZoom] = useState(camera.zoom)
   
   const sizes = useMemo(() => {
@@ -54,7 +68,6 @@ export function FixedTicks({
       top: worldHeight / 2 + camera.position.y,
       bottom: -worldHeight / 2 + camera.position.y
     }
-
     setBounds(newBounds)
   })
 
@@ -66,7 +79,7 @@ export function FixedTicks({
           {/* Vertical grid lines */}
           {Array.from({ length: 10 }, (_, i) => {
             if (i === 0 || i === 9) return null; // Skip edges
-            const x = bounds.left + (bounds.right - bounds.left) * (i / 9)
+            const x = initialBounds.left + (initialBounds.right - initialBounds.left) * (i / 9)
             return (
               <line key={`vgrid-${i}`}>
                 <bufferGeometry>
@@ -92,7 +105,7 @@ export function FixedTicks({
           {/* Horizontal grid lines */}
           {Array.from({ length: 8 }, (_, i) => {
             if (i === 0 || i === 7) return null; // Skip edges
-            const y = bounds.bottom + (bounds.top - bounds.bottom) * (i / 7)
+            const y = initialBounds.bottom + (initialBounds.top - initialBounds.bottom) * (i / 7)
             return (
               <line key={`hgrid-${i}`}>
                 <bufferGeometry>
@@ -119,7 +132,7 @@ export function FixedTicks({
       )}
       {/* Top Edge Ticks */}
       {Array.from({ length: 10 }, (_, i) => {
-        const x = bounds.left + (bounds.right - bounds.left) * (i / 9)
+        const x = initialBounds.left + (initialBounds.right - initialBounds.left) * (i / 9)
         return (
           <group key={`top-tick-${i}`} position={[x, bounds.top, 0]}>
             <line>
@@ -136,7 +149,7 @@ export function FixedTicks({
             {i !== 0 && i !== 9 && (
               <Text
                 position={[0, sizes.tickSize/4 - sizes.labelOffset, 0]}
-                fontSize={sizes.fontSize}
+                fontSize={sizes.fontSize/zoom**2}
                 color={color}
                 anchorX="center"
                 anchorY="top"
@@ -150,8 +163,8 @@ export function FixedTicks({
       })}
 
       {/* Right Edge Ticks */}
-      {Array.from({ length: 6 }, (_, i) => {
-        const y = bounds.bottom + (bounds.top - bounds.bottom) * (i / 6)
+      {Array.from({ length: 8 }, (_, i) => {
+        const y = initialBounds.bottom + (initialBounds.top - initialBounds.bottom) * (i / 7)
         return (
           <group key={`right-tick-${i}`} position={[bounds.right, y, 0]}>
             <line>
@@ -164,10 +177,10 @@ export function FixedTicks({
               <lineBasicMaterial color={color} />
             </line>
             {/* Only show labels for non-edge ticks */}
-            {i !== 0 && i !== 6 && (
+            {i !== 0 && i !== 7 && (
               <Text
                 position={[-sizes.tickSize - sizes.labelOffset, 0, 0]}
-                fontSize={sizes.fontSize}
+                fontSize={sizes.fontSize/zoom**2}
                 color={color}
                 anchorX="right"
                 anchorY="middle"

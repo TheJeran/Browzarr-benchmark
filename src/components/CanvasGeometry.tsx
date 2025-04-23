@@ -5,7 +5,7 @@ import { Center, OrbitControls, Environment } from '@react-three/drei'
 import { variables, ZarrDataset } from '@/components/ZarrLoaderLRU'
 import { useEffect, useState, useMemo } from 'react';
 import { useControls } from 'leva'
-import { DataCube, PointCloud, UVCube, PlotLine, PlotArea } from './PlotObjects';
+import { DataCube, PointCloud, UVCube, PlotLine, PlotArea, FixedTicks } from './PlotObjects';
 import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from './Textures';
 
 
@@ -142,7 +142,7 @@ export function CanvasGeometry() {
           range={[[-100,100],[-10,10]]}
           scaling={{...valueScales,colormap}}
         />
-
+        <FixedTicks color='white' />
     </PlotArea>
     {/* <Leva theme={lightTheme} /> */}
     </>
