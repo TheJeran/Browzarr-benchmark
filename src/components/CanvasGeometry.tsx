@@ -5,7 +5,7 @@ import { Center, OrbitControls, Environment } from '@react-three/drei'
 import { variables, ZarrDataset } from '@/components/ZarrLoaderLRU'
 import { useEffect, useState, useMemo } from 'react';
 import { useControls } from 'leva'
-import { DataCube, PointCloud, UVCube, PlotLine, PlotArea } from './PlotObjects';
+import { DataCube, PointCloud, UVCube, PlotLine, PlotArea, FixedTicks } from './PlotObjects';
 import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from './Textures';
 
 
@@ -55,7 +55,6 @@ export function CanvasGeometry() {
   useEffect(()=>{
     setColormap(GetColorMapTexture(colormap,cmap,1,"#000000",0,flipCmap));
   },[cmap, colormap,flipCmap])
-
 
   //DATA LOADING
   useEffect(() => {
@@ -121,9 +120,6 @@ export function CanvasGeometry() {
         {plotter == "volume" && <>
           <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
           <UVCube shape={shape} setTimeSeriesLocs={setTimeSeriesLocs}/>
-          {/* <mesh onClick={() => setShowTimeSeries(true)}>
-            <UVCube shape={shape} setTimeSeriesLocs={setTimeSeriesLocs}/>
-          </mesh> */}
         </>}
         {/* Point Clouds Plots */}
         {plotter == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
@@ -142,7 +138,7 @@ export function CanvasGeometry() {
           range={[[-100,100],[-10,10]]}
           scaling={{...valueScales,colormap}}
         />
-
+        <FixedTicks color='white' />
     </PlotArea>
     {/* <Leva theme={lightTheme} /> */}
     </>
