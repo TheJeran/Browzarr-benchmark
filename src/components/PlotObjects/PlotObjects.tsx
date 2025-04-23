@@ -1,11 +1,11 @@
 import {  useMemo } from 'react'
-import {  useRef } from 'react'
+import {  useRef, useState } from 'react'
 import * as THREE from 'three'
-import vertexShader from '@/utils/shaders/vertex.glsl';
-import fragmentShader from '@/utils/shaders/fragment.glsl';
+import vertexShader from '@/components/Textures/shaders/vertex.glsl';
+import fragmentShader from '@/components/Textures/shaders/fragment.glsl';
 import { useControls } from 'leva';
-import pointVert from '@/utils/shaders/pointVertex.glsl';
-import pointFrag from '@/utils/shaders/pointFrag.glsl';
+import pointVert from '@/components/Textures/shaders/pointVertex.glsl';
+import pointFrag from '@/components/Textures/shaders/pointFrag.glsl';
 
 const colormaps = ['viridis', 'plasma', 'inferno', 'magma', 'Accent', 'Blues',
   'CMRmap', 'twilight', 'tab10', 'gist_earth', 'cividis',
@@ -128,8 +128,6 @@ interface TimeSeriesLocs{
   normal:THREE.Vector3
 }
 
-import { useState } from 'react'
-
 export const UVCube = ({shape,setTimeSeriesLocs} : {shape:THREE.Vector3, setTimeSeriesLocs:React.Dispatch<React.SetStateAction<TimeSeriesLocs>>} )=>{
   const [clickPoint, setClickPoint] = useState<THREE.Vector3 | null>(null);
   function TimeSeriesLocs(event: THREE.Intersection){
@@ -217,7 +215,7 @@ export const PointCloud = ({textures} : {textures:PCProps} )=>{
             const py = (y / (height - 1)) - 0.5;
             const pz = ((z / (depth - 1)) - 0.5) * depthRatio;
 
-            positions.push(px, py, pz);
+            positions.push(px*2, py*2, pz*2); //This two is to match the scale of the volume which defaults to 2x2
             values.push(value);
           }
         }
@@ -326,10 +324,6 @@ export const PlotLine = ({
     return new THREE.BufferGeometry().setFromPoints(points);
   }, [data]);
 
-  // const material = useMemo(() => {
-  //   return new THREE.LineBasicMaterial({ color, linewidth: lineWidth });
-  // }, [color, lineWidth]);
-
   const material = useMemo(() => {
     return new THREE.ShaderMaterial({
                     glslVersion: THREE.GLSL3,
@@ -361,8 +355,6 @@ export const PlotLine = ({
                     depthWrite: false,
         });
   }, [color, lineWidth]);
-
-
 
   const pointsMaterial = useMemo(() => {
     return new THREE.PointsMaterial({ 
