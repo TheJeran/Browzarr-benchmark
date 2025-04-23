@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { Canvas } from '@react-three/fiber';
-import { Center, OrbitControls, Environment, Html } from '@react-three/drei'
+import { Center, OrbitControls, Environment } from '@react-three/drei'
 // import * as zarr from 'zarrita'
 import { variables, ZarrDataset } from '@/components/ZarrLoaderLRU'
 import { useEffect, useState, useMemo } from 'react';
@@ -9,12 +9,11 @@ import { useEffect, useState, useMemo } from 'react';
 import { useControls } from 'leva'
 // import { Leva } from 'leva'
 // import { lightTheme } from '@/utils/levaTheme'
-import { ArrayToTexture, DefaultCube } from './TextureMakers';
-import { DataCube, PointCloud, UVCube, PlotLine } from './PlotObjects';
-import { TimeSeries } from './TimeSeries';
+import { ArrayToTexture, DefaultCube } from './Textures/TextureMakers';
+import { DataCube, PointCloud, UVCube, PlotLine } from './PlotObjects/PlotObjects';
 // import { PlaneAxis } from './PlaneAxis';
-import { PlotArea } from './PlotArea'
-import { GetColorMapTexture } from '@/utils/colormap';
+import { PlotArea } from './PlotObjects/PlotArea/PlotArea'
+import { GetColorMapTexture } from '@/components/Textures/colormap';
 
 const colormaps = ['viridis', 'plasma', 'inferno', 'magma', 'Accent', 'Blues',
   'CMRmap', 'twilight', 'tab10', 'gist_earth', 'cividis',
@@ -58,7 +57,6 @@ export function CanvasGeometry() {
   const [shape, setShape] = useState<THREE.Vector3 | THREE.Vector3>(new THREE.Vector3(2, 2, 2))
   const [timeSeriesLocs,setTimeSeriesLocs] = useState<TimeSeriesLocs>({uv:new THREE.Vector2(.5,.5), normal:new THREE.Vector3(0,0,1)})
   const [valueScales,setValueScales] = useState({maxVal:1,minVal:-1})
-  const [showTimeSeries,setShowTimeSeries] = useState<boolean>(false)
   const [colormap,setColormap] = useState<THREE.DataTexture>(GetColorMapTexture())
   const [timeSeries, setTimeSeries] = useState<number[]>([0]);
   const [showLoading, setShowLoading] = useState<boolean>(false);
@@ -147,37 +145,7 @@ export function CanvasGeometry() {
         <Environment preset="city" />
         
       </Canvas>
-    </div>
-    {showTimeSeries && <>
-        
-        <TimeSeries timeSeriesLocs={timeSeriesLocs} DSInfo={{variable:variable, storePath:storeURL}} scaling={{...valueScales,colormap}}/>
-        <Html
-        fullscreen
-        style={{
-          pointerEvents: 'none', // Prevents capturing mouse events
-        }}
-        >
-          {/* Stand in button to remove time-series stuff */}
-          <button style={{
-              position: 'absolute',
-              bottom: '100px',
-              right: '100px',
-              padding: '8px 16px',
-              backgroundColor: '#3498db',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              pointerEvents: 'auto'
-
-            }}
-            onClick={()=>setShowTimeSeries(false)}
-          >
-            Hide Time Series
-          </button>
-        </Html>
-      </>}
-      
+    </div>      
     <PlotArea >
         <PlotLine 
           data={timeSeries} 

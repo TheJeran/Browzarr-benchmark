@@ -1,5 +1,5 @@
 import { logoSeasFire } from "@/assets/index";
-import AboutButton from "@/components/AboutButton";
+import AboutButton from "@/components/UI/AboutButton";
 import './Navbar.css'
 
 const Navbar = () => {
