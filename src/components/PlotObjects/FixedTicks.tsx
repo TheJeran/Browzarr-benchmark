@@ -1,6 +1,8 @@
 import { Text } from '@react-three/drei'
 import { useThree, useFrame } from '@react-three/fiber'
 import { useState, useMemo } from 'react'
+import { parseTimeUnit } from '@/utils/HelperFuncs'
+
 
 interface ViewportBounds {
   left: number;
@@ -15,9 +17,23 @@ interface FixedTicksProps {
   fontSize?: number;
   showGrid?: boolean;
   gridOpacity?: number;
-  coords?: [string,string];
   xDimArray: number[];
   yRange: number[];
+  coords:{
+    first:{
+      name:string,
+      loc:number,
+      units:string
+    },  
+    second:{
+      name:string,
+      loc:number,
+      units:string
+    },      
+    plot:{
+      units: string
+    }
+  }
 }
 
 export function FixedTicks({ 
@@ -26,10 +42,24 @@ export function FixedTicks({
   fontSize = 12,
   showGrid = true,
   gridOpacity = 0.5,
-  xDimArray = [0,0,0],
+  xDimArray = [0,0,0,0,0],
   yRange = [0,1],
+  coords = {
+    first:{
+      name:"Default",
+      loc:0.5,
+      units:"Default"
+    },
+    second:{
+      name:"Default",
+      loc:0.5,
+      units:"Default"
+    },
+    plot:{
+      units:"Default"
+    }
+  }
 }: FixedTicksProps) {
-
   const { camera, viewport, size } = useThree()
   const [bounds, setBounds] = useState<ViewportBounds>({ left: 0, right: 0, top: 0, bottom: 0 })
 
@@ -39,11 +69,29 @@ export function FixedTicks({
   const xDimSize = xDimArray.length;
   const yDimSize = (yRange[1]-yRange[0])
 
+  //Converts BigInt to DateTime
+  const textArray = useMemo(()=>{
+    if (xDimArray){
+      const isBig = xDimArray.every(item => typeof item === "bigint");
+      if (isBig){
+        const unit = parseTimeUnit(coords.plot.units);
+        console.log(unit)
+        const timeStrings = []
+        for (let i = 0 ; i < xDimArray.length; i++){
+          const timeStamp = Number(xDimArray[i])*unit
+          timeStrings.push(new Date(timeStamp).toDateString())
+        }
+        return timeStrings
+      }
+      return xDimArray.map(val => String(val))
+    }
+  },[xDimArray,coords])
+
   const initialBounds = useMemo<ViewportBounds>(()=>{
-    const worldWidth = viewport.width 
-    const worldHeight = viewport.height 
+  const worldWidth = viewport.width 
+  const worldHeight = viewport.height 
     
-    const newBounds = {
+  const newBounds = {
       left: -worldWidth / 2 + camera.position.x,
       right: worldWidth / 2 + camera.position.x,
       top: worldHeight / 2 + camera.position.y,
@@ -66,6 +114,8 @@ export function FixedTicks({
 
   // Update bounds when camera moves
   // TODO: update bounds when camera zooms
+
+
 
   useFrame(() => {
     if (camera.zoom !== zoom) {
@@ -147,6 +197,7 @@ export function FixedTicks({
       {Array.from({ length: xTickCount }, (_, i) => {
         const x = initialBounds.left + (initialBounds.right - initialBounds.left) * (i / (xTickCount-1))
         const normX = x/(initialBounds.right - initialBounds.left)+.5;
+
         return (
           <group key={`top-tick-${i}`} position={[x, bounds.top, 0]}>
             <line>
@@ -168,8 +219,7 @@ export function FixedTicks({
                 anchorX="center"
                 anchorY="top"
               >
-                {Math.round(normX*xDimSize).toFixed()}
-                {/* do x.toString() when is not a number */}
+                {textArray?.[Math.round(normX*xDimSize)] ?? ''}
               </Text>
             )}
           </group>
@@ -206,6 +256,7 @@ export function FixedTicks({
           </group>
         )
       })}
+      {/* The coordinates don't need to be here. I will move them up as they are tied inside the Canvas here. And they don't need to be here.  */}
     </group>
   )
 }
