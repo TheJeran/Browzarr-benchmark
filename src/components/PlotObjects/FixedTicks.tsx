@@ -65,7 +65,7 @@ export function FixedTicks({
   const { camera, size } = useThree()
   const [bounds, setBounds] = useState<ViewportBounds>({ left: 0, right: 0, top: 0, bottom: 0 })
 
-  const initialHeight = useMemo(()=>height,[])
+  const initialHeight = useMemo(()=>(window.innerHeight-height-50),[])
   const [heightRatio,setHeightRatio] = useState<number>(1)
 
   const xTickCount = 10;
@@ -141,7 +141,10 @@ export function FixedTicks({
 
   useEffect(()=>{
     if(height){
-      setHeightRatio(initialHeight/height)
+      console.log(height)
+      const newHeight = (window.innerHeight-height-50)
+      console.log(heightRatio)
+      setHeightRatio(newHeight/initialHeight)
     }
   },[height])
   return (
@@ -178,7 +181,7 @@ export function FixedTicks({
           {/* Horizontal grid lines */}
           {Array.from({ length: yTickCount }, (_, i) => {
             if (i === 0 || i === yTickCount-1) return null; // Skip edges
-            const y = initialBounds.bottom * heightRatio + (initialBounds.top - initialBounds.bottom) * (i / (yTickCount-1)) * heightRatio
+            const y = (initialBounds.bottom  + (initialBounds.top - initialBounds.bottom) * (i / (yTickCount-1))) * heightRatio
             return (
               <line key={`hgrid-${i}`}>
                 <bufferGeometry>
@@ -238,7 +241,7 @@ export function FixedTicks({
 
       {/* Right Edge Ticks */}
       {Array.from({ length: yTickCount }, (_, i) => {
-        const y = initialBounds.bottom * heightRatio + (initialBounds.top - initialBounds.bottom) * (i / (yTickCount-1)) * heightRatio
+        const y = (initialBounds.bottom  + (initialBounds.top - initialBounds.bottom) * (i / (yTickCount-1))) * heightRatio
         const normY = y/(initialBounds.top - initialBounds.bottom)+.5
         return (
           <group key={`right-tick-${i}`} position={[bounds.right, y, 0]}>
