@@ -21,10 +21,13 @@ _*Not essential_
 - [x] Feed coords into and apply to ticks
 - [x] move ticks with camera
 - [ ] Add position/coords of click/timeseries
-- [ ] _Resize the canvas/window*_
+- [x] _Resize the canvas/window*_
 - [ ] Selectable points with information (Value and coords)
 - [ ] Scale axis'
 - [ ] Add option to enable/disable timeseries selection to prevent misclicks
+
+### Visuals
+- [ ] _Highlight series column in volume*_
 
 ### UI
 - [ ] Breakup UI into seperate windows or sections
@@ -51,10 +54,14 @@ _*Not essential_
 ### Misc.
 - [ ] Export view as image (w/ and w/out background)
 - [ ] _Animations?*_
+- [ ] _Flip time axis so looking past to future instead of future to past*_
 
 ### Bugs/Fixes
-- [ ] Verify Timeslices are in correct positions
+- [x] Verify Timeslices are in correct positions
 - [ ] Scale the timeseries selection with plot resolution
+- [ ] Vertical scaling on resize is off between line and horizontal bars
+- [ ] Grid lines cull when centers are out of view
+
 
      
   
