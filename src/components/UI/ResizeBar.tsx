@@ -15,9 +15,7 @@ const ResizeBar = ({height,setHeight}:{height:number,setHeight:React.Dispatch<Re
       const handleMouseMove = (e: MouseEvent) => {
         if (isResizing) {
           e.preventDefault();
-          const vertPixels = window.innerHeight-e.clientY
-          const vh = Math.round(vertPixels/window.innerHeight*100)
-          setHeight(vh)
+          setHeight(e.clientY)
         }
       };
     
@@ -43,7 +41,7 @@ const ResizeBar = ({height,setHeight}:{height:number,setHeight:React.Dispatch<Re
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
             style={{
-              bottom:`${height}vh`,
+              top:`${height}px`,
             }}
             
     />

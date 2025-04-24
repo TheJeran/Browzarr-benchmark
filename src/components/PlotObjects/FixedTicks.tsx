@@ -1,6 +1,6 @@
 import { Text } from '@react-three/drei'
 import { useThree, useFrame } from '@react-three/fiber'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { parseTimeUnit } from '@/utils/HelperFuncs'
 
 
@@ -33,13 +33,14 @@ interface FixedTicksProps {
     plot:{
       units: string
     }
-  }
+  };
+  height:number
 }
 
 export function FixedTicks({ 
   color = 'white',
   tickSize = 4,
-  fontSize = 12,
+  fontSize = 18,
   showGrid = true,
   gridOpacity = 0.5,
   xDimArray = [0,0,0,0,0],
@@ -58,10 +59,14 @@ export function FixedTicks({
     plot:{
       units:"Default"
     }
-  }
+  },
+  height
 }: FixedTicksProps) {
-  const { camera, viewport, size } = useThree()
+  const { camera, size } = useThree()
   const [bounds, setBounds] = useState<ViewportBounds>({ left: 0, right: 0, top: 0, bottom: 0 })
+
+  const initialHeight = useMemo(()=>height,[])
+  const [heightRatio,setHeightRatio] = useState<number>(1)
 
   const xTickCount = 10;
   const yTickCount = 8;
@@ -88,8 +93,8 @@ export function FixedTicks({
   },[xDimArray,coords])
 
   const initialBounds = useMemo<ViewportBounds>(()=>{
-  const worldWidth = viewport.width 
-  const worldHeight = viewport.height 
+  const worldWidth = window.innerWidth
+  const worldHeight = (window.innerHeight-height-48)
     
   const newBounds = {
       left: -worldWidth / 2 + camera.position.x,
@@ -104,13 +109,13 @@ export function FixedTicks({
   
   const sizes = useMemo(() => {
     // Convert from pixels to scene units
-    const pixelsPerUnit = size.height / (viewport.height * camera.zoom)
+    const pixelsPerUnit = size.height / ((window.innerHeight-height-50) * camera.zoom )
     return {
       tickSize: tickSize / pixelsPerUnit,
       fontSize: fontSize / pixelsPerUnit,
       labelOffset: tickSize / pixelsPerUnit
     }
-  }, [size.height, viewport.height, camera.zoom, tickSize, fontSize])
+  }, [camera.zoom,tickSize, fontSize])
 
   // Update bounds when camera moves
   // TODO: update bounds when camera zooms
@@ -122,7 +127,7 @@ export function FixedTicks({
       setZoom(camera.zoom) // this is not working properly
     }
     const worldWidth = window.innerWidth / camera.zoom
-    const worldHeight = window.innerHeight*0.15 / camera.zoom
+    const worldHeight = (window.innerHeight-height-50) / camera.zoom
     const newBounds = {
       left: -worldWidth / 2 + camera.position.x,
       right: worldWidth / 2 + camera.position.x,
@@ -134,6 +139,11 @@ export function FixedTicks({
     }
   })
 
+  useEffect(()=>{
+    if(height){
+      setHeightRatio(initialHeight/height)
+    }
+  },[height])
   return (
     <group >
       {/* Grid Lines */}
@@ -168,7 +178,7 @@ export function FixedTicks({
           {/* Horizontal grid lines */}
           {Array.from({ length: yTickCount }, (_, i) => {
             if (i === 0 || i === yTickCount-1) return null; // Skip edges
-            const y = initialBounds.bottom + (initialBounds.top - initialBounds.bottom) * (i / (yTickCount-1))
+            const y = initialBounds.bottom * heightRatio + (initialBounds.top - initialBounds.bottom) * (i / (yTickCount-1)) * heightRatio
             return (
               <line key={`hgrid-${i}`}>
                 <bufferGeometry>
@@ -228,7 +238,7 @@ export function FixedTicks({
 
       {/* Right Edge Ticks */}
       {Array.from({ length: yTickCount }, (_, i) => {
-        const y = initialBounds.bottom + (initialBounds.top - initialBounds.bottom) * (i / (yTickCount-1))
+        const y = initialBounds.bottom * heightRatio + (initialBounds.top - initialBounds.bottom) * (i / (yTickCount-1)) * heightRatio
         const normY = y/(initialBounds.top - initialBounds.bottom)+.5
         return (
           <group key={`right-tick-${i}`} position={[bounds.right, y, 0]}>

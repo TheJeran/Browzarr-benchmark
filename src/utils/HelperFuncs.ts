@@ -49,7 +49,6 @@ export function parseTimeUnit(units: string | undefined): number {
   
 export function parseLoc(input:number, units: string | undefined) {
     if (!units){
-        console.log("No units")
         return input
     }
     if (typeof(input) == 'bigint'){

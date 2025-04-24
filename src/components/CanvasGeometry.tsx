@@ -7,7 +7,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useControls } from 'leva'
 import { DataCube, PointCloud, UVCube, PlotLine, PlotArea, FixedTicks } from './PlotObjects';
 import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from './Textures';
-import { Metadata } from './UI';
+import { Metadata, ResizeBar } from './UI';
 
 const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
 
@@ -15,6 +15,18 @@ interface TimeSeriesLocs{
   uv:THREE.Vector2;
   normal:THREE.Vector3
 }
+interface Coord {
+  name: string; 
+  loc: number;  
+  units: string;
+}
+
+interface DimCoords {
+  first: Coord;
+  second: Coord;
+  plot: Pick<Coord, "units">; // Only units
+}
+
 
 export function CanvasGeometry() {
   const { variable, plotter, cmap, flipCmap } = useControls({ 
@@ -55,7 +67,9 @@ export function CanvasGeometry() {
   const [dimUnits,setDimUnits] = useState<string[]>(["Default"]);
   const [dimCoords, setDimCoords] = useState<Object | null>(null);
   const [plotDim,setPlotDim] = useState<number>(0)
-  
+  const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.15)-48))
+
+
   const ZarrDS = useMemo(()=>new ZarrDataset(storeURL),[])
 
   useEffect(()=>{
@@ -185,15 +199,17 @@ export function CanvasGeometry() {
 
     {metadata && <Metadata data={metadata} /> }
 
-    <PlotArea coords={dimCoords as { first: { name: string; loc: number; units: string }; second: { name: string; loc: number; units: string }; plot: { units: string } }}>
+    <ResizeBar height={height} setHeight={setHeight} />
+    <PlotArea height={height} coords={dimCoords as DimCoords }>
         <PlotLine 
           data={timeSeries} 
           lineWidth={5}
           color='orangered'
           range={[[-100,100],[-10,10]]}
           scaling={{...valueScales,colormap}}
+          height={height}
         />
-        {dimCoords && <FixedTicks color='white' xDimArray={dimArrays[plotDim]} yRange={[valueScales.minVal,valueScales.maxVal]} coords={dimCoords as { first: { name: string; loc: number; units: string }; second: { name: string; loc: number; units: string }; plot: { units: string } }}/>}
+        {dimCoords && <FixedTicks color='white' xDimArray={dimArrays[plotDim]} yRange={[valueScales.minVal,valueScales.maxVal]} coords={dimCoords as DimCoords} height={height}/>}
     </PlotArea>
     {/* <Leva theme={lightTheme} /> */}
     </>

@@ -20,7 +20,7 @@ interface coords{
 }
 
 
-export function PlotArea({children,coords}: {children: React.ReactNode,coords:coords}) {
+export function PlotArea({children,coords,height}: {children: React.ReactNode,coords:coords,height:number}) {
   return (
     <div 
       className='plot-canvas'
@@ -29,7 +29,7 @@ export function PlotArea({children,coords}: {children: React.ReactNode,coords:co
         bottom: '48px', // Account for footer
         left: 0,
         width: '100%',
-        height: '15vh', // 15% of viewport height
+        top: `${height}px`, // 15% of viewport height
         background: '#00000099'
       }}
     >
