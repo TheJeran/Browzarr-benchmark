@@ -11,7 +11,8 @@ interface PlotLineProps {
   pointColor?: string;
   interpolation?: 'linear' | 'curved';
   range:[[number,number],[number,number]]
-  scaling:scaling
+  scaling:scaling,
+  height:number,
 }
 
 interface scaling{
@@ -19,6 +20,7 @@ interface scaling{
     minVal:number,
     colormap:THREE.DataTexture
 }
+
 export const PlotLine = ({ 
   data, 
   color = 'white', 
@@ -28,7 +30,8 @@ export const PlotLine = ({
   pointColor,
   interpolation = 'linear',
   range = [[-100,100],[-10,10]], //xmin,xmax,ymin,ymax
-  scaling
+  scaling,
+  height
 }: PlotLineProps) => {
 
   //LinSpace to take up entire extent
@@ -42,11 +45,11 @@ export const PlotLine = ({
   function duplicateArray(arr:number[], times:number) {
     return arr.flatMap(item => Array(times).fill(item));
   }
-
+  
   const geometry = useMemo(() => {
     if (!data || data.length === 0) return null;
     const viewWidth = window.innerWidth;
-    const viewHeight = window.innerHeight*0.15; //Use 15% here because the plot area is 15vh in CSS
+    const viewHeight = (window.innerHeight-height-48); //Use 15% here because the plot area is 15vh in CSS
     const xCoords = linspace(-viewWidth/2,viewWidth/2,data.length)
     const normed = data.map((i) => (i - minVal) / (maxVal - minVal));
     const points = normed.map((val,idx) => new THREE.Vector3(xCoords[idx], (val-.5)*viewHeight, 0)); //I have the vertical scale hardcoded here because of used range. Will change later with range logic
@@ -62,7 +65,7 @@ export const PlotLine = ({
     geometry.setAttribute('normed', new THREE.Float32BufferAttribute(normed, 1));
     return geometry
   }
-}, [data, interpolation]);
+}, [data, interpolation, height]);
 
   const pointsGeometry = useMemo(() => {
     if (!data || data.length === 0) return null;

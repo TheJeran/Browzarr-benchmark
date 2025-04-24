@@ -30,45 +30,8 @@ export async function GetVariables(storePath: string){
 // type NumericDataType = zarr.NumberDataType | zarr.BigintDataType;
 // ?TODO: support more types, see https://github.com/manzt/zarrita.js/blob/0e809ef7cd4d1703e2112227e119b8b6a2cc9804/packages/zarrita/src/metadata.ts#L50
 
-interface ZarrArrayResult {
-    data: Float32Array | Float64Array | Int32Array | Uint32Array
-    shape: number[];
-    dtype: string;
-}
 
-export async function GetArray(storePath: string, variable: string): Promise<ZarrArrayResult> {
-    const d_store = zarr.tryWithConsolidated(
-        new zarr.FetchStore(storePath)
-    );
-
-    const group = await d_store.then(store => zarr.open(store, {kind: 'group'}))
-	
-    const outVar = await zarr.open(group.resolve(variable), {kind:"array"})
-    // Type check using zarr.Array.is
-    if (outVar.is("number") || outVar.is("bigint")) {
-        const chunk = await zarr.get(outVar)
-        const typedArray = new Float32Array(chunk.data);
-		console.log(chunk);
-       // TypeScript will now infer the correct numeric type
-        return {
-            data: typedArray,
-            shape: chunk.shape,
-            dtype: outVar.dtype
-        }
-    } else {
-        throw new Error(`Unsupported data type: Only numeric arrays are supported. Got: ${outVar.dtype}`)
-    }}
-
-interface GetTimeSeries{
-	TimeSeriesObject:{
-	uv:THREE.Vector2,
-	normal:THREE.Vector3,
-	storePath:string,
-	variable:string
-	}
-}
-
-function parseUVCoords({normal,uv}:{normal:THREE.Vector3,uv:THREE.Vector2}){
+export function parseUVCoords({normal,uv}:{normal:THREE.Vector3,uv:THREE.Vector2}){
 	switch(true){
 		case normal.z === 1:
 			return [null,uv.y,uv.x]
@@ -79,28 +42,11 @@ function parseUVCoords({normal,uv}:{normal:THREE.Vector3,uv:THREE.Vector2}){
 		case normal.x === -1:
 			return [1-uv.x,uv.y,null]
 		case normal.y === 1:
-			return [1-uv.x,null,uv.y]
+			return [1-uv.y,null,uv.x]
 		default:
 			return [0,0,0]
 	}
 }
-
-export async function GetTimeSeries({TimeSeriesObject}:GetTimeSeries){
-	const {uv,normal,variable, storePath} = TimeSeriesObject
-	const d_store = zarr.tryWithConsolidated(
-		new zarr.FetchStore(storePath)
-	);
-	const group = await d_store.then(store => zarr.open(store, {kind: 'group'}))
-	const outVar = await zarr.open(group.resolve(variable), {kind:"array"})
-	const shape = outVar.shape;
-	//This is a complicated logic check but it works bb
-	const sliceSize = parseUVCoords({normal,uv})
-	const slice = sliceSize.map((value, index) =>
-		value === null || shape[index] === null ? null : value * shape[index]);
-	const arr = await zarr.get(outVar,slice)
-	return arr
-}
-
 
 interface TimeSeriesInfo{
 	uv:THREE.Vector2,
@@ -168,7 +114,9 @@ export class ZarrDataset{
 		for (const dim of meta._ARRAY_DIMENSIONS as string[]){ //Put the dimension arrays in the cache to access later
 			if (!this.cache.has(dim)){
 				const dimArray = await zarr.open(group.resolve(dim), {kind:"array"}).then((result)=>zarr.get(result));
+				const dimMeta = await zarr.open(group.resolve(dim), {kind:"array"}).then((result)=>result.attrs)
 				this.cache.set(dim,dimArray.data);
+				this.cache.set(`${dim}_meta`,dimMeta)
 			}
 			dims.push(dim)
 		}
@@ -178,12 +126,15 @@ export class ZarrDataset{
 
 	GetDimArrays(){
 		const dimArr = [];
+		const dimMetas = []
 
 		for (const dim of this.dimNames){
 			dimArr.push(this.cache.get(dim));
+			dimMetas.push(this.cache.get(`${dim}_meta`))
 		}
-		return dimArr;
+		return [dimArr,dimMetas];
 	}
+
 
 	async GetTimeSeries(TimeSeriesInfo:TimeSeriesInfo){
 		const {uv,normal} = TimeSeriesInfo

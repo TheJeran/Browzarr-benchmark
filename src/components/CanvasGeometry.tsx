@@ -2,18 +2,29 @@ import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { Canvas } from '@react-three/fiber';
 import { Center, OrbitControls, Environment } from '@react-three/drei'
-import { variables, ZarrDataset } from '@/components/ZarrLoaderLRU'
+import { variables, ZarrDataset, parseUVCoords } from '@/components/ZarrLoaderLRU'
 import { useEffect, useState, useMemo } from 'react';
 import { useControls } from 'leva'
 import { DataCube, PointCloud, UVCube, PlotLine, PlotArea, FixedTicks } from './PlotObjects';
 import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from './Textures';
-import { Metadata } from './UI';
+import { Metadata, ResizeBar } from './UI';
 
 const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
 
 interface TimeSeriesLocs{
   uv:THREE.Vector2;
   normal:THREE.Vector3
+}
+interface Coord {
+  name: string; 
+  loc: number;  
+  units: string;
+}
+
+interface DimCoords {
+  first: Coord;
+  second: Coord;
+  plot: Pick<Coord, "units">; // Only units
 }
 
 
@@ -48,10 +59,16 @@ export function CanvasGeometry() {
   const [colormap,setColormap] = useState<THREE.DataTexture>(GetColorMapTexture())
   const [timeSeries, setTimeSeries] = useState<number[]>([0]);
   const [showLoading, setShowLoading] = useState<boolean>(false);
-  const [metadata,setMetadata] = useState<unknown>(null)
-
+  const [metadata,setMetadata] = useState<Object[]>([{},{}])
+  
+  //Timeseries Plotting Information
   const [dimArrays,setDimArrays] = useState([[0],[0],[0]])
+  const [dimNames,setDimNames] = useState<string[]>(["default"])
+  const [dimUnits,setDimUnits] = useState<string[]>(["Default"]);
+  const [dimCoords, setDimCoords] = useState<Object | null>(null);
   const [plotDim,setPlotDim] = useState<number>(0)
+  const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.15)-48))
+
 
   const ZarrDS = useMemo(()=>new ZarrDataset(storeURL),[])
 
@@ -88,7 +105,22 @@ export function CanvasGeometry() {
         setShape(new THREE.Vector3(2, shapeRatio, 2));
         setShowLoading(false)
       })
-      ZarrDS.GetAttributes(variable).then((result)=>{setMetadata(result);setDimArrays(ZarrDS.GetDimArrays())})
+      ZarrDS.GetAttributes(variable).then((result)=>{
+        setMetadata(result);
+        const [dimArrs, dimMetas] = ZarrDS.GetDimArrays()
+        setDimArrays(dimArrs)
+        const dimNames = []
+        const tempDimUnits = []
+        for (const meta of dimMetas){
+          dimNames.push(meta.standard_name)
+          tempDimUnits.push(meta.units)
+        }
+        setDimNames(dimNames)
+        setDimUnits(tempDimUnits)
+        
+
+
+      })
 
     }
       else{
@@ -98,23 +130,45 @@ export function CanvasGeometry() {
           setTexture(texture);
         }
         setShape(new THREE.Vector3(2, 2, 2))
-        setMetadata(null)
+        setMetadata([{}])
       }
   }, [variable])
 
   //TIMESERIES
   useEffect(()=>{
-    if(ZarrDS){
+    if(ZarrDS && metadata){
       ZarrDS.GetTimeSeries(timeSeriesLocs).then((e)=> setTimeSeries(e))
       const plotDim = (timeSeriesLocs.normal.toArray()).map((val, idx) => {
         if (Math.abs(val) > 0) {
           return idx;
         }
         return null;}).filter(idx => idx !== null);
-        setPlotDim(2-plotDim[0])
+      setPlotDim(2-plotDim[0]) //I think this 2 is only if there are 3-dims. Need to rework the logic
+
+      const coordUV = parseUVCoords({normal:timeSeriesLocs.normal,uv:timeSeriesLocs.uv})
+      let dimCoords = coordUV.map((val,idx)=>val ? dimArrays[idx][Math.round(val*dimArrays[idx].length)] : null)
+      const thisDimNames = dimNames.filter((_,idx)=> dimCoords[idx] !== null)
+      const thisDimUnits = dimUnits.filter((_,idx)=> dimCoords[idx] !== null)
+      console.log(thisDimNames)
+      dimCoords = dimCoords.filter(val => val !== null)
+      const dimObj = {
+        first:{
+          name:thisDimNames[0],
+          loc:dimCoords[0],
+          units:thisDimUnits[0]
+        },
+        second:{
+          name:thisDimNames[1],
+          loc:dimCoords[1],
+          units:thisDimUnits[1]
+        },
+        plot:{
+          units:dimUnits[2-plotDim[0]]
+        }
+      }
+      setDimCoords(dimObj)
     }
   },[timeSeriesLocs])
-
   return (
     <>
     <div className='messages'>
@@ -145,15 +199,17 @@ export function CanvasGeometry() {
 
     {metadata && <Metadata data={metadata} /> }
 
-    <PlotArea >
+    <ResizeBar height={height} setHeight={setHeight} />
+    <PlotArea height={height} coords={dimCoords as DimCoords }>
         <PlotLine 
           data={timeSeries} 
           lineWidth={5}
           color='orangered'
           range={[[-100,100],[-10,10]]}
           scaling={{...valueScales,colormap}}
+          height={height}
         />
-        <FixedTicks color='white' xDimArray={dimArrays[plotDim]} yRange={[valueScales.minVal,valueScales.maxVal]}/>
+        {dimCoords && <FixedTicks color='white' xDimArray={dimArrays[plotDim]} yRange={[valueScales.minVal,valueScales.maxVal]} coords={dimCoords as DimCoords} height={height}/>}
     </PlotArea>
     {/* <Leva theme={lightTheme} /> */}
     </>
