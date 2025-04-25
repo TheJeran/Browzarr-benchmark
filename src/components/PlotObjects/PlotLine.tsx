@@ -87,9 +87,8 @@ function PlotPoints({ points, pointSize, pointColor }: { points: THREE.Vector3[]
 
 export const PlotLine = ({ 
   data, 
-  color = 'white', 
-  lineWidth = 5,
-  showPoints = true,
+  lineWidth = 20,
+  showPoints = false,
   pointSize = 5,
   pointColor = "white",
   interpolation = 'linear',
@@ -172,7 +171,7 @@ export const PlotLine = ({
                     linewidth:lineWidth,
                     depthWrite: false,
         });
-  }, [color, lineWidth]);
+  }, [lineWidth]);
 
   // const pointsMaterial = useMemo(() => {
   //   return new THREE.PointsMaterial({ 

@@ -1,6 +1,6 @@
-import { Text } from '@react-three/drei'
+import { Text, OrbitControls } from '@react-three/drei'
 import { useThree, useFrame } from '@react-three/fiber'
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { parseTimeUnit } from '@/utils/HelperFuncs'
 
 
@@ -62,7 +62,7 @@ export function FixedTicks({
   },
   height
 }: FixedTicksProps) {
-  const { camera, size } = useThree()
+  const { camera } = useThree()
   const [bounds, setBounds] = useState<ViewportBounds>({ left: 0, right: 0, top: 0, bottom: 0 })
 
   const initialHeight = useMemo(()=>(window.innerHeight-height-50),[])
@@ -108,13 +108,13 @@ export function FixedTicks({
   
   const sizes = useMemo(() => {
     // Convert from pixels to scene units
-    const pixelsPerUnit = size.height / ((window.innerHeight-height-50) * camera.zoom )
+    const pixelsPerUnit = 1 / camera.zoom 
     return {
-      tickSize: tickSize / pixelsPerUnit,
+      tickSize: tickSize * pixelsPerUnit,
       fontSize: fontSize / pixelsPerUnit,
-      labelOffset: tickSize / pixelsPerUnit
+      labelOffset: tickSize * pixelsPerUnit
     }
-  }, [camera.zoom,tickSize, fontSize])
+  }, [camera.zoom, tickSize, fontSize])
 
   // Update bounds when camera moves
   // TODO: update bounds when camera zooms
@@ -144,6 +144,34 @@ export function FixedTicks({
       setHeightRatio(newHeight/initialHeight)
     }
   },[height])
+
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // @ts-ignore
+  const cameraRef = useRef<OrbitControls | null>(null)
+
+  //This reset the camera position when the window is rescaled
+  useEffect(() => {
+    // Clear existing timeout if height changes
+    if (timeoutRef.current){
+      clearTimeout(timeoutRef.current);
+    }
+    if (cameraRef.current){
+          // Set a timeout for 0.5 seconds
+      timeoutRef.current = setTimeout(() => {
+      if (cameraRef.current) {
+        cameraRef.current.reset();
+      }
+      }, 100);
+    }
+    // Cleanup timeout when component unmounts or height changes
+    return () => {
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [height]);
+
+
   return (
     <group >
       {/* Grid Lines */}
@@ -154,24 +182,25 @@ export function FixedTicks({
             if (i === 0 || i === xTickCount-1) return null; // Skip edges
             const x = initialBounds.left + (initialBounds.right - initialBounds.left) * (i / (xTickCount-1))
             return (
-              <line key={`vgrid-${i}`}>
-                <bufferGeometry>
-                  <float32BufferAttribute
-                    attach="attributes-position"
-                    args={[new Float32Array([
-                      x, bounds.top, 0,
-                      x, bounds.bottom, 0
-                    ]), 3]}
+                <line key={`vgrid-${i}`} >
+                  <bufferGeometry >
+                    <float32BufferAttribute
+                      attach="attributes-position"
+                      args={[new Float32Array([
+                        x, bounds.top, 0,
+                        x, bounds.bottom, 0
+                      ]), 3]}
+                    />
+                  </bufferGeometry >
+                  <lineDashedMaterial 
+                    color={color} 
+                    opacity={gridOpacity} 
+                    transparent 
+                    dashSize={0.5}
+                    gapSize={0.5}
+                    
                   />
-                </bufferGeometry>
-                <lineDashedMaterial 
-                  color={color} 
-                  opacity={gridOpacity} 
-                  transparent 
-                  dashSize={0.5}
-                  gapSize={0.5}
-                />
-              </line>
+                </line>
             )
           })}
 
@@ -180,25 +209,25 @@ export function FixedTicks({
             if (i === 0 || i === yTickCount-1) return null; // Skip edges
             const y = (initialBounds.bottom  + (initialBounds.top - initialBounds.bottom) * (i / (yTickCount-1))) * heightRatio
             return (
-              <line key={`hgrid-${i}`}>
-                <bufferGeometry>
-                  <float32BufferAttribute
-                    attach="attributes-position"
-                    args={[new Float32Array([
-                      bounds.left, y, 0,
-                      bounds.right, y, 0
-                    ]), 3]}
+                <line key={`hgrid-${i}`} >
+                  <bufferGeometry>
+                    <float32BufferAttribute
+                      attach="attributes-position"
+                      args={[new Float32Array([
+                        bounds.left, y, 0,
+                        bounds.right, y, 0
+                      ]), 3]}
+                    />
+                  </bufferGeometry>
+                  <lineDashedMaterial 
+                    color={color} 
+                    opacity={gridOpacity} 
+                    transparent 
+                    dashSize={0.}
+                    gapSize={0.5}
+                    linewidth={1}
                   />
-                </bufferGeometry>
-                <lineDashedMaterial 
-                  color={color} 
-                  opacity={gridOpacity} 
-                  transparent 
-                  dashSize={0.}
-                  gapSize={0.5}
-                  linewidth={1}
-                />
-              </line>
+                </line>
             )
           })}
         </>
@@ -207,7 +236,6 @@ export function FixedTicks({
       {Array.from({ length: xTickCount }, (_, i) => {
         const x = initialBounds.left + (initialBounds.right - initialBounds.left) * (i / (xTickCount-1))
         const normX = x/(initialBounds.right - initialBounds.left)+.5;
-
         return (
           <group key={`top-tick-${i}`} position={[x, bounds.top, 0]}>
             <line>
@@ -266,6 +294,14 @@ export function FixedTicks({
           </group>
         )
       })}
+      <OrbitControls 
+        ref={cameraRef}
+        enableRotate={false} 
+        enablePan={true}
+        enableZoom={true}
+        zoomSpeed={0.85}
+        maxDistance={(bounds.right-bounds.left)/2}
+      />
       {/* The coordinates don't need to be here. I will move them up as they are tied inside the Canvas here. And they don't need to be here.  */}
     </group>
   )
