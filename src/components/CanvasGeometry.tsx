@@ -27,7 +27,6 @@ interface DimCoords {
   plot: Pick<Coord, "units">; // Only units
 }
 
-
 export function CanvasGeometry() {
   const { variable, plotter, cmap, flipCmap } = useControls({ 
     variable: { 
@@ -117,9 +116,6 @@ export function CanvasGeometry() {
         }
         setDimNames(dimNames)
         setDimUnits(tempDimUnits)
-        
-
-
       })
 
     }
@@ -149,7 +145,6 @@ export function CanvasGeometry() {
       let dimCoords = coordUV.map((val,idx)=>val ? dimArrays[idx][Math.round(val*dimArrays[idx].length)] : null)
       const thisDimNames = dimNames.filter((_,idx)=> dimCoords[idx] !== null)
       const thisDimUnits = dimUnits.filter((_,idx)=> dimCoords[idx] !== null)
-      console.log(thisDimNames)
       dimCoords = dimCoords.filter(val => val !== null)
       const dimObj = {
         first:{
@@ -203,14 +198,13 @@ export function CanvasGeometry() {
     <PlotArea height={height} coords={dimCoords as DimCoords }>
         <PlotLine 
           data={timeSeries} 
-          lineWidth={5}
-          color='orangered'
-          range={[[-100,100],[-10,10]]}
+          lineWidth={20}
           scaling={{...valueScales,colormap}}
           height={height}
         />
         {dimCoords && <FixedTicks color='white' xDimArray={dimArrays[plotDim]} yRange={[valueScales.minVal,valueScales.maxVal]} coords={dimCoords as DimCoords} height={height}/>}
     </PlotArea>
+   
     {/* <Leva theme={lightTheme} /> */}
     </>
   )

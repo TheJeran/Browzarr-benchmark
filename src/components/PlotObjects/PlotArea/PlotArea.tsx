@@ -1,5 +1,4 @@
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
 import { parseLoc } from '@/utils/HelperFuncs'
 import './PlotArea.css'
 
@@ -35,16 +34,11 @@ export function PlotArea({children,coords,height}: {children: React.ReactNode,co
     >
       <Canvas
       orthographic
-        camera={{ position: [0, 0, 15] }}
+        camera={{ position: [0, 0, 40] }}
         frameloop="demand"
       >
         {children}
-        <OrbitControls 
-          enableRotate={false} 
-          enablePan={true}
-          enableZoom={true}
-          zoomSpeed={0.85}
-        />
+
       </Canvas>
       { //Only show coords when coords exist
         coords && coords.first.name !== 'Default' && 
@@ -55,7 +49,6 @@ export function PlotArea({children,coords,height}: {children: React.ReactNode,co
           <b>{`${coords['second'].name}: `}</b>
           {`${parseLoc(coords['second'].loc,coords['second'].units)}`}
         </div>
-
       } 
     </div>
   )
