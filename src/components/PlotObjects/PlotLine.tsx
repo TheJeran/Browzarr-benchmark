@@ -1,6 +1,7 @@
 
 import * as THREE from 'three'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+
 
 interface PlotLineProps {
   data: number[];
@@ -10,7 +11,6 @@ interface PlotLineProps {
   pointSize?: number;
   pointColor?: string;
   interpolation?: 'linear' | 'curved';
-  range:[[number,number],[number,number]]
   scaling:scaling,
   height:number,
 }
@@ -21,15 +21,78 @@ interface scaling{
     colormap:THREE.DataTexture
 }
 
+function PlotPoints({ points, pointSize, pointColor }: { points: THREE.Vector3[]; pointSize: number; pointColor:string }) {
+  const ref = useRef<THREE.InstancedMesh | null>(null)
+  const count = points.length
+  const [_rerender,setrerender] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (ref.current){
+      const dummy = new THREE.Object3D()
+      for (let i = 0 ; i< count; i++){
+        const position = points[i].toArray()
+        dummy.position.set(...position)
+        dummy.updateMatrix()
+        ref.current.setMatrixAt(i, dummy.matrix)
+      }
+      ref.current.instanceMatrix.needsUpdate = true
+    }
+  }, [points])
+  const geometry = useMemo(() => new THREE.SphereGeometry(pointSize), [])
+  const material = useMemo(()=> new THREE.MeshBasicMaterial({color:pointColor}),[])
+
+  function scalePoint(e: THREE.Event & { instanceId: number }) {
+    if (ref.current) {
+      const dummy = new THREE.Object3D();
+      const matrix = new THREE.Matrix4();
+      ref.current.getMatrixAt(e.instanceId, matrix);
+      const position = new THREE.Vector3();
+      position.setFromMatrixPosition(matrix);
+      dummy.scale.set(3, 3, 3);
+      dummy.position.copy(position);
+      dummy.updateMatrix();
+      ref.current.setMatrixAt(e.instanceId, dummy.matrix);
+      ref.current.instanceMatrix.needsUpdate = true;
+      setrerender((x) => !x);
+    }
+    }
+
+  function restorePoint(){
+    if (ref.current){
+      const dummy = new THREE.Object3D();
+      const matrix = new THREE.Matrix4()
+      const position = new THREE.Vector3()
+      for (let i=0; i<count;i++){
+        ref.current.getMatrixAt(i,matrix)
+        position.setFromMatrixPosition(matrix)
+        dummy.scale.set(1,1,1)
+        dummy.position.copy(position)
+        dummy.updateMatrix()
+        ref.current.setMatrixAt(i,dummy.matrix)
+      }
+      ref.current.instanceMatrix.needsUpdate = true
+      setrerender(x=>!x)
+    }
+  }
+
+  return (
+    <>
+    <mesh onPointerEnter={scalePoint} onPointerLeave={restorePoint}>
+    <instancedMesh ref={ref} args={[geometry, material, count]} />
+    </mesh>
+    </>
+  )
+}
+
+
 export const PlotLine = ({ 
   data, 
   color = 'white', 
-  lineWidth = 1,
-  showPoints = false,
-  pointSize = 0.1,
-  pointColor,
+  lineWidth = 5,
+  showPoints = true,
+  pointSize = 5,
+  pointColor = "white",
   interpolation = 'linear',
-  range = [[-100,100],[-10,10]], //xmin,xmax,ymin,ymax
   scaling,
   height
 }: PlotLineProps) => {
@@ -45,35 +108,39 @@ export const PlotLine = ({
   function duplicateArray(arr:number[], times:number) {
     return arr.flatMap(item => Array(times).fill(item));
   }
-  
-  const geometry = useMemo(() => {
-    if (!data || data.length === 0) return null;
+
+  const [points,normed] = useMemo(()=>{
+    if (!data || data.length === 0) return [[new THREE.Vector3(0,0,0)],[0]];
     const viewWidth = window.innerWidth;
-    const viewHeight = (window.innerHeight-height-48); //Use 15% here because the plot area is 15vh in CSS
+    const viewHeight = (window.innerHeight-height-48); //The 48 here is the footer at the bottom
     const xCoords = linspace(-viewWidth/2,viewWidth/2,data.length)
     const normed = data.map((i) => (i - minVal) / (maxVal - minVal));
-    const points = normed.map((val,idx) => new THREE.Vector3(xCoords[idx], (val-.5)*viewHeight, 0)); //I have the vertical scale hardcoded here because of used range. Will change later with range logic
+    const points = normed.map((val,idx) => new THREE.Vector3(xCoords[idx], (val-.5)*viewHeight, 5)); 
+    return [points,normed]
+  }, [data, interpolation, height])
+
+  const geometry = useMemo(() => {
+    if (!data || data.length === 0) return null;
    // Choose interpolation method
-   if (interpolation === 'curved') {
-    const curve = new THREE.CatmullRomCurve3(points);
-    const geometry = new THREE.BufferGeometry().setFromPoints(curve.getPoints(50));
-    geometry.setAttribute('normed', new THREE.Float32BufferAttribute(duplicateArray(normed,50), 1)); //Hardcoded to above resolution. Should probably make a variable
-    return geometry;
+    if (interpolation === 'curved') {
+      const curve = new THREE.CatmullRomCurve3(points);
+      const geometry = new THREE.BufferGeometry().setFromPoints(curve.getPoints(50));
+      geometry.setAttribute('normed', new THREE.Float32BufferAttribute(duplicateArray(normed,50), 1)); //Hardcoded to above resolution. Should probably make a variable
+      return geometry;
   } else {
     // Linear interpolation - just connect the points directly
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
     geometry.setAttribute('normed', new THREE.Float32BufferAttribute(normed, 1));
     return geometry
   }
-}, [data, interpolation, height]);
+}, [points]);
 
-  const pointsGeometry = useMemo(() => {
-    if (!data || data.length === 0) return null;
-    const xCoords = linspace(range[0][0],range[0][1],data.length)
+  // const pointsGeometry = useMemo(() => {
+  //   if (!data || data.length === 0) return null;
+  //   return new THREE.BufferGeometry().setFromPoints(points);
+  // }, [points]);
 
-    const points = data.map((val,idx) => new THREE.Vector3(xCoords[idx], val, 0));
-    return new THREE.BufferGeometry().setFromPoints(points);
-  }, [data]);
+  
 
   const material = useMemo(() => {
     return new THREE.ShaderMaterial({
@@ -107,14 +174,13 @@ export const PlotLine = ({
         });
   }, [color, lineWidth]);
 
-  const pointsMaterial = useMemo(() => {
-    return new THREE.PointsMaterial({ 
-      color: pointColor || color,
-      size: pointSize,
-      sizeAttenuation: true
-    });
-  }, [color, pointColor, pointSize]);
-
+  // const pointsMaterial = useMemo(() => {
+  //   return new THREE.PointsMaterial({ 
+  //     color: pointColor || color,
+  //     size: 10,
+  //     sizeAttenuation: false
+  //   });
+  // }, [color, pointColor, pointSize]);
 
 
   if (!data || data.length === 0) {
@@ -124,9 +190,12 @@ export const PlotLine = ({
   return (
     <group>
       {geometry && <primitive object={new THREE.Line(geometry, material)}  />}
-      {showPoints && pointsGeometry && (
-        <primitive object={new THREE.Points(pointsGeometry, pointsMaterial)} />
-      )}
+      {/* {showPoints && pointsGeometry && (
+        <mesh onPointerOver={(e)=>console.log(e)}>
+          <primitive object={new THREE.Points(pointsGeometry, pointsMaterial)} />
+        </mesh>
+      )} */}
+      {showPoints && <PlotPoints points={points} pointSize={pointSize} pointColor={pointColor}/>}
     </group>
   );
 };

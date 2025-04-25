@@ -149,7 +149,6 @@ export function CanvasGeometry() {
       let dimCoords = coordUV.map((val,idx)=>val ? dimArrays[idx][Math.round(val*dimArrays[idx].length)] : null)
       const thisDimNames = dimNames.filter((_,idx)=> dimCoords[idx] !== null)
       const thisDimUnits = dimUnits.filter((_,idx)=> dimCoords[idx] !== null)
-      console.log(thisDimNames)
       dimCoords = dimCoords.filter(val => val !== null)
       const dimObj = {
         first:{
@@ -205,7 +204,6 @@ export function CanvasGeometry() {
           data={timeSeries} 
           lineWidth={5}
           color='orangered'
-          range={[[-100,100],[-10,10]]}
           scaling={{...valueScales,colormap}}
           height={height}
         />

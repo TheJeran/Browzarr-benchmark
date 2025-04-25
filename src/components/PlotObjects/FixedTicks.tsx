@@ -80,7 +80,6 @@ export function FixedTicks({
       const isBig = xDimArray.every(item => typeof item === "bigint");
       if (isBig){
         const unit = parseTimeUnit(coords.plot.units);
-        console.log(unit)
         const timeStrings = []
         for (let i = 0 ; i < xDimArray.length; i++){
           const timeStamp = Number(xDimArray[i])*unit
@@ -141,9 +140,7 @@ export function FixedTicks({
 
   useEffect(()=>{
     if(height){
-      console.log(height)
       const newHeight = (window.innerHeight-height-50)
-      console.log(heightRatio)
       setHeightRatio(newHeight/initialHeight)
     }
   },[height])
@@ -242,7 +239,7 @@ export function FixedTicks({
       {/* Right Edge Ticks */}
       {Array.from({ length: yTickCount }, (_, i) => {
         const y = (initialBounds.bottom  + (initialBounds.top - initialBounds.bottom) * (i / (yTickCount-1))) * heightRatio
-        const normY = y/(initialBounds.top - initialBounds.bottom)+.5
+        const normY = y/((initialBounds.top - initialBounds.bottom)*heightRatio)+.5
         return (
           <group key={`right-tick-${i}`} position={[bounds.right, y, 0]}>
             <line>

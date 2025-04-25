@@ -35,7 +35,7 @@ export function PlotArea({children,coords,height}: {children: React.ReactNode,co
     >
       <Canvas
       orthographic
-        camera={{ position: [0, 0, 15] }}
+        camera={{ position: [0, 0, 40] }}
         frameloop="demand"
       >
         {children}
