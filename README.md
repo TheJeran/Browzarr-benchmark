@@ -20,9 +20,10 @@ _*Not essential_
 ### Plot Window
 - [x] Feed coords into and apply to ticks
 - [x] move ticks with camera
-- [ ] Add position/coords of click/timeseries
+- [x] Add position/coords of click/timeseries
 - [x] _Resize the canvas/window*_
-- [ ] Selectable points with information (Value and coords)
+- [x] Selectable points 
+- [ ] Show points with information (Value and coords)
 - [ ] Scale axis'
 - [ ] Add option to enable/disable timeseries selection to prevent misclicks
 
@@ -59,7 +60,7 @@ _*Not essential_
 ### Bugs/Fixes
 - [x] Verify Timeslices are in correct positions
 - [ ] Scale the timeseries selection with plot resolution
-- [ ] Vertical scaling on resize is off between line and horizontal bars
+- [x] Vertical scaling on resize is off between line and horizontal bars
 - [ ] Grid lines cull when centers are out of view
 
 
