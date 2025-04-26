@@ -93,7 +93,7 @@ export function FixedTicks({
 
   const initialBounds = useMemo<ViewportBounds>(()=>{
   const worldWidth = window.innerWidth
-  const worldHeight = (window.innerHeight-height-48)
+  const worldHeight = (window.innerHeight-height-50)
     
   const newBounds = {
       left: -worldWidth / 2 + camera.position.x,
@@ -242,7 +242,7 @@ export function FixedTicks({
           {Array.from({ length: yTickCount }, (_, i) => {
             if (i === 0 || i === yTickCount-1) return null; // Skip edges
             const y = (bounds.bottom  + (bounds.top - bounds.bottom) * (i / (yTickCount-1)))
-            const normY = (y/(bounds.top - bounds.bottom)+.5)
+            const normY = (y/(bounds.top - bounds.bottom)/zoom)+.5
             const x = horX
             return (
               <>
