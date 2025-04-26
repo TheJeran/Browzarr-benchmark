@@ -65,9 +65,6 @@ export function FixedTicks({
   const { camera } = useThree()
   const [bounds, setBounds] = useState<ViewportBounds>({ left: 0, right: 0, top: 0, bottom: 0 })
 
-  const initialHeight = useMemo(()=>(window.innerHeight-height-50),[])
-  const [heightRatio,setHeightRatio] = useState<number>(1)
-
   const xTickCount = 10;
   const yTickCount = 8;
 
@@ -93,7 +90,7 @@ export function FixedTicks({
 
   const initialBounds = useMemo<ViewportBounds>(()=>{
   const worldWidth = window.innerWidth
-  const worldHeight = (window.innerHeight-height-48)
+  const worldHeight = (window.innerHeight-height-50)
     
   const newBounds = {
       left: -worldWidth / 2 + camera.position.x,
@@ -138,12 +135,6 @@ export function FixedTicks({
     }
   })
 
-  useEffect(()=>{
-    if(height){
-      const newHeight = (window.innerHeight-height-50)
-      setHeightRatio(newHeight/initialHeight)
-    }
-  },[height])
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   // @ts-ignore
@@ -171,7 +162,9 @@ export function FixedTicks({
     };
   }, [height]);
 
-
+  const stickyLines = 1; //This is the amount of pixels you need to zoome before the ticks readjust
+  const vertY = (bounds.top+bounds.bottom)/2
+  const horX = (bounds.left+bounds.right)/2 //Moved calcs here to reduce calcs
   return (
     <group >
       {/* Grid Lines */}
@@ -180,129 +173,130 @@ export function FixedTicks({
           {/* Vertical grid lines */}
           {Array.from({ length: xTickCount }, (_, i) => {
             if (i === 0 || i === xTickCount-1) return null; // Skip edges
-            const x = initialBounds.left + (initialBounds.right - initialBounds.left) * (i / (xTickCount-1))
+            const x = Math.round(bounds.left / stickyLines) * stickyLines + 
+            (Math.round(bounds.right / stickyLines) *stickyLines -  Math.round(bounds.left / stickyLines) * stickyLines) * (i / (xTickCount-1))
+            const normX = x/(initialBounds.right - initialBounds.left)+.5;
+            const y = vertY
             return (
-                <line key={`vgrid-${i}`} >
-                  <bufferGeometry >
-                    <float32BufferAttribute
-                      attach="attributes-position"
-                      args={[new Float32Array([
-                        x, bounds.top, 0,
-                        x, bounds.bottom, 0
-                      ]), 3]}
-                    />
-                  </bufferGeometry >
-                  <lineDashedMaterial 
-                    color={color} 
-                    opacity={gridOpacity} 
-                    transparent 
-                    dashSize={0.5}
-                    gapSize={0.5}
-                    
-                  />
-                </line>
+              <>
+                <group position={[x,y,0]}>
+                    <line key={`vgrid-${i}`} >
+                      <bufferGeometry >
+                        <float32BufferAttribute
+                          attach="attributes-position"
+                          args={[new Float32Array([
+                            0, bounds.top-y, 0,
+                            0, bounds.bottom-y, 0
+                          ]), 3]}
+                        />
+                      </bufferGeometry >
+                      <lineDashedMaterial 
+                        color={color} 
+                        opacity={gridOpacity} 
+                        transparent 
+                        dashSize={0.5}
+                        gapSize={0.5}
+                        
+                      />
+                    </line>
+                </group>
+                
+                <group key={`top-tick-${i}`} position={[x, bounds.top, 0]}>
+                  <line>
+                    <bufferGeometry>
+                      <float32BufferAttribute
+                        attach="attributes-position"
+                        args={[new Float32Array([0, 0, 0, 0, -sizes.tickSize, 0]), 3]}
+                      />
+                    </bufferGeometry>
+                    <lineBasicMaterial color={color} />
+                  </line>
+
+                  {/* Only show labels for non-edge ticks */}
+                  {i !== 0 && i !== xTickCount-1 && (
+                    <Text
+                      position={[0, sizes.tickSize/4 - sizes.labelOffset, 0]}
+                      fontSize={sizes.fontSize/zoom**2}
+                      color={color}
+                      anchorX="center"
+                      anchorY="top"
+                    >
+                      {textArray?.[Math.round(normX*xDimSize)] ?? ''}
+                    </Text>
+                  )}
+                </group>
+              </>
             )
           })}
 
           {/* Horizontal grid lines */}
           {Array.from({ length: yTickCount }, (_, i) => {
             if (i === 0 || i === yTickCount-1) return null; // Skip edges
-            const y = (initialBounds.bottom  + (initialBounds.top - initialBounds.bottom) * (i / (yTickCount-1))) * heightRatio
+            const y = (bounds.bottom  + (bounds.top - bounds.bottom) * (i / (yTickCount-1)))
+            const normY = (y/(bounds.top - bounds.bottom)/zoom)+.5
+            const x = horX
             return (
-                <line key={`hgrid-${i}`} >
-                  <bufferGeometry>
-                    <float32BufferAttribute
-                      attach="attributes-position"
-                      args={[new Float32Array([
-                        bounds.left, y, 0,
-                        bounds.right, y, 0
-                      ]), 3]}
+              <>
+                <group position={[x,y,0]}>
+                  <line key={`hgrid-${i}`} >
+                    <bufferGeometry>
+                      <float32BufferAttribute
+                        attach="attributes-position"
+                        args={[new Float32Array([
+                          bounds.left-x, 0, 0,
+                          bounds.right-x, 0, 0
+                        ]), 3]}
+                      />
+                    </bufferGeometry>
+                    <lineDashedMaterial 
+                      color={color} 
+                      opacity={gridOpacity} 
+                      transparent 
+                      dashSize={0.}
+                      gapSize={0.5}
+                      linewidth={1}
                     />
-                  </bufferGeometry>
-                  <lineDashedMaterial 
-                    color={color} 
-                    opacity={gridOpacity} 
-                    transparent 
-                    dashSize={0.}
-                    gapSize={0.5}
-                    linewidth={1}
-                  />
-                </line>
+                  </line>
+                </group>
+                <group key={`right-tick-${i}`} position={[bounds.right, y, 0]}>
+                  <line>
+                    <bufferGeometry>
+                      <float32BufferAttribute
+                        attach="attributes-position"
+                        args={[new Float32Array([0, 0, 0, -sizes.tickSize, 0, 0]), 3]}
+                      />
+                    </bufferGeometry>
+                    <lineBasicMaterial color={color} />
+                  </line>
+                  {/* Only show labels for non-edge ticks */}
+                  {i !== 0 && i !== yTickCount-1 && (
+                    <Text
+                      position={[-sizes.tickSize - sizes.labelOffset, 0, 0]}
+                      fontSize={sizes.fontSize/zoom**2}
+                      color={color}
+                      anchorX="right"
+                      anchorY="middle"
+                    >
+                      {(yRange[0]+(normY*yDimSize)).toFixed(1)}
+                      {/* {normY.toFixed(1)} */}
+                    </Text>
+                  )}
+                </group>
+              </>
             )
           })}
         </>
       )}
-      {/* Top Edge Ticks */}
-      {Array.from({ length: xTickCount }, (_, i) => {
-        const x = initialBounds.left + (initialBounds.right - initialBounds.left) * (i / (xTickCount-1))
-        const normX = x/(initialBounds.right - initialBounds.left)+.5;
-        return (
-          <group key={`top-tick-${i}`} position={[x, bounds.top, 0]}>
-            <line>
-              <bufferGeometry>
-                <float32BufferAttribute
-                  attach="attributes-position"
-                  args={[new Float32Array([0, 0, 0, 0, -sizes.tickSize, 0]), 3]}
-                />
-              </bufferGeometry>
-              <lineBasicMaterial color={color} />
-            </line>
-
-            {/* Only show labels for non-edge ticks */}
-            {i !== 0 && i !== xTickCount-1 && (
-              <Text
-                position={[0, sizes.tickSize/4 - sizes.labelOffset, 0]}
-                fontSize={sizes.fontSize/zoom**2}
-                color={color}
-                anchorX="center"
-                anchorY="top"
-              >
-                {textArray?.[Math.round(normX*xDimSize)] ?? ''}
-              </Text>
-            )}
-          </group>
-        )
-      })}
-
-      {/* Right Edge Ticks */}
-      {Array.from({ length: yTickCount }, (_, i) => {
-        const y = (initialBounds.bottom  + (initialBounds.top - initialBounds.bottom) * (i / (yTickCount-1))) * heightRatio
-        const normY = y/((initialBounds.top - initialBounds.bottom)*heightRatio)+.5
-        return (
-          <group key={`right-tick-${i}`} position={[bounds.right, y, 0]}>
-            <line>
-              <bufferGeometry>
-                <float32BufferAttribute
-                  attach="attributes-position"
-                  args={[new Float32Array([0, 0, 0, -sizes.tickSize, 0, 0]), 3]}
-                />
-              </bufferGeometry>
-              <lineBasicMaterial color={color} />
-            </line>
-            {/* Only show labels for non-edge ticks */}
-            {i !== 0 && i !== yTickCount-1 && (
-              <Text
-                position={[-sizes.tickSize - sizes.labelOffset, 0, 0]}
-                fontSize={sizes.fontSize/zoom**2}
-                color={color}
-                anchorX="right"
-                anchorY="middle"
-              >
-                {(yRange[0]+(normY*yDimSize)).toFixed(1)}
-              </Text>
-            )}
-          </group>
-        )
-      })}
       <OrbitControls 
         ref={cameraRef}
         enableRotate={false} 
         enablePan={true}
         enableZoom={true}
         zoomSpeed={0.85}
-        maxDistance={(bounds.right-bounds.left)/2}
+        maxDistance={500}
+        maxZoom={20}
+        minZoom={0.5}
       />
-      {/* The coordinates don't need to be here. I will move them up as they are tied inside the Canvas here. And they don't need to be here.  */}
     </group>
   )
 }
