@@ -61,7 +61,7 @@ _*Not essential_
 - [x] Verify Timeslices are in correct positions
 - [ ] Scale the timeseries selection with plot resolution
 - [x] Vertical scaling on resize is off between line and horizontal bars
-- [ ] Grid lines cull when centers are out of view
+- [x] Grid lines cull when centers are out of view
 
 
      
