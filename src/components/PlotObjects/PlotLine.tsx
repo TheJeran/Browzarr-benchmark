@@ -111,7 +111,7 @@ export const PlotLine = ({
   const [points,normed] = useMemo(()=>{
     if (!data || data.length === 0) return [[new THREE.Vector3(0,0,0)],[0]];
     const viewWidth = window.innerWidth;
-    const viewHeight = (window.innerHeight-height-48); //The 48 here is the footer at the bottom
+    const viewHeight = (window.innerHeight-height-50); //The 50 here is the footer at the bottom
     const xCoords = linspace(-viewWidth/2,viewWidth/2,data.length)
     const normed = data.map((i) => (i - minVal) / (maxVal - minVal));
     const points = normed.map((val,idx) => new THREE.Vector3(xCoords[idx], (val-.5)*viewHeight, 5)); 
