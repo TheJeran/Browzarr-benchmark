@@ -65,9 +65,6 @@ export function FixedTicks({
   const { camera } = useThree()
   const [bounds, setBounds] = useState<ViewportBounds>({ left: 0, right: 0, top: 0, bottom: 0 })
 
-  const initialHeight = useMemo(()=>(window.innerHeight-height-50),[])
-  const [heightRatio,setHeightRatio] = useState<number>(1)
-
   const xTickCount = 10;
   const yTickCount = 8;
 
@@ -138,12 +135,6 @@ export function FixedTicks({
     }
   })
 
-  useEffect(()=>{
-    if(height){
-      const newHeight = (window.innerHeight-height-50)
-      setHeightRatio(newHeight/initialHeight)
-    }
-  },[height])
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   // @ts-ignore
