@@ -137,7 +137,7 @@ export function FixedTicks({
 
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  // @ts-ignore
+  // @ts-expect-error why J?
   const cameraRef = useRef<OrbitControls | null>(null)
 
   //This reset the camera position when the window is rescaled

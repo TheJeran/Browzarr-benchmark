@@ -60,13 +60,13 @@ export function CanvasGeometry() {
   const [colormap,setColormap] = useState<THREE.DataTexture>(GetColorMapTexture())
   const [timeSeries, setTimeSeries] = useState<number[]>([0]);
   const [showLoading, setShowLoading] = useState<boolean>(false);
-  const [metadata,setMetadata] = useState<Object[]>([{},{}])
+  const [metadata,setMetadata] = useState<object[]>([{},{}])
   
   //Timeseries Plotting Information
   const [dimArrays,setDimArrays] = useState([[0],[0],[0]])
   const [dimNames,setDimNames] = useState<string[]>(["default"])
   const [dimUnits,setDimUnits] = useState<string[]>(["Default"]);
-  const [dimCoords, setDimCoords] = useState<Object | null>(null);
+  const [dimCoords, setDimCoords] = useState<object | null>(null);
   const [plotDim,setPlotDim] = useState<number>(0)
   // const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.15)-48))
   const [height, setHeight] = useState<number>(0)
