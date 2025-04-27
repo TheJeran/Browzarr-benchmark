@@ -1,25 +1,19 @@
 import { Canvas } from '@react-three/fiber'
 import { parseLoc } from '@/utils/HelperFuncs'
+import { PlotLine, FixedTicks } from '@/components/PlotObjects'
+import { ResizeBar } from '@/components/UI'
+import { useContext,useState } from 'react'
+import { plotContext } from '@/components/Contexts/Contexts'
 import './PlotArea.css'
 
-interface coords{
-  first:{
-    name:string,
-    loc:number,
-    units:string
-  },  
-  second:{
-    name:string,
-    loc:number,
-    units:string
-  },      
-  plot:{
-    units: string
-  }
-}
+export function PlotArea() {
 
+  const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.15)-48))
 
-export function PlotArea({children,coords,height}: {children: React.ReactNode,coords:coords,height:number}) {
+  //@ts-ignore
+  const {coords} = useContext(plotContext)
+
+  
   return (
     <div 
       className='plot-canvas'
@@ -32,13 +26,14 @@ export function PlotArea({children,coords,height}: {children: React.ReactNode,co
         background: '#00000099'
       }}
     >
+      <ResizeBar height={height} setHeight={setHeight}/>
       <Canvas
       orthographic
         camera={{ position: [0, 0, 40] }}
         frameloop="demand"
       >
-        {children}
-
+        <PlotLine height={height}/>
+        <FixedTicks height={height}/>
       </Canvas>
       { //Only show coords when coords exist
         coords && coords.first.name !== 'Default' && 

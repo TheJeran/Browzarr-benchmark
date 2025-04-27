@@ -5,26 +5,17 @@ import { Center, OrbitControls, Environment } from '@react-three/drei'
 import { variables, ZarrDataset, parseUVCoords } from '@/components/ZarrLoaderLRU'
 import { useEffect, useState, useMemo } from 'react';
 import { useControls } from 'leva'
-import { DataCube, PointCloud, UVCube, PlotLine, PlotArea, FixedTicks } from './PlotObjects';
+import { PointCloud, UVCube, PlotArea } from './PlotObjects';
 import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from './Textures';
-import { Metadata, ResizeBar } from './UI';
+import { Metadata } from './UI';
+import { plotContext } from './Contexts/Contexts';
+import { DimCoords } from './Contexts/Contexts';
 
 const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
 
 interface TimeSeriesLocs{
   uv:THREE.Vector2;
   normal:THREE.Vector3
-}
-interface Coord {
-  name: string; 
-  loc: number;  
-  units: string;
-}
-
-interface DimCoords {
-  first: Coord;
-  second: Coord;
-  plot: Pick<Coord, "units">; // Only units
 }
 
 export function CanvasGeometry() {
@@ -64,11 +55,8 @@ export function CanvasGeometry() {
   const [dimArrays,setDimArrays] = useState([[0],[0],[0]])
   const [dimNames,setDimNames] = useState<string[]>(["default"])
   const [dimUnits,setDimUnits] = useState<string[]>(["Default"]);
-  const [dimCoords, setDimCoords] = useState<Object | null>(null);
+  const [dimCoords, setDimCoords] = useState<DimCoords>();
   const [plotDim,setPlotDim] = useState<number>(0)
-  const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.15)-48))
-
-
   const ZarrDS = useMemo(()=>new ZarrDataset(storeURL),[])
 
   useEffect(()=>{
@@ -149,12 +137,12 @@ export function CanvasGeometry() {
       const dimObj = {
         first:{
           name:thisDimNames[0],
-          loc:dimCoords[0],
+          loc:dimCoords[0] ?? 0,
           units:thisDimUnits[0]
         },
         second:{
           name:thisDimNames[1],
-          loc:dimCoords[1],
+          loc:dimCoords[1] ?? 0,
           units:thisDimUnits[1]
         },
         plot:{
@@ -164,6 +152,22 @@ export function CanvasGeometry() {
       setDimCoords(dimObj)
     }
   },[timeSeriesLocs])
+
+  const defaultDimCoords: DimCoords = {
+    first: { name: "", loc: 0, units: "" },
+    second: { name: "", loc: 0, units: "" },
+    plot: { units: "" }
+  };
+
+  const plotObj = {
+    coords: dimCoords ?? defaultDimCoords,
+    plotDim,
+    dimArrays,
+    yRange:[valueScales.minVal,valueScales.maxVal],
+    timeSeries,
+    scaling:{...valueScales,colormap}
+  } //This is the data being passed down the plot tree
+
   return (
     <>
     <div className='messages'>
@@ -179,8 +183,7 @@ export function CanvasGeometry() {
 
         {/* Volume Plots */}
         {plotter == "volume" && <>
-          <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
-          <UVCube shape={shape} setTimeSeriesLocs={setTimeSeriesLocs}/>
+          <UVCube shape={shape} setTimeSeriesLocs={setTimeSeriesLocs} />
         </>}
         {/* Point Clouds Plots */}
         {plotter == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
@@ -193,17 +196,10 @@ export function CanvasGeometry() {
     </div>
 
     {metadata && <Metadata data={metadata} /> }
-
-    <ResizeBar height={height} setHeight={setHeight} />
-    <PlotArea height={height} coords={dimCoords as DimCoords }>
-        <PlotLine 
-          data={timeSeries} 
-          lineWidth={20}
-          scaling={{...valueScales,colormap}}
-          height={height}
-        />
-        {dimCoords && <FixedTicks color='white' xDimArray={dimArrays[plotDim]} yRange={[valueScales.minVal,valueScales.maxVal]} coords={dimCoords as DimCoords} height={height}/>}
-    </PlotArea>
+      
+    <plotContext.Provider value={plotObj} >
+      <PlotArea />
+    </plotContext.Provider>
    
     {/* <Leva theme={lightTheme} /> */}
     </>

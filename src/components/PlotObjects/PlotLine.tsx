@@ -1,30 +1,24 @@
 
 import * as THREE from 'three'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { plotContext } from '../Contexts/Contexts';
 
 
 interface PlotLineProps {
-  data: number[];
   color?: string;
   lineWidth?: number;
   showPoints?: boolean;
   pointSize?: number;
   pointColor?: string;
   interpolation?: 'linear' | 'curved';
-  scaling:scaling,
   height:number,
 }
 
-interface scaling{
-    maxVal:number,
-    minVal:number,
-    colormap:THREE.DataTexture
-}
 
 function PlotPoints({ points, pointSize, pointColor }: { points: THREE.Vector3[]; pointSize: number; pointColor:string }) {
   const ref = useRef<THREE.InstancedMesh | null>(null)
   const count = points.length
-  const [_rerender,setrerender] = useState<boolean>(false)
+  const [_reRender,setreRender] = useState<boolean>(false)
 
   useEffect(() => {
     if (ref.current){
@@ -53,7 +47,7 @@ function PlotPoints({ points, pointSize, pointColor }: { points: THREE.Vector3[]
       dummy.updateMatrix();
       ref.current.setMatrixAt(e.instanceId, dummy.matrix);
       ref.current.instanceMatrix.needsUpdate = true;
-      setrerender((x) => !x);
+      setreRender((x) => !x);
     }
     }
 
@@ -71,7 +65,7 @@ function PlotPoints({ points, pointSize, pointColor }: { points: THREE.Vector3[]
         ref.current.setMatrixAt(i,dummy.matrix)
       }
       ref.current.instanceMatrix.needsUpdate = true
-      setrerender(x=>!x)
+      setreRender(x=>!x)
     }
   }
 
@@ -86,15 +80,16 @@ function PlotPoints({ points, pointSize, pointColor }: { points: THREE.Vector3[]
 
 
 export const PlotLine = ({ 
-  data, 
   lineWidth = 20,
   showPoints = false,
   pointSize = 5,
   pointColor = "white",
   interpolation = 'linear',
-  scaling,
   height
 }: PlotLineProps) => {
+
+  const {scaling, timeSeries} = useContext(plotContext)
+  const data = timeSeries
 
   //LinSpace to take up entire extent
   function linspace(start: number, stop: number, num: number): number[] {

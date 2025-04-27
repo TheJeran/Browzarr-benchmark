@@ -9,6 +9,7 @@ interface TimeSeriesLocs{
 
 export const UVCube = ({shape,setTimeSeriesLocs} : {shape:THREE.Vector3, setTimeSeriesLocs:React.Dispatch<React.SetStateAction<TimeSeriesLocs>>} )=>{
   const [clickPoint, setClickPoint] = useState<THREE.Vector3 | null>(null);
+  
   function TimeSeriesLocs(event: THREE.Intersection){
     const point = event.point;
     const uv = event.uv!;
