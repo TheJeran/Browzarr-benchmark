@@ -22,10 +22,10 @@ runs:
       shell: bash
       run: pnpm install
 
-    - name: Build
-      shell: bash
-      run: pnpm build
+    # - name: Build
+    #   shell: bash
+    #   run: pnpm build
 
-    - name: Post-build install
-      shell: bash
-      run: pnpm install
+    # - name: Post-build install
+    #   shell: bash
+    #   run: pnpm install
