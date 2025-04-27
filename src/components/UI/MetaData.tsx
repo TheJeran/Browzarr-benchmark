@@ -1,7 +1,7 @@
+'use client';
+
 import {useState } from "react";
-
-
-import './Metadata.css'
+import './css/MetaData.css'
 
 const defaultAttributes = [
     "long_name",

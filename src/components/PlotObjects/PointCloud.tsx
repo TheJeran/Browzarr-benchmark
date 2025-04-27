@@ -2,8 +2,8 @@
 import * as THREE from 'three'
 import { useMemo } from 'react'
 import { useControls } from 'leva'
-import pointFrag from '../Textures/shaders/pointFrag.glsl'
-import pointVert from '../Textures/shaders/pointVertex.glsl'
+import pointFrag from '../textures/shaders/pointFrag.glsl'
+import pointVert from '../textures/shaders/pointVertex.glsl'
 
 interface PCProps {
   texture: THREE.Data3DTexture | THREE.DataTexture | null,

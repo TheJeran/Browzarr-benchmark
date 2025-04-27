@@ -1,14 +1,19 @@
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import CanvasGeometry from "../CanvasGeometry";
 import AboutButton from "./AboutButton";
-import Metadata from "./MetaData";
+import { uiAtom } from "./state";
+import AboutModal from "./AboutModal";
+import Overlays from "./Overlays";
+import  Metadata from "./MetaData";
 import ResizeBar from "./ResizeBar";
+
 export {
   Navbar,
   Footer,
-  CanvasGeometry,
   AboutButton,
+  uiAtom,
+  AboutModal,
+  Overlays,
   Metadata,
   ResizeBar
 };

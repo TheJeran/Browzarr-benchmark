@@ -1,0 +1,9 @@
+.resize-bar{
+    position: absolute;
+    width: 100vw;
+    height: 10px;
+    z-index: 11;
+    cursor: n-resize;
+    background-color: transparent;
+    
+}

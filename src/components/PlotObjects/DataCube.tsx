@@ -1,8 +1,8 @@
 import {  useMemo } from 'react'
 import {  useRef } from 'react'
 import * as THREE from 'three'
-import vertexShader from '@/components/Textures/shaders/vertex.glsl';
-import fragmentShader from '@/components/Textures/shaders/fragment.glsl';
+import vertexShader from '@/components/textures/shaders/vertex.glsl';
+import fragmentShader from '@/components/textures/shaders/fragment.glsl';
 import { useControls } from 'leva';
 
 

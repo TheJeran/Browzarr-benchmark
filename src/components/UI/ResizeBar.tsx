@@ -1,5 +1,7 @@
+'use client';
+
 import { useEffect, useState } from 'react';
-import './ResizeBar.css'
+import './css/ResizeBar.css'
 
 const ResizeBar = ({height,setHeight}:{height:number,setHeight:React.Dispatch<React.SetStateAction<number>>}) => {
     

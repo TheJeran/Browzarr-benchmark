@@ -2,7 +2,7 @@ import { Text, OrbitControls } from '@react-three/drei'
 import { useThree, useFrame } from '@react-three/fiber'
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { parseTimeUnit } from '@/utils/HelperFuncs'
-
+import { Fragment } from 'react'
 
 interface ViewportBounds {
   left: number;
@@ -12,7 +12,7 @@ interface ViewportBounds {
 }
 
 interface FixedTicksProps {
-  color?: string;
+  colorTicks?: string;
   tickSize?: number;
   fontSize?: number;
   showGrid?: boolean;
@@ -38,7 +38,7 @@ interface FixedTicksProps {
 }
 
 export function FixedTicks({ 
-  color = 'white',
+  colorTicks = 'white',
   tickSize = 4,
   fontSize = 18,
   showGrid = true,
@@ -178,7 +178,7 @@ export function FixedTicks({
             const normX = x/(initialBounds.right - initialBounds.left)+.5;
             const y = vertY
             return (
-              <>
+              <Fragment key={`vert-group-${i}`}>
                 <group position={[x,y,0]}>
                     <line key={`vgrid-${i}`} >
                       <bufferGeometry >
@@ -191,7 +191,7 @@ export function FixedTicks({
                         />
                       </bufferGeometry >
                       <lineDashedMaterial 
-                        color={color} 
+                        color={colorTicks} 
                         opacity={gridOpacity} 
                         transparent 
                         dashSize={0.5}
@@ -209,7 +209,7 @@ export function FixedTicks({
                         args={[new Float32Array([0, 0, 0, 0, -sizes.tickSize, 0]), 3]}
                       />
                     </bufferGeometry>
-                    <lineBasicMaterial color={color} />
+                    <lineBasicMaterial color={colorTicks} />
                   </line>
 
                   {/* Only show labels for non-edge ticks */}
@@ -217,7 +217,7 @@ export function FixedTicks({
                     <Text
                       position={[0, sizes.tickSize/4 - sizes.labelOffset, 0]}
                       fontSize={sizes.fontSize/zoom**2}
-                      color={color}
+                      color={colorTicks}
                       anchorX="center"
                       anchorY="top"
                     >
@@ -225,7 +225,7 @@ export function FixedTicks({
                     </Text>
                   )}
                 </group>
-              </>
+              </Fragment>
             )
           })}
 
@@ -236,7 +236,7 @@ export function FixedTicks({
             const normY = (y/(bounds.top - bounds.bottom)/zoom)+.5
             const x = horX
             return (
-              <>
+              <Fragment key={`vert-group-${i}`}>
                 <group position={[x,y,0]}>
                   <line key={`hgrid-${i}`} >
                     <bufferGeometry>
@@ -249,7 +249,7 @@ export function FixedTicks({
                       />
                     </bufferGeometry>
                     <lineDashedMaterial 
-                      color={color} 
+                      color={colorTicks} 
                       opacity={gridOpacity} 
                       transparent 
                       dashSize={0.}
@@ -266,14 +266,14 @@ export function FixedTicks({
                         args={[new Float32Array([0, 0, 0, -sizes.tickSize, 0, 0]), 3]}
                       />
                     </bufferGeometry>
-                    <lineBasicMaterial color={color} />
+                    <lineBasicMaterial color={colorTicks} />
                   </line>
                   {/* Only show labels for non-edge ticks */}
                   {i !== 0 && i !== yTickCount-1 && (
                     <Text
                       position={[-sizes.tickSize - sizes.labelOffset, 0, 0]}
                       fontSize={sizes.fontSize/zoom**2}
-                      color={color}
+                      color={colorTicks}
                       anchorX="right"
                       anchorY="middle"
                     >
@@ -282,7 +282,7 @@ export function FixedTicks({
                     </Text>
                   )}
                 </group>
-              </>
+              </Fragment>
             )
           })}
         </>

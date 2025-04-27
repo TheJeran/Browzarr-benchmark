@@ -35,7 +35,7 @@ function ArrayTo2D(array: Array){
         textureData,
         width,
         height,
-        THREE.LuminanceFormat,
+        THREE.RedFormat,
         THREE.UnsignedByteType
     );
 

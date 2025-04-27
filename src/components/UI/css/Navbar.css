@@ -1,0 +1,41 @@
+
+.navbar {
+  display: flex;
+  position: fixed;
+  justify-content: space-between;
+  top: 4px;
+  left: 8px;
+  right: 4px;
+  z-index: 1;
+}
+
+.navbar img {
+  max-width: 36px;
+  max-height: 36px;
+  border-radius: 0.5rem;
+}
+
+.navbar ul {
+    list-style: none;
+    display:flex;
+    gap: 1rem;
+}
+
+.navbar a {
+    position: relative;
+  }
+  
+.navbar a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #f5ba25;
+  transition: width .3s;
+}
+  
+.navbar a:hover::after {
+  width: 100%;
+}

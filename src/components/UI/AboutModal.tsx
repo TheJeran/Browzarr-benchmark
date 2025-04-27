@@ -1,27 +1,31 @@
 import { useSetAtom } from "jotai";
-import { uiAtom } from '@/state';
-// import { logoSF } from "../assets/index";
+import { uiAtom } from '@/components/ui';
 
-import './AboutModal.css'
+import './css/AboutModal.css'
 
 const AboutModal = () => {
   const setUi = useSetAtom(uiAtom);
+
+  const handleClose = () => {
+    setUi((prev) => ({
+      ...prev,
+      modal: false,
+    }));
+  };
+
+  const handleModalClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
+
   return (
-    <div className="modal">
+    <div className="modal" onClick={handleModalClick}>
       <div className="modal-content">
-        <button
-          className="close-btn"
-          onClick={() =>
-            setUi((prev) => ({
-              ...prev,
-              modal: false,
-            }))
-          }
-        >
+        <button className="close-btn" onClick={handleClose}>
           &times;
         </button>
-        {/* <img src={logoSF} alt="SeasFire" width={"80%"}/> */}
-        <h1>ViZarrStores</h1>
+        <h1>vi-zarr-stores</h1>
         <a> builds on the lessons learned from the visualization prototype from the SeasFire project. </a>
 
         <p>
@@ -40,9 +44,10 @@ const AboutModal = () => {
         <a href="https://zenodo.org/records/8055879">zenodo</a>
         <p>
         <br/>
-        <strong>Citation: </strong> <br/><br/>
+        <strong>Citation: </strong> <br/>
         Alonso, L., Gans, F., Karasante, I., Ahuja, A., Prapas, I., Kondylatos, S., Papoutsis, I., Panagiotou, E., Mihail, D., Cremer, F., Weber, U., & Carvalhais, N. (2023). SeasFire Cube: A Global Dataset for Seasonal Fire Modeling in the Earth System (0.3) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.8055879
         </p>
+        <br/>
         <p> <strong> Contact :</strong></p>
         <a href="https://lazarusa.github.io/" target='_blank' rel="noreferrer">Lazaro Alonso &</a>
         <a href="https://www.bgc-jena.mpg.de/person/jpoehls/2206" target='_blank' rel="noreferrer"> Jeran Poehls</a>
@@ -51,9 +56,8 @@ const AboutModal = () => {
         Hans-Knöll Str. 10<br/>
         07745 Jena
         </p>
-        <a >
-        Copyright Ⓒ 2024. Licensed under the Apache License, Version 2.0.
-        </a>
+        <br></br>
+        <p>Ⓒ <a href="https://github.com/EarthyScience/FireSight?tab=Apache-2.0-1-ov-file#readme" target="_blank" rel="noreferrer">Apache License, Version 2.0</a></p>
       </div>
     </div>
   );

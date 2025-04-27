@@ -1,11 +1,11 @@
 import {  useMemo } from 'react'
 import {  useRef, useState } from 'react'
 import * as THREE from 'three'
-import vertexShader from '@/components/Textures/shaders/vertex.glsl';
-import fragmentShader from '@/components/Textures/shaders/fragment.glsl';
+import vertexShader from '@/components/textures/shaders/vertex.glsl';
+import fragmentShader from '@/components/textures/shaders/fragment.glsl';
 import { useControls } from 'leva';
-import pointVert from '@/components/Textures/shaders/pointVertex.glsl';
-import pointFrag from '@/components/Textures/shaders/pointFrag.glsl';
+import pointVert from '@/components/textures/shaders/pointVertex.glsl';
+import pointFrag from '@/components/textures/shaders/pointFrag.glsl';
 
 const colormaps = ['viridis', 'plasma', 'inferno', 'magma', 'Accent', 'Blues',
   'CMRmap', 'twilight', 'tab10', 'gist_earth', 'cividis',

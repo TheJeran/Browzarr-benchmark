@@ -1,13 +1,15 @@
+'use client';
+
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { Canvas } from '@react-three/fiber';
 import { Center, OrbitControls, Environment } from '@react-three/drei'
-import { variables, ZarrDataset, parseUVCoords } from '@/components/ZarrLoaderLRU'
+import { variables, ZarrDataset, parseUVCoords } from '@/components/zarr/ZarrLoaderLRU'
 import { useEffect, useState, useMemo } from 'react';
 import { useControls } from 'leva'
-import { DataCube, PointCloud, UVCube, PlotLine, PlotArea, FixedTicks } from './PlotObjects';
-import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from './Textures';
-import { Metadata, ResizeBar } from './UI';
+import { DataCube, PointCloud, UVCube, PlotLine, PlotArea, FixedTicks } from './plots';
+import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from './textures';
+import { Metadata, ResizeBar } from './ui';
 
 const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
 
@@ -66,7 +68,19 @@ export function CanvasGeometry() {
   const [dimUnits,setDimUnits] = useState<string[]>(["Default"]);
   const [dimCoords, setDimCoords] = useState<Object | null>(null);
   const [plotDim,setPlotDim] = useState<number>(0)
-  const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.15)-48))
+  // const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.15)-48))
+  const [height, setHeight] = useState<number>(0)
+
+  useEffect(() => {
+    setHeight(Math.round(window.innerHeight-(window.innerHeight*0.15)-48))
+
+    const handleResize = () => {
+      setHeight(Math.round(window.innerHeight-(window.innerHeight*0.15)-48))
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
 
   const ZarrDS = useMemo(()=>new ZarrDataset(storeURL),[])
