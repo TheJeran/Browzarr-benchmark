@@ -18,7 +18,9 @@ interface FixedTicksProps {
   fontSize?: number;
   showGrid?: boolean;
   gridOpacity?: number;
-  height:number
+  height:number,
+  yScale:number,
+  xScale:number,
 }
 
 export function FixedTicks({ 
@@ -27,7 +29,9 @@ export function FixedTicks({
   fontSize = 18,
   showGrid = true,
   gridOpacity = 0.5,
-  height
+  height,
+  yScale = 1,
+  xScale=1,
 }: FixedTicksProps) {
   const { camera } = useThree()
   const [bounds, setBounds] = useState<ViewportBounds>({ left: 0, right: 0, top: 0, bottom: 0 })
@@ -143,7 +147,7 @@ export function FixedTicks({
             if (i === 0 || i === xTickCount-1) return null; // Skip edges
             const x = Math.round(bounds.left / stickyLines) * stickyLines + 
             (Math.round(bounds.right / stickyLines) *stickyLines -  Math.round(bounds.left / stickyLines) * stickyLines) * (i / (xTickCount-1))
-            const normX = x/(initialBounds.right - initialBounds.left)+.5;
+            const normX = x/xScale/(initialBounds.right - initialBounds.left)+.5;
             const y = vertY
             return (
               <>
@@ -201,7 +205,7 @@ export function FixedTicks({
           {Array.from({ length: yTickCount }, (_, i) => {
             if (i === 0 || i === yTickCount-1) return null; // Skip edges
             const y = (bounds.bottom  + (bounds.top - bounds.bottom) * (i / (yTickCount-1)))
-            const normY = (y/(bounds.top - bounds.bottom)/zoom)+.5
+            const normY = (y/yScale/(bounds.top - bounds.bottom)/zoom)+.5
             const x = horX
             return (
               <>
@@ -246,7 +250,7 @@ export function FixedTicks({
                       anchorY="middle"
                     >
                       {(yRange[0]+(normY*yDimSize)).toFixed(1)}
-                      {/* {normY.toFixed(1)} */}
+
                     </Text>
                   )}
                 </group>

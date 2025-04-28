@@ -13,7 +13,9 @@ interface PlotLineProps {
   pointColor?: string;
   interpolation?: 'linear' | 'curved';
   height:number,
-  pointSetters:pointSetters
+  pointSetters:pointSetters,
+  yScale:number,
+  xScale:number
 }
 
 interface pointSetters{
@@ -104,10 +106,12 @@ export const PlotLine = ({
   lineWidth = 5,
   showPoints = true,
   pointSize = 5,
-  pointColor = "white",
+  pointColor = "#777777",
   interpolation = 'linear',
   height,
-  pointSetters
+  pointSetters,
+  yScale,
+  xScale
 }: PlotLineProps) => {
 
   const {scaling, timeSeries} = useContext(plotContext)
@@ -129,11 +133,11 @@ export const PlotLine = ({
     if (!data || data.length === 0) return [[new THREE.Vector3(0,0,0)],[0]];
     const viewWidth = window.innerWidth;
     const viewHeight = (window.innerHeight-height-50); //The 50 here is the footer at the bottom
-    const xCoords = linspace(-viewWidth/2,viewWidth/2,data.length)
+    const xCoords = linspace(-viewWidth*xScale/2,viewWidth*xScale/2,data.length)
     const normed = data.map((i) => (i - minVal) / (maxVal - minVal));
-    const points = normed.map((val,idx) => new THREE.Vector3(xCoords[idx], (val-.5)*viewHeight, 5)); 
+    const points = normed.map((val,idx) => new THREE.Vector3(xCoords[idx], (val-.5)*viewHeight*yScale, 5)); 
     return [points,normed]
-  }, [data, interpolation, height])
+  }, [data, interpolation, height, yScale,xScale])
 
   const geometry = useMemo(() => {
     if (!data || data.length === 0) return null;
