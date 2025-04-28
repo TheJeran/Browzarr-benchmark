@@ -2,5 +2,18 @@
     position: relative;
     width: 200px;
     bottom:50%;
-    left:2%
+    left:2%;
+    pointer-events: none;
+}
+
+.point-info{
+    position: fixed;
+    z-index: 9;
+    color: white;
+    background: rgb(66, 66, 66);
+    pointer-events: none;
+    transform: translate(10px,20px);
+    padding: 5px;
+    border-radius: 5px;
+    box-shadow: 1px 2px 5px rgba(255, 255, 255, 0.37);
 }

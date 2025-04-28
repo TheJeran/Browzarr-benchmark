@@ -1,7 +1,8 @@
 import { Text, OrbitControls } from '@react-three/drei'
 import { useThree, useFrame } from '@react-three/fiber'
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, useContext } from 'react'
 import { parseTimeUnit } from '@/utils/HelperFuncs'
+import { plotContext } from '../Contexts/PlotContext'
 
 
 interface ViewportBounds {
@@ -17,23 +18,6 @@ interface FixedTicksProps {
   fontSize?: number;
   showGrid?: boolean;
   gridOpacity?: number;
-  xDimArray: number[];
-  yRange: number[];
-  coords:{
-    first:{
-      name:string,
-      loc:number,
-      units:string
-    },  
-    second:{
-      name:string,
-      loc:number,
-      units:string
-    },      
-    plot:{
-      units: string
-    }
-  };
   height:number
 }
 
@@ -43,28 +27,12 @@ export function FixedTicks({
   fontSize = 18,
   showGrid = true,
   gridOpacity = 0.5,
-  xDimArray = [0,0,0,0,0],
-  yRange = [0,1],
-  coords = {
-    first:{
-      name:"Default",
-      loc:0.5,
-      units:"Default"
-    },
-    second:{
-      name:"Default",
-      loc:0.5,
-      units:"Default"
-    },
-    plot:{
-      units:"Default"
-    }
-  },
   height
 }: FixedTicksProps) {
   const { camera } = useThree()
   const [bounds, setBounds] = useState<ViewportBounds>({ left: 0, right: 0, top: 0, bottom: 0 })
-
+  const {coords, yRange, dimArrays, plotDim} = useContext(plotContext)
+  const xDimArray = dimArrays[plotDim]
   const xTickCount = 10;
   const yTickCount = 8;
 
@@ -221,7 +189,7 @@ export function FixedTicks({
                       anchorX="center"
                       anchorY="top"
                     >
-                      {textArray?.[Math.round(normX*xDimSize)] ?? ''}
+                      {textArray?.[Math.round(normX*xDimSize-.5)] ?? ''}
                     </Text>
                   )}
                 </group>
@@ -237,8 +205,8 @@ export function FixedTicks({
             const x = horX
             return (
               <>
-                <group position={[x,y,0]}>
-                  <line key={`hgrid-${i}`} >
+                <group key={`hgrid-${i}`} position={[x,y,0]}>
+                  <line >
                     <bufferGeometry>
                       <float32BufferAttribute
                         attach="attributes-position"

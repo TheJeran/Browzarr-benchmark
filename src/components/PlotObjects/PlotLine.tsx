@@ -1,30 +1,33 @@
 
 import * as THREE from 'three'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { plotContext } from '../Contexts/PlotContext';
+import { useFrame } from '@react-three/fiber';
 
 
 interface PlotLineProps {
-  data: number[];
   color?: string;
   lineWidth?: number;
   showPoints?: boolean;
   pointSize?: number;
   pointColor?: string;
   interpolation?: 'linear' | 'curved';
-  scaling:scaling,
   height:number,
+  pointSetters:pointSetters
 }
 
-interface scaling{
-    maxVal:number,
-    minVal:number,
-    colormap:THREE.DataTexture
+interface pointSetters{
+  setPointID:React.Dispatch<React.SetStateAction<number>>,
+  setPointLoc:React.Dispatch<React.SetStateAction<number[]>>,
+  setShowPointInfo:React.Dispatch<React.SetStateAction<boolean>>,
 }
 
-function PlotPoints({ points, pointSize, pointColor }: { points: THREE.Vector3[]; pointSize: number; pointColor:string }) {
+function PlotPoints({ points, pointSize, pointColor, pointSetters }: { points: THREE.Vector3[]; pointSize: number; pointColor:string, pointSetters:pointSetters }) {
   const ref = useRef<THREE.InstancedMesh | null>(null)
   const count = points.length
-  const [_rerender,setrerender] = useState<boolean>(false)
+  const [_reRender,setreRender] = useState<boolean>(false)
+  const {setPointID, setPointLoc,setShowPointInfo} = pointSetters;
+  const [zoom,setZoom] = useState<number>(1)
 
   useEffect(() => {
     if (ref.current){
@@ -32,30 +35,41 @@ function PlotPoints({ points, pointSize, pointColor }: { points: THREE.Vector3[]
       for (let i = 0 ; i< count; i++){
         const position = points[i].toArray()
         dummy.position.set(...position)
+        dummy.scale.set(1/zoom,1/zoom,1/zoom)
         dummy.updateMatrix()
         ref.current.setMatrixAt(i, dummy.matrix)
       }
       ref.current.instanceMatrix.needsUpdate = true
     }
-  }, [points])
-  const geometry = useMemo(() => new THREE.SphereGeometry(pointSize), [])
+  }, [points,zoom])
+
+  const geometry = useMemo(() => new THREE.SphereGeometry(pointSize), [pointSize])
   const material = useMemo(()=> new THREE.MeshBasicMaterial({color:pointColor}),[])
 
-  function scalePoint(e: THREE.Event & { instanceId: number }) {
+  useFrame(({camera})=>{
+    if (camera.zoom !== zoom){
+      setZoom(camera.zoom)
+    }
+  })
+
+  function scalePoint(e: any) {
     if (ref.current) {
       const dummy = new THREE.Object3D();
       const matrix = new THREE.Matrix4();
       ref.current.getMatrixAt(e.instanceId, matrix);
       const position = new THREE.Vector3();
       position.setFromMatrixPosition(matrix);
-      dummy.scale.set(3, 3, 3);
+      dummy.scale.set(3/zoom, 3/zoom, 3/zoom);
       dummy.position.copy(position);
       dummy.updateMatrix();
       ref.current.setMatrixAt(e.instanceId, dummy.matrix);
       ref.current.instanceMatrix.needsUpdate = true;
-      setrerender((x) => !x);
+      setreRender((x) => !x);
+      setPointID(e.instanceId)
+      setPointLoc([e.clientX,e.clientY])
+      setShowPointInfo(true)
     }
-    }
+  }
 
   function restorePoint(){
     if (ref.current){
@@ -65,13 +79,14 @@ function PlotPoints({ points, pointSize, pointColor }: { points: THREE.Vector3[]
       for (let i=0; i<count;i++){
         ref.current.getMatrixAt(i,matrix)
         position.setFromMatrixPosition(matrix)
-        dummy.scale.set(1,1,1)
+        dummy.scale.set(1/zoom,1/zoom,1/zoom)
         dummy.position.copy(position)
         dummy.updateMatrix()
         ref.current.setMatrixAt(i,dummy.matrix)
       }
       ref.current.instanceMatrix.needsUpdate = true
-      setrerender(x=>!x)
+      setreRender(x=>!x)
+      setShowPointInfo(false)
     }
   }
 
@@ -86,15 +101,17 @@ function PlotPoints({ points, pointSize, pointColor }: { points: THREE.Vector3[]
 
 
 export const PlotLine = ({ 
-  data, 
-  lineWidth = 20,
-  showPoints = false,
+  lineWidth = 5,
+  showPoints = true,
   pointSize = 5,
   pointColor = "white",
   interpolation = 'linear',
-  scaling,
-  height
+  height,
+  pointSetters
 }: PlotLineProps) => {
+
+  const {scaling, timeSeries} = useContext(plotContext)
+  const data = timeSeries
 
   //LinSpace to take up entire extent
   function linspace(start: number, stop: number, num: number): number[] {
@@ -134,13 +151,6 @@ export const PlotLine = ({
   }
 }, [points]);
 
-  // const pointsGeometry = useMemo(() => {
-  //   if (!data || data.length === 0) return null;
-  //   return new THREE.BufferGeometry().setFromPoints(points);
-  // }, [points]);
-
-  
-
   const material = useMemo(() => {
     return new THREE.ShaderMaterial({
                     glslVersion: THREE.GLSL3,
@@ -173,15 +183,6 @@ export const PlotLine = ({
         });
   }, [lineWidth]);
 
-  // const pointsMaterial = useMemo(() => {
-  //   return new THREE.PointsMaterial({ 
-  //     color: pointColor || color,
-  //     size: 10,
-  //     sizeAttenuation: false
-  //   });
-  // }, [color, pointColor, pointSize]);
-
-
   if (!data || data.length === 0) {
     return null;
   }
@@ -189,12 +190,7 @@ export const PlotLine = ({
   return (
     <group>
       {geometry && <primitive object={new THREE.Line(geometry, material)}  />}
-      {/* {showPoints && pointsGeometry && (
-        <mesh onPointerOver={(e)=>console.log(e)}>
-          <primitive object={new THREE.Points(pointsGeometry, pointsMaterial)} />
-        </mesh>
-      )} */}
-      {showPoints && <PlotPoints points={points} pointSize={pointSize} pointColor={pointColor}/>}
+      {showPoints && <PlotPoints points={points} pointSize={pointSize} pointColor={pointColor} pointSetters={pointSetters}/>}
     </group>
   );
 };
