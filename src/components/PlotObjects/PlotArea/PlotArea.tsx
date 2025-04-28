@@ -3,7 +3,7 @@ import { parseLoc } from '@/utils/HelperFuncs'
 import { PlotLine, FixedTicks } from '@/components/PlotObjects'
 import { useContext, useEffect, useState } from 'react'
 import { plotContext } from '@/components/Contexts'
-import { ResizeBar } from '@/components/UI'
+import { ResizeBar, YScaler,XScaler } from '@/components/UI'
 import './PlotArea.css'
 
 interface pointInfo{
@@ -53,6 +53,9 @@ export function PlotArea() {
   const [showPointInfo,setShowPointInfo] = useState<boolean>(false)
   const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.15)-48))
 
+  const [yScale,setYScale] = useState<number>(1)
+  const [xScale,setXScale] = useState<number>(1)
+
   const pointSetters ={
     setPointID,
     setPointLoc,
@@ -73,13 +76,15 @@ export function PlotArea() {
     >
       <PointInfo pointID={pointID} pointLoc={pointLoc} showPointInfo={showPointInfo} />
       <ResizeBar height={height} setHeight={setHeight}/> 
+      <YScaler scale={yScale} setScale={setYScale} />
+      <XScaler scale={xScale} setScale={setXScale} />
       <Canvas
       orthographic
         camera={{ position: [0, 0, 40] }}
         frameloop="demand"
       >
-        <PlotLine height={height} pointSetters={pointSetters}/>
-        <FixedTicks height={height}/>
+        <PlotLine height={height} pointSetters={pointSetters} yScale={yScale} xScale={xScale}/>
+        <FixedTicks height={height} yScale={yScale} xScale={xScale}/>
       </Canvas>
       { //Only show coords when coords exist
         coords && coords.first.name !== 'Default' && 
