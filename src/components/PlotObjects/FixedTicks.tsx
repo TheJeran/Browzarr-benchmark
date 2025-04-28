@@ -2,7 +2,7 @@ import { Text, OrbitControls } from '@react-three/drei'
 import { useThree, useFrame } from '@react-three/fiber'
 import { useState, useMemo, useEffect, useRef, useContext } from 'react'
 import { parseTimeUnit } from '@/utils/HelperFuncs'
-import { plotContext } from '../Contexts/Contexts'
+import { plotContext } from '../Contexts/PlotContext'
 
 
 interface ViewportBounds {
@@ -189,7 +189,7 @@ export function FixedTicks({
                       anchorX="center"
                       anchorY="top"
                     >
-                      {textArray?.[Math.round(normX*xDimSize)] ?? ''}
+                      {textArray?.[Math.round(normX*xDimSize-.5)] ?? ''}
                     </Text>
                   )}
                 </group>

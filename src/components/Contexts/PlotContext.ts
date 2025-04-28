@@ -14,7 +14,10 @@ export interface DimCoords {
 interface PlotContextType {
     coords: DimCoords;
     plotDim: number;
+    dimNames:string[],
+    dimUnits:string[],
     dimArrays: number[][];
+    plotUnits:string;
     yRange: number[];
     timeSeries: number[];
     scaling: {
@@ -40,7 +43,10 @@ const plotObj = {
       },
     },
     plotDim: 100, // Example dimension value
+    dimNames:["Default","Default","Default"],
+    dimUnits:["Default","Default","Default"],
     dimArrays: [[0, 1, 2], [3, 4, 5]], // Example array of arrays
+    plotUnits:"Default",
     yRange: [0, 10], // Example range
     timeSeries: [1, 2, 3, 4, 5], // Example time series
     scaling: {
@@ -51,3 +57,4 @@ const plotObj = {
   };
   
 export const plotContext = createContext<PlotContextType>(plotObj)
+
