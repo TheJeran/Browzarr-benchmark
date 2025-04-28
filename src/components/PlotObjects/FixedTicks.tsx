@@ -205,8 +205,8 @@ export function FixedTicks({
             const x = horX
             return (
               <>
-                <group position={[x,y,0]}>
-                  <line key={`hgrid-${i}`} >
+                <group key={`hgrid-${i}`} position={[x,y,0]}>
+                  <line >
                     <bufferGeometry>
                       <float32BufferAttribute
                         attach="attributes-position"

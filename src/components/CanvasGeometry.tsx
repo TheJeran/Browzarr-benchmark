@@ -5,7 +5,7 @@ import { Center, OrbitControls, Environment } from '@react-three/drei'
 import { variables, ZarrDataset, parseUVCoords } from '@/components/ZarrLoaderLRU'
 import { useEffect, useState, useMemo } from 'react';
 import { useControls } from 'leva'
-import { PointCloud, UVCube, PlotArea } from './PlotObjects';
+import { PointCloud, UVCube, PlotArea, DataCube } from './PlotObjects';
 import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from './Textures';
 import { Metadata } from './UI';
 import { plotContext } from './Contexts/Contexts';
@@ -183,6 +183,7 @@ export function CanvasGeometry() {
 
         {/* Volume Plots */}
         {plotter == "volume" && <>
+          <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
           <UVCube shape={shape} setTimeSeriesLocs={setTimeSeriesLocs} />
         </>}
         {/* Point Clouds Plots */}

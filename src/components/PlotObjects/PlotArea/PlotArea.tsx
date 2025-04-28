@@ -8,7 +8,7 @@ import './PlotArea.css'
 
 export function PlotArea() {
 
-  const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.15)-48))
+  const [height, setHeight] = useState<number>(Math.round((window.innerHeight*0.15)-48))
 
   //@ts-ignore
   const {coords} = useContext(plotContext)
@@ -27,6 +27,7 @@ export function PlotArea() {
       }}
     >
       <ResizeBar height={height} setHeight={setHeight}/>
+
       <Canvas
       orthographic
         camera={{ position: [0, 0, 40] }}
