@@ -52,7 +52,7 @@ export function CanvasGeometry() {
   const [colormap,setColormap] = useState<THREE.DataTexture>(GetColorMapTexture())
   const [timeSeries, setTimeSeries] = useState<number[]>([0]);
   const [showLoading, setShowLoading] = useState<boolean>(false);
-  const [metadata,setMetadata] = useState<Object[] | null>(null)
+  const [metadata,setMetadata] = useState<object[] | null>(null)
   
   //Timeseries Plotting Information
   const [dimArrays,setDimArrays] = useState([[0],[0],[0]])
