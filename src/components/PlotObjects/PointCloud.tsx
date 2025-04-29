@@ -10,11 +10,6 @@ interface PCProps {
   colormap: THREE.DataTexture
 }
 
-function handleClick(e: any){
-  e.preventDefault();
-  console.log(e)
-}
-
 export const PointCloud = ({textures} : {textures:PCProps} )=>{
     const {texture, colormap } = textures;
     const {pointScale,scalePoints,scaleIntensity} = useControls({
