@@ -184,7 +184,7 @@ export function CanvasGeometry() {
     {metadata && <Metadata data={metadata} /> }
 
     <plotContext.Provider value={plotObj} >
-      <PlotArea />
+      {variable !== "Default" && <PlotArea />}
     </plotContext.Provider>
    
     {/* <Leva theme={lightTheme} /> */}

@@ -1,7 +1,7 @@
 import { Canvas } from '@react-three/fiber'
 import { parseLoc } from '@/utils/HelperFuncs'
 import { PlotLine, FixedTicks } from '@/components/PlotObjects'
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { plotContext } from '@/components/Contexts'
 import { ResizeBar, YScaler,XScaler } from '@/components/UI'
 import './PlotArea.css'
@@ -46,8 +46,71 @@ function PointInfo({pointID,pointLoc,showPointInfo}:pointInfo){
   )
 }
 
+function PointCoords(){
+  const {coords} = useContext(plotContext);
+  const [moving,setMoving] = useState<boolean>(false)
+  const initialMouse = useRef<number[]>([40,115])
+  const initialDiv = useRef<number[]>([40,115])
+  const [xy, setXY] = useState<number[]>([40,115])
+
+  function handleDown(e: any){
+    initialMouse.current = [e.clientX,e.clientY]
+    initialDiv.current = [...xy]
+    setMoving(true)
+  }
+
+  function handleMove(e: any){
+    if (moving){
+      const deltaX = initialMouse.current[0]-e.clientX
+      const deltaY = initialMouse.current[1]-e.clientY
+      const x = Math.max(initialDiv.current[0]-deltaX,10)
+      const y = Math.max(initialDiv.current[1]+deltaY,14) //Again hardcoded footer height
+      setXY([Math.min(x,window.innerWidth-100),Math.min(y,window.innerHeight-100)])
+    }
+  }
+
+  function handleUp(){
+    setMoving(false)
+  }
+
+  useEffect(() => {
+    if (moving) {
+      document.addEventListener('mousemove', handleMove);
+      document.addEventListener('mouseup', handleUp);
+    }
+    return () => {
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleUp);
+    };
+  }, [moving]);
+
+  return(
+    <>
+    { //Only show coords when coords exist
+      coords && coords.first.name !== 'Default' && 
+      <div className='plot-coords'
+        style={{
+          left:`${xy[0]}px`,
+          bottom:`${xy[1]}px`
+        }}
+        onPointerDown={handleDown}
+        onPointerMove={handleMove}
+        onPointerUp={()=>setMoving(false)}     
+      >
+        <b>{`${coords['first'].name}: `}</b>
+        {`${parseLoc(coords['first'].loc,coords['first'].units)}`}
+        <br/> <br/>
+        <b>{`${coords['second'].name}: `}</b>
+        {`${parseLoc(coords['second'].loc,coords['second'].units)}`}
+      </div>
+    } 
+    </>
+  )
+
+}
+
+
 export function PlotArea() {
-  const {coords} = useContext(plotContext)
   const [pointID, setPointID] = useState<number>(0);
   const [pointLoc, setPointLoc] = useState<number[]>([0,0])
   const [showPointInfo,setShowPointInfo] = useState<boolean>(false)
@@ -86,16 +149,7 @@ export function PlotArea() {
         <PlotLine height={height} pointSetters={pointSetters} yScale={yScale} xScale={xScale}/>
         <FixedTicks height={height} yScale={yScale} xScale={xScale}/>
       </Canvas>
-      { //Only show coords when coords exist
-        coords && coords.first.name !== 'Default' && 
-        <div className='plot-coords'>
-          <b>{`${coords['first'].name}: `}</b>
-          {`${parseLoc(coords['first'].loc,coords['first'].units)}`}
-          <br/> <br/>
-          <b>{`${coords['second'].name}: `}</b>
-          {`${parseLoc(coords['second'].loc,coords['second'].units)}`}
-        </div>
-      } 
+      <PointCoords/>
     </div>
   )
 }
