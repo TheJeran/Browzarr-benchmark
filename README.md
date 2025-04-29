@@ -24,7 +24,7 @@ _*Not essential_
 - [x] _Resize the canvas/window*_
 - [x] Selectable points 
 - [x] Show points with information (Value and coords)
-- [ ] Scale axis'
+- [x] Scale axis'
 - [ ] Add option to enable/disable timeseries selection to prevent misclicks
 
 ### Visuals
@@ -62,7 +62,8 @@ _*Not essential_
 - [ ] Scale the timeseries selection with plot resolution
 - [x] Vertical scaling on resize is off between line and horizontal bars
 - [x] Grid lines cull when centers are out of view
-- [ ] Find some way to prevent multiple points being large when highlighting points in 
+- [ ] Find some way to prevent multiple points being large when highlighting points in
+- [ ] Move center of axis of point InstancedMesh with camera so to prevent culling
 
 
      
