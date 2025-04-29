@@ -10,19 +10,32 @@ interface PCProps {
   colormap: THREE.DataTexture
 }
 
+function handleClick(e: any){
+  e.preventDefault();
+  console.log(e)
+}
+
 export const PointCloud = ({textures} : {textures:PCProps} )=>{
     const {texture, colormap } = textures;
-    const {pointScale,scalePoints} = useControls({
+    const {pointScale,scalePoints,scaleIntensity} = useControls({
       pointScale:{
         value:1,
         min:1,
-        max:40,
+        max:100,
         step:1
       },
       scalePoints:{
         value:false,
         label:"Scale Points By Value"
+      },
+      scaleIntensity:{
+        value:2,
+        min:1,
+        max:10,
+        step:.2,
+        labe: "Scale Intensity"
       }
+
       }
     )
     //Extract data and shape from Data3DTexture
@@ -82,7 +95,8 @@ export const PointCloud = ({textures} : {textures:PCProps} )=>{
       uniforms: {
         pointSize: {value: pointScale},
         cmap: {value: colormap},
-        scalePoints:{value: scalePoints}
+        scalePoints:{value: scalePoints},
+        scaleIntensity: {value: scaleIntensity}
       },
       vertexShader:pointVert,
       fragmentShader:pointFrag,

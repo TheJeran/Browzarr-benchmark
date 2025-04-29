@@ -10,7 +10,7 @@ const XScaler = ({scale,setScale}:{scale:number,setScale:React.Dispatch<React.Se
     const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
         e.preventDefault(); // Prevent text selection
         setIsResizing(true);
-        initialPosition.current = e.clientY // Record starting height
+        initialPosition.current = e.clientX // Record starting height
     };
     
     // Adjust height on mousemove

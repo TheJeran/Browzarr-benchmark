@@ -134,15 +134,6 @@ export class ZarrDataset{
 		const pz = slice[0] == null ? 0 : stride[0]*slice[0]
 		const py = slice[1] == null ? 0 : stride[1]*slice[1]
 		const px = slice[2] == null ? 0 : stride[2]*slice[2]
-
-		// console.log(`
-		// 	Slice:${slice}
-		// 	mapDim:${mapDim}
-		// 	dimStride:${dimStride}
-		// 	pz:${pz}
-		// 	py:${py}
-		// 	px:${px}
-		// 	`)
 		const ts = [];
 
 		for (let i = 0; i < shape[mapDim] ; i++){
