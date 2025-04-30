@@ -104,7 +104,7 @@ function PlotPoints({ points, pointSize, pointColor, pointSetters }: { points: T
 
 export const PlotLine = ({ 
   lineWidth = 5,
-  showPoints = true,
+  showPoints = false,
   pointSize = 5,
   pointColor = "#777777",
   interpolation = 'linear',

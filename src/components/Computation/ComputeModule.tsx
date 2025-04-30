@@ -1,0 +1,73 @@
+import { useEffect, useState } from 'react'
+import { OneArrayCompute } from './ComputeShaders'
+import * as THREE from 'three'
+import fragmentShader from '@/components/Computation/shaders/frag.glsl'
+import vertexShader from '@/components/Computation/shaders/vert.glsl'
+
+interface Array{
+    data:number[],
+    shape:number[],
+    stride:number[]
+}
+interface StateVars{
+  axis:number,
+  operation:string,
+  execute:boolean
+}
+
+
+const ComputeModule = ({array,cmap,shape,stateVars}:{array: Array,cmap:THREE.DataTexture,shape:number[],stateVars:StateVars}) => {
+    const {axis,operation,execute} = stateVars;
+    const [planeShape,setPlaneShape] = useState<number[]>(shape.filter((_val,idx)=> idx !== axis))
+
+
+    const GPUCompute = new OneArrayCompute(array)
+    const [texture,setTexture] = useState<THREE.Texture | undefined>(undefined)
+
+    const shaderMaterial = new THREE.ShaderMaterial({
+        glslVersion: THREE.GLSL3,
+        uniforms:{
+          data : {value: texture},
+          cmap : { value : cmap},
+        },
+        vertexShader,
+        fragmentShader,
+        side: THREE.DoubleSide
+    })
+
+    useEffect(()=>{
+      if (array){
+        let newText;
+        switch(operation){
+          case "Max":
+            newText =  GPUCompute.Max(axis);
+            break
+          case "Min":
+            newText =  GPUCompute.Min(axis);
+            break
+          case "Mean":
+            newText =  GPUCompute.Mean(axis);
+            break
+          case "StDev":
+            newText =  GPUCompute.StDev(axis);
+            break;
+          default:
+            newText = texture;
+            break
+        }
+          setTexture(newText)
+          setPlaneShape(shape.filter((_val,idx)=> idx !== axis))
+      }
+    },[execute])
+
+  return (
+    <>
+    <mesh material={shaderMaterial}>
+      <planeGeometry args={[planeShape[1],planeShape[0]]} />
+    </mesh>
+
+    </>
+  )
+}
+
+export default ComputeModule
