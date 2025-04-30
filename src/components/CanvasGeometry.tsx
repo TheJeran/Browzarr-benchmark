@@ -7,8 +7,15 @@ import { useEffect, useState, useMemo } from 'react';
 import { useControls } from 'leva'
 import { PointCloud, UVCube, PlotArea, DataCube } from './PlotObjects';
 import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from './Textures';
-import { Metadata } from './UI';
+import { Metadata, AnalysisWindow } from './UI';
 import { plotContext, DimCoords } from './Contexts';
+import ComputeModule from '@/components/Computation/ComputeModule'
+
+interface Array{
+  data:number[],
+  shape:number[],
+  stride:number[]
+}
 
 const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
 
@@ -53,6 +60,7 @@ export function CanvasGeometry() {
   const [timeSeries, setTimeSeries] = useState<number[]>([0]);
   const [showLoading, setShowLoading] = useState<boolean>(false);
   const [metadata,setMetadata] = useState<object[] | null>(null)
+  const [dataArray, setDataArray] = useState<Array | null>(null)
   
   //Timeseries Plotting Information
   const [dimArrays,setDimArrays] = useState([[0],[0],[0]])
@@ -61,6 +69,12 @@ export function CanvasGeometry() {
   const [dimCoords, setDimCoords] = useState<DimCoords>();
   const [plotDim,setPlotDim] = useState<number>(0)
   const ZarrDS = useMemo(()=>new ZarrDataset(storeURL),[])
+
+  //Analysis variables
+  const [reduceAxis, setReduceAxis] = useState<number>(0);
+  const [reduceOperation, setReduceOperation] = useState<string>("Mean")
+  const [executeReduction,setExecuteReduction] = useState<boolean>(false)
+  const [showAnalysis, setShowAnalysis] = useState<boolean>(false)
 
   useEffect(()=>{
     setColormap(GetColorMapTexture(colormap,cmap,1,"#000000",0,flipCmap));
@@ -77,6 +91,7 @@ export function CanvasGeometry() {
           data: result.data,
           shape: result.shape
         })
+        setDataArray(result)
         console.log(`logging the shape since we will want to use it in the future for 2D vs 3D actions ${shape}`)
         if (texture instanceof THREE.DataTexture || texture instanceof THREE.Data3DTexture) {
           setTexture(texture)
@@ -157,15 +172,28 @@ export function CanvasGeometry() {
     scaling:{...valueScales,colormap}
   } 
 
+  const analysisSetters = {
+    setAxis:setReduceAxis,
+    setOperation:setReduceOperation,
+    setExecute:setExecuteReduction
+  }
+
+  const analysisVars = {
+    axis:reduceAxis,
+    operation:reduceOperation,
+    execute:executeReduction
+  }
   return (
     <>
+    
     <Loading showLoading={showLoading} />
     <div className='canvas'>
       <Canvas shadows camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
       frameloop="demand"
       >
+        
         <Center top position={[-1, 0, 1]}/>
-
+        {dataArray && showAnalysis && <ComputeModule array={dataArray} cmap={colormap} shape={shape.toArray()} stateVars={analysisVars}/>}
         {/* Volume Plots */}
         {plotter == "volume" && <>
           <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
@@ -180,14 +208,25 @@ export function CanvasGeometry() {
         
       </Canvas>
     </div>
-
+    {showAnalysis && <AnalysisWindow setters={analysisSetters}/>}
     {metadata && <Metadata data={metadata} /> }
 
     <plotContext.Provider value={plotObj} >
+      
       {variable !== "Default" && <PlotArea />}
     </plotContext.Provider>
    
     {/* <Leva theme={lightTheme} /> */}
+    <button
+      style={{
+        position:'fixed',
+        left:'5%',
+        top:'50%'
+      }}
+      onClick={()=>setShowAnalysis(x=>!x)}
+    >
+      {showAnalysis ? 'Hide' : 'Show' } Analysis Stuff
+    </button>
     </>
   )
 }
