@@ -1,7 +1,7 @@
 import * as zarr from "zarrita";
 import * as THREE from 'three';
 import QuickLRU from 'quick-lru';
-
+import { parseUVCoords } from "@/utils/HelperFuncs";
 function GetZarrVariables(obj: Record<string, { path?: string; kind?: string }>) {
 	//Parses out variables in a Zarr group for variable list
     const result = [];
@@ -30,29 +30,10 @@ export async function GetVariables(storePath: string){
 // type NumericDataType = zarr.NumberDataType | zarr.BigintDataType;
 // ?TODO: support more types, see https://github.com/manzt/zarrita.js/blob/0e809ef7cd4d1703e2112227e119b8b6a2cc9804/packages/zarrita/src/metadata.ts#L50
 
-
-export function parseUVCoords({normal,uv}:{normal:THREE.Vector3,uv:THREE.Vector2}){
-	switch(true){
-		case normal.z === 1:
-			return [null,uv.y,uv.x]
-		case normal.z === -1:
-			return [null,uv.y,1-uv.x]
-		case normal.x === 1:
-			return [uv.x,uv.y,null]
-		case normal.x === -1:
-			return [1-uv.x,uv.y,null]
-		case normal.y === 1:
-			return [1-uv.y,null,uv.x]
-		default:
-			return [0,0,0]
-	}
-}
-
 interface TimeSeriesInfo{
 	uv:THREE.Vector2,
 	normal:THREE.Vector3
 }
-
   
 export class ZarrDataset{
 	private storePath: string;
@@ -153,15 +134,6 @@ export class ZarrDataset{
 		const pz = slice[0] == null ? 0 : stride[0]*slice[0]
 		const py = slice[1] == null ? 0 : stride[1]*slice[1]
 		const px = slice[2] == null ? 0 : stride[2]*slice[2]
-
-		// console.log(`
-		// 	Slice:${slice}
-		// 	mapDim:${mapDim}
-		// 	dimStride:${dimStride}
-		// 	pz:${pz}
-		// 	py:${py}
-		// 	px:${px}
-		// 	`)
 		const ts = [];
 
 		for (let i = 0; i < shape[mapDim] ; i++){

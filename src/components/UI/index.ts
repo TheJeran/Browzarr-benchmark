@@ -7,6 +7,9 @@ import Overlays from "./Overlays";
 import  Metadata from "./MetaData";
 import ResizeBar from "./ResizeBar";
 
+import YScaler from "./YScaler";
+import XScaler from "./XScaler";
+import AnalysisWindow from "./Analysis";
 export {
   Navbar,
   Footer,
@@ -15,5 +18,8 @@ export {
   AboutModal,
   Overlays,
   Metadata,
-  ResizeBar
+  ResizeBar,
+  YScaler,
+  XScaler,
+  AnalysisWindow
 };

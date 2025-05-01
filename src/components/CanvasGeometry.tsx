@@ -7,26 +7,28 @@ import { Center, OrbitControls, Environment } from '@react-three/drei'
 import { variables, ZarrDataset, parseUVCoords } from '@/components/zarr/ZarrLoaderLRU'
 import { useEffect, useState, useMemo } from 'react';
 import { useControls } from 'leva'
-import { DataCube, PointCloud, UVCube, PlotLine, PlotArea, FixedTicks } from './plots';
+import { PointCloud, UVCube, PlotArea, DataCube } from './plots';
 import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from './textures';
-import { Metadata, ResizeBar } from './ui';
+import { Metadata, AnalysisWindow } from './ui';
+import { plotContext, DimCoords } from './Contexts';
+import ComputeModule from '@/components/Computation/ComputeModule'
+
+interface Array{
+  data:number[],
+  shape:number[],
+  stride:number[]
+}
 
 const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
 
-interface TimeSeriesLocs{
-  uv:THREE.Vector2;
-  normal:THREE.Vector3
-}
-interface Coord {
-  name: string; 
-  loc: number;  
-  units: string;
-}
-
-interface DimCoords {
-  first: Coord;
-  second: Coord;
-  plot: Pick<Coord, "units">; // Only units
+function Loading({showLoading}:{showLoading:boolean}){
+  return(
+    <div className='messages'>
+      {showLoading && <div className='loading'>
+        Loading...
+      </div>}
+    </div>
+  )
 }
 
 export function CanvasGeometry() {
@@ -55,35 +57,26 @@ export function CanvasGeometry() {
 
   const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null) //Main Texture
   const [shape, setShape] = useState<THREE.Vector3 | THREE.Vector3>(new THREE.Vector3(2, 2, 2))
-  const [timeSeriesLocs,setTimeSeriesLocs] = useState<TimeSeriesLocs>({uv:new THREE.Vector2(.5,.5), normal:new THREE.Vector3(0,0,1)})
   const [valueScales,setValueScales] = useState({maxVal:1,minVal:-1})
   const [colormap,setColormap] = useState<THREE.DataTexture>(GetColorMapTexture())
   const [timeSeries, setTimeSeries] = useState<number[]>([0]);
   const [showLoading, setShowLoading] = useState<boolean>(false);
-  const [metadata,setMetadata] = useState<object[]>([{},{}])
+  const [metadata,setMetadata] = useState<object[] | null>(null)
+  const [dataArray, setDataArray] = useState<Array | null>(null)
   
   //Timeseries Plotting Information
   const [dimArrays,setDimArrays] = useState([[0],[0],[0]])
   const [dimNames,setDimNames] = useState<string[]>(["default"])
   const [dimUnits,setDimUnits] = useState<string[]>(["Default"]);
-  const [dimCoords, setDimCoords] = useState<object | null>(null);
+  const [dimCoords, setDimCoords] = useState<DimCoords>();
   const [plotDim,setPlotDim] = useState<number>(0)
-  // const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.15)-48))
-  const [height, setHeight] = useState<number>(0)
-
-  useEffect(() => {
-    setHeight(Math.round(window.innerHeight-(window.innerHeight*0.15)-48))
-
-    const handleResize = () => {
-      setHeight(Math.round(window.innerHeight-(window.innerHeight*0.15)-48))
-    }
-
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-
   const ZarrDS = useMemo(()=>new ZarrDataset(storeURL),[])
+
+  //Analysis variables
+  const [reduceAxis, setReduceAxis] = useState<number>(0);
+  const [reduceOperation, setReduceOperation] = useState<string>("Mean")
+  const [executeReduction,setExecuteReduction] = useState<boolean>(false)
+  const [showAnalysis, setShowAnalysis] = useState<boolean>(false)
 
   useEffect(()=>{
     setColormap(GetColorMapTexture(colormap,cmap,1,"#000000",0,flipCmap));
@@ -100,6 +93,7 @@ export function CanvasGeometry() {
           data: result.data,
           shape: result.shape
         })
+        setDataArray(result)
         console.log(`logging the shape since we will want to use it in the future for 2D vs 3D actions ${shape}`)
         if (texture instanceof THREE.DataTexture || texture instanceof THREE.Data3DTexture) {
           setTexture(texture)
@@ -118,6 +112,7 @@ export function CanvasGeometry() {
         setShape(new THREE.Vector3(2, shapeRatio, 2));
         setShowLoading(false)
       })
+      //Get Metadata
       ZarrDS.GetAttributes(variable).then((result)=>{
         setMetadata(result);
         const [dimArrs, dimMetas] = ZarrDS.GetDimArrays()
@@ -140,61 +135,71 @@ export function CanvasGeometry() {
           setTexture(texture);
         }
         setShape(new THREE.Vector3(2, 2, 2))
-        setMetadata([{}])
+        setMetadata(null)
       }
   }, [variable])
 
-  //TIMESERIES
-  useEffect(()=>{
-    if(ZarrDS && metadata){
-      ZarrDS.GetTimeSeries(timeSeriesLocs).then((e)=> setTimeSeries(e))
-      const plotDim = (timeSeriesLocs.normal.toArray()).map((val, idx) => {
-        if (Math.abs(val) > 0) {
-          return idx;
-        }
-        return null;}).filter(idx => idx !== null);
-      setPlotDim(2-plotDim[0]) //I think this 2 is only if there are 3-dims. Need to rework the logic
-
-      const coordUV = parseUVCoords({normal:timeSeriesLocs.normal,uv:timeSeriesLocs.uv})
-      let dimCoords = coordUV.map((val,idx)=>val ? dimArrays[idx][Math.round(val*dimArrays[idx].length)] : null)
-      const thisDimNames = dimNames.filter((_,idx)=> dimCoords[idx] !== null)
-      const thisDimUnits = dimUnits.filter((_,idx)=> dimCoords[idx] !== null)
-      dimCoords = dimCoords.filter(val => val !== null)
-      const dimObj = {
-        first:{
-          name:thisDimNames[0],
-          loc:dimCoords[0],
-          units:thisDimUnits[0]
-        },
-        second:{
-          name:thisDimNames[1],
-          loc:dimCoords[1],
-          units:thisDimUnits[1]
-        },
-        plot:{
-          units:dimUnits[2-plotDim[0]]
-        }
-      }
-      setDimCoords(dimObj)
+  //These are passed to the UVCube (will be renamed) to extract the timeseries info
+  const timeSeriesObj ={
+    setters:{
+      setTimeSeries,
+      setPlotDim,
+      setDimCoords
+    },
+    values:{
+      ZarrDS,
+      shape,
+      dimArrays,
+      dimNames,
+      dimUnits
     }
-  },[timeSeriesLocs])
+  }
+
+  const defaultDimCoords: DimCoords = {
+    first: { name: "", loc: 0, units: "" },
+    second: { name: "", loc: 0, units: "" },
+    plot: { units: "" }
+  };
+
+//This is the data being passed down the plot tree
+  const plotObj = {
+    coords: dimCoords ?? defaultDimCoords,
+    plotDim,
+    dimNames,
+    dimUnits,
+    dimArrays,
+    plotUnits:metadata ? (metadata as any).units : "Default",
+    yRange:[valueScales.minVal,valueScales.maxVal],
+    timeSeries,
+    scaling:{...valueScales,colormap}
+  } 
+
+  const analysisSetters = {
+    setAxis:setReduceAxis,
+    setOperation:setReduceOperation,
+    setExecute:setExecuteReduction
+  }
+
+  const analysisVars = {
+    axis:reduceAxis,
+    operation:reduceOperation,
+    execute:executeReduction
+  }
   return (
     <>
-    <div className='messages'>
-      {showLoading && <div className='loading'>
-        Loading...
-      </div>}
-    </div>
+    
+    <Loading showLoading={showLoading} />
     <div className='canvas'>
       <Canvas shadows camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
       frameloop="demand"
       >
+        
         <Center top position={[-1, 0, 1]}/>
-
+        {dataArray && showAnalysis && <ComputeModule array={dataArray} cmap={colormap} shape={shape.toArray()} stateVars={analysisVars}/>}
         {/* Volume Plots */}
         {plotter == "volume" && <>
           <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
-          <UVCube shape={shape} setTimeSeriesLocs={setTimeSeriesLocs}/>
+          <UVCube {...timeSeriesObj} />
         </>}
         {/* Point Clouds Plots */}
         {plotter == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
@@ -205,21 +210,25 @@ export function CanvasGeometry() {
         
       </Canvas>
     </div>
-
+    {showAnalysis && <AnalysisWindow setters={analysisSetters}/>}
     {metadata && <Metadata data={metadata} /> }
 
-    <ResizeBar height={height} setHeight={setHeight} />
-    <PlotArea height={height} coords={dimCoords as DimCoords }>
-        <PlotLine 
-          data={timeSeries} 
-          lineWidth={20}
-          scaling={{...valueScales,colormap}}
-          height={height}
-        />
-        {dimCoords && <FixedTicks colorTicks='white' xDimArray={dimArrays[plotDim]} yRange={[valueScales.minVal,valueScales.maxVal]} coords={dimCoords as DimCoords} height={height}/>}
-    </PlotArea>
+    <plotContext.Provider value={plotObj} >
+      
+      {variable !== "Default" && <PlotArea />}
+    </plotContext.Provider>
    
     {/* <Leva theme={lightTheme} /> */}
+    <button
+      style={{
+        position:'fixed',
+        left:'5%',
+        top:'50%'
+      }}
+      onClick={()=>setShowAnalysis(x=>!x)}
+    >
+      {showAnalysis ? 'Hide' : 'Show' } Analysis Stuff
+    </button>
     </>
   )
 }

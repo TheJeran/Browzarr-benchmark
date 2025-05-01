@@ -6,6 +6,8 @@
  * @returns Scaling factor (milliseconds per unit)
  */
 
+import * as THREE from 'three'
+
 export function parseTimeUnit(units: string | undefined): number {
     if (units === "Default"){
         console.log("Aborting?")
@@ -59,9 +61,26 @@ export function parseLoc(input:number, units: string | undefined) {
         return new Date(timeStamp).toDateString()
     }
     if ( units.match(/(degree|degrees|deg|°)/i) ){
-        return `${input}°`
+        return `${input.toFixed(2)}°`
     }
     else {
-        return input;
+        return input.toFixed(2);
     }
+}
+
+export function parseUVCoords({normal,uv}:{normal:THREE.Vector3,uv:THREE.Vector2}){
+  switch(true){
+    case normal.z === 1:
+      return [null,uv.y,uv.x]
+    case normal.z === -1:
+      return [null,uv.y,1-uv.x]
+    case normal.x === 1:
+      return [uv.x,uv.y,null]
+    case normal.x === -1:
+      return [1-uv.x,uv.y,null]
+    case normal.y === 1:
+      return [1-uv.y,null,uv.x]
+    default:
+      return [0,0,0]
+  }
 }
