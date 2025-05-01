@@ -10,8 +10,8 @@ import { useControls } from 'leva'
 import { PointCloud, UVCube, PlotArea, DataCube } from './plots';
 import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from './textures';
 import { Metadata, AnalysisWindow } from './ui';
-import { plotContext, DimCoords } from './Contexts';
-import ComputeModule from '@/components/Computation/ComputeModule'
+import { plotContext, DimCoords } from './contexts';
+import ComputeModule from '@/components/computation/ComputeModule'
 
 interface Array{
   data:number[],

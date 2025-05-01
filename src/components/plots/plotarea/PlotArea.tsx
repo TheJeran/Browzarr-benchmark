@@ -2,7 +2,7 @@ import { Canvas } from '@react-three/fiber'
 import { parseLoc } from '@/utils/HelperFuncs'
 import { PlotLine, FixedTicks } from '@/components/plots'
 import { useContext, useEffect, useRef, useState } from 'react'
-import { plotContext } from '@/components/Contexts'
+import { plotContext } from '@/components/contexts'
 import { ResizeBar, YScaler,XScaler } from '@/components/ui'
 import './PlotArea.css'
 

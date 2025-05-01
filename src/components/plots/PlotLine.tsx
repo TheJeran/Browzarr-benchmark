@@ -1,7 +1,7 @@
 
 import * as THREE from 'three'
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { plotContext } from '../Contexts/PlotContext';
+import { plotContext } from '../contexts/PlotContext';
 import { useFrame } from '@react-three/fiber';
 
 

@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { useState } from 'react';
-import { DimCoords } from '@/components/Contexts/PlotContext';
+import { DimCoords } from '@/components/contexts/PlotContext';
 import { ZarrDataset } from '../ZarrLoaderLRU';
 import { parseUVCoords } from '@/utils/HelperFuncs';
 
