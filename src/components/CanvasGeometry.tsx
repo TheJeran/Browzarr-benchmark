@@ -216,7 +216,7 @@ export function CanvasGeometry() {
           scaling={{...valueScales,colormap}}
           height={height}
         />
-        {dimCoords && <FixedTicks color='white' xDimArray={dimArrays[plotDim]} yRange={[valueScales.minVal,valueScales.maxVal]} coords={dimCoords as DimCoords} height={height}/>}
+        {dimCoords && <FixedTicks colorTicks='white' xDimArray={dimArrays[plotDim]} yRange={[valueScales.minVal,valueScales.maxVal]} coords={dimCoords as DimCoords} height={height}/>}
     </PlotArea>
    
     {/* <Leva theme={lightTheme} /> */}
