@@ -99,7 +99,7 @@ function PointCoords(){
       >
         <b>{`${coords['first'].name}: `}</b>
         {`${parseLoc(coords['first'].loc,coords['first'].units)}`}
-        <br/> <br/>
+        <br/>
         <b>{`${coords['second'].name}: `}</b>
         {`${parseLoc(coords['second'].loc,coords['second'].units)}`}
       </div>
@@ -134,7 +134,7 @@ export function PlotArea() {
         left: 0,
         width: '100%',
         top: `${height}px`, // 15% of viewport height
-        background: '#00000099'
+        background: 'var(--background-plot)',
       }}
     >
       <PointInfo pointID={pointID} pointLoc={pointLoc} showPointInfo={showPointInfo} />

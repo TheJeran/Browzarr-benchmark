@@ -1,6 +1,6 @@
 'use client';
 
-import './Scalers.css'
+import './css/Scalers.css'
 import { useEffect, useState, useRef } from 'react';
 
 const XScaler = ({scale,setScale}:{scale:number,setScale:React.Dispatch<React.SetStateAction<number>>}) => {

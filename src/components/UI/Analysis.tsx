@@ -1,4 +1,4 @@
-import './Analysis.css'
+import './css/Analysis.css'
 import * as React from 'react'
 
 const axis = [0,1,2]
