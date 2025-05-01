@@ -2,7 +2,8 @@ import { Text, OrbitControls } from '@react-three/drei'
 import { useThree, useFrame } from '@react-three/fiber'
 import { useState, useMemo, useEffect, useRef, useContext } from 'react'
 import { parseTimeUnit } from '@/utils/HelperFuncs'
-import { Fragment } from 'react'import { plotContext } from '../Contexts/PlotContext'
+import { Fragment } from 'react'
+import { plotContext } from '../Contexts/PlotContext'
 
 
 interface ViewportBounds {

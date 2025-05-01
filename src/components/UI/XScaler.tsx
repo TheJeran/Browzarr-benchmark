@@ -1,3 +1,5 @@
+'use client';
+
 import './Scalers.css'
 import { useEffect, useState, useRef } from 'react';
 
