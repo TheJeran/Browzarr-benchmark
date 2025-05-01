@@ -29,7 +29,7 @@ const Metadata = ({ data }: { data: Record<string, any> }) => {
           <strong>{key}:</strong> {String(value)}
         </p>)
       ))}</>}
-      <button onClick={()=>setShowAll(x=>!x)}>{showAll ? "Hide" : "Show"} Extra </button>
+      <button className="button" onClick={()=>setShowAll(x=>!x)}>{showAll ? "Hide" : "Show"} Extra </button>
     </div>
   );
 };

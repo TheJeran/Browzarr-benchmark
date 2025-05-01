@@ -13,7 +13,7 @@
     flex-direction: row;
     align-items: center;
     gap: 8px;
-    color: var(--modal-p);
+    color: var(--text-plot);
 }
 
 .point-info{

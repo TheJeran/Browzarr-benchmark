@@ -8,7 +8,11 @@
   --modal-shadow: #f5f1f1aa;
   --modal-gradient: #cccaca;
   --modal-p: #08000080;
+  --text-plot: rgb(227, 224, 224);
   --accent-1: black;
+  --accent-2: black;
+  --button-hover: rgb(99, 93, 93);
+
 }
 /* Light Theme */
 [data-theme='light'] {
@@ -22,7 +26,7 @@
   --accent-1: black;
   --background-funding: #F1F2F4;
   --toggle-hover: rgb(127, 128, 132);
-  --accent-1: black;
+  --accent-2: rgb(133, 127, 127);
 
 }
 
@@ -38,6 +42,7 @@
   --background-funding: rgb(32, 33, 38);
   --toggle-hover: rgb(239, 198, 95);
   --accent-1: gold;
+  --accent-2: rgb(58, 57, 56);
 }
 
 body {
@@ -61,4 +66,17 @@ ul {
 
 li {
   padding: 0.25rem 0;
+}
+
+.button {
+  background-color: var(--accent-2);
+  /* color: white; */
+  border: none;
+  padding: 0.25rem 1rem;
+  border-radius: 0.25rem;
+  margin-top: 0.5rem;
+  cursor: pointer;
+}
+.button:hover {
+  background-color: var(--button-hover);
 }
