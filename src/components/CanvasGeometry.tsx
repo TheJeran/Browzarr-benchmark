@@ -4,7 +4,7 @@ import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { Canvas } from '@react-three/fiber';
 import { Center, OrbitControls, Environment } from '@react-three/drei'
-import { ZarrDataset, GetVariables } from '@/components/zarr/ZarrLoaderLRU'
+import { ZarrDataset, variables } from '@/components/zarr/ZarrLoaderLRU'
 import { useEffect, useState, useMemo } from 'react';
 import { useControls } from 'leva'
 import { PointCloud, UVCube, PlotArea, DataCube } from '@/components/plots';
@@ -21,8 +21,10 @@ interface Array{
 
 const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
 // const storeURL = "https://s3.waw3-2.cloudferro.com/wekeo/egu2025/OLCI_L1_CHL_cube.zarr"
-const variables = await GetVariables(storeURL)
+// const variables = await GetVariables(storeURL)
 // console.log(variables)
+
+
 
 function Loading({showLoading}:{showLoading:boolean}){
   return(
