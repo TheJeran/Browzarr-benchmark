@@ -45,3 +45,4 @@ public/cube
 *.zarr
 package-lock.json
 .qodo
+*.sh
