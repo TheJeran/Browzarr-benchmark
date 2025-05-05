@@ -1,11 +1,8 @@
 import {  useMemo } from 'react'
 import {  useRef } from 'react'
 import * as THREE from 'three'
-import vertexShader from '@/components/textures/shaders/vertex.glsl';
-import fragmentShader from '@/components/textures/shaders/fragment.glsl';
+import { vertexShader, fragmentShader } from '@/components/textures/shaders';
 import { useControls } from 'leva';
-
-
 
 interface DataCubeProps {
   volTexture: THREE.Data3DTexture | THREE.DataTexture | null,
