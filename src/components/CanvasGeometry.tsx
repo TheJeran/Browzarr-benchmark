@@ -1,15 +1,17 @@
+'use client';
+
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { Canvas } from '@react-three/fiber';
 import { Center, OrbitControls, Environment } from '@react-three/drei'
-import { variables, ZarrDataset } from '@/components/ZarrLoaderLRU'
+import { ZarrDataset, variables } from '@/components/zarr/ZarrLoaderLRU'
 import { useEffect, useState, useMemo } from 'react';
 import { useControls } from 'leva'
-import { PointCloud, UVCube, PlotArea, DataCube } from './PlotObjects';
-import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from './Textures';
-import { Metadata, AnalysisWindow } from './UI';
-import { plotContext, DimCoords } from './Contexts';
-import ComputeModule from '@/components/Computation/ComputeModule'
+import { PointCloud, UVCube, PlotArea, DataCube } from '@/components/plots';
+import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from '@/components/textures';
+import { Metadata } from '@/components/ui';
+import { plotContext, DimCoords } from '@/components/contexts';
+// import ComputeModule from '@/components/computation/ComputeModule'
 
 interface Array{
   data:number[],
@@ -18,6 +20,11 @@ interface Array{
 }
 
 const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
+// const storeURL = "https://s3.waw3-2.cloudferro.com/wekeo/egu2025/OLCI_L1_CHL_cube.zarr"
+// const variables = await GetVariables(storeURL)
+// console.log(variables)
+
+
 
 function Loading({showLoading}:{showLoading:boolean}){
   return(
@@ -193,7 +200,7 @@ export function CanvasGeometry() {
       >
         
         <Center top position={[-1, 0, 1]}/>
-        {dataArray && showAnalysis && <ComputeModule array={dataArray} cmap={colormap} shape={shape.toArray()} stateVars={analysisVars}/>}
+        {/* {dataArray && showAnalysis && <ComputeModule array={dataArray} cmap={colormap} shape={shape.toArray()} stateVars={analysisVars}/>} */}
         {/* Volume Plots */}
         {plotter == "volume" && <>
           <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
@@ -208,7 +215,7 @@ export function CanvasGeometry() {
         
       </Canvas>
     </div>
-    {showAnalysis && <AnalysisWindow setters={analysisSetters}/>}
+    {/* {showAnalysis && <AnalysisWindow setters={analysisSetters}/>} */}
     {metadata && <Metadata data={metadata} /> }
 
     <plotContext.Provider value={plotObj} >
@@ -220,12 +227,12 @@ export function CanvasGeometry() {
     <button
       style={{
         position:'fixed',
-        left:'5%',
-        top:'50%'
+        left:'4rem',
+        top:'0.5rem'
       }}
       onClick={()=>setShowAnalysis(x=>!x)}
     >
-      {showAnalysis ? 'Hide' : 'Show' } Analysis Stuff
+      {/* {showAnalysis ? 'Hide' : 'Show' } Analysis Stuff */}
     </button>
     </>
   )

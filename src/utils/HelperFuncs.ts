@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Parses a CF time unit string and returns the scaling factor (milliseconds per unit).
  * @param units - Time unit string, e.g., "seconds since 1970-01-01" or "days since 1970-01-01"

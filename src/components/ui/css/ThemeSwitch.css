@@ -1,0 +1,14 @@
+.toggle {
+    position: absolute;
+    right: 48px;
+    top: -4px;
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+.toggle:hover {   
+    color: var(--toggle-hover);
+}
