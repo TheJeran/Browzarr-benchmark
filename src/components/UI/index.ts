@@ -10,6 +10,8 @@ import ResizeBar from "./ResizeBar";
 import YScaler from "./YScaler";
 import XScaler from "./XScaler";
 import AnalysisWindow from "./Analysis";
+import ThemeSwitch from "./ThemeSwitch";
+
 export {
   Navbar,
   Footer,
@@ -21,5 +23,6 @@ export {
   ResizeBar,
   YScaler,
   XScaler,
-  AnalysisWindow
+  AnalysisWindow,
+  ThemeSwitch
 };

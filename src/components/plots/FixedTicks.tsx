@@ -3,7 +3,7 @@ import { useThree, useFrame } from '@react-three/fiber'
 import { useState, useMemo, useEffect, useRef, useContext } from 'react'
 import { parseTimeUnit } from '@/utils/HelperFuncs'
 import { Fragment } from 'react'
-import { plotContext } from '../contexts/PlotContext'
+import { plotContext } from '@/components/contexts/PlotContext'
 
 
 interface ViewportBounds {

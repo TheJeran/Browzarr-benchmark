@@ -7,11 +7,11 @@ import { Center, OrbitControls, Environment } from '@react-three/drei'
 import { ZarrDataset, GetVariables } from '@/components/zarr/ZarrLoaderLRU'
 import { useEffect, useState, useMemo } from 'react';
 import { useControls } from 'leva'
-import { PointCloud, UVCube, PlotArea, DataCube } from './plots';
-import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from './textures';
-import { Metadata, AnalysisWindow } from './ui';
-import { plotContext, DimCoords } from './contexts';
-import ComputeModule from '@/components/computation/ComputeModule'
+import { PointCloud, UVCube, PlotArea, DataCube } from '@/components/plots';
+import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from '@/components/textures';
+import { Metadata, AnalysisWindow } from '@/components/ui';
+import { plotContext, DimCoords } from '@/components/contexts';
+// import ComputeModule from '@/components/computation/ComputeModule'
 
 interface Array{
   data:number[],
@@ -198,7 +198,7 @@ export function CanvasGeometry() {
       >
         
         <Center top position={[-1, 0, 1]}/>
-        {dataArray && showAnalysis && <ComputeModule array={dataArray} cmap={colormap} shape={shape.toArray()} stateVars={analysisVars}/>}
+        {/* {dataArray && showAnalysis && <ComputeModule array={dataArray} cmap={colormap} shape={shape.toArray()} stateVars={analysisVars}/>} */}
         {/* Volume Plots */}
         {plotter == "volume" && <>
           <DataCube volTexture={texture} shape={shape} colormap={colormap}/>

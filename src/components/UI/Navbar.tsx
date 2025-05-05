@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { logoSeasFire } from "@/assets/index";
 import { AboutButton } from "@/components/ui";
-import ThemeSwitch  from "./ThemeSwitch";
+import ThemeSwitch  from "@/components/ui/ThemeSwitch";
 import './css/Navbar.css'
 
 const Navbar = () => {
