@@ -23,8 +23,8 @@ const AnalysisWindow = ({setters}:Analysis)=> {
             <label htmlFor="axis">Axis</label>
             <select name="axis" id="" onChange={(e)=>setAxis(parseInt(e.target.value))}>
                 {
-                axis.map((val)=>(
-                    <option value={val}>{val}</option>
+                axis.map((val, index)=>(
+                    <option key={index} value={val}>{val}</option>
                 ))
                 }
             </select>
@@ -34,8 +34,8 @@ const AnalysisWindow = ({setters}:Analysis)=> {
                 defaultValue={'Mean'}
             onChange={(e)=>setOperation(e.target.value)}>
             {
-                operations.map((val)=>(
-                    <option value={val}>{val}</option>
+                operations.map((val, index)=>(
+                    <option key={index} value={val}>{val}</option>
                 ))
                 }
             </select>
