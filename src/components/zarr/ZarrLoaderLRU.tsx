@@ -23,7 +23,11 @@ export async function GetVariables(storePath: string){
 		new zarr.FetchStore(storePath)
 	);
 	const group = await d_store.then(store => zarr.open(store, {kind: 'group'}))
-	return GetZarrVariables(group.store.contents())
+	// Type assertion
+	const collect_contents = ('contents' in group.store) 
+        ? group.store.contents() 
+        : {};
+	return GetZarrVariables(collect_contents)
 }
 
 // Define interface using Data Types from zarrita
@@ -65,7 +69,12 @@ export class ZarrDataset{
 		// Type check using zarr.Array.is
 		if (outVar.is("number") || outVar.is("bigint")) {
 			const chunk = await zarr.get(outVar)
-			const typedArray = new Float32Array(chunk.data);
+			let typedArray;
+			if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
+				throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
+			} else {
+				typedArray = new Float32Array(chunk.data);
+			}
 			this.cache.set(variable, chunk);
 			// TypeScript will now infer the correct numeric type
 			return {
@@ -150,6 +159,8 @@ export class ZarrDataset{
 
 //For now we export variables. But we will import these functions over to the plotting component eventually
 export const variables = await GetVariables("https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr")
+
+// export const variables = await GetVariables("https://eerie.cloud.dkrz.de/datasets/icon-esm-er.hist-1950.v20240618.atmos.native.2d_1h_mean/kerchunk")
 
 // export const variables = await GetVariables("https://s3.waw3-2.cloudferro.com/wekeo/egu2025/OLCI_L1_CHL_cube.zarr")
 // CORS issues need to be resolved due to the endpoint.

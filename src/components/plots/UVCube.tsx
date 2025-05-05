@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { useState } from 'react';
 import { DimCoords } from '@/components/contexts/PlotContext';
-import { ZarrDataset } from '../ZarrLoaderLRU';
+import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU';
 import { parseUVCoords } from '@/utils/HelperFuncs';
 
 interface TimeSeriesProps{

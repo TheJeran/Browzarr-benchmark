@@ -4,7 +4,7 @@ import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { Canvas } from '@react-three/fiber';
 import { Center, OrbitControls, Environment } from '@react-three/drei'
-import { variables, ZarrDataset, parseUVCoords } from '@/components/zarr/ZarrLoaderLRU'
+import { variables, ZarrDataset } from '@/components/zarr/ZarrLoaderLRU'
 import { useEffect, useState, useMemo } from 'react';
 import { useControls } from 'leva'
 import { PointCloud, UVCube, PlotArea, DataCube } from './plots';
