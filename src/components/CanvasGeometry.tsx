@@ -9,7 +9,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useControls } from 'leva'
 import { PointCloud, UVCube, PlotArea, DataCube } from '@/components/plots';
 import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from '@/components/textures';
-import { Metadata, AnalysisWindow } from '@/components/ui';
+import { Metadata } from '@/components/ui';
 import { plotContext, DimCoords } from '@/components/contexts';
 // import ComputeModule from '@/components/computation/ComputeModule'
 
@@ -215,7 +215,7 @@ export function CanvasGeometry() {
         
       </Canvas>
     </div>
-    {showAnalysis && <AnalysisWindow setters={analysisSetters}/>}
+    {/* {showAnalysis && <AnalysisWindow setters={analysisSetters}/>} */}
     {metadata && <Metadata data={metadata} /> }
 
     <plotContext.Provider value={plotObj} >
