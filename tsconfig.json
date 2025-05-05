@@ -24,6 +24,6 @@
       "@/components/*": ["src/components/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next.config.ts"],
   "exclude": ["node_modules", "./src/components/ui/Analysis.tsx", "./src/components/computation/ComputeModule.tsx", "./src/components/computation/ComputeShaders.ts"]
 }

@@ -1,4 +1,5 @@
 import type { Configuration } from 'webpack';
+import path from 'path';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -29,6 +30,13 @@ const nextConfig = {
       test: /\.(glsl|vs|fs|vert|frag)$/,
       type: 'asset/source',
     });
+    // Add path alias resolution
+    if (!config.resolve) config.resolve = { alias: {} };
+    if (!config.resolve.alias) config.resolve.alias = {};
+    
+    // Explicitly set path aliases to match tsconfig.json
+    (config.resolve.alias as { [key: string]: string })['@'] = path.resolve(__dirname, 'src');
+    (config.resolve.alias as { [key: string]: string })['@/components'] = path.resolve(__dirname, 'src/components');
     return config;
   },
 };
