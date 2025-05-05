@@ -4,6 +4,7 @@ import path from 'path';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export' as const,
+  basePath: "/EarthyScience/vi-zarr-stores",
   images: {
     unoptimized: true,
   },
