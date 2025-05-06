@@ -5,13 +5,14 @@ THREE.Cache.enabled = true;
 import { Canvas } from '@react-three/fiber';
 import { Center, OrbitControls, Environment } from '@react-three/drei'
 import { ZarrDataset, variables } from '@/components/zarr/ZarrLoaderLRU'
-import { useEffect, useState, useMemo } from 'react';
-import { useControls } from 'leva'
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { PointCloud, UVCube, PlotArea, DataCube } from '@/components/plots';
 import { GetColorMapTexture, ArrayToTexture, DefaultCube, colormaps } from '@/components/textures';
 import { Metadata } from '@/components/ui';
 import { plotContext, DimCoords } from '@/components/contexts';
 // import ComputeModule from '@/components/computation/ComputeModule'
+import { usePaneInput, usePaneFolder, useTweakpane } from '@lazarusa/react-tweakpane'
+// import { container } from 'webpack';
 
 interface Array{
   data:number[],
@@ -38,27 +39,81 @@ function Loading({showLoading}:{showLoading:boolean}){
 }
 
 export function CanvasGeometry() {
-  const { variable, plotter, cmap, flipCmap } = useControls({ 
-    variable: { 
-      value: "Default", 
-      options: variables, 
-      label:"Select Variable" 
-    },
-    plotter: {
-      value:"volume",
-      options:["volume","point-cloud"],
-      label:"Select Plot Style"
-    },
-    cmap: {
-      value: "Spectral",
-      options:colormaps,
-      label: 'ColorMap'
-  }, 
-  flipCmap:{
-    value:false,
-    label:"Invert Colors"
+  // const paneRef = useRef<HTMLDivElement>(undefined);
+  const optionsVars = useMemo(() => variables.map((element) => ({
+    text: element,
+    value: element
+  })), []);
+  const colormaps_array = useMemo(() => colormaps.map(colormap => ({
+    text: colormap,
+    value: colormap
+  })), []);
 
-  }
+  // const container = document.getElementById('pane') ?? undefined;
+  const pane = useTweakpane(
+    {
+      backgroundcolor: "#2d4967",
+      vName: "Default",
+      plottype: "point-cloud",
+      cmap: "Spectral",
+      flipCmap: false,
+    },
+    {
+      title: 'Settings',
+      // container: container,
+      expanded: true,
+    }
+  );
+  const [bgcolor] = usePaneInput(pane, 'backgroundcolor', {
+    label: 'bgcolor',
+    value: '#2d4967'
+  })
+  const [variable] = usePaneInput(pane, 'vName', {
+    label: 'Name',
+    options: [
+      {
+        text: 'Default',
+        value: 'Default',
+      },
+    ...optionsVars
+  ],
+    value: 'Default'
+  })
+
+  const [plotter] = usePaneInput(pane, 'plottype', {
+    label: 'Plot type',
+    options: [
+      {
+        text: 'volume',
+        value: 'volume',
+      },
+      {
+        text: 'point-cloud',
+        value: 'point-cloud',
+      },
+    ],
+    value: 'point-cloud'
+  })
+
+  const [cmap] = usePaneInput(pane, 'cmap', {
+    label: 'colormap',
+    options: colormaps_array,
+    value: 'Spectral'
+  })
+
+  const [flipCmap] = usePaneInput(pane, 'flipCmap', {
+    label: 'Invert colors',
+    options: [
+      {
+        text: 'on',
+        value: true,
+      },
+      {
+        text: 'off',
+        value: false,
+      },
+    ],
+    value: false
   })
 
   const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null) //Main Texture
@@ -203,10 +258,12 @@ export function CanvasGeometry() {
         <Center top position={[-1, 0, 1]}/>
         {/* {dataArray && showAnalysis && <ComputeModule array={dataArray} cmap={colormap} shape={shape.toArray()} stateVars={analysisVars}/>} */}
         {/* Volume Plots */}
+        
         {plotter == "volume" && <>
           <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
           <UVCube {...timeSeriesObj} />
         </>}
+
         {/* Point Clouds Plots */}
         {plotter == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
         
@@ -220,11 +277,9 @@ export function CanvasGeometry() {
     {metadata && <Metadata data={metadata} /> }
 
     <plotContext.Provider value={plotObj} >
-      
       {variable !== "Default" && <PlotArea />}
     </plotContext.Provider>
    
-    {/* <Leva theme={lightTheme} /> */}
     <button
       style={{
         position:'fixed',

@@ -3,7 +3,7 @@ import {  useRef, useState } from 'react'
 import * as THREE from 'three'
 import vertexShader from '@/components/textures/shaders/vertex.glsl';
 import fragmentShader from '@/components/textures/shaders/fragment.glsl';
-import { useControls } from 'leva';
+// import { useControls } from 'leva';
 import pointVert from '@/components/textures/shaders/pointVertex.glsl';
 import pointFrag from '@/components/textures/shaders/pointFrag.glsl';
 
