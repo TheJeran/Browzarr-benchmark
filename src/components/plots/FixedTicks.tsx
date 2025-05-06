@@ -53,7 +53,12 @@ export function FixedTicks({
         const timeStrings = []
         for (let i = 0 ; i < xDimArray.length; i++){
           const timeStamp = Number(xDimArray[i])*unit
-          timeStrings.push(new Date(timeStamp).toDateString())
+          // timeStrings.push(new Date(timeStamp).toDateString())
+          const date = new Date(timeStamp);
+          // const dateString = date.toDateString().replace(/\s(\d{4})$/, '\n$1');
+          const dateString = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}\n${date.getFullYear()}`;
+          // timeStrings.push(dateString);
+          timeStrings.push(dateString);
         }
         return timeStrings
       }
@@ -134,7 +139,7 @@ export function FixedTicks({
       }
     };
   }, [height]);
-
+  console.log(textArray)
   const stickyLines = 1; //This is the amount of pixels you need to zoome before the ticks readjust
   const vertY = (bounds.top+bounds.bottom)/2
   const horX = (bounds.left+bounds.right)/2 //Moved calcs here to reduce calcs

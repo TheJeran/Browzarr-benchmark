@@ -124,19 +124,12 @@ export function PlotArea() {
     setPointLoc,
     setShowPointInfo
   }
+  useEffect(() => {
+    document.documentElement.style.setProperty('--plot-height', `${height}px`);
+  }, [height]);
 
   return (
-    <div 
-      className='plot-canvas'
-      style={{
-        position: 'absolute',
-        bottom: '48px', // Account for footer
-        left: 0,
-        width: '100%',
-        top: `${height}px`, // 15% of viewport height
-        background: 'var(--background-plot)',
-      }}
-    >
+    <div className='plot-canvas'>
       <PointInfo pointID={pointID} pointLoc={pointLoc} showPointInfo={showPointInfo} />
       <ResizeBar height={height} setHeight={setHeight}/> 
       <YScaler scale={yScale} setScale={setYScale} />

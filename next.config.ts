@@ -4,7 +4,7 @@ import path from 'path';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export' as const,
-  basePath: "/vi-zarr-stores",
+  basePath: process.env.NODE_ENV === 'production' ? '/vi-zarr-stores' : '',
   images: {
     unoptimized: true,
   },
@@ -42,4 +42,6 @@ const nextConfig = {
   },
 };
 
+console.log('Current NODE_ENV:', process.env.NODE_ENV);
+// console.log('Current basePath:', nextConfig.basePath);
 module.exports = nextConfig;
