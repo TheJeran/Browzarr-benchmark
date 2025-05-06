@@ -1,3 +1,17 @@
+.plot-canvas {
+    position: fixed;
+    bottom: 48px;
+    left: 0;
+    width: 100%;
+    top: var(--plot-height, 100px);
+    background: var(--background-plot);
+    border-top: 1px solid var(--plot-border);
+    box-shadow: 0 -2px 8px var(--modal-shadow);
+    transition: height 0.3s ease;
+    z-index: 10;
+    min-height: 100px;
+}
+
 .plot-coords{
     position: absolute;
     max-width:355px;
