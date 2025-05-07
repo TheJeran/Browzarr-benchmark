@@ -64,7 +64,7 @@ function PointCoords(){
       const deltaX = initialMouse.current[0]-e.clientX
       const deltaY = initialMouse.current[1]-e.clientY
       const x = Math.max(initialDiv.current[0]-deltaX,10)
-      const y = Math.max(initialDiv.current[1]+deltaY,14) //Again hardcoded footer height
+      const y = Math.max(initialDiv.current[1]+deltaY,0) //Again hardcoded footer height
       setXY([Math.min(x,window.innerWidth-100),Math.min(y,window.innerHeight-100)])
     }
   }
@@ -114,7 +114,7 @@ export function PlotArea() {
   const [pointID, setPointID] = useState<number>(0);
   const [pointLoc, setPointLoc] = useState<number[]>([0,0])
   const [showPointInfo,setShowPointInfo] = useState<boolean>(false)
-  const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.15)-48))
+  const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.15)))
 
   const [yScale,setYScale] = useState<number>(1)
   const [xScale,setXScale] = useState<number>(1)

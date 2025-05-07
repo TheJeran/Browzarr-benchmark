@@ -22,7 +22,6 @@ export default function RootLayout({
         <Overlays />
         <Navbar />
         {children}
-        <Footer />
       </ThemeProvider>
       </body>
     </html>

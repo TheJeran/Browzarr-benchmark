@@ -1,6 +1,6 @@
 .plot-canvas {
     position: fixed;
-    bottom: 48px;
+    bottom: 0px;
     left: 0;
     width: 100%;
     top: var(--plot-height, 100px);

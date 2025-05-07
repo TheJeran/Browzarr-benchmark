@@ -85,7 +85,9 @@ li {
 .tp-dfwv {
   position: absolute !important;
   top: 4rem !important ;
+  user-select: none;
 }
+
 /* This is my custom tweakpane container  */
 .tp-dfwv-my-container {
   position: absolute !important;

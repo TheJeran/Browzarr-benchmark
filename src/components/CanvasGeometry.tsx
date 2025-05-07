@@ -55,7 +55,7 @@ export function CanvasGeometry() {
     {
       backgroundcolor: "#2d4967",
       vName: "Default",
-      plottype: "point-cloud",
+      plottype: "volume",
       cmap: "Spectral",
       flipCmap: false,
     },
@@ -269,7 +269,10 @@ export function CanvasGeometry() {
         {plotter == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
         
         {/* Time Series Plots */}
-        <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={false}/>
+        <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={false}
+        maxDistance={50}
+        
+        />
         <Environment preset="city" />
         
       </Canvas>
@@ -278,7 +281,7 @@ export function CanvasGeometry() {
     {metadata && <Metadata data={metadata} /> }
 
     <plotContext.Provider value={plotObj} >
-      {variable !== "Default" && <PlotArea />}
+      {timeSeries.length > 2 && <PlotArea />}
     </plotContext.Provider>
    
     <button
