@@ -1,18 +1,15 @@
 'use client';
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
-import { Canvas } from '@react-three/fiber';
-import { Center, OrbitControls, Environment } from '@react-three/drei'
 import { ZarrDataset, variables } from '@/components/zarr/ZarrLoaderLRU'
 import { useEffect, useState, useMemo, useRef } from 'react';
-import { PointCloud, UVCube, PlotArea, DataCube } from '@/components/plots';
-import { GetColorMapTexture, ArrayToTexture, DefaultCubeTexture, colormaps } from '@/components/textures';
+import { PlotArea, Plot } from '@/components/plots';
+import { GetColorMapTexture,colormaps } from '@/components/textures';
 import { Metadata } from '@/components/ui';
 import { plotContext, DimCoords } from '@/components/contexts';
 // import ComputeModule from '@/components/computation/ComputeModule'
 import { usePaneInput, usePaneFolder, useTweakpane, useButtonBlade } from '@lazarusa/react-tweakpane'
-import { createPaneContainer } from '@/components/ui/paneContainer';
-import Plot from './plots/Plot';
+
 
 interface Array{
   data:number[],
@@ -216,11 +213,11 @@ export function CanvasGeometry() {
     operation:reduceOperation,
     execute:executeReduction
   }
+
   return (
     <>
     <Loading showLoading={showLoading} />
     <Plot values={plotObj.values} setters={plotObj.setters} timeSeriesObj={timeSeriesObj} /> 
-    {/* {showAnalysis && <AnalysisWindow setters={analysisSetters}/>} */}
     {metadata && <Metadata data={metadata} /> }
 
     <plotContext.Provider value={lineObj} >

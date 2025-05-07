@@ -129,4 +129,4 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
   )
 }
 
-export default Plot
+export {Plot}
