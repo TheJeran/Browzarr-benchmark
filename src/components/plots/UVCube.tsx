@@ -4,7 +4,7 @@ import { DimCoords } from '@/components/contexts/PlotContext';
 import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU';
 import { parseUVCoords } from '@/utils/HelperFuncs';
 
-interface TimeSeriesProps{
+export interface TimeSeriesProps{
   setters:{
     setTimeSeries:React.Dispatch<React.SetStateAction<number[]>>,
     setPlotDim:React.Dispatch<React.SetStateAction<number>>,
