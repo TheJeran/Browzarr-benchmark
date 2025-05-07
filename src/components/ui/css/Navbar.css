@@ -33,7 +33,7 @@
   height: 2px;
   bottom: 0;
   left: 0;
-  background-color: #f5ba25;
+  background-color: var(--accent-1);
   transition: width .3s;
 }
 
