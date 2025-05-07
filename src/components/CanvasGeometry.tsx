@@ -51,7 +51,7 @@ export function CanvasGeometry() {
 
   const pane = useTweakpane(
     {
-      backgroundcolor: "#2c3d4f",
+      backgroundcolor: "#292b32",
       vName: "Default",
       plottype: "volume",
       cmap: "Spectral",
@@ -64,7 +64,7 @@ export function CanvasGeometry() {
 
   const [bgcolor] = usePaneInput(pane, 'backgroundcolor', {
     label: 'bgcolor',
-    value: '#2d4967'
+    value: '#292b32'
   })
   const [variable] = usePaneInput(pane, 'vName', {
     label: 'Plot Variable',

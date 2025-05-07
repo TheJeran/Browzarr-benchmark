@@ -43,6 +43,29 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
     const {plotType,colormap,ZarrDS,variable,shape,bgcolor} = values;
     const {setShowLoading,setDataArray,setValueScales,setShape,setMetadata,setDimArrays,setDimNames,setDimUnits} = setters;
     const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
+    const [currentBg, setCurrentBg] = useState(bgcolor || 'var(--background)')
+
+    // Listen for theme changes
+    useEffect(() => {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'data-theme') {
+                    setCurrentBg('var(--background)')
+                }
+            })
+        })
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['data-theme']
+        })
+
+        return () => observer.disconnect()
+    }, [])
+
+    // Update background when bgcolor changes
+    useEffect(() => {
+        setCurrentBg(bgcolor || 'var(--background)')
+    }, [bgcolor])
 
   //DATA LOADING
   useEffect(() => {
@@ -109,7 +132,7 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
         <Canvas shadows camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
         frameloop="demand"
         style={{
-        background:bgcolor
+        background: currentBg
         }}
         >
             {/* Volume Plots */}

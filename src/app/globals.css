@@ -83,7 +83,7 @@
 
 /* Dark Theme */
 [data-theme='dark'] {
-  --background: rgb(41, 43, 50);
+  --background: #1e2023;
   --foreground: hsla(0, 0%, 100%, 0.9);
   --background-plot: hsla(0, 0%, 0%, 0.3);
   --text-plot: hsla(0, 0%, 100%, 0.9);
@@ -182,19 +182,12 @@ a[href]:hover::after {
 
  /* This is the native css for the tweakpane */
 .tp-dfwv {
-  position: absolute !important;
+  /* position: absolute !important; */
   top: 4rem !important ;
   user-select: none;
 }
 
 /* This is my custom tweakpane container  */
-.tp-dfwv-my-container {
-  position: absolute !important;
-  top: 2.5rem !important ;
-  right: 0.5rem !important;
-  z-index: 100 !important;
-}
-
 .plot-pane{
   position: fixed;
   top: 2.5rem !important ;
