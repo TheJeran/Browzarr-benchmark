@@ -58,7 +58,8 @@ export function CanvasGeometry() {
       flipCmap: false,
     },
     {
-      title: 'Settings',
+      title: 'Data settings',
+      expanded: true,
     }
   );
 
