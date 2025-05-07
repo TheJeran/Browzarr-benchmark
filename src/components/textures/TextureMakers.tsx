@@ -81,7 +81,7 @@ export function ArrayToTexture(array: Array){
     return [texture, shape, scales];
 }
 
-export function DefaultCube() {
+export function DefaultCubeTexture() {
     // Create a Float32Array instead of regular array
     const data = new Float32Array(1000);
     // Fill with random values

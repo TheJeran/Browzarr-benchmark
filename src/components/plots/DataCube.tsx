@@ -3,6 +3,7 @@ import {  useRef } from 'react'
 import * as THREE from 'three'
 import { vertexShader, fragmentShader } from '@/components/textures/shaders';
 import { usePaneInput, usePaneFolder, useSliderBlade, useTweakpane } from '@lazarusa/react-tweakpane'
+import { createPaneContainer } from '../ui';
 
 
 interface DataCubeProps {
@@ -13,13 +14,15 @@ interface DataCubeProps {
 
 export const DataCube = ({ volTexture, shape, colormap }: DataCubeProps ) => {
     const meshRef = useRef<THREE.Mesh>(null);
-     const pane = useTweakpane(
+    const paneContainer = createPaneContainer("plot-pane");
+
+    const pane = useTweakpane(
         {
           flip: false,
         },
         {
           title: 'Volume',
-          // container: container,
+          container: paneContainer ?? undefined,
           expanded: true,
         }
       );

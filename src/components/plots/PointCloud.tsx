@@ -24,7 +24,7 @@ export const PointCloud = ({textures} : {textures:PCProps} )=>{
     );
 
     const [pointScale] = useSliderBlade(pane, {
-      label: 'Quality',
+      label: 'Point Size',
       value: 1,
       min: 1,
       max: 100,

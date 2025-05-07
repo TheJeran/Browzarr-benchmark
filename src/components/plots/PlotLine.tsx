@@ -3,7 +3,8 @@ import * as THREE from 'three'
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { plotContext } from '../contexts/PlotContext';
 import { useFrame } from '@react-three/fiber';
-
+import { createPaneContainer } from '../ui';
+import { useButtonBlade, useSliderBlade, useTweakpane, usePaneInput } from '@lazarusa/react-tweakpane';
 
 interface PlotLineProps {
   color?: string;
@@ -31,6 +32,9 @@ function PlotPoints({ points, pointSize, pointColor, pointSetters }: { points: T
   const {setPointID, setPointLoc,setShowPointInfo} = pointSetters;
   const [zoom,setZoom] = useState<number>(1)
 
+  const geometry = useMemo(() => new THREE.SphereGeometry(pointSize), [pointSize])
+  const material = useMemo(()=> new THREE.MeshBasicMaterial({color:pointColor}),[pointColor])
+
   useEffect(() => {
     if (ref.current){
       const dummy = new THREE.Object3D()
@@ -43,10 +47,7 @@ function PlotPoints({ points, pointSize, pointColor, pointSetters }: { points: T
       }
       ref.current.instanceMatrix.needsUpdate = true
     }
-  }, [points,zoom])
-
-  const geometry = useMemo(() => new THREE.SphereGeometry(pointSize), [pointSize])
-  const material = useMemo(()=> new THREE.MeshBasicMaterial({color:pointColor}),[])
+  }, [points,zoom,geometry, material])
 
   useFrame(({camera})=>{
     if (camera.zoom !== zoom){
@@ -103,16 +104,67 @@ function PlotPoints({ points, pointSize, pointColor, pointSetters }: { points: T
 
 
 export const PlotLine = ({ 
-  lineWidth = 5,
-  showPoints = false,
-  pointSize = 5,
-  pointColor = "#777777",
-  interpolation = 'linear',
   height,
   pointSetters,
   yScale,
   xScale
 }: PlotLineProps) => {
+
+  const [showPoints,setShowPoints] = useState<boolean>(false)
+
+  const paneContainer = createPaneContainer("line-plot-pane");
+
+  const pane = useTweakpane(
+    {
+      pointColor: "#777777",
+      interpolation: "linear"
+    },
+    {
+      title: 'Settings',
+      container: paneContainer ?? undefined,
+      expanded: true,
+    }
+  );
+
+  useButtonBlade(pane,{
+    title:`${showPoints ? "Hide" : "Show"} Points`
+
+  },()=>setShowPoints(x=>!x))
+
+  const [pointColor] = usePaneInput(pane, 'pointColor', {
+    label: 'Point Color',
+    value: '#2d4967'
+  })
+
+  const [pointSize] = useSliderBlade(pane, {
+    label:"Point Size",
+    value:5,
+    min:1,
+    max:20,
+    step:1
+  })
+
+  const [interpolation] = usePaneInput(pane, 'interpolation', {
+    label: "Line Interpolation",
+    options:[
+      {
+        text:"Linear",
+        value:'linear'
+      },
+      {
+        text: "Curved",
+        value:"curved"
+      }
+    ]
+  })
+
+  const [lineWidth] = useSliderBlade(pane, {
+    label:"Line Width",
+    value:5,
+    min:1,
+    max:20,
+    step:1
+  })
 
   const {scaling, timeSeries} = useContext(plotContext)
   const data = timeSeries
@@ -132,7 +184,7 @@ export const PlotLine = ({
   const [points,normed] = useMemo(()=>{
     if (!data || data.length === 0) return [[new THREE.Vector3(0,0,0)],[0]];
     const viewWidth = window.innerWidth;
-    const viewHeight = (window.innerHeight-height-50); //The 50 here is the footer at the bottom
+    const viewHeight = (window.innerHeight-height); //The 50 here is the footer at the bottom
     const xCoords = linspace(-viewWidth*xScale/2,viewWidth*xScale/2,data.length)
     const normed = data.map((i) => (i - minVal) / (maxVal - minVal));
     const points = normed.map((val,idx) => new THREE.Vector3(xCoords[idx], (val-.5)*viewHeight*yScale, 5)); 
@@ -144,8 +196,8 @@ export const PlotLine = ({
    // Choose interpolation method
     if (interpolation === 'curved') {
       const curve = new THREE.CatmullRomCurve3(points);
-      const geometry = new THREE.BufferGeometry().setFromPoints(curve.getPoints(50));
-      geometry.setAttribute('normed', new THREE.Float32BufferAttribute(duplicateArray(normed,50), 1)); //Hardcoded to above resolution. Should probably make a variable
+      const geometry = new THREE.BufferGeometry().setFromPoints(curve.getPoints(normed.length*5-1));
+      geometry.setAttribute('normed', new THREE.Float32BufferAttribute(duplicateArray(normed,5), 1)); 
       return geometry;
   } else {
     // Linear interpolation - just connect the points directly

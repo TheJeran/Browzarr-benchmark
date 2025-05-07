@@ -95,3 +95,16 @@ li {
   right: 0.5rem !important;
   z-index: 100 !important;
 }
+
+.plot-pane{
+  position: fixed;
+  top: 2.5rem !important ;
+  right: 0.5rem !important;
+  z-index: 100 !important;
+}
+
+.line-plot-pane{
+  position: absolute;
+  bottom:300px;
+  left: 50px;
+}

@@ -4,7 +4,7 @@ import { PlotLine, FixedTicks } from '@/components/plots'
 import { useContext, useEffect, useRef, useState } from 'react'
 import { plotContext } from '@/components/contexts'
 import { ResizeBar, YScaler,XScaler } from '@/components/ui'
-import './PlotArea.css'
+import './LinePlot.css'
 
 interface pointInfo{
   pointID:number,
@@ -108,7 +108,6 @@ function PointCoords(){
   )
 
 }
-
 
 export function PlotArea() {
   const [pointID, setPointID] = useState<number>(0);
