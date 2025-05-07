@@ -1,8 +1,9 @@
 
 import * as THREE from 'three'
 import { useMemo } from 'react'
-import { useControls } from 'leva'
+// import { useControls } from 'leva'
 import { pointFrag, pointVert } from '@/components/textures/shaders'
+import { usePaneInput, usePaneFolder, useSliderBlade, useTweakpane } from '@lazarusa/react-tweakpane'
 
 interface PCProps {
   texture: THREE.Data3DTexture | THREE.DataTexture | null,
@@ -11,27 +12,39 @@ interface PCProps {
 
 export const PointCloud = ({textures} : {textures:PCProps} )=>{
     const {texture, colormap } = textures;
-    const {pointScale,scalePoints,scaleIntensity} = useControls({
-      pointScale:{
-        value:1,
-        min:1,
-        max:100,
-        step:1
+    const pane = useTweakpane(
+      {
+        scalePoints: false,
       },
-      scalePoints:{
-        value:false,
-        label:"Scale Points By Value"
-      },
-      scaleIntensity:{
-        value:2,
-        min:1,
-        max:10,
-        step:.2,
-        labe: "Scale Intensity"
+      {
+        title: 'Point cloud',
+        // container: container,
+        expanded: true,
       }
+    );
 
+    const [pointScale] = useSliderBlade(pane, {
+      label: 'Quality',
+      value: 1,
+      min: 1,
+      max: 100,
+      step: 1,
+    })
+    const [scalePoints] = usePaneInput(
+      pane,
+      'scalePoints',
+      {
+        label: 'Scale Points By Value',
+        value: false
       }
     )
+    const [scaleIntensity] = useSliderBlade(pane, {
+      label: 'Scale Intensity',
+      value: 2,
+      min: 1,
+      max: 10,
+      step: 0.2,
+    })
     //Extract data and shape from Data3DTexture
     const { data, width, height, depth } = useMemo(() => {
       if (!(texture instanceof THREE.Data3DTexture)) {

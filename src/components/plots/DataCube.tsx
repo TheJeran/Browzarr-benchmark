@@ -2,7 +2,8 @@ import {  useMemo } from 'react'
 import {  useRef } from 'react'
 import * as THREE from 'three'
 import { vertexShader, fragmentShader } from '@/components/textures/shaders';
-import { useControls } from 'leva';
+import { usePaneInput, usePaneFolder, useSliderBlade, useTweakpane } from '@lazarusa/react-tweakpane'
+
 
 interface DataCubeProps {
   volTexture: THREE.Data3DTexture | THREE.DataTexture | null,
@@ -12,64 +13,85 @@ interface DataCubeProps {
 
 export const DataCube = ({ volTexture, shape, colormap }: DataCubeProps ) => {
     const meshRef = useRef<THREE.Mesh>(null);
-    const { threshold, steps, flip, xMax,xMin,yMax,yMin,zMax,zMin } = useControls({
-        threshold: {
-          value: 0, // Default value
-          min: 0,   // Minimum value
-          max: 1,  // Maximum value
-          step: .01,  // Step size
-          label:"Clip Values"
+     const pane = useTweakpane(
+        {
+          flip: false,
         },
-        steps: {
-            value: 200,
-            min: 50,
-            max:1000,
-            step: 25,
-            label: "Quality"
-        },
-        flip: {
-            value: false,
-            label: "Invert Values"
-        },
-        xMax: {
-          value:1,
-          min:-1,
-          max:1,
-          step:0.01
-        },
-        xMin: {
-          value:-1,
-          min:-1,
-          max:1,
-          step:0.01
+        {
+          title: 'Volume',
+          // container: container,
+          expanded: true,
         }
-        ,
-        yMax: {
-          value:1,
-          min:-1,
-          max:1,
-          step:0.01
-        },
-        yMin: {
-          value:-1,
-          min:-1,
-          max:1,
-          step:0.01
-        },
-        zMax: {
-          value:1,
-          min:-1,
-          max:1,
-          step:0.01
-        },
-        zMin: {
-          value:-1,
-          min:-1,
-          max:1,
-          step:0.01
-        }
-      });
+      );
 
+      const [threshold] = useSliderBlade(pane, {
+        label: 'Clip Values',
+        value: 0.0,
+        min: 0,
+        max: 1,
+        step: 0.01,
+        format: (value) => value.toFixed(2),
+      })
+
+      const [steps] = useSliderBlade(pane, {
+        label: 'Quality',
+        value: 200,
+        min: 50,
+        max: 1000,
+        step: 25,
+      })
+
+      const [xMin] = useSliderBlade(pane, {
+        label: 'xmin',
+        value: -1,
+        min: -1,
+        max: 1,
+        step: 0.01,
+      })
+      const [xMax] = useSliderBlade(pane, {
+        label: 'xmax',
+        value: 1,
+        min: -1,
+        max: 1,
+        step: 0.01,
+      })
+      const [yMin] = useSliderBlade(pane, {
+        label: 'ymin',
+        value: -1,
+        min: -1,
+        max: 1,
+        step: 0.01,
+      })
+      const [yMax] = useSliderBlade(pane, {
+        label: 'ymax',
+        value: 1,
+        min: -1,
+        max: 1,
+        step: 0.01,
+      })
+      const [zMin] = useSliderBlade(pane, {
+        label: 'zmin',
+        value: -1,
+        min: -1,
+        max: 1,
+        step: 0.01,
+      })
+      const [zMax] = useSliderBlade(pane, {
+        label: 'zmax',
+        value: 1,
+        min: -1,
+        max: 1,
+        step: 0.01,
+      })
+
+      const [flip] = usePaneInput(
+        pane,
+        'flip',
+        {
+          label: 'Invert values',
+          value: false
+        }
+      )
   // We need to check if moving this outside of useMemo means it's creating a ton of materials. This was how it was done in THREE Journey when I was doing that, so I know it's not stricly speaking wrong
     const shaderMaterial = new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3,

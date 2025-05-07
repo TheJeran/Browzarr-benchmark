@@ -80,3 +80,16 @@ li {
 .button:hover {
   background-color: var(--button-hover);
 }
+
+ /* This is the native css for the tweakpane */
+.tp-dfwv {
+  position: absolute !important;
+  top: 4rem !important ;
+}
+/* This is my custom tweakpane container  */
+.tp-dfwv-my-container {
+  position: absolute !important;
+  top: 2.5rem !important ;
+  right: 0.5rem !important;
+  z-index: 100 !important;
+}

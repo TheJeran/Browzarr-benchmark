@@ -11,6 +11,7 @@ import YScaler from "./YScaler";
 import XScaler from "./XScaler";
 // import AnalysisWindow from "./Analysis";
 import ThemeSwitch from "./ThemeSwitch";
+import { createPaneContainer } from "./paneContainer";
 
 export {
   Navbar,
@@ -24,5 +25,6 @@ export {
   YScaler,
   XScaler,
   // AnalysisWindow,
-  ThemeSwitch
+  ThemeSwitch,
+  createPaneContainer
 };
