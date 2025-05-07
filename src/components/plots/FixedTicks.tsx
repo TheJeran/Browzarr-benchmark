@@ -101,7 +101,7 @@ export function FixedTicks({
       setZoom(camera.zoom) // this is not working properly
     }
     const worldWidth = window.innerWidth / camera.zoom
-    const worldHeight = (window.innerHeight-height-50) / camera.zoom
+    const worldHeight = (window.innerHeight-height) / camera.zoom
     const newBounds = {
       left: -worldWidth / 2 + camera.position.x,
       right: worldWidth / 2 + camera.position.x,
@@ -139,7 +139,6 @@ export function FixedTicks({
       }
     };
   }, [height]);
-  console.log(textArray)
   const stickyLines = 1; //This is the amount of pixels you need to zoome before the ticks readjust
   const vertY = (bounds.top+bounds.bottom)/2
   const horX = (bounds.left+bounds.right)/2 //Moved calcs here to reduce calcs
