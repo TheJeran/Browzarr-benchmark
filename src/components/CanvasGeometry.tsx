@@ -12,7 +12,7 @@ import { Metadata } from '@/components/ui';
 import { plotContext, DimCoords } from '@/components/contexts';
 // import ComputeModule from '@/components/computation/ComputeModule'
 import { usePaneInput, usePaneFolder, useTweakpane } from '@lazarusa/react-tweakpane'
-// import { container } from 'webpack';
+import { createPaneContainer } from '@/components/ui/paneContainer';
 
 interface Array{
   data:number[],
@@ -39,7 +39,7 @@ function Loading({showLoading}:{showLoading:boolean}){
 }
 
 export function CanvasGeometry() {
-  // const paneRef = useRef<HTMLDivElement>(undefined);
+  // const paneRef = useRef<HTMLDivElement>(null);
   const optionsVars = useMemo(() => variables.map((element) => ({
     text: element,
     value: element
@@ -49,7 +49,8 @@ export function CanvasGeometry() {
     value: colormap
   })), []);
 
-  // const container = document.getElementById('pane') ?? undefined;
+  const paneContainer = createPaneContainer();
+
   const pane = useTweakpane(
     {
       backgroundcolor: "#2d4967",
@@ -60,10 +61,11 @@ export function CanvasGeometry() {
     },
     {
       title: 'Settings',
-      // container: container,
+      container: paneContainer ?? undefined,
       expanded: true,
     }
   );
+
   const [bgcolor] = usePaneInput(pane, 'backgroundcolor', {
     label: 'bgcolor',
     value: '#2d4967'
@@ -248,7 +250,6 @@ export function CanvasGeometry() {
   }
   return (
     <>
-    
     <Loading showLoading={showLoading} />
     <div className='canvas'>
       <Canvas shadows camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
