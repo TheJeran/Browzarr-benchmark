@@ -13,7 +13,7 @@
 }
 
 .modal-content {
-  background-image: linear-gradient(62deg, var(--background-modal) 0%, var(--modal-gradient) 100%);
+  background-image: linear-gradient(62deg, var(--modal-gradient) 0%, var(--modal-gradient) 100%);
   position: relative;
   max-width: 25rem;
   max-height: 80vh; /* Limit the max-height to 80% of viewport height */
@@ -23,16 +23,6 @@
   box-shadow: 0 0 1em var(--modal-shadow);
   overflow-y: auto; /* Enable vertical scrolling */
   z-index: 1001;
-}
-
-.modal-content p {
-  color: var(--modal-p);
-  font-size: 14px;
-}
-
-.modal-content ul {
-  color: var(--modal-p);
-  font-size: 14px;
 }
 
 .close-btn {
@@ -53,7 +43,29 @@
 }
 
 .modal-content h1 {
-  color: rgb(128, 125, 125);
   font-size: 1.5rem;
   text-align: center;
+}
+
+
+.expandable-text {
+  display: unset;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-content img {
+  max-height: 36px;
+}
+
+[data-theme='light'] {
+  .modal-content img {
+      filter: invert(0.8);
+  }
 }

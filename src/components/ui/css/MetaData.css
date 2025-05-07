@@ -12,3 +12,8 @@
     overflow-wrap: break-word;
     overflow-y: auto;
 }
+.metadata p {
+    font-size: 12px;
+    line-height: 1.2;
+    margin: 0.2em 0;
+}
