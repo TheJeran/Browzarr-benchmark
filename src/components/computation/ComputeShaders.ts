@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { GPUComputationRenderer } from 'three/examples/jsm/Addons.js'
-// import { useThree } from '@react-three/fiber'
+import { useThree } from '@react-three/fiber'
 import { MeanFrag, MaxFrag, MinFrag, StDevFrag } from './shaders'
 
 
@@ -21,11 +21,11 @@ export class OneArrayCompute{
     private renderTarget: THREE.WebGLRenderTarget<THREE.Texture>;
     private initTexture: THREE.DataTexture
 
-    constructor(array: Array, renderer: THREE.WebGLRenderer){
+    constructor(array: Array){
         this.data = array.data;
         this.shape = array.shape;
         this.stride = array.stride;
-        this.renderer = renderer;
+        this.renderer = useThree(state => state.gl) 
         this.GPUCompute = new GPUComputationRenderer(10,10,this.renderer)
         this.initTexture = this.GPUCompute.createTexture()
         this.targetAxis = 5;

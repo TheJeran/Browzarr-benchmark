@@ -3,12 +3,13 @@ import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { ZarrDataset, variables } from '@/components/zarr/ZarrLoaderLRU'
 import { useEffect, useState, useMemo, useRef } from 'react';
-import { PlotArea, Plot } from '@/components/plots';
+import { PlotArea, Plot, Analysis } from '@/components/plots';
 import { GetColorMapTexture,colormaps } from '@/components/textures';
-import { Metadata } from '@/components/ui';
+import { Metadata, MiddleSlider } from '@/components/ui';
 import { plotContext, DimCoords } from '@/components/contexts';
 // import ComputeModule from '@/components/computation/ComputeModule'
 import { usePaneInput, usePaneFolder, useTweakpane, useButtonBlade } from '@lazarusa/react-tweakpane'
+
 
 
 interface Array{
@@ -134,6 +135,8 @@ export function CanvasGeometry() {
   const [executeReduction,setExecuteReduction] = useState<boolean>(false)
   const [showAnalysis, setShowAnalysis] = useState<boolean>(false)
 
+  const [canvasWidth,setCanvasWidth] = useState<number>(Math.round(window.innerWidth*0.4))
+
   //Camera states
   // const [resetCamera, setResetCamera] = useState<boolean>(false)
 
@@ -154,7 +157,8 @@ export function CanvasGeometry() {
       ZarrDS,
       variable,
       shape,
-      bgcolor
+      bgcolor,
+      canvasWidth
     },
     setters:{
       setShowLoading,
@@ -214,9 +218,23 @@ export function CanvasGeometry() {
     execute:executeReduction
   }
 
+  const analysisObj = {
+    setters:{
+
+    },
+    values:{
+      ZarrDS,
+      cmap:colormap,
+      shape:shape.toArray(),
+      canvasWidth
+    }
+  }
+
   return (
     <>
+    <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>
     <Loading showLoading={showLoading} />
+    <Analysis values={analysisObj.values}/>
     <Plot values={plotObj.values} setters={plotObj.setters} timeSeriesObj={timeSeriesObj} /> 
     {metadata && <Metadata data={metadata} /> }
 

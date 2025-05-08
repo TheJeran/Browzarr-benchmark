@@ -5,3 +5,4 @@ export {PointCloud} from './PointCloud'
 export {PlotArea} from './plotarea/LinePlot'
 export {FixedTicks} from './FixedTicks'
 export {Plot} from './Plot'
+export {Analysis} from './Analysis';

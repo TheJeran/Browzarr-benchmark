@@ -6,10 +6,9 @@ import AboutModal from "./AboutModal";
 import Overlays from "./Overlays";
 import  Metadata from "./MetaData";
 import ResizeBar from "./ResizeBar";
-
 import YScaler from "./YScaler";
 import XScaler from "./XScaler";
-// import AnalysisWindow from "./Analysis";
+import { MiddleSlider } from "./MiddleSlider";
 import ThemeSwitch from "./ThemeSwitch";
 import { createPaneContainer } from "./paneContainer";
 
@@ -26,5 +25,6 @@ export {
   XScaler,
   // AnalysisWindow,
   ThemeSwitch,
-  createPaneContainer
+  createPaneContainer,
+  MiddleSlider
 };
