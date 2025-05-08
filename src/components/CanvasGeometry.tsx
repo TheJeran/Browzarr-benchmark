@@ -5,7 +5,7 @@ import { Canvas } from '@react-three/fiber';
 import { Center, OrbitControls, Environment } from '@react-three/drei'
 import { ZarrDataset, variables } from '@/components/zarr/ZarrLoaderLRU'
 import { useEffect, useState, useMemo, useRef } from 'react';
-import { PointCloud, UVCube, PlotArea, DataCube } from '@/components/plots';
+import { PointCloud, UVCube, PlotArea, DataCube, Analysis } from '@/components/plots';
 import { GetColorMapTexture, ArrayToTexture, DefaultCubeTexture, colormaps } from '@/components/textures';
 import { Metadata } from '@/components/ui';
 import { plotContext, DimCoords } from '@/components/contexts';
@@ -217,9 +217,22 @@ export function CanvasGeometry() {
     operation:reduceOperation,
     execute:executeReduction
   }
+  const canvasWidth = 300
+  const analysisObj = {
+    setters:{
+
+    },
+    values:{
+      ZarrDS,
+      cmap:colormap,
+      shape:shape.toArray(),
+      canvasWidth
+    }
+  }
   return (
     <>
     <Loading showLoading={showLoading} />
+    <Analysis values={analysisObj.values} />
     <Plot values={plotObj.values} setters={plotObj.setters} timeSeriesObj={timeSeriesObj} /> 
     {/* {showAnalysis && <AnalysisWindow setters={analysisSetters}/>} */}
     {metadata && <Metadata data={metadata} /> }
