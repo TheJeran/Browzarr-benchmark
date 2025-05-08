@@ -1,10 +1,10 @@
 import { OrbitControls } from '@react-three/drei';
 import React from 'react';
-import { Metadata } from '@/components/ui';
+import ComputeModule from '../computation/ComputeModule';
 import { useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { PointCloud, UVCube, DataCube } from '@/components/plots';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import { ArrayToTexture, DefaultCubeTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 import { TimeSeriesProps } from './UVCube';
@@ -37,13 +37,21 @@ interface PlotParameters{
     timeSeriesObj: TimeSeriesProps
 }
 
+function GLContext(){
+  const {gl} = useThree()
+  console.log(gl.getContext())
 
+  return(<>
+  
+  </>)
+}
 const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
 
     const {plotType,colormap,ZarrDS,variable,shape,bgcolor,canvasWidth} = values;
     const {setShowLoading,setDataArray,setValueScales,setShape,setMetadata,setDimArrays,setDimNames,setDimUnits} = setters;
     const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
     const [currentBg, setCurrentBg] = useState(bgcolor || 'var(--background)')
+    
 
     // Listen for theme changes
     useEffect(() => {
@@ -137,12 +145,12 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
         background: currentBg
         }}
         >
+          <GLContext/>
             {/* Volume Plots */}
             {plotType == "volume" && <>
             <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
             <UVCube {...timeSeriesObj} />
             </>}
-            
             {/* Point Clouds */}
             {plotType == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
 

@@ -1,3 +1,5 @@
+'use client';
+
 import * as THREE from 'three'
 import { GPUComputationRenderer } from 'three/examples/jsm/Addons.js'
 import { useThree } from '@react-three/fiber'
@@ -47,9 +49,9 @@ export class OneArrayCompute{
 
     Mean(axis:number){
         if (axis !== this.targetAxis){
+            "initing"
             this.initAxis(axis)
         }
-        console.log(axis)
         console.log(this.texture)
         const reducer = this.GPUCompute.addVariable("reduction", MeanFrag, this.initTexture);
         reducer.material.uniforms[`dataArray]`] = { value: this.texture };
@@ -63,6 +65,7 @@ export class OneArrayCompute{
         if (axis !== this.targetAxis){
             this.initAxis(axis)
         }
+        
         const reducer = this.GPUCompute.addVariable("reduction", MaxFrag, this.initTexture);
         reducer.material.uniforms[`dataArray]`] = { value: this.texture };
         reducer.material.uniforms['axisSize'] = { value: this.shape[this.targetAxis]}

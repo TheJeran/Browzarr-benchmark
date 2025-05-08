@@ -31,10 +31,10 @@ void main() {
         } else if (axis == 2) {
             sampleCoord.x = coord; // Vary s (width)
         }
-        
-        sum += texture(dataArray, sampleCoord).r; // Assuming data in red channel
+        float samp = texture(dataArray, sampleCoord).r;
+        sum += samp == 0.0 ? 0.6 : samp; // Assuming data in red channel
     }
     
     float mean = sum / float(axisSize);
-    gl_FragColor = vec4(0.99, 0.0, 0.0, 1.0); // Output mean in red channel
+    gl_FragColor = vec4(.0, 0.0, 0.0, 1.0); // Output mean in red channel
 }

@@ -2,10 +2,10 @@
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { ZarrDataset, variables } from '@/components/zarr/ZarrLoaderLRU'
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Analysis, PlotArea, Plot } from '@/components/plots';
-import { GetColorMapTexture, ArrayToTexture, DefaultCubeTexture, colormaps } from '@/components/textures';
-import { Metadata, MiddleSlider } from '@/components/ui';
+import { GetColorMapTexture, colormaps } from '@/components/textures';
+import { MiddleSlider } from '@/components/ui';
 import { plotContext, DimCoords } from '@/components/contexts';
 // import ComputeModule from '@/components/computation/ComputeModule'
 import { usePaneInput, usePaneFolder, useTweakpane, useButtonBlade } from '@lazarusa/react-tweakpane'
