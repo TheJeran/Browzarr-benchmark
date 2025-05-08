@@ -22,7 +22,6 @@ void main() {
     float sum = 0.0;
     for (int m = 0; m < axisSize; m++) { 
         float coord = (float(m) + 0.5) / float(axisSize); //0.5 for center of pixel
-        
         // Vary the appropriate coordinate
         if (axis == 0) {
             sampleCoord.z = coord; // Vary r (depth)
@@ -31,8 +30,8 @@ void main() {
         } else if (axis == 2) {
             sampleCoord.x = coord; // Vary s (width)
         }
-        
-        sum += texture(dataArray, sampleCoord).r; // Assuming data in red channel
+        float samp = texture(dataArray, sampleCoord).r;
+        sum += samp == 0.0 ? 0.6 : samp; // Assuming data in red channel
     }
     
     float mean = sum / float(axisSize);

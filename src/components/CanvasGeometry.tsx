@@ -2,15 +2,13 @@
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { ZarrDataset, variables } from '@/components/zarr/ZarrLoaderLRU'
-import { useEffect, useState, useMemo, useRef } from 'react';
-import { PlotArea, Plot, Analysis } from '@/components/plots';
-import { GetColorMapTexture,colormaps } from '@/components/textures';
-import { Metadata, MiddleSlider } from '@/components/ui';
+import { useEffect, useState, useMemo } from 'react';
+import { Analysis, PlotArea, Plot } from '@/components/plots';
+import { GetColorMapTexture, colormaps } from '@/components/textures';
+import { MiddleSlider } from '@/components/ui';
 import { plotContext, DimCoords } from '@/components/contexts';
 // import ComputeModule from '@/components/computation/ComputeModule'
 import { usePaneInput, usePaneFolder, useTweakpane, useButtonBlade } from '@lazarusa/react-tweakpane'
-
-
 
 interface Array{
   data:number[],
@@ -227,7 +225,8 @@ export function CanvasGeometry() {
       ZarrDS,
       cmap:colormap,
       shape:shape.toArray(),
-      canvasWidth
+      canvasWidth,
+      dimNames
     }
   }
 
@@ -237,7 +236,7 @@ export function CanvasGeometry() {
     <Loading showLoading={showLoading} />
     <Analysis values={analysisObj.values} />
     <Plot values={plotObj.values} setters={plotObj.setters} timeSeriesObj={timeSeriesObj} /> 
-    {metadata && <Metadata data={metadata} /> }
+    {/* {metadata && <Metadata data={metadata} /> } */}
 
     <plotContext.Provider value={lineObj} >
       {timeSeries.length > 2 && <PlotArea />}

@@ -1,3 +1,5 @@
+'use client';
+
 import * as THREE from 'three'
 import { GPUComputationRenderer } from 'three/examples/jsm/Addons.js'
 import { useThree } from '@react-three/fiber'
@@ -54,6 +56,9 @@ export class OneArrayCompute{
         reducer.material.uniforms['axisSize'] = { value: this.shape[this.targetAxis]}
         reducer.material.uniforms['axis'] = { value: this.targetAxis}
         this.GPUCompute.doRenderTarget(reducer.material,this.renderTarget)
+        const pixelBuffer = new Float32Array(this.renderTarget.width * this.renderTarget.height * 4)
+        this.renderer.readRenderTargetPixels(this.renderTarget, 0,0,this.renderTarget.width,this.renderTarget.height,pixelBuffer)
+        console.log(pixelBuffer)
         return this.renderTarget.texture
     }
 

@@ -1,7 +1,6 @@
 uniform sampler2D data;
 uniform sampler2D cmap;
 
-
 varying vec2 vUv;
 out vec4 Color;
 
