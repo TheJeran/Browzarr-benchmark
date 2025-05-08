@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react'
-import { OneArrayCompute } from './ComputeShaders'
+import { useOneArrayCompute } from './ComputeShaders'
 import * as THREE from 'three'
 import { fragShader, vertShader } from './shaders'
 
@@ -25,7 +25,7 @@ const ComputeModule = ({array,cmap,stateVars}:{array: Array,cmap:THREE.DataTextu
     const [planeShape,setPlaneShape] = useState<number[]>(shape.filter((_val,idx)=> idx !== axis))
     
 
-    const GPUCompute = new OneArrayCompute(array)
+    const GPUCompute = useOneArrayCompute(array)
     const [texture,setTexture] = useState<THREE.Texture>(new THREE.Texture())
 
     const shaderMaterial = new THREE.ShaderMaterial({
