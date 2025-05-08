@@ -24,7 +24,7 @@ const SimpleCompute = ({array,cmap,render}:{array: Array,cmap:THREE.DataTexture,
     const operation = "Mean"
     const axis = 0
     const [planeShape,setPlaneShape] = useState<number[]>(shape.filter((_val,idx)=> idx !== axis))
-    const {gl} = useThree;
+    // const {gl} = useThree;
     const GPUCompute = new OneArrayCompute(array)
     const [texture,setTexture] = useState<THREE.Texture>(new THREE.Texture())
 
