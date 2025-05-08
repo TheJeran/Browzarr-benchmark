@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import './css/ResizeBar.css'
 
 const ResizeBar = ({height,setHeight}:{height:number,setHeight:React.Dispatch<React.SetStateAction<number>>}) => {
-      const [isResizing, setIsResizing] = useState<boolean>(false);
+    const [isResizing, setIsResizing] = useState<boolean>(false);
     
       // Start resizing on mousedown
     const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {

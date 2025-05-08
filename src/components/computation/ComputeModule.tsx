@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { OneArrayCompute } from './ComputeShaders'
 import * as THREE from 'three'
-import fragmentShader from '@/components/Computation/shaders/frag.glsl'
-import vertexShader from '@/components/Computation/shaders/vert.glsl'
+import { fragShader, vertShader } from './shaders'
 
 interface Array{
     data:number[],
@@ -30,8 +29,8 @@ const ComputeModule = ({array,cmap,shape,stateVars}:{array: Array,cmap:THREE.Dat
           data : {value: texture},
           cmap : { value : cmap},
         },
-        vertexShader,
-        fragmentShader,
+        vertexShader: vertShader,
+        fragmentShader: fragShader,
         side: THREE.DoubleSide
     })
 
@@ -61,12 +60,9 @@ const ComputeModule = ({array,cmap,shape,stateVars}:{array: Array,cmap:THREE.Dat
     },[execute])
 
   return (
-    <>
     <mesh material={shaderMaterial}>
       <planeGeometry args={[planeShape[1],planeShape[0]]} />
     </mesh>
-
-    </>
   )
 }
 

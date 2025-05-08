@@ -22,7 +22,7 @@ interface PlotParameters{
         variable:string;
         shape:THREE.Vector3;
         bgcolor:string;
-        
+        canvasWidth:number
     },
     setters:{
       setShowLoading: React.Dispatch<React.SetStateAction<boolean>>;
@@ -40,7 +40,7 @@ interface PlotParameters{
 
 const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
 
-    const {plotType,colormap,ZarrDS,variable,shape,bgcolor} = values;
+    const {plotType,colormap,ZarrDS,variable,shape,bgcolor,canvasWidth} = values;
     const {setShowLoading,setDataArray,setValueScales,setShape,setMetadata,setDimArrays,setDimNames,setDimUnits} = setters;
     const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
     const [currentBg, setCurrentBg] = useState(bgcolor || 'var(--background)')
@@ -126,10 +126,12 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
 
 
   return (
-
-
-    <div className='canvas'>
-        <Canvas shadows camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
+    <div className='main-canvas'
+      style={{
+        width:window.innerWidth-canvasWidth         
+      }}
+    >
+        <Canvas camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
         frameloop="demand"
         style={{
         background: currentBg
@@ -152,4 +154,4 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
   )
 }
 
-export default Plot
+export {Plot}

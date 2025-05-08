@@ -1,4 +1,6 @@
 
+// import './css/tweakpane.css'
+
 export const createPaneContainer = (className:string) => {
     // Check if we're in a browser environment where document is available
   if (typeof document !== 'undefined') {

@@ -1,0 +1,10 @@
+.middle-slider{
+    position: fixed;
+    height: 100vh;
+    left: 40%;
+    width: 15px;
+    cursor: ew-resize;
+    background: transparent;
+    box-shadow: inset 0px 5px 10px rgba(8, 8, 8, 0.616);
+    z-index: 6;
+}
