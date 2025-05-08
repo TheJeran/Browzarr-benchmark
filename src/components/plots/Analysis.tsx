@@ -10,9 +10,7 @@ import { OrbitControls } from '@react-three/drei'
 import './Plots.css'
 
 interface AnalysisParameters{
-    setters:{
 
-    },
     values:{
       ZarrDS:ZarrDataset;
       cmap: THREE.DataTexture;
@@ -21,7 +19,7 @@ interface AnalysisParameters{
     }
 }
 
-export const Analysis = ({setters,values}:AnalysisParameters) => {
+export const Analysis = ({values}:AnalysisParameters) => {
   const {ZarrDS, cmap, shape, canvasWidth} = values
 
   const paneContainer = createPaneContainer("analysis-tp")

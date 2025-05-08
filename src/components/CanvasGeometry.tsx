@@ -234,7 +234,7 @@ export function CanvasGeometry() {
     <>
     <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>
     <Loading showLoading={showLoading} />
-    <Analysis values={analysisObj.values}/>
+    <Analysis values={analysisObj.values} />
     <Plot values={plotObj.values} setters={plotObj.setters} timeSeriesObj={timeSeriesObj} /> 
     {metadata && <Metadata data={metadata} /> }
 
