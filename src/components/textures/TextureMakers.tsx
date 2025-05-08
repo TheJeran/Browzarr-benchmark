@@ -44,11 +44,10 @@ function ArrayTo2D(array: Array){
     return [texture, {maxVal,minVal}]
 }
 
-function ArrayTo3D(array: Array){
+export function ArrayTo3D(array: Array){
     const shape = array.shape;
     const data = Array.from(array.data);
     const [lz,ly,lx] = shape
-
 
     const maxVal = data.reduce((a, b) => {
         if (isNaN(a)) return b;

@@ -49,15 +49,16 @@ export class OneArrayCompute{
 
     Mean(axis:number){
         if (axis !== this.targetAxis){
-            "initing"
             this.initAxis(axis)
         }
-        console.log(this.texture)
         const reducer = this.GPUCompute.addVariable("reduction", MeanFrag, this.initTexture);
         reducer.material.uniforms[`dataArray]`] = { value: this.texture };
         reducer.material.uniforms['axisSize'] = { value: this.shape[this.targetAxis]}
         reducer.material.uniforms['axis'] = { value: this.targetAxis}
         this.GPUCompute.doRenderTarget(reducer.material,this.renderTarget)
+        const pixelBuffer = new Float32Array(this.renderTarget.width * this.renderTarget.height * 4)
+        this.renderer.readRenderTargetPixels(this.renderTarget, 0,0,this.renderTarget.width,this.renderTarget.height,pixelBuffer)
+        console.log(pixelBuffer)
         return this.renderTarget.texture
     }
 
@@ -65,7 +66,6 @@ export class OneArrayCompute{
         if (axis !== this.targetAxis){
             this.initAxis(axis)
         }
-        
         const reducer = this.GPUCompute.addVariable("reduction", MaxFrag, this.initTexture);
         reducer.material.uniforms[`dataArray]`] = { value: this.texture };
         reducer.material.uniforms['axisSize'] = { value: this.shape[this.targetAxis]}

@@ -1,6 +1,6 @@
 import { OrbitControls } from '@react-three/drei';
 import React from 'react';
-import ComputeModule from '../computation/ComputeModule';
+import SimpleCompute from '../computation/SimpleCompute';
 import { useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { PointCloud, UVCube, DataCube } from '@/components/plots';
@@ -37,20 +37,15 @@ interface PlotParameters{
     timeSeriesObj: TimeSeriesProps
 }
 
-function GLContext(){
-  const {gl} = useThree()
-  console.log(gl.getContext())
 
-  return(<>
-  
-  </>)
-}
 const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
 
     const {plotType,colormap,ZarrDS,variable,shape,bgcolor,canvasWidth} = values;
-    const {setShowLoading,setDataArray,setValueScales,setShape,setMetadata,setDimArrays,setDimNames,setDimUnits} = setters;
+    const {setShowLoading,setValueScales,setShape,setMetadata,setDimArrays,setDimNames,setDimUnits} = setters;
     const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
     const [currentBg, setCurrentBg] = useState(bgcolor || 'var(--background)')
+    const [dataArray, setDataArray] = useState<Array | null>(null)
+    const [render,setRender] = useState<boolean>(false)
     
 
     // Listen for theme changes
@@ -139,13 +134,25 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
         width:window.innerWidth-canvasWidth         
       }}
     >
+      <button
+        onClick={e=>setRender(x=>!x)}
+        style={{
+          position:"absolute",
+          top:'50%',
+          left:'5%',
+          zIndex:3,
+          cursor:'pointer'
+        }}
+      >
+        Calculate
+      </button>
         <Canvas camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
         frameloop="demand"
         style={{
         background: currentBg
         }}
         >
-          <GLContext/>
+            {dataArray && <SimpleCompute array={dataArray} cmap={colormap} render={render} />}
             {/* Volume Plots */}
             {plotType == "volume" && <>
             <DataCube volTexture={texture} shape={shape} colormap={colormap}/>

@@ -22,7 +22,6 @@ void main() {
     float sum = 0.0;
     for (int m = 0; m < axisSize; m++) { 
         float coord = (float(m) + 0.5) / float(axisSize); //0.5 for center of pixel
-        
         // Vary the appropriate coordinate
         if (axis == 0) {
             sampleCoord.z = coord; // Vary r (depth)
@@ -36,5 +35,5 @@ void main() {
     }
     
     float mean = sum / float(axisSize);
-    gl_FragColor = vec4(.0, 0.0, 0.0, 1.0); // Output mean in red channel
+    gl_FragColor = vec4(mean, 0.0, 0.0, 1.0); // Output mean in red channel
 }

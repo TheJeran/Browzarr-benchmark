@@ -102,35 +102,6 @@ export const Analysis = ({values}:AnalysisParameters) => {
     
   },[firstVar])
 
-  // const paneContainer = createPaneContainer("analysis-tp")
-  // const pane = useTweakpane({
-  //   operation:"mean",
-  //   firstVar:"Default"
-  // },
-  // {
-  //   title:"Analysis",
-  //   container:paneContainer ?? undefined,
-  //   expanded:true
-  // }
-  // )
-
-  // const [operation] = usePaneInput(pane,"operation",
-  //   {
-  //     label:"Operation",
-  //     options:[
-  //       {
-  //         text:"Mean",
-  //         value:"mean"
-  //       },
-  //       {
-  //         text:"Min",
-  //         value:"min"
-  //       }
-  //     ]
-  //   }
-
-  // )
-
   const stateVars = {
     operation,
     axis,
