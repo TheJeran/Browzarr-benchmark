@@ -1,6 +1,7 @@
 import { useSetAtom } from "jotai";
 import { uiAtom } from '@/components/ui';
-
+import Image from "next/image";
+import { logoBGC, logoMPI } from "@/assets/index";
 import './css/AboutModal.css'
 
 const AboutModal = () => {
@@ -26,8 +27,9 @@ const AboutModal = () => {
           &times;
         </button>
         <h1>vi-zarr-stores</h1>
-        <a> builds on the lessons learned from the visualization prototype from the SeasFire project. </a>
-
+        builds on the lessons learned from the visualization prototype from the SeasFire project.
+        
+        <br/><br/>
         <p>
         The ESA-funded SeasFire project is exploring the potential of spatio-temporal asynchronous links happening between pre-occurring and non-overlapping atmospheric conditions and European fire regimes to predict the seasonal burned areas sizes in Europe by leveraging two major advancements of our time:
         </p>
@@ -49,16 +51,30 @@ const AboutModal = () => {
         </p>
         <br/>
         <p> <strong> Contact :</strong></p>
-        <a href="https://lazarusa.github.io/" target='_blank' rel="noreferrer">Lazaro Alonso &</a>
-        <a href="https://www.bgc-jena.mpg.de/person/jpoehls/2206" target='_blank' rel="noreferrer"> Jeran Poehls</a>
 
-       <p>Max-Planck Institute for Biogeochemistry<br/>
+      <div>
+        <span> <a href="https://lazarusa.github.io/" target='_blank' rel="noreferrer"><strong>Lazaro Alonso</strong></a> & 
+        <a href="https://www.bgc-jena.mpg.de/person/jpoehls/2206" target='_blank' rel="noreferrer"><strong> Jeran Poehls</strong></a>
+        </span>
+      </div>
+      <br></br>
+       <p><strong>Max-Planck Institute for Biogeochemistry</strong><br/>
         Hans-Knöll Str. 10<br/>
         07745 Jena
         </p>
         <br></br>
+        <div className="logo-container">
+            <a href="https://www.bgc-jena.mpg.de/en/bgi/home" target="_blank" rel="noreferrer">
+              <Image src={logoMPI} alt="logoMPI" height={32}/>
+            </a>
+            <a href="https://www.bgc-jena.mpg.de/en/bgi/mdi" target="_blank" rel="noreferrer">
+              <Image src={logoBGC} alt="logoBGC" height={32}/>
+            </a>
+        </div>
+        <br></br>
         <p>Ⓒ <a href="https://github.com/EarthyScience/FireSight?tab=Apache-2.0-1-ov-file#readme" target="_blank" rel="noreferrer">Apache License, Version 2.0</a></p>
       </div>
+
     </div>
   );
 };

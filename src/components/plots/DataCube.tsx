@@ -3,7 +3,7 @@ import {  useRef } from 'react'
 import * as THREE from 'three'
 import { vertexShader, fragmentShader } from '@/components/textures/shaders';
 import { usePaneInput, usePaneFolder, useSliderBlade, useTweakpane } from '@lazarusa/react-tweakpane'
-import { createPaneContainer } from '../ui';
+import { createPaneContainer } from '@/components/ui';
 
 
 interface DataCubeProps {
@@ -23,7 +23,7 @@ export const DataCube = ({ volTexture, shape, colormap }: DataCubeProps ) => {
         {
           title: 'Volume',
           container: paneContainer ?? undefined,
-          expanded: true,
+          expanded: false,
         }
       );
 

@@ -120,7 +120,7 @@ export const PlotLine = ({
       interpolation: "linear"
     },
     {
-      title: 'Settings',
+      title: 'Line',
       container: paneContainer ?? undefined,
       expanded: true,
     }

@@ -25,7 +25,7 @@ interface FixedTicksProps {
 }
 
 export function FixedTicks({ 
-  colorTicks = 'white',
+  colorTicks = 'grey',
   tickSize = 4,
   fontSize = 14,
   showGrid = true,

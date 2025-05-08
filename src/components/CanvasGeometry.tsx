@@ -3,9 +3,9 @@ import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { ZarrDataset, variables } from '@/components/zarr/ZarrLoaderLRU'
 import { useEffect, useState, useMemo, useRef } from 'react';
-import { PlotArea, Plot, Analysis } from '@/components/plots';
-import { GetColorMapTexture,colormaps } from '@/components/textures';
-import { Metadata, MiddleSlider } from '@/components/ui';
+import { PointCloud, UVCube, PlotArea, DataCube } from '@/components/plots';
+import { GetColorMapTexture, ArrayToTexture, DefaultCubeTexture, colormaps } from '@/components/textures';
+import { Metadata } from '@/components/ui';
 import { plotContext, DimCoords } from '@/components/contexts';
 // import ComputeModule from '@/components/computation/ComputeModule'
 import { usePaneInput, usePaneFolder, useTweakpane, useButtonBlade } from '@lazarusa/react-tweakpane'
@@ -49,20 +49,21 @@ export function CanvasGeometry() {
 
   const pane = useTweakpane(
     {
-      backgroundcolor: "#2c3d4f",
+      backgroundcolor: "#292b32",
       vName: "Default",
       plottype: "volume",
       cmap: "Spectral",
       flipCmap: false,
     },
     {
-      title: 'Settings',
+      title: 'Data settings',
+      expanded: true,
     }
   );
 
   const [bgcolor] = usePaneInput(pane, 'backgroundcolor', {
     label: 'bgcolor',
-    value: '#2d4967'
+    value: '#292b32'
   })
   const [variable] = usePaneInput(pane, 'vName', {
     label: 'Plot Variable',

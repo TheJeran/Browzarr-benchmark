@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 // import { useControls } from 'leva'
 import { pointFrag, pointVert } from '@/components/textures/shaders'
 import { usePaneInput, usePaneFolder, useSliderBlade, useTweakpane } from '@lazarusa/react-tweakpane'
+import { createPaneContainer } from '@/components/ui';
 
 interface PCProps {
   texture: THREE.Data3DTexture | THREE.DataTexture | null,
@@ -12,14 +13,16 @@ interface PCProps {
 
 export const PointCloud = ({textures} : {textures:PCProps} )=>{
     const {texture, colormap } = textures;
+    const paneContainer = createPaneContainer("plot-cloud");
+
     const pane = useTweakpane(
       {
         scalePoints: false,
       },
       {
         title: 'Point cloud',
-        // container: container,
-        expanded: true,
+        container: paneContainer ?? undefined,
+        expanded: false,
       }
     );
 

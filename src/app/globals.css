@@ -1,69 +1,129 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f5f5;
-  --foreground: #171717;
-  --background-plot: #d0cdcdcc;
-  --background-modal: #d0cdcdcc;
-  --modal-shadow: #f5f1f1aa;
-  --modal-gradient: #cccaca;
-  --modal-p: #08000080;
-  --text-plot: rgb(227, 224, 224);
-  --accent-1: black;
-  --accent-2: black;
-  --button-hover: rgb(99, 93, 93);
-
+  --background: hsla(0, 0%, 96%, 1);
+  --foreground: hsla(0, 0%, 9%, 1);
+  --background-plot: hsla(0, 0%, 80%, 0.8);
+  --background-modal: hsla(0, 0%, 80%, 0.8);
+  --modal-shadow: hsla(0, 0%, 95%, 0.7);
+  --modal-gradient: hsla(0, 0%, 80%, 1);
+  --modal-p: hsla(0, 0%, 0%, 0.5);
+  --text-plot: hsla(0, 0%, 89%, 1);
+  --accent-1: gold;
+  --accent-2: hsla(0, 0%, 0%, 1);
+  --button-hover: hsla(0, 0%, 38%, 1);
+  --text-heading: hsla(0, 0%, 10%, 1);
+  --text-paragraph: hsla(0, 0%, 29%, 1);
+  --text-link: hsla(0, 0%, 15%, 1);
+  --text-link-hover: hsla(0, 0%, 13%, 1);
+  /* for tweakpane */
+  --tp-base-background-color: hsla(0, 0%, 10%, 0.80);
+  --tp-base-shadow-color: hsla(0, 0%, 0%, 0.2);
+  --tp-button-background-color: hsla(0, 0%, 80%, 1.00);
+  --tp-button-background-color-active: hsla(0, 0%, 100%, 1.00);
+  --tp-button-background-color-focus: hsla(0, 0%, 95%, 1.00);
+  --tp-button-background-color-hover: hsla(0, 0%, 85%, 1.00);
+  --tp-button-foreground-color: hsla(0, 0%, 0%, 0.80);
+  --tp-container-background-color: hsla(0, 0%, 0%, 0.30);
+  --tp-container-background-color-active: hsla(0, 0%, 0%, 0.60);
+  --tp-container-background-color-focus: hsla(0, 0%, 0%, 0.50);
+  --tp-container-background-color-hover: hsla(0, 0%, 0%, 0.40);
+  --tp-container-foreground-color: hsla(0, 0%, 100%, 0.50);
+  --tp-groove-foreground-color: hsla(0, 0%, 0%, 0.20);
+  --tp-input-background-color: hsla(0, 0%, 0%, 0.30);
+  --tp-input-background-color-active: hsla(0, 0%, 0%, 0.60);
+  --tp-input-background-color-focus: hsla(0, 0%, 0%, 0.50);
+  --tp-input-background-color-hover: hsla(0, 0%, 0%, 0.40);
+  --tp-input-foreground-color: hsla(0, 0%, 100%, 0.50);
+  --tp-label-foreground-color: hsla(0, 0%, 100%, 0.50);
+  --tp-monitor-background-color: hsla(0, 0%, 0%, 0.30);
+  --tp-monitor-foreground-color: hsla(0, 0%, 100%, 0.30);
 }
 /* Light Theme */
 [data-theme='light'] {
-  --background: #FAFAFA;
-  --foreground: #171717;
-  --background-plot: #4c4a4acc;
-  --background-modal: #d0cdcdcc;
-  --modal-shadow: #f5f1f1aa;
-  --modal-gradient: #cccaca;
-  --modal-p: #08000080;
-  --accent-1: black;
-  --background-funding: #F1F2F4;
-  --toggle-hover: rgb(127, 128, 132);
-  --accent-2: rgb(133, 127, 127);
-
+  --background: hsla(0, 0%, 98%, 1);
+  --foreground: hsla(0, 0%, 9%, 1);
+  --background-plot: hsla(0, 5%, 85%, 0.8);
+  --text-plot: hsla(0, 0%, 0%, 0.9);
+  --background-modal: hsla(0, 0%, 80%, 0.8);
+  --modal-shadow: hsla(0, 0%, 95%, 0.7);
+  --modal-gradient: hsla(0, 0%, 80%, 1);
+  --modal-p: hsla(0, 0%, 0%, 0.5);
+  --accent-1: gold;
+  --background-funding: hsla(0, 0%, 95%, 1);
+  --toggle-hover: hsla(0, 0%, 51%, 1);
+  --accent-2: hsla(0, 0%, 52%, 1);
+  --text-heading: hsla(0, 0%, 10%, 1);
+  --text-paragraph: hsla(0, 0%, 29%, 1);
+  --text-link: hsla(0, 0%, 15%, 1);
+  --text-link-hover: hsla(0, 0%, 13%, 1);
+  /* for tweakpane light theme */
+  --tp-base-background-color: hsla(230, 5%, 90%, 1.00);
+  --tp-base-shadow-color: hsla(0, 0%, 0%, 0.10);
+  --tp-button-background-color: hsla(230, 7%, 75%, 1.00);
+  --tp-button-background-color-active: hsla(230, 7%, 60%, 1.00);
+  --tp-button-background-color-focus: hsla(230, 7%, 65%, 1.00);
+  --tp-button-background-color-hover: hsla(230, 7%, 70%, 1.00);
+  --tp-button-foreground-color: hsla(230, 10%, 30%, 1.00);
+  --tp-container-background-color: hsla(230, 15%, 30%, 0.20);
+  --tp-container-background-color-active: hsla(230, 15%, 30%, 0.32);
+  --tp-container-background-color-focus: hsla(230, 15%, 30%, 0.28);
+  --tp-container-background-color-hover: hsla(230, 15%, 30%, 0.24);
+  --tp-container-foreground-color: hsla(230, 10%, 30%, 1.00);
+  --tp-groove-foreground-color: hsla(230, 15%, 30%, 0.10);
+  --tp-input-background-color: hsla(230, 15%, 30%, 0.10);
+  --tp-input-background-color-active: hsla(230, 15%, 30%, 0.22);
+  --tp-input-background-color-focus: hsla(230, 15%, 30%, 0.18);
+  --tp-input-background-color-hover: hsla(230, 15%, 30%, 0.14);
+  --tp-input-foreground-color: hsla(230, 10%, 30%, 1.00);
+  --tp-label-foreground-color: hsla(230, 10%, 30%, 0.70);
+  --tp-monitor-background-color: hsla(230, 15%, 30%, 0.10);
+  --tp-monitor-foreground-color: hsla(230, 10%, 30%, 0.50);
 }
 
 /* Dark Theme */
 [data-theme='dark'] {
-  --background: rgb(26, 26, 26);
-  --foreground: #ededed;
-  --background-plot: rgba(17, 16, 16, 0.667);
-  --background-modal: rgba(17, 16, 16, 0.667);
-  --modal-shadow: #000000aa;
-  --modal-gradient: #0a0a0a;
-  --modal-p: #ffffff80;
-  --background-funding: rgb(32, 33, 38);
-  --toggle-hover: rgb(239, 198, 95);
+  --background: #1e2023;
+  --foreground: hsla(0, 0%, 100%, 0.9);
+  --background-plot: hsla(0, 0%, 0%, 0.3);
+  --text-plot: hsla(0, 0%, 100%, 0.9);
+  --background-modal: hsla(0, 0%, 0%, 0.3);
+  --modal-shadow: hsla(0, 0%, 0%, 0.2);
+  --modal-gradient: hsla(0, 0%, 0%, 1);
+  --modal-p: hsla(0, 0%, 100%, 0.5);
+  --background-funding: hsla(0, 0%, 15%, 1);
+  --toggle-hover: gold;
   --accent-1: gold;
-  --accent-2: rgb(58, 57, 56);
+  --accent-2: hsla(0, 0%, 20%, 1);
+  --text-heading: hsla(0, 0%, 100%, 0.9);
+  --text-paragraph: hsla(0, 0%, 100%, 0.7);
+  --text-link: hsla(55, 17%, 86%, 0.8);
+  --text-link-hover: hsla(0, 0%, 100%, 1);
+  --button-hover: hsla(0, 0%, 20%, 1);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
 }
 
 ul {
   list-style-type: disc;
   padding-left: 2rem;
   margin: 0.5rem 0;
+  color: var(--text-paragraph);
+  font-size: 14px;
 }
 
 li {
   padding: 0.25rem 0;
+  font-size: 13px;
 }
 
 .button {
   background-color: var(--accent-2);
-  /* color: white; */
   border: none;
   padding: 0.25rem 1rem;
   border-radius: 0.25rem;
@@ -74,30 +134,89 @@ li {
   background-color: var(--button-hover);
 }
 
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-heading);
+  font-weight: 600;
+  line-height: 1.1;
+  margin-bottom: 0.5em;
+}
+
+p {
+  color: var(--text-paragraph);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 1em;
+}
+
+a[href] {
+  color: var(--text-link);
+  position: relative;
+  text-decoration: none;
+}
+
+a[href]::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 1px;
+  bottom: -1px;
+  left: 0;
+  background-color: var(--text-link-hover);
+  transition: width 0.3s;
+}
+
+a[href]:hover {
+  color: var(--text-link-hover);
+}
+
+a[href]:hover::after {
+  width: 100%;
+}
+
  /* This is the native css for the tweakpane */
 .tp-dfwv {
-  position: absolute !important;
-  top: 4rem !important ;
+  /* position: absolute !important; */
+  right: 15% !important;
+  top: 1rem !important ;
   user-select: none;
+  z-index: 100 !important;
 }
 
 /* This is my custom tweakpane container  */
-.tp-dfwv-my-container {
-  position: absolute !important;
-  top: 2.5rem !important ;
+.plot-pane{
+  position: fixed;
+  top: 3rem !important ;
   right: 0.5rem !important;
   z-index: 100 !important;
 }
 
-.plot-pane{
+.plot-cloud{
   position: fixed;
-  top: 2.5rem !important ;
+  top: 3rem !important ;
   right: 0.5rem !important;
   z-index: 100 !important;
 }
 
 .line-plot-pane{
   position: absolute;
-  bottom:300px;
-  left: 50px;
+  bottom: 20%;
+  right: 0.5rem;
+  z-index: 100 !important;
+}
+
+.analysis-tp{
+  position: absolute;
+  bottom: 20%;
+  right: 0.5rem;
+  z-index: 100 !important;
+}
+
+.analysis {
+  display: block;
+  position: fixed;
+  width: 40%;
+  height: 100vh;
+  left: 0%;
+  background-color: rgb(100, 180, 212);
+  z-index: 10;
 }
