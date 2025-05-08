@@ -4,7 +4,7 @@
     width: 40%;
     height: 100vh;
     left: 0%;
-    background-color: red;
+    background-color:var(--background-plot);
 }
 
 .main-canvas{
@@ -15,9 +15,32 @@
     right: 0%;
   }
 
-  .analysis-tp{
-    left: 10%;
-    top: 30%;
-    position: fixed;
-    z-index: 7;
+.analysis-ui{
+    display: block;
+    position: absolute;
+    justify-content: space-evenly;
+    left: 3%;
+    top: 5%;
+    z-index: 6;
+}
+
+.analysis-item{
+    display: flex;
+    justify-content: space-between;
+}
+
+.analysis-item select{
+    background-color: black;
+    cursor: pointer;
+}
+
+.analyze{
+    display: flex;
+    justify-content: center;
+}
+
+.analyze button{
+    width: 80%;
+    background-color: rgb(23, 29, 34);
+    cursor: pointer;
 }

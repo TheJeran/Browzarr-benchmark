@@ -1,10 +1,10 @@
 import { OrbitControls } from '@react-three/drei';
 import React from 'react';
-import { Metadata } from '@/components/ui';
+import SimpleCompute from '../computation/SimpleCompute';
 import { useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { PointCloud, UVCube, DataCube } from '@/components/plots';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import { ArrayToTexture, DefaultCubeTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 import { TimeSeriesProps } from './UVCube';
@@ -41,9 +41,20 @@ interface PlotParameters{
 const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
 
     const {plotType,colormap,ZarrDS,variable,shape,bgcolor,canvasWidth} = values;
-    const {setShowLoading,setDataArray,setValueScales,setShape,setMetadata,setDimArrays,setDimNames,setDimUnits} = setters;
+    const {setShowLoading,setValueScales,setShape,setMetadata,setDimArrays,setDimNames,setDimUnits} = setters;
     const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
     const [currentBg, setCurrentBg] = useState(bgcolor || 'var(--background)')
+    const [dataArray, setDataArray] = useState<Array | null>(null)
+    const [render,setRender] = useState<boolean>(false)
+    
+    const [windowWidth, setWindowWidth] = useState<number>(0);
+
+    useEffect(() => {
+        setWindowWidth(window.innerWidth);
+        const handleResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Listen for theme changes
     useEffect(() => {
@@ -128,7 +139,7 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
   return (
     <div className='main-canvas'
       style={{
-        width:window.innerWidth-canvasWidth         
+        width: windowWidth - canvasWidth         
       }}
     >
         <Canvas camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
@@ -137,12 +148,12 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
         background: currentBg
         }}
         >
+            {/* {dataArray && <SimpleCompute array={dataArray} cmap={colormap} render={render} />} */}
             {/* Volume Plots */}
             {plotType == "volume" && <>
             <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
             <UVCube {...timeSeriesObj} />
             </>}
-            
             {/* Point Clouds */}
             {plotType == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
 

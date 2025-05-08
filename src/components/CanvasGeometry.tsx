@@ -2,15 +2,14 @@
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { ZarrDataset, variables } from '@/components/zarr/ZarrLoaderLRU'
-import { useEffect, useState, useMemo, useRef } from 'react';
-import { PlotArea, Plot, Analysis } from '@/components/plots';
-import { GetColorMapTexture,colormaps } from '@/components/textures';
-import { Metadata, MiddleSlider } from '@/components/ui';
+import { useEffect, useState, useMemo } from 'react';
+import { Analysis, PlotArea, Plot } from '@/components/plots';
+import { GetColorMapTexture, colormaps } from '@/components/textures';
+import { createPaneContainer, MiddleSlider } from '@/components/ui';
 import { plotContext, DimCoords } from '@/components/contexts';
+import { Metadata } from '@/components/ui';
 // import ComputeModule from '@/components/computation/ComputeModule'
 import { usePaneInput, usePaneFolder, useTweakpane, useButtonBlade } from '@lazarusa/react-tweakpane'
-
-
 
 interface Array{
   data:number[],
@@ -46,6 +45,7 @@ export function CanvasGeometry() {
     text: colormap,
     value: colormap
   })), []);
+  const paneContainer = createPaneContainer("data-settings-pane");
 
   const pane = useTweakpane(
     {
@@ -57,7 +57,8 @@ export function CanvasGeometry() {
     },
     {
       title: 'Data settings',
-      expanded: true,
+      container: paneContainer ?? undefined,
+      expanded: false,
     }
   );
 
@@ -134,17 +135,12 @@ export function CanvasGeometry() {
   const [reduceAxis, setReduceAxis] = useState<number>(0);
   const [reduceOperation, setReduceOperation] = useState<string>("Mean")
   const [executeReduction,setExecuteReduction] = useState<boolean>(false)
-  const [showAnalysis, setShowAnalysis] = useState<boolean>(false)
 
-  const [canvasWidth,setCanvasWidth] = useState<number>(Math.round(window.innerWidth*0.4))
+  const [canvasWidth, setCanvasWidth] = useState<number>(0)
 
-  //Camera states
-  // const [resetCamera, setResetCamera] = useState<boolean>(false)
-
-  // useButtonBlade(pane, {
-  //   title: "Reset Camera",
-  //   label: "Reset Camera"
-  // } , ()=>setResetCamera(true))
+  useEffect(() => {
+    setCanvasWidth(Math.round(window.innerWidth * 0.0))
+  }, [])
 
   useEffect(()=>{
     setColormap(GetColorMapTexture(colormap,cmap,1,"#000000",0,flipCmap));
@@ -227,7 +223,8 @@ export function CanvasGeometry() {
       ZarrDS,
       cmap:colormap,
       shape:shape.toArray(),
-      canvasWidth
+      canvasWidth,
+      dimNames
     }
   }
 
@@ -242,17 +239,6 @@ export function CanvasGeometry() {
     <plotContext.Provider value={lineObj} >
       {timeSeries.length > 2 && <PlotArea />}
     </plotContext.Provider>
-
-    <button
-      style={{
-        position:'fixed',
-        left:'4rem',
-        top:'0.5rem'
-      }}
-      onClick={()=>setShowAnalysis(x=>!x)}
-    >
-      {/* {showAnalysis ? 'Hide' : 'Show' } Analysis Stuff */}
-    </button>
     </>
   )
 }

@@ -1,9 +1,10 @@
 import { GetColorMapTexture, colormaps } from './colormap';
-import {ArrayToTexture, DefaultCubeTexture} from './TextureMakers'
+import {ArrayToTexture, DefaultCubeTexture, ArrayTo3D} from './TextureMakers'
 
 export {
     GetColorMapTexture,
     colormaps,
     ArrayToTexture,
-    DefaultCubeTexture
+    DefaultCubeTexture,
+    ArrayTo3D
 }

@@ -3,8 +3,8 @@
     width: 250px;
     max-height: 400px;
     font-size: 12px;
-    left: 10px;
-    top: 50px; 
+    right: 8px;
+    top: 10.5%; 
     background-color: var(--background-plot);
     color: var(--text-plot);
     padding: 10px;
