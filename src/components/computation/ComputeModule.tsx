@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { OneArrayCompute } from './ComputeShaders'
 import * as THREE from 'three'
 import { fragShader, vertShader } from './shaders'
@@ -8,6 +8,7 @@ interface Array{
     shape:number[],
     stride:number[]
 }
+
 interface StateVars{
   axis:number,
   operation:string,
@@ -15,13 +16,13 @@ interface StateVars{
 }
 
 
-const ComputeModule = ({array,cmap,shape,stateVars}:{array: Array,cmap:THREE.DataTexture,shape:number[],stateVars:StateVars}) => {
+const ComputeModule = ({array,cmap,stateVars}:{array: Array,cmap:THREE.DataTexture,stateVars:StateVars}) => {
     const {axis,operation,execute} = stateVars;
+    const shape = array.shape
     const [planeShape,setPlaneShape] = useState<number[]>(shape.filter((_val,idx)=> idx !== axis))
 
-
     const GPUCompute = new OneArrayCompute(array)
-    const [texture,setTexture] = useState<THREE.Texture | undefined>(undefined)
+    const [texture,setTexture] = useState<THREE.Texture>(new THREE.Texture())
 
     const shaderMaterial = new THREE.ShaderMaterial({
         glslVersion: THREE.GLSL3,
@@ -36,7 +37,7 @@ const ComputeModule = ({array,cmap,shape,stateVars}:{array: Array,cmap:THREE.Dat
 
     useEffect(()=>{
       if (array){
-        let newText;
+        let newText: THREE.Texture;
         switch(operation){
           case "Max":
             newText =  GPUCompute.Max(axis);
@@ -46,6 +47,7 @@ const ComputeModule = ({array,cmap,shape,stateVars}:{array: Array,cmap:THREE.Dat
             break
           case "Mean":
             newText =  GPUCompute.Mean(axis);
+            console.log("Meaned")
             break
           case "StDev":
             newText =  GPUCompute.StDev(axis);

@@ -15,12 +15,32 @@
     right: 0%;
   }
 
-.analysis-tp{
-    left: 10%;
-    top: 30%;
-    position: fixed;
-    background-color: aliceblue;
-    z-index: 7;
-    width: 200px;
-    height: 100px;
+.analysis-ui{
+    display: block;
+    position: absolute;
+    justify-content: space-evenly;
+    left: 3%;
+    top: 5%;
+    z-index: 6;
+}
+
+.analysis-item{
+    display: flex;
+    justify-content: space-between;
+}
+
+.analysis-item select{
+    background-color: black;
+    cursor: pointer;
+}
+
+.analyze{
+    display: flex;
+    justify-content: center;
+}
+
+.analyze button{
+    width: 80%;
+    background-color: rgb(23, 29, 34);
+    cursor: pointer;
 }
