@@ -23,12 +23,16 @@ export const Analysis = ({values}:AnalysisParameters) => {
   const {ZarrDS, cmap, shape, canvasWidth} = values
 
   const paneContainer = createPaneContainer("analysis-tp")
-
   const pane = useTweakpane({
     operation:"mean",
     firstVar:"Default"
-
-  },paneContainer ?? undefined)
+  },
+  {
+    title:"Analysis",
+    container:paneContainer ?? undefined,
+    expanded:true
+  }
+  )
 
   const [operation] = usePaneInput(pane,"operation",
     {

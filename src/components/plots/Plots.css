@@ -15,9 +15,12 @@
     right: 0%;
   }
 
-  .analysis-tp{
+.analysis-tp{
     left: 10%;
     top: 30%;
     position: fixed;
+    background-color: aliceblue;
     z-index: 7;
+    width: 200px;
+    height: 100px;
 }
