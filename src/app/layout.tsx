@@ -18,7 +18,6 @@ export default function RootLayout({
     <html suppressHydrationWarning lang="en">
       <body className="antialiased">
       <ThemeProvider defaultTheme="system">
-        {/* <div className="pane"></div> */}
         <Overlays />
         <Navbar />
         {children}

@@ -14,12 +14,13 @@ interface Array{
 interface StateVars{
   axis:number,
   operation:string,
-  execute:boolean
+  execute:boolean,
+  active:boolean
 }
 
 
 const ComputeModule = ({array,cmap,stateVars}:{array: Array,cmap:THREE.DataTexture,stateVars:StateVars}) => {
-    const {axis,operation,execute} = stateVars;
+    const {axis, operation, execute, active} = stateVars;
     const shape = array.shape
     const [planeShape,setPlaneShape] = useState<number[]>(shape.filter((_val,idx)=> idx !== axis))
     

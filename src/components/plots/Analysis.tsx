@@ -1,13 +1,13 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
 import ComputeModule from '@/components/computation/ComputeModule'
-import { ZarrDataset } from '../zarr/ZarrLoaderLRU'
+import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU'
 import { createPaneContainer } from '@/components/ui'
 import { useTweakpane, usePaneInput } from '@lazarusa/react-tweakpane'
 import { OrbitControls } from '@react-three/drei'
-import { variables } from '../zarr/ZarrLoaderLRU'
+import { variables } from '@/components/zarr/ZarrLoaderLRU'
 import './Plots.css'
 
 interface Array{
@@ -26,148 +26,136 @@ interface AnalysisParameters{
     }
 }
 
-const operations = [
-          "Mean",
-          "Min",
-          "Max",
-          "StDev"
-          ]
-
-interface ControlParams{
-  dimNames: string[];
-  showExecute:boolean;
-  setters:{
-    setFirstVariable: React.Dispatch<React.SetStateAction<string>>
-    setSecondVariable: React.Dispatch<React.SetStateAction<string>>
-    setExecute: React.Dispatch<React.SetStateAction<boolean>>
-    setAxis: React.Dispatch<React.SetStateAction<number>>
-    setOperation: React.Dispatch<React.SetStateAction<string>>
-  }
-}
-
-function ControlFace({dimNames,showExecute,setters}:ControlParams){
-  const{setSecondVariable,setFirstVariable,setExecute,setAxis,setOperation} = setters;
-  return(
-    <div className='analysis-ui'>
-      <div className='analysis-item'>
-        <label htmlFor="firstVar">Variable</label>
-        <select name="firstVar" id="firstVar" onChange={(e)=>setFirstVariable(e.target.value)}>
-        <option value={"Default"} key={`firstVar_default`}>Default</option>
-          {variables.map((val,idx)=>(
-            <option value={val} key={`firstVar${idx}`}>{val}</option>
-          ))}
-        </select>
-      </div>
-      <div className='analysis-item'>
-        <label htmlFor="operation">Operation</label>
-        <select name="operation" id="operation" onChange={e=>setOperation(e.target.value)}>
-          {operations.map((val,idx)=>(
-            <option value={val} key={`operation${idx}`}>{val}</option>
-          ))}
-        </select>
-      </div>
-      {dimNames && <div className='analysis-item' >
-        <label htmlFor="axis">Axis</label>
-        <select name="axis" id="axis" onChange={e=>setAxis(parseInt(e.target.value))}>
-          {dimNames.map((val,idx)=>(
-            <option value={idx} key={`dims${idx}`}>{val}</option>
-          ))}
-        </select>
-      </div>}
-       <div className='analyze'>
-        {showExecute && <button onClick={()=>setExecute(x=>!x)}>
-          Calculate
-        </button>}
-      </div>
-    </div>
-  )
-}
-
 export const Analysis = ({values}:AnalysisParameters) => {
-  const {ZarrDS, cmap, canvasWidth,dimNames} = values
+  const {ZarrDS, cmap, canvasWidth, dimNames} = values
 
-  const [execute , setExecute] = useState<boolean>(false)
-  const [firstVar, setFirstVar] = useState<string>("Default")
-  const [secondVar, setSecondVar] = useState<string>("Default")
-  const [axis, setAxis] = useState<number>(0);
-  const [operation,setOperation] = useState<string>("Mean");
   const [array , setArray] = useState<Array | null>(null)
-  const [showExecute,setShowExecute] = useState<boolean>(false)
 
-  useEffect(()=>{
-    setShowExecute(false)
-    if (firstVar !== "Default"){
-      ZarrDS.GetArray(firstVar).then(result=>{setArray(result); setShowExecute(true)})
-    }
-    
-  },[firstVar])
+  const optionsVars = useMemo(() => variables.map((element) => ({
+    text: element,
+    value: element
+  })), []);
 
-  const paneContainer = createPaneContainer("analysis-ui")
+  const dimNamesAxis = useMemo(() => dimNames.map((element) => ({
+    text: element,
+    value: element
+  })), []);
+  
+
+  const paneContainer = createPaneContainer("analysis")
   const pane = useTweakpane({
-    operation:"mean",
-    firstVar:"Default"
+    operation: "Mean",
+    firstVar: "Default",
+    secondVar: "Default",
+    execute: false,
+    axis: 0,
+    active: false
   },
   {
-    title:"Analysis",
-    container:paneContainer ?? undefined,
-    expanded:true
+    title: "Analysis",
+    container: paneContainer ?? undefined,
+    expanded: false
   }
   )
+  const [active] = usePaneInput(
+    pane,
+    'active',
+    {
+      label: 'Show Analysis',
+      value: false
+    }
+  )
+  const [firstVar] = usePaneInput(pane, 'firstVar', {
+    label: 'Variable 1',
+    options: [
+      {
+        text: 'Default',
+        value: 'Default',
+      },
+    ...optionsVars
+  ],
+    value: 'Default'
+  })
 
-  const [operation_2] = usePaneInput(pane,"operation",
+  const [secondVar] = usePaneInput(pane, 'secondVar', {
+    label: 'Variable 2',
+    options: [
+      {
+        text: 'Default',
+        value: 'Default', 
+      },
+    ...optionsVars
+  ],
+    value: 'Default'
+  })
+  const [operation] = usePaneInput(pane, "operation",
     {
       label:"Operation",
       options:[
         {
           text:"Mean",
-          value:"mean"
+          value:"Mean"
         },
         {
           text:"Min",
-          value:"min"
+          value:"Min"
+        },
+        {
+          text:"Max",
+          value:"Max"
+        },
+        {
+          text:"StDev",
+          value:"StDev"
         }
-      ]
+      ],
+      value:"Mean"
     }
-
+  )
+  const [execute] = usePaneInput(
+    pane,
+    'execute',
+    {
+      label: 'Execute',
+      value: false
+    }
+  )
+  const [axis] = usePaneInput(
+    pane,
+    'axis',
+    {
+      label: 'Axis',
+      options: dimNamesAxis,
+      value: 0
+    }
   )
 
   const stateVars = {
     operation,
     axis,
-    execute
+    execute,
+    active
   }
 
-  const setters={
-    setExecute,
-    setOperation,
-    setAxis,
-    setFirstVariable:setFirstVar,
-    setSecondVariable:setSecondVar,
-    setShowExecute
-  }
+  useEffect(()=>{
+    if (firstVar !== "Default"){
+      ZarrDS.GetArray(firstVar).then(result=>{setArray(result);
+      })
+    }
+  },[firstVar])
 
   return (
     <div className='analysis-canvas'
       style={{
         width:canvasWidth,
-        background:"#2c3d4f"
       }}
-    >
-      <ControlFace dimNames={dimNames} setters={setters} showExecute={showExecute} />
-      <Canvas
-        camera={{ position: [0, 0, 50], zoom:5}}
-        orthographic
-      >
-        {/* <mesh>
-          <planeGeometry />
-          <meshBasicMaterial color={"red"} />
-        </mesh> */}
+    >      
+      <Canvas camera={{ position: [0, 0, 50], zoom:5}} orthographic>
         {array && <ComputeModule array={array} cmap={cmap} stateVars={stateVars}/>}
         <axesHelper scale={10} />
-        <OrbitControls 
+        <OrbitControls
           enablePan={true}
           enableRotate={true}
-        
         />
       </Canvas>
     </div>

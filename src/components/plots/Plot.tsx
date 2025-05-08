@@ -142,25 +142,13 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
         width: windowWidth - canvasWidth         
       }}
     >
-      <button
-        onClick={e=>setRender(x=>!x)}
-        style={{
-          position:"absolute",
-          top:'50%',
-          left:'5%',
-          zIndex:3,
-          cursor:'pointer'
-        }}
-      >
-        Calculate
-      </button>
         <Canvas camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
         frameloop="demand"
         style={{
         background: currentBg
         }}
         >
-            {dataArray && <SimpleCompute array={dataArray} cmap={colormap} render={render} />}
+            {/* {dataArray && <SimpleCompute array={dataArray} cmap={colormap} render={render} />} */}
             {/* Volume Plots */}
             {plotType == "volume" && <>
             <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
