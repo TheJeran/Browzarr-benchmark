@@ -226,7 +226,7 @@ export function CanvasGeometry() {
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
     {canvasWidth > 10 && <Analysis values={analysisObj.values} />}
-    {canvasWidth < window.innerWidth - 10 && <Plot values={plotObj.values} setters={plotObj.setters} timeSeriesObj={timeSeriesObj} /> }
+    <Plot values={plotObj.values} setters={plotObj.setters} timeSeriesObj={timeSeriesObj} />
     {metadata && <Metadata data={metadata} /> }
 
     <plotContext.Provider value={lineObj} >
