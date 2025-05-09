@@ -5,7 +5,7 @@ import * as THREE from 'three'
 import ComputeModule from '@/components/computation/ComputeModule'
 import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU'
 import { createPaneContainer } from '@/components/ui'
-import { useTweakpane, usePaneInput } from '@lazarusa/react-tweakpane'
+import { useTweakpane, usePaneInput, useButtonBlade } from '@lazarusa/react-tweakpane'
 import { OrbitControls } from '@react-three/drei'
 import { variables } from '@/components/zarr/ZarrLoaderLRU'
 import './Plots.css'
@@ -23,13 +23,15 @@ interface AnalysisParameters{
       shape: number[];
       canvasWidth:number;
       dimNames: string[];
+      valueScales:{maxVal:number,minVal:number}
     }
 }
 
 export const Analysis = ({values}:AnalysisParameters) => {
-  const {ZarrDS, cmap, canvasWidth, dimNames} = values
+  const {ZarrDS, cmap, canvasWidth, dimNames, valueScales} = values
 
   const [array , setArray] = useState<Array | null>(null)
+  const [execute, setExecute] = useState<boolean>(false)
 
   const optionsVars = useMemo(() => variables.map((element) => ({
     text: element,
@@ -112,23 +114,33 @@ export const Analysis = ({values}:AnalysisParameters) => {
       value:"Mean"
     }
   )
-  const [execute] = usePaneInput(
-    pane,
-    'execute',
-    {
-      label: 'Execute',
-      value: false
-    }
-  )
+
   const [axis] = usePaneInput(
     pane,
     'axis',
     {
       label: 'Axis',
-      options: dimNamesAxis,
-      value: 0
+      options: [
+        {
+          text:"0",
+          value:0
+        },
+        {
+          text:"1",
+          value:1
+        },
+        {
+          text:"2",
+          value:2
+        }
+      ],
+
     }
   )
+
+  useButtonBlade(pane,{
+    title:"Compute"
+  },()=>setExecute(x=>!x))
 
   const stateVars = {
     operation,
@@ -151,7 +163,7 @@ export const Analysis = ({values}:AnalysisParameters) => {
       }}
     >      
       <Canvas camera={{ position: [0, 0, 50], zoom:5}} orthographic>
-        {array && <ComputeModule array={array} cmap={cmap} stateVars={stateVars}/>}
+        {array && <ComputeModule array={array} cmap={cmap} stateVars={stateVars} valueScales={valueScales}/>}
         <axesHelper scale={10} />
         <OrbitControls
           enablePan={true}

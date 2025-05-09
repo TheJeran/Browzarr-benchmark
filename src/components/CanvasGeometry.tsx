@@ -36,7 +36,9 @@ function Loading({showLoading}:{showLoading:boolean}){
 }
 
 export function CanvasGeometry() {
-  // const paneRef = useRef<HTMLDivElement>(null);
+  const [flipCmap, setFlipCmap] = useState<boolean>(false)
+
+
   const optionsVars = useMemo(() => variables.map((element) => ({
     text: element,
     value: element
@@ -99,20 +101,9 @@ export function CanvasGeometry() {
     value: 'Spectral'
   })
 
-  const [flipCmap] = usePaneInput(pane, 'flipCmap', {
-    label: 'Invert colors',
-    options: [
-      {
-        text: 'on',
-        value: true,
-      },
-      {
-        text: 'off',
-        value: false,
-      },
-    ],
-    value: false
-  })
+  useButtonBlade(pane,{
+    title:"Flip Colors"
+  },()=>setFlipCmap(x=>!x))
 
 
   const [shape, setShape] = useState<THREE.Vector3 | THREE.Vector3>(new THREE.Vector3(2, 2, 2))
@@ -224,7 +215,8 @@ export function CanvasGeometry() {
       cmap:colormap,
       shape:shape.toArray(),
       canvasWidth,
-      dimNames
+      dimNames,
+      valueScales
     }
   }
 
