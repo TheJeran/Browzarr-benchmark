@@ -67,7 +67,7 @@ export function ArrayTo3D(array: Array){
     volTexture.format = THREE.RedFormat;
     volTexture.minFilter = THREE.NearestFilter;
     volTexture.magFilter = THREE.NearestFilter;
-    volTexture.unpackAlignment = 1;
+    // volTexture.unpackAlignment = 1;
     volTexture.needsUpdate = true;
 
     return [volTexture, {maxVal,minVal}]
