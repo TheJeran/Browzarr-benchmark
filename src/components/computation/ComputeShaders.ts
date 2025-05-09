@@ -1,8 +1,6 @@
 'use client';
-
 import * as THREE from 'three'
 import { GPUComputationRenderer } from 'three/examples/jsm/Addons.js'
-import { useThree } from '@react-three/fiber'
 import { MeanFrag, MaxFrag, MinFrag, StDevFrag } from './shaders'
 
 

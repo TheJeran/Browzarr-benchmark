@@ -1,6 +1,5 @@
 import { OrbitControls } from '@react-three/drei';
 import React from 'react';
-import SimpleCompute from '../computation/SimpleCompute';
 import { useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { PointCloud, UVCube, DataCube } from '@/components/plots';
@@ -148,7 +147,6 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
         background: currentBg
         }}
         >
-            {/* {dataArray && <SimpleCompute array={dataArray} cmap={colormap} render={render} />} */}
             {/* Volume Plots */}
             {plotType == "volume" && <>
             <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
