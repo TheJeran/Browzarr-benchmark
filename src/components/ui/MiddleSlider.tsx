@@ -17,51 +17,57 @@ const MiddleSlider = ({canvasWidth,setCanvasWidth}:MiddleParams) => {
         setScreenWidth(window.innerWidth);
     }, []);
         
-          // Start resizing on mousedown
-        const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-          e.preventDefault(); // Prevent text selection
-          setIsResizing(true);// Record starting height
+    // Start resizing on mousedown/touchstart
+    const handleStart = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+        e.preventDefault(); // Prevent text selection
+        setIsResizing(true);
+    };
+        
+    // Adjust width on mousemove/touchmove
+    const handleMove = (e: MouseEvent | TouchEvent) => {
+        if (isResizing) {
+            e.preventDefault();
+            const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+            setCanvasWidth(clientX);
+        }
+    };
+        
+    // Stop resizing on mouseup/touchend
+    const handleEnd = () => {
+        if (canvasWidth < screenWidth*0.25){
+            setCanvasWidth(0);
+        }
+        if (canvasWidth > screenWidth*0.85){
+            setCanvasWidth(screenWidth-10); //This 10 is the width of the middleslider. May need to adjust
+        }
+        setIsResizing(false);
+    };
+        
+    // Add/remove document event listeners based on resizing state
+    useEffect(() => {
+        if (isResizing) {
+            document.addEventListener('mousemove', handleMove);
+            document.addEventListener('mouseup', handleEnd);
+            document.addEventListener('touchmove', handleMove);
+            document.addEventListener('touchend', handleEnd);
+        }
+        return () => {
+            document.removeEventListener('mousemove', handleMove);
+            document.removeEventListener('mouseup', handleEnd);
+            document.removeEventListener('touchmove', handleMove);
+            document.removeEventListener('touchend', handleEnd);
         };
-        
-          // Adjust height on mousemove
-          const handleMouseMove = (e: MouseEvent) => {
-            if (isResizing) {
-              e.preventDefault();
-              setCanvasWidth(e.clientX)
-            }
-          };
-        
-          // Stop resizing on mouseup
-          const handleMouseUp = () => {
-            if (canvasWidth < screenWidth*0.25){
-                setCanvasWidth(0)
-            }
-            if (canvasWidth > screenWidth*0.85){
-                setCanvasWidth(screenWidth-10) //This 10 is the width of the middleslider. MAy need to adjust
-            }
-            setIsResizing(false);
-          };
-        
-          // Add/remove document event listeners based on resizing state
-          useEffect(() => {
-            if (isResizing) {
-              document.addEventListener('mousemove', handleMouseMove);
-              document.addEventListener('mouseup', handleMouseUp);
-            }
-            return () => {
-              document.removeEventListener('mousemove', handleMouseMove);
-              document.removeEventListener('mouseup', handleMouseUp);
-            };
-          }, [isResizing]);
-  return (
-    <div className='middle-slider' 
-            onMouseDown={handleMouseDown}
-            onMouseUp={handleMouseUp}
+    }, [isResizing]);
+
+    return (
+        <div className='middle-slider' 
+            onMouseDown={handleStart}
+            onTouchStart={handleStart}
             style={{
-              left:`${canvasWidth}px`,
+                left:`${canvasWidth}px`,
             }}  
-    />
-  )
+        />
+    )
 }
 
 export {MiddleSlider}
