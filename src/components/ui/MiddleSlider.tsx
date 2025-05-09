@@ -33,10 +33,10 @@ const MiddleSlider = ({canvasWidth,setCanvasWidth}:MiddleParams) => {
         
           // Stop resizing on mouseup
           const handleMouseUp = () => {
-            if (canvasWidth < screenWidth*0.2){
+            if (canvasWidth < screenWidth*0.25){
                 setCanvasWidth(0)
             }
-            if (canvasWidth > screenWidth*0.8){
+            if (canvasWidth > screenWidth*0.85){
                 setCanvasWidth(screenWidth-10) //This 10 is the width of the middleslider. MAy need to adjust
             }
             setIsResizing(false);

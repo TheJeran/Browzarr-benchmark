@@ -1,5 +1,6 @@
 //This File will have functions converting the array information into 2D or 3D textures that we will pass to the corresponding 2D or 3D object
 import * as THREE from 'three'
+import { ArrayMinMax} from '@/utils/HelperFuncs';
 
 interface Array {
     data: Float32Array | Float64Array | Int32Array | Uint32Array;
@@ -16,17 +17,7 @@ function ArrayTo2D(array: Array){
     const width = shape[0];
     const height = shape[1];
 
-    const maxVal = data.reduce((a, b) => {
-        if (isNaN(a)) return b;
-        if (isNaN(b)) return a;
-        return a > b ? a : b;
-    });
-
-    const minVal = data.reduce((a, b) => {
-        if (isNaN(a)) return b;
-        if (isNaN(b)) return a;
-        return a > b ? b : a;
-    });
+    const [minVal,maxVal] = ArrayMinMax(data)
 
     const normed = data.map((i)=>(i-minVal)/(maxVal-minVal))
 
@@ -49,17 +40,7 @@ export function ArrayTo3D(array: Array){
     const data = Array.from(array.data);
     const [lz,ly,lx] = shape
 
-    const maxVal = data.reduce((a, b) => {
-        if (isNaN(a)) return b;
-        if (isNaN(b)) return a;
-        return a > b ? a : b;
-    });
-
-    const minVal = data.reduce((a, b) => {
-        if (isNaN(a)) return b;
-        if (isNaN(b)) return a;
-        return a > b ? b : a;
-    });
+    const [minVal,maxVal] = ArrayMinMax(data)
 
     const normed = data.map((i)=>(i-minVal)/(maxVal-minVal))
     const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254));   
