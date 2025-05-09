@@ -16,18 +16,31 @@ interface StateVars{
   axis:number,
   operation:string,
   execute:boolean,
-  active:boolean
+}
+
+interface ComputeModule{
+  arrays:{
+    firstArray:Array;
+    secondArray: Array | null;
+  },
+  values:{
+    cmap:THREE.DataTexture;
+    stateVars:StateVars;
+    valueScales:{maxVal:number,minVal:number}
+  }
 }
 
 
-const ComputeModule = ({array,cmap,stateVars,valueScales}:{array: Array,cmap:THREE.DataTexture,stateVars:StateVars,valueScales:{maxVal:number,minVal:number}}) => {
-    const {axis, operation, execute, active} = stateVars;
-    const shape = array.shape
+const ComputeModule = ({arrays,values}:ComputeModule) => {
+    const {stateVars,cmap,valueScales} = values
+    const {firstArray, secondArray} = arrays;
+    const {axis, operation, execute} = stateVars;
+    const shape = firstArray.shape
     const [planeShape,setPlaneShape] = useState<number[]>(shape.filter((_val,idx)=> idx !== axis))
     const {gl} = useThree()
 
-    const GPUCompute = new OneArrayCompute(array,gl,valueScales)
-    const [texture,setTexture] = useState<THREE.Texture>(new THREE.Texture())
+    const GPUCompute = new OneArrayCompute(firstArray,gl,valueScales)
+    const [texture,setTexture] = useState<THREE.Texture | null>(null)
 
     const shaderMaterial = new THREE.ShaderMaterial({
         glslVersion: THREE.GLSL3,
@@ -37,12 +50,12 @@ const ComputeModule = ({array,cmap,stateVars,valueScales}:{array: Array,cmap:THR
         },
         vertexShader: vertShader,
         fragmentShader: fragShader,
-        side: THREE.DoubleSide
+        side: THREE.DoubleSide,
     })
 
     useEffect(()=>{
-      if (array){
-        let newText: THREE.Texture;
+      if (firstArray){
+        let newText: THREE.Texture | null;
         switch(operation){
           case "Max":
             newText =  GPUCompute.Max(axis);
@@ -67,7 +80,7 @@ const ComputeModule = ({array,cmap,stateVars,valueScales}:{array: Array,cmap:THR
 
   return (
     <mesh material={shaderMaterial}>
-      <planeGeometry args={[planeShape[1],planeShape[0]]} />
+      {texture && <planeGeometry args={[2,planeShape[0]/planeShape[1]*2]} />}
     </mesh>
   )
 }

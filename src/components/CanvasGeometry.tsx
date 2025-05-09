@@ -7,7 +7,7 @@ import { Analysis, PlotArea, Plot } from '@/components/plots';
 import { GetColorMapTexture, colormaps } from '@/components/textures';
 import { createPaneContainer, MiddleSlider } from '@/components/ui';
 import { plotContext, DimCoords } from '@/components/contexts';
-import { Metadata } from '@/components/ui';
+import { Metadata, ShowAnalysis } from '@/components/ui';
 // import ComputeModule from '@/components/computation/ComputeModule'
 import { usePaneInput, usePaneFolder, useTweakpane, useButtonBlade } from '@lazarusa/react-tweakpane'
 
@@ -222,10 +222,11 @@ export function CanvasGeometry() {
 
   return (
     <>
-    <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>
+    {canvasWidth < 10 && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} canvasWidth={canvasWidth} />}
+    {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
-    <Analysis values={analysisObj.values} />
-    <Plot values={plotObj.values} setters={plotObj.setters} timeSeriesObj={timeSeriesObj} /> 
+    {canvasWidth > 10 && <Analysis values={analysisObj.values} />}
+    <Plot values={plotObj.values} setters={plotObj.setters} timeSeriesObj={timeSeriesObj} />
     {metadata && <Metadata data={metadata} /> }
 
     <plotContext.Provider value={lineObj} >

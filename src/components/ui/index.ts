@@ -11,7 +11,7 @@ import XScaler from "./XScaler";
 import { MiddleSlider } from "./MiddleSlider";
 import ThemeSwitch from "./ThemeSwitch";
 import { createPaneContainer } from "./paneContainer";
-
+import ShowAnalysis from "./ShowAnalysis";
 export {
   Navbar,
   Footer,
@@ -26,5 +26,6 @@ export {
   // AnalysisWindow,
   ThemeSwitch,
   createPaneContainer,
-  MiddleSlider
+  MiddleSlider,
+  ShowAnalysis
 };

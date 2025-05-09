@@ -11,6 +11,7 @@
     border-radius: 10px;
     overflow-wrap: break-word;
     overflow-y: auto;
+    user-select: none;
 }
 .metadata p {
     font-size: 12px;
