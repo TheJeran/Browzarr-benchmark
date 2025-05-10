@@ -12,6 +12,19 @@
     min-height: 100px;
 }
 
+.plot-canvas::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 4px;
+    background-color: var(--foreground);
+    border-radius: 2px;
+    opacity: 0.5;
+}
+
 .plot-coords{
     position: absolute;
     max-width:355px;
@@ -28,6 +41,15 @@
     align-items: center;
     gap: 8px;
     color: var(--text-plot);
+}
+
+@media screen and (max-width: 480px) {
+    .plot-coords {
+        flex-direction: column;
+        align-items: flex-start;
+        max-width: 200px;
+        gap: 1px;
+    }
 }
 
 .point-info{

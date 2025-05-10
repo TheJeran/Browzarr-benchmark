@@ -49,9 +49,9 @@ function PointInfo({pointID,pointLoc,showPointInfo}:pointInfo){
 function PointCoords(){
   const {coords} = useContext(plotContext);
   const [moving,setMoving] = useState<boolean>(false)
-  const initialMouse = useRef<number[]>([40,115])
-  const initialDiv = useRef<number[]>([40,115])
-  const [xy, setXY] = useState<number[]>([40,115])
+  const initialMouse = useRef<number[]>([0,Math.round(window.innerHeight*0.255)])
+  const initialDiv = useRef<number[]>([0,Math.round(window.innerHeight*0.255)])
+  const [xy, setXY] = useState<number[]>([0,Math.round(window.innerHeight*0.255)])
 
   function handleDown(e: any){
     initialMouse.current = [e.clientX,e.clientY]
@@ -113,7 +113,7 @@ export function PlotArea() {
   const [pointID, setPointID] = useState<number>(0);
   const [pointLoc, setPointLoc] = useState<number[]>([0,0])
   const [showPointInfo,setShowPointInfo] = useState<boolean>(false)
-  const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.15)))
+  const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.25)))
 
   const [yScale,setYScale] = useState<number>(1)
   const [xScale,setXScale] = useState<number>(1)
