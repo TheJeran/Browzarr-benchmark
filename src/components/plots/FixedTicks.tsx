@@ -53,12 +53,12 @@ export function FixedTicks({
         const timeStrings = []
         for (let i = 0 ; i < xDimArray.length; i++){
           const timeStamp = Number(xDimArray[i])*unit
-          timeStrings.push(new Date(timeStamp).toDateString())
-          // const date = new Date(timeStamp);
-          // // const dateString = date.toDateString().replace(/\s(\d{4})$/, '\n$1');
-          // const dateString = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}\n${date.getFullYear()}`;
+          // timeStrings.push(new Date(timeStamp).toDateString())
+          const date = new Date(timeStamp);
+          // const dateString = date.toDateString().replace(/\s(\d{4})$/, '\n$1');
+          const dateString = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}\n${date.getFullYear()}`;
           // // timeStrings.push(dateString);
-          // timeStrings.push(dateString);
+          timeStrings.push(dateString);
         }
         return timeStrings
       }

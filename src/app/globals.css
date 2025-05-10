@@ -87,7 +87,7 @@
   --foreground: hsla(0, 0%, 100%, 0.9);
   --background-plot: hsla(0, 0%, 0%, 0.3);
   --text-plot: hsla(0, 0%, 100%, 0.9);
-  --background-modal: hsla(0, 0%, 0%, 0.3);
+  --background-modal: hsla(0, 0%, 0%, 0.65);
   --modal-shadow: hsla(0, 0%, 0%, 0.2);
   --modal-gradient: hsla(0, 0%, 0%, 1);
   --modal-p: hsla(0, 0%, 100%, 0.5);
@@ -192,29 +192,29 @@ a[href]:hover::after {
 /* This is my custom tweakpane container  */
 .data-settings-pane{
   position: fixed;
-  top: 1rem;
-  right: 25%;
+  top: 0.5rem;
+  right: 24%;
   z-index: 10;
 }
 
 .plot-pane{
   position: fixed;
-  top: 3rem;
-  right: 0.5rem;
+  top: 2.5rem;
+  right: 0.35rem;
   z-index: 10;
 }
 
 .plot-cloud{
   position: fixed;
-  top: 3rem;
-  right: 0.5rem;
+  top: 2.5rem;
+  right: 0.35rem;
   z-index: 10;
 }
 
 .line-plot-pane{
   position: absolute;
-  bottom: 20%;
-  right: 0.5rem;
+  bottom: 25.5%;
+  right: 0.35rem;
   z-index: 10;
 }
 
