@@ -106,7 +106,6 @@ function PointCoords(){
     } 
     </>
   )
-
 }
 
 export function PlotArea() {
@@ -123,6 +122,27 @@ export function PlotArea() {
     setPointLoc,
     setShowPointInfo
   }
+
+  // Handle orientation changes
+  useEffect(() => {
+    const handleOrientationChange = () => {
+      // Update height based on new viewport dimensions
+      const newHeight = Math.round(window.innerHeight-(window.innerHeight*0.25));
+      setHeight(newHeight);
+      document.documentElement.style.setProperty('--plot-height', `${newHeight}px`);
+    };
+
+    // Listen for orientation changes
+    window.addEventListener('orientationchange', handleOrientationChange);
+    // Also listen for resize as a fallback
+    window.addEventListener('resize', handleOrientationChange);
+
+    return () => {
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      window.removeEventListener('resize', handleOrientationChange);
+    };
+  }, []);
+
   useEffect(() => {
     document.documentElement.style.setProperty('--plot-height', `${height}px`);
   }, [height]);
