@@ -87,7 +87,7 @@
   --foreground: hsla(0, 0%, 100%, 0.9);
   --background-plot: hsla(0, 0%, 0%, 0.3);
   --text-plot: hsla(0, 0%, 100%, 0.9);
-  --background-modal: hsla(0, 0%, 0%, 0.3);
+  --background-modal: hsla(0, 0%, 0%, 0.65);
   --modal-shadow: hsla(0, 0%, 0%, 0.2);
   --modal-gradient: hsla(0, 0%, 0%, 1);
   --modal-p: hsla(0, 0%, 100%, 0.5);
@@ -206,7 +206,7 @@ a[href]:hover::after {
 
 .plot-cloud{
   position: fixed;
-  top: 3rem;
+  top: 2.5rem;
   right: 0.35rem;
   z-index: 10;
 }
