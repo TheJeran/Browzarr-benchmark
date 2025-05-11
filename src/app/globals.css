@@ -231,3 +231,34 @@ a[href]:hover::after {
   left: 3%;
   z-index: 10;
 }
+
+.loading{
+  position: fixed;
+  top: calc(2.5rem + 30px); /* Align with metadata-icon */
+  right: calc(0.35rem + 22px); /* 0.35rem (metadata-icon position) + 20px (icon width) + 2px (desired gap) */
+  z-index: 5;
+  background-color: var(--background-plot);
+  color: var(--text-plot);
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.loading::after {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--text-plot);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
