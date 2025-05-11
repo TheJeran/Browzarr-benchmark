@@ -26,11 +26,9 @@ const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5d
 
 
 function Loading({showLoading}:{showLoading:boolean}){
-  return(
-    <div className='messages'>
-      {showLoading && <div className='loading'>
-        Loading...
-      </div>}
+  return (
+    showLoading && <div className='loading'>
+    Loading
     </div>
   )
 }
