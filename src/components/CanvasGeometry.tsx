@@ -1,7 +1,8 @@
 'use client';
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
-import { ZarrDataset, variables } from '@/components/zarr/ZarrLoaderLRU'
+import { ZarrDataset, variables} from '@/components/zarr/ZarrLoaderLRU'
+import { zarrMetadata } from  '@/components/zarr/GetMetadata'
 import { useEffect, useState, useMemo } from 'react';
 import { Analysis, PlotArea, Plot } from '@/components/plots';
 import { GetColorMapTexture, colormaps } from '@/components/textures';
@@ -10,6 +11,8 @@ import { plotContext, DimCoords } from '@/components/contexts';
 import { Metadata, ShowAnalysis } from '@/components/ui';
 // import ComputeModule from '@/components/computation/ComputeModule'
 import { usePaneInput, usePaneFolder, useTweakpane, useButtonBlade } from '@lazarusa/react-tweakpane'
+
+console.log(zarrMetadata)
 
 interface Array{
   data:number[],

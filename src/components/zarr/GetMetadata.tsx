@@ -1,0 +1,95 @@
+import * as zarr from "zarrita";
+
+interface ZarrMetadata {
+    name: string;
+    shape: number[];
+    chunks: number[];
+    dtype: string;
+    totalSize: number;  // in bytes
+    totalSizeFormatted: string;  // human readable
+    chunkCount: number;
+    chunkSize: number;  // in bytes
+    chunkSizeFormatted: string;  // human readable
+}
+
+interface ZarrItem {
+    path: `/${string}`;
+    kind: "group" | "array";
+}
+
+function formatBytes(bytes: number): string {
+    const units = ["bytes", "KB", "MB", "GB", "TB", "PB"];
+    let value = bytes;
+    let unitIndex = 0;
+    
+    while (value >= 1024 && unitIndex < units.length - 1) {
+        value /= 1024;
+        unitIndex++;
+    }
+    
+    return `${value.toFixed(2)} ${units[unitIndex]}`;
+}
+
+function getDtypeSize(dtype: string): number {
+    const dtypeMap: Record<string, number> = {
+        'int8': 1,
+        'uint8': 1,
+        'int16': 2,
+        'uint16': 2,
+        'int32': 4,
+        'uint32': 4,
+        'int64': 8,
+        'uint64': 8,
+        'float32': 4,
+        'float64': 8,
+        'bool': 1
+    };
+    return dtypeMap[dtype] || 4; // default to 4 bytes if type not found
+}
+
+function calculateTotalElements(shape: number[]): number {
+    return shape.reduce((acc, val) => acc * val, 1);
+}
+
+function calculateChunkCount(shape: number[], chunks: number[]): number {
+    return shape.reduce((acc, dim, i) => acc * Math.ceil(dim / chunks[i]), 1);
+}
+
+async function GetZarrMetadata(storePath: string): Promise<ZarrMetadata[]> {
+    const store = zarr.tryWithConsolidated(
+        new zarr.FetchStore(storePath)
+    );
+    const group = await store.then(s => zarr.open(s, {kind: 'group'}));
+    
+    const contents = ('contents' in group.store) ? group.store.contents() as ZarrItem[] : [];
+    const variables: ZarrMetadata[] = [];
+
+    for (const item of contents) {
+        if (item.path && item.path.length > 1 && item.kind === 'array') {
+            const array = await zarr.open(group.resolve(item.path.substring(1)), {kind: "array"});
+            const dtypeSize = getDtypeSize(array.dtype);
+            const totalElements = calculateTotalElements(array.shape);
+            const chunkCount = calculateChunkCount(array.shape, array.chunks);
+            const chunkElements = calculateTotalElements(array.chunks);
+            
+            const totalSize = totalElements * dtypeSize;
+            const chunkSize = chunkElements * dtypeSize;
+
+            variables.push({
+                name: item.path.substring(1),
+                shape: array.shape,
+                chunks: array.chunks,
+                dtype: array.dtype,
+                totalSize: totalSize,
+                totalSizeFormatted: formatBytes(totalSize),
+                chunkCount: chunkCount,
+                chunkSize: chunkSize,
+                chunkSizeFormatted: formatBytes(chunkSize)
+            });
+        }
+    }
+
+    return variables;
+}
+
+export const zarrMetadata = await GetZarrMetadata("https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr")
