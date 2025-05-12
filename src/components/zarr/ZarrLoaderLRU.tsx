@@ -2,33 +2,6 @@ import * as zarr from "zarrita";
 import * as THREE from 'three';
 import QuickLRU from 'quick-lru';
 import { parseUVCoords } from "@/utils/HelperFuncs";
-function GetZarrVariables(obj: Record<string, { path?: string; kind?: string }>) {
-	//Parses out variables in a Zarr group for variable list
-    const result = [];
-    
-    for (const key of Object.keys(obj)) {
-        const item = obj[key];
-        if (item.path && 
-            item.path.length > 1 && 
-            item.kind === 'array') {
-            result.push(item.path.substring(1));
-        }
-    }
-    //? we will need to filter out for lon (longitude, X), lat (latitude, Y), time (depth, altitude).
-    return result;
-}
-
-export async function GetVariables(storePath: string){
-	const d_store = zarr.tryWithConsolidated(
-		new zarr.FetchStore(storePath)
-	);
-	const group = await d_store.then(store => zarr.open(store, {kind: 'group'}))
-	// Type assertion
-	const collect_contents = ('contents' in group.store) 
-        ? group.store.contents() 
-        : {};
-	return GetZarrVariables(collect_contents)
-}
 
 // Define interface using Data Types from zarrita
 // type NumericDataType = zarr.NumberDataType | zarr.BigintDataType;
@@ -159,7 +132,7 @@ export class ZarrDataset{
 
 //For now we export variables. But we will import these functions over to the plotting component eventually
 // export const variables = await GetVariables("https://s3.bgc-jena.mpg.de:9000/misc/seasfire_v0.4.zarr")
-export const variables = await GetVariables("https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr")
+// export const variables = await GetVariables("https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr")
 
 // export const variables = await GetVariables("https://eerie.cloud.dkrz.de/datasets/icon-esm-er.hist-1950.v20240618.atmos.native.2d_1h_mean/kerchunk")
 

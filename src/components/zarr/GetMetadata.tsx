@@ -55,7 +55,7 @@ function calculateChunkCount(shape: number[], chunks: number[]): number {
     return shape.reduce((acc, dim, i) => acc * Math.ceil(dim / chunks[i]), 1);
 }
 
-async function GetZarrMetadata(storePath: string): Promise<ZarrMetadata[]> {
+export async function GetZarrMetadata(storePath: string): Promise<ZarrMetadata[]> {
     const store = zarr.tryWithConsolidated(
         new zarr.FetchStore(storePath)
     );
@@ -92,4 +92,23 @@ async function GetZarrMetadata(storePath: string): Promise<ZarrMetadata[]> {
     return variables;
 }
 
-export const zarrMetadata = await GetZarrMetadata("https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr")
+// Common coordinate variable names to filter out
+const COORDINATE_VARS = [
+    'longitude', 'lat', 'lon', 'time', 
+    'depth', 'height', 'altitude',
+    'x', 'y', 'z', 't',
+    'level'
+];
+
+function isCoordinateVariable(name: string): boolean {
+    const lowerName = name.toLowerCase();
+    return COORDINATE_VARS.some(coord => lowerName === coord);
+}
+
+export function GetVariableNames(variables: ZarrMetadata[]): string[] {
+    return variables
+        .filter(variable => !isCoordinateVariable(variable.name))
+        .map(variable => variable.name)
+        .sort((a, b) => a.localeCompare(b));
+}
+// export const zarrMetadata = await GetZarrMetadata("https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr")

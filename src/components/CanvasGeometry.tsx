@@ -1,8 +1,8 @@
 'use client';
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
-import { ZarrDataset, variables} from '@/components/zarr/ZarrLoaderLRU'
-import { zarrMetadata } from  '@/components/zarr/GetMetadata'
+import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU'
+import { GetZarrMetadata, GetVariableNames } from  '@/components/zarr/GetMetadata'
 import { useEffect, useState, useMemo } from 'react';
 import { Analysis, PlotArea, Plot } from '@/components/plots';
 import { GetColorMapTexture, colormaps } from '@/components/textures';
@@ -10,9 +10,8 @@ import { createPaneContainer, MiddleSlider } from '@/components/ui';
 import { plotContext, DimCoords } from '@/components/contexts';
 import { Metadata, ShowAnalysis } from '@/components/ui';
 // import ComputeModule from '@/components/computation/ComputeModule'
-import { usePaneInput, usePaneFolder, useTweakpane, useButtonBlade } from '@lazarusa/react-tweakpane'
+import { usePaneInput, usePaneFolder, useTweakpane, useButtonBlade, useTextBlade } from '@lazarusa/react-tweakpane'
 
-console.log(zarrMetadata)
 
 interface Array{
   data:number[],
@@ -20,7 +19,12 @@ interface Array{
   stride:number[]
 }
 
-const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
+// const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
+const zarrMetadata = await GetZarrMetadata("https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr")
+// console.log(zarrMetadata)
+const variables = GetVariableNames(zarrMetadata)
+// console.log(variables)
+
 // const storeURL = "https://s3.waw3-2.cloudferro.com/wekeo/egu2025/OLCI_L1_CHL_cube.zarr"
 // const variables = await GetVariables(storeURL)
 // console.log(variables)
@@ -53,6 +57,7 @@ export function CanvasGeometry() {
   const pane = useTweakpane(
     {
       backgroundcolor: "#292b32",
+      storeURL: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr',
       vName: "Default",
       plottype: "volume",
       cmap: "Spectral",
@@ -69,6 +74,29 @@ export function CanvasGeometry() {
     label: 'bgcolor',
     value: '#292b32'
   })
+
+  const [storeURL] = usePaneInput(pane, 'storeURL', {
+    label: 'Store URL',
+    options: [
+      {
+        text: 'ESDC',
+        value: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr',
+      },
+      {
+        text: 'Seasfire ',
+        value: 'https://s3.bgc-jena.mpg.de:9000/misc/seasfire_v0.4.zarr',
+      },
+    ],
+    value: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr'
+  })
+// TODO: update variables when custom store is selected
+  const [customStore] = useTextBlade(pane, {
+    label: 'Custom Store',
+    value: 'Setup your own store',
+    parse: (value) => value,
+    format: (value) => value,
+  })
+
   const [variable] = usePaneInput(pane, 'vName', {
     label: 'Plot Variable',
     options: [
@@ -226,7 +254,7 @@ export function CanvasGeometry() {
     {canvasWidth < 10 && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} canvasWidth={canvasWidth} />}
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
-    {canvasWidth > 10 && <Analysis values={analysisObj.values} />}
+    {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}
     <Plot values={plotObj.values} setters={plotObj.setters} timeSeriesObj={timeSeriesObj} />
     {metadata && <Metadata data={metadata} /> }
 
