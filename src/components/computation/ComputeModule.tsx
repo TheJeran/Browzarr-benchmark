@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react'
-import { OneArrayCompute } from './ComputeShaders'
+import { OneArrayCompute, TwoArrayCompute } from './ComputeShaders'
 import * as THREE from 'three'
 import { fragShader, vertShader } from './shaders'
 import { useThree } from '@react-three/fiber';
@@ -26,7 +26,7 @@ interface ComputeModule{
   values:{
     cmap:THREE.DataTexture;
     stateVars:StateVars;
-    valueScales:{maxVal:number,minVal:number}
+    valueScales:{firstArray:{maxVal:number,minVal:number},secondArray:{maxVal:number,minVal:number}}
   }
 }
 
@@ -39,7 +39,7 @@ const ComputeModule = ({arrays,values}:ComputeModule) => {
     const [planeShape,setPlaneShape] = useState<number[]>(shape.filter((_val,idx)=> idx !== axis))
     const {gl} = useThree()
 
-    const GPUCompute = new OneArrayCompute(firstArray,gl,valueScales)
+    const GPUCompute = secondArray ? new TwoArrayCompute({firstArray,secondArray},gl,valueScales) : new OneArrayCompute(firstArray,gl,valueScales.firstArray)
     const [texture,setTexture] = useState<THREE.Texture | null>(null)
 
     const shaderMaterial = new THREE.ShaderMaterial({
@@ -56,25 +56,31 @@ const ComputeModule = ({arrays,values}:ComputeModule) => {
     useEffect(()=>{
       if (firstArray){
         let newText: THREE.Texture | null;
-        switch(operation){
-          case "Max":
-            newText =  GPUCompute.Max(axis);
-            break
-          case "Min":
-            newText =  GPUCompute.Min(axis);
-            break
-          case "Mean":
-            newText =  GPUCompute.Mean(axis);
-            break
-          case "StDev":
-            newText =  GPUCompute.StDev(axis);
-            break;
-          default:
-            newText = texture;
-            break
+        if (secondArray && GPUCompute instanceof TwoArrayCompute){
+          newText = GPUCompute.Correlate(axis);
         }
-          setTexture(newText)
-          setPlaneShape(shape.filter((_val,idx)=> idx !== axis))
+        else{
+          console.log(secondArray)
+          switch(operation){
+            case "Max":
+              newText = GPUCompute instanceof OneArrayCompute ? GPUCompute.Max(axis) : null;
+              break
+            case "Min":
+              newText = GPUCompute instanceof OneArrayCompute ? GPUCompute.Min(axis) : null;
+              break
+            case "Mean":
+              newText = GPUCompute instanceof OneArrayCompute ? GPUCompute.Mean(axis) : null;
+              break
+            case "StDev":
+              newText = GPUCompute instanceof OneArrayCompute ? GPUCompute.StDev(axis) : null;
+              break;
+            default:
+              newText = texture;
+              break
+          }
+        }
+        setTexture(newText)
+        setPlaneShape(shape.filter((_val,idx)=> idx !== axis))
       }
     },[execute])
 

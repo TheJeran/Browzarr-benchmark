@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react'
 import { useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
-import { ArrayMax, ArrayMin } from '@/utils/HelperFuncs'
+import { ArrayMinMax } from '@/utils/HelperFuncs'
 import ComputeModule from '@/components/computation/ComputeModule'
 import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU'
 import { createPaneContainer } from '@/components/ui'
@@ -160,8 +160,7 @@ export const Analysis = ({values, variables}:AnalysisParameters) => {
           setMaxVal(scaleObjRef.current[firstVar].max)
         }
         else{
-          const maxVal = ArrayMax(result.data);
-          const minVal = ArrayMin(result.data);
+          const [minVal,maxVal] = ArrayMinMax(result.data)
           setMaxVal(maxVal);
           setMinVal(minVal);
           scaleObjRef.current[firstVar] = {min:minVal,max:maxVal}
@@ -171,29 +170,43 @@ export const Analysis = ({values, variables}:AnalysisParameters) => {
     if (secondVar !== "Default"){
       ZarrDS.GetArray(secondVar).then(result=>{
         setArray2(result);
-        if (firstVar in scaleObjRef.current){
-          setMinVal2(scaleObjRef.current[firstVar].min)
-          setMaxVal2(scaleObjRef.current[firstVar].max)
+        if (secondVar in scaleObjRef.current){
+          setMinVal2(scaleObjRef.current[secondVar].min)
+          setMaxVal2(scaleObjRef.current[secondVar].max)
         }
         else{
-          const maxVal = ArrayMax(result.data);
-          const minVal = ArrayMin(result.data);
+          const [minVal,maxVal] = ArrayMinMax(result.data)
           setMaxVal2(maxVal);
           setMinVal2(minVal);
-          scaleObjRef.current[firstVar] = {min:minVal,max:maxVal}
+          scaleObjRef.current[secondVar] = {min:minVal,max:maxVal}
         }
       })
     }
-
+    if (secondVar === "Default"){
+      setArray2(null)
+    }
+    console.log(array)
+    console.log(array2)
   },[firstVar,secondVar])
 
+  const valueScales = {
+    firstArray:{
+      maxVal,
+      minVal
+    },
+    secondArray:{
+      maxVal: maxVal2,
+      minVal: minVal2
+    }
+  }
   const computeObj = {
     values:{
       cmap,
       stateVars,
-      valueScales:{maxVal,minVal}
+      valueScales
     }
   }
+
 
   return (
     <div className='analysis-canvas'
@@ -203,7 +216,7 @@ export const Analysis = ({values, variables}:AnalysisParameters) => {
       }}
     >      
       <Canvas camera={{ position: [0, 0, 50], zoom:50}} orthographic>
-        {array && <ComputeModule arrays={{firstArray: array, secondArray: null}} values={computeObj.values}/>}
+        {array && <ComputeModule arrays={{firstArray: array, secondArray: array2}} values={computeObj.values}/>}
         <axesHelper scale={10} />
         <OrbitControls
           enablePan={true}

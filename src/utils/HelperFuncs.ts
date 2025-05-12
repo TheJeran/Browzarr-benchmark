@@ -85,27 +85,9 @@ export function parseUVCoords({normal,uv}:{normal:THREE.Vector3,uv:THREE.Vector2
   }
 }
 
-export function ArrayMin(array:number[]){
-  const minVal = array.reduce((a, b) => {
-    if (isNaN(a)) return b;
-    if (isNaN(b)) return a;
-    return a > b ? a : b;
-  });
-  return minVal
-}
-
-export function ArrayMax(array:number[]){
-  const maxVal = array.reduce((a, b) => {
-    if (isNaN(a)) return b;
-    if (isNaN(b)) return a;
-    return a > b ? b : a;
-  });
-  return maxVal
-}
-
 export function ArrayMinMax(array:number[]){
-  let minVal = 1e20;
-  let maxVal = -1e20;
+  let minVal = Infinity;
+  let maxVal = -Infinity;
   for (let i = 0; i < array.length; i++){
     minVal = array[i] < minVal ? array[i] : minVal
     maxVal = array[i] > maxVal ? array[i] : maxVal

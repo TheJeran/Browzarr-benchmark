@@ -1,7 +1,7 @@
 'use client';
 import * as THREE from 'three'
 import { GPUComputationRenderer } from 'three/examples/jsm/Addons.js'
-import { MeanFrag, MaxFrag, MinFrag, StDevFrag } from './shaders'
+import { MeanFrag, MaxFrag, MinFrag, StDevFrag, correlateFrag } from './shaders'
 
 
 interface Array{
@@ -42,7 +42,6 @@ export class OneArrayCompute{
         this.texture.needsUpdate = true;
     }
     private initAxis(axis:number){
-        console.log("init")
         const resolution = this.shape.filter((_val,idx)=> idx !== axis)
         this.GPUCompute = new GPUComputationRenderer(resolution[1],resolution[0],this.renderer)
         this.targetAxis = axis;
@@ -53,7 +52,6 @@ export class OneArrayCompute{
     }
     private performReduction(axis: number, fragShader: any): THREE.Texture {
         if (axis != this.targetAxis) {
-            console.log(axis)
             this.initAxis(axis);
         }
         const reducer = this.GPUCompute.addVariable("reduction", fragShader, this.initTexture);
@@ -93,7 +91,7 @@ export class TwoArrayCompute{
     private renderTarget: THREE.WebGLRenderTarget<THREE.Texture>;
     private initTexture: THREE.DataTexture
 
-    constructor(arrays: {firstArray:Array,secondArray:Array}, webGL:THREE.WebGLRenderer, scales: {maxVal:number,minVal:number}){
+    constructor(arrays: {firstArray:Array,secondArray:Array}, webGL:THREE.WebGLRenderer, scales: {firstArray:{maxVal:number,minVal:number},secondArray:{maxVal:number,minVal:number}}){
         const {firstArray,secondArray} = arrays;
         this.shape = firstArray.shape;
         this.renderer = webGL
@@ -102,24 +100,29 @@ export class TwoArrayCompute{
         this.targetAxis = 5;
         this.renderTarget = this.GPUCompute.createRenderTarget(10,10,THREE.ClampToEdgeWrapping,THREE.ClampToEdgeWrapping,1006,1006);
         const size = firstArray.shape[0]*firstArray.shape[1]*firstArray.shape[2]
-        const newArray = new Uint8Array(size)
 
-        const {minVal ,maxVal} = scales
+        const newArray = new Uint8Array(size)
+        let {minVal ,maxVal} = scales.firstArray
         for (let i = 0; i<size; i++){
             const newVal = ((firstArray.data[i]-minVal)/(maxVal-minVal))*254
             newArray[i] = isNaN(firstArray.data[i]) ? 255 : newVal
         }
+
         this.textureOne = new THREE.Data3DTexture(newArray,this.shape[2],this.shape[1],this.shape[0])
         this.textureOne.format = THREE.RedFormat;
         this.textureOne.minFilter = THREE.NearestFilter;
         this.textureOne.magFilter = THREE.NearestFilter;
         this.textureOne.needsUpdate = true;
 
+        const newArray2 = new Uint8Array(size)
+        minVal = scales.secondArray.minVal
+        maxVal = scales.secondArray.maxVal
         for (let i = 0; i<size; i++){
             const newVal = ((secondArray.data[i]-minVal)/(maxVal-minVal))*254
-            newArray[i] = isNaN(secondArray.data[i]) ? 255 : newVal
+            newArray2[i] = isNaN(secondArray.data[i]) ? 255 : newVal
         }
-        this.textureTwo = new THREE.Data3DTexture(newArray,this.shape[2],this.shape[1],this.shape[0])
+
+        this.textureTwo = new THREE.Data3DTexture(newArray2,this.shape[2],this.shape[1],this.shape[0])
         this.textureTwo.format = THREE.RedFormat;
         this.textureTwo.minFilter = THREE.NearestFilter;
         this.textureTwo.magFilter = THREE.NearestFilter;
@@ -127,15 +130,21 @@ export class TwoArrayCompute{
     }
     
     private initAxis(axis:number){
+        
         const resolution = this.shape.filter((_val,idx)=> idx !== axis)
         this.GPUCompute = new GPUComputationRenderer(resolution[1],resolution[0],this.renderer)
         this.targetAxis = axis;
         this.renderTarget = this.GPUCompute.createRenderTarget(resolution[1],resolution[0],THREE.ClampToEdgeWrapping,THREE.ClampToEdgeWrapping,1006,1006)
+        this.renderTarget.texture.format = THREE.RedFormat;
+        this.renderTarget.texture.minFilter = THREE.NearestFilter;
+        this.renderTarget.texture.magFilter = THREE.NearestFilter;
+        this.renderTarget.texture.needsUpdate = true;
     }
     private performReduction(axis: number, fragShader: any): THREE.Texture {
         if (axis !== this.targetAxis) {
             this.initAxis(axis);
         }
+
         const reducer = this.GPUCompute.addVariable("reduction", fragShader, this.initTexture);
         reducer.material.uniforms["dataArray1"] = { value: this.textureOne };
         reducer.material.uniforms["dataArray2"] = { value: this.textureTwo };
@@ -145,21 +154,8 @@ export class TwoArrayCompute{
         this.GPUCompute.doRenderTarget(reducer.material, this.renderTarget);
         return this.renderTarget.texture;
     }
-
-    Mean(axis: number): THREE.Texture {
-        const result = this.performReduction(axis, MeanFrag);
+    Correlate(axis: number): THREE.Texture {
+        const result = this.performReduction(axis, correlateFrag);
         return result;
-    }
-    
-    Max(axis: number): THREE.Texture {
-        return this.performReduction(axis, MaxFrag);
-    }
-    
-    Min(axis: number): THREE.Texture {
-        return this.performReduction(axis, MinFrag);
-    }
-    
-    StDev(axis: number): THREE.Texture {
-        return this.performReduction(axis, StDevFrag);
     }
 }
