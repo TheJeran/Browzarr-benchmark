@@ -16,7 +16,7 @@ interface DataCubeProps {
 export const DataCube = ({ volTexture, shape, colormap, flipY }: DataCubeProps ) => {
     const meshRef = useRef<THREE.Mesh>(null);
     const paneContainer = createPaneContainer("plot-pane");
-    console.log(flipY)
+    // console.log(flipY)
     const pane = useTweakpane(
         {
           flip: false,

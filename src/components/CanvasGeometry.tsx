@@ -1,14 +1,14 @@
 'use client';
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
-import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU'
+import { ZarrDataset, GetStore, ZARR_STORES } from '@/components/zarr/ZarrLoaderLRU'
 import { GetZarrMetadata, GetVariableNames } from  '@/components/zarr/GetMetadata'
 import { useEffect, useState, useMemo } from 'react';
 import { Analysis, PlotArea, Plot } from '@/components/plots';
 import { GetColorMapTexture, colormaps } from '@/components/textures';
 import { createPaneContainer, MiddleSlider } from '@/components/ui';
 import { plotContext, DimCoords } from '@/components/contexts';
-import { Metadata, ShowAnalysis } from '@/components/ui';
+import { Metadata, ShowAnalysis, Loading } from '@/components/ui';
 // import ComputeModule from '@/components/computation/ComputeModule'
 import { usePaneInput, usePaneFolder, useTweakpane, useButtonBlade, useTextBlade } from '@lazarusa/react-tweakpane'
 
@@ -18,32 +18,16 @@ interface Array{
   shape:number[],
   stride:number[]
 }
-const storeURL = "https://s3.bgc-jena.mpg.de:9000/misc/seasfire_rechunked.zarr"
-// const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
-const zarrMetadata = await GetZarrMetadata(storeURL)
+const initStore = GetStore(ZARR_STORES.SEASFIRE)
+console.log(initStore)
+
+const zarrMetadata = await GetZarrMetadata(ZARR_STORES.SEASFIRE)
 console.log(zarrMetadata)
 const variables = GetVariableNames(zarrMetadata)
-// console.log(variables)
-
-// const storeURL = "https://s3.waw3-2.cloudferro.com/wekeo/egu2025/OLCI_L1_CHL_cube.zarr"
-// const variables = await GetVariables(storeURL)
-// console.log(variables)
-// const storeURL = "https://s3.bgc-jena.mpg.de:9000/misc/seasfire_v0.4.zarr"
-
-
-
-function Loading({showLoading}:{showLoading:boolean}){
-  return (
-    showLoading && <div className='loading'>
-    Loading
-    </div>
-  )
-}
 
 export function CanvasGeometry() {
   const [flipCmap, setFlipCmap] = useState<boolean>(false)
-
-
+  
   const optionsVars = useMemo(() => variables.map((element) => ({
     text: element,
     value: element
@@ -52,12 +36,18 @@ export function CanvasGeometry() {
     text: colormap,
     value: colormap
   })), []);
+
+  const optionsStores = useMemo(() => Object.entries(ZARR_STORES).map(([key, value]) => ({
+    text: key,
+    value: value
+  })), []);
+
   const paneContainer = createPaneContainer("data-settings-pane");
 
   const pane = useTweakpane(
     {
       backgroundcolor: "#292b32",
-      storeURL: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr',
+      storeURL: ZARR_STORES.SEASFIRE,
       vName: "Default",
       plottype: "volume",
       cmap: "Spectral",
@@ -75,19 +65,10 @@ export function CanvasGeometry() {
     value: '#292b32'
   })
 
-  const [storeURL] = usePaneInput(pane, 'storeURL', {
+  usePaneInput(pane, 'storeURL', {
     label: 'Store URL',
-    options: [
-      {
-        text: 'ESDC',
-        value: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr',
-      },
-      {
-        text: 'Seasfire ',
-        value: 'https://s3.bgc-jena.mpg.de:9000/misc/seasfire_rechunked.zarr',
-      },
-    ],
-    value: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr'
+    options: optionsStores,
+    value: ZARR_STORES.SEASFIRE
   })
 // TODO: update variables when custom store is selected
   const [customStore] = useTextBlade(pane, {
@@ -149,7 +130,7 @@ export function CanvasGeometry() {
   const [dimUnits,setDimUnits] = useState<string[]>(["Default"]);
   const [dimCoords, setDimCoords] = useState<DimCoords>();
   const [plotDim,setPlotDim] = useState<number>(0)
-  const ZarrDS = useMemo(()=>new ZarrDataset(storeURL),[storeURL])
+  const ZarrDS = useMemo(()=>new ZarrDataset(initStore),[])
 
   //Analysis variables
   const [reduceAxis, setReduceAxis] = useState<number>(0);
