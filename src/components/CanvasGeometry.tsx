@@ -18,20 +18,30 @@ interface Array{
   shape:number[],
   stride:number[]
 }
-const initStore = GetStore(ZARR_STORES.SEASFIRE)
-console.log(initStore)
-
-const zarrMetadata = await GetZarrMetadata(ZARR_STORES.SEASFIRE)
-console.log(zarrMetadata)
-const variables = GetVariableNames(zarrMetadata)
 
 export function CanvasGeometry() {
   const [flipCmap, setFlipCmap] = useState<boolean>(false)
+  const [initStore, setInitStore] = useState(() => GetStore(ZARR_STORES.SEASFIRE));
+  const [metadataZarr, setMetadataZarr] = useState<any[]>([]);
+  const [variables, setVariables] = useState<string[]>([]);
+  const [ZarrDS, setZarrDS] = useState<ZarrDataset>(new ZarrDataset(initStore));
+
+  const defaultVarOption = { text: 'tp', value: 'tp' };
+  const [optionsVars, setOptionsVars] = useState<{ text: string, value: string }[]>([
+    defaultVarOption
+  ]);
   
-  const optionsVars = useMemo(() => variables.map((element) => ({
-    text: element,
-    value: element
-  })), []);
+  useEffect(() => {
+    if (variables.length > 0) {
+      setOptionsVars([
+        defaultVarOption,
+        ...variables.map(v => ({ text: v, value: v }))
+      ]);
+    }
+  }, [variables]);
+  console.log(optionsVars)
+  
+
   const colormaps_array = useMemo(() => colormaps.map(colormap => ({
     text: colormap,
     value: colormap
@@ -65,29 +75,42 @@ export function CanvasGeometry() {
     value: '#292b32'
   })
 
-  usePaneInput(pane, 'storeURL', {
+  const [currentStoreURL] = usePaneInput(pane, 'storeURL', {
     label: 'Store URL',
     options: optionsStores,
     value: ZARR_STORES.SEASFIRE
   })
-// TODO: update variables when custom store is selected
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const initStore = GetStore(currentStoreURL);
+        setInitStore(initStore);
+        const metadata = await GetZarrMetadata(initStore);
+        setMetadataZarr(metadata);
+        const vars = await GetVariableNames(Promise.resolve(metadata));
+        setVariables(vars);
+        setZarrDS(new ZarrDataset(initStore));
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      }
+    };
+    loadData();
+  }, [currentStoreURL]);
+
+  // console.log(optionsVars)
+
+  const [variable] = usePaneInput(pane, 'vName', {
+    label: 'Plot Variable',
+    options: [...optionsVars],
+    value: 'Default'
+  });
+
   const [customStore] = useTextBlade(pane, {
     label: 'Custom Store',
     value: 'Setup your own store',
     parse: (value) => value,
     format: (value) => value,
-  })
-
-  const [variable] = usePaneInput(pane, 'vName', {
-    label: 'Plot Variable',
-    options: [
-      {
-        text: 'Default',
-        value: 'Default',
-      },
-    ...optionsVars
-  ],
-    value: 'Default'
   })
 
   const [plotType] = usePaneInput(pane, 'plottype', {
@@ -130,7 +153,6 @@ export function CanvasGeometry() {
   const [dimUnits,setDimUnits] = useState<string[]>(["Default"]);
   const [dimCoords, setDimCoords] = useState<DimCoords>();
   const [plotDim,setPlotDim] = useState<number>(0)
-  const ZarrDS = useMemo(()=>new ZarrDataset(initStore),[])
 
   //Analysis variables
   const [reduceAxis, setReduceAxis] = useState<number>(0);
