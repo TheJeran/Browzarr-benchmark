@@ -110,7 +110,10 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
         setMetadata(result);
         const [dimArrs, dimMetas] = ZarrDS.GetDimArrays()
         setDimArrays(dimArrs)
-        dimArrs[1][1] < dimArrs[1][0] ? setFlipY(true) : setFlipY(false)
+        if (dimArrs[1][1] < dimArrs[1][0])
+          {setFlipY(true)}
+        else
+          {setFlipY(false)}
         const dimNames = []
         const tempDimUnits = []
         for (const meta of dimMetas){
