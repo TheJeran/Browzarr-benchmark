@@ -84,12 +84,11 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
       //Need to add a check somewhere here to swap to 2D or 3D based on shape. Probably export two variables from GetArray
       ZarrDS.GetArray(variable).then((result) => {
         // result now contains: { data: TypedArray, shape: number[], dtype: string }
-        const [texture, shape, scaling] = ArrayToTexture({
+        const [texture, scaling] = ArrayToTexture({
           data: result.data,
           shape: result.shape
         })
         setDataArray(result)
-        console.log(`logging the shape since we will want to use it in the future for 2D vs 3D actions ${shape}`)
         if (texture instanceof THREE.DataTexture || texture instanceof THREE.Data3DTexture) {
           setTexture(texture)
         } else {
@@ -102,6 +101,7 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
           'minVal' in scaling
         ) {
           setValueScales(scaling as { maxVal: number; minVal: number });
+          
         }
         const shapeRatio = result.shape[1] / result.shape[2] * 2;
         setShape(new THREE.Vector3(2, shapeRatio, 2));

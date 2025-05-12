@@ -41,7 +41,6 @@ export function ArrayTo3D(array: Array){
     const [lz,ly,lx] = shape
 
     const [minVal,maxVal] = ArrayMinMax(data)
-
     const normed = data.map((i)=>(i-minVal)/(maxVal-minVal))
     const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254));   
     const volTexture = new THREE.Data3DTexture(textureData, lx, ly, lz);
@@ -50,7 +49,6 @@ export function ArrayTo3D(array: Array){
     volTexture.magFilter = THREE.NearestFilter;
     // volTexture.unpackAlignment = 1;
     volTexture.needsUpdate = true;
-
     return [volTexture, {maxVal,minVal}]
 
 }
@@ -58,7 +56,7 @@ export function ArrayTo3D(array: Array){
 export function ArrayToTexture(array: Array){
     const shape = array.shape;
     const [texture,scales] = shape.length == 3 ? ArrayTo3D(array) : ArrayTo2D(array);
-    return [texture, shape, scales];
+    return [texture, scales];
 }
 
 export function DefaultCubeTexture() {
