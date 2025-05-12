@@ -1,8 +1,8 @@
 'use client';
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
-import { ZarrDataset, variables} from '@/components/zarr/ZarrLoaderLRU'
-import { zarrMetadata } from  '@/components/zarr/GetMetadata'
+import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU'
+import { GetZarrMetadata, GetVariableNames } from  '@/components/zarr/GetMetadata'
 import { useEffect, useState, useMemo } from 'react';
 import { Analysis, PlotArea, Plot } from '@/components/plots';
 import { GetColorMapTexture, colormaps } from '@/components/textures';
@@ -12,7 +12,6 @@ import { Metadata, ShowAnalysis } from '@/components/ui';
 // import ComputeModule from '@/components/computation/ComputeModule'
 import { usePaneInput, usePaneFolder, useTweakpane, useButtonBlade } from '@lazarusa/react-tweakpane'
 
-console.log(zarrMetadata)
 
 interface Array{
   data:number[],
@@ -21,6 +20,11 @@ interface Array{
 }
 
 const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
+const zarrMetadata = await GetZarrMetadata(storeURL)
+// console.log(zarrMetadata)
+const variables = GetVariableNames(zarrMetadata)
+// console.log(variables)
+
 // const storeURL = "https://s3.waw3-2.cloudferro.com/wekeo/egu2025/OLCI_L1_CHL_cube.zarr"
 // const variables = await GetVariables(storeURL)
 // console.log(variables)
@@ -226,7 +230,7 @@ export function CanvasGeometry() {
     {canvasWidth < 10 && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} canvasWidth={canvasWidth} />}
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
-    {canvasWidth > 10 && <Analysis values={analysisObj.values} />}
+    {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}
     <Plot values={plotObj.values} setters={plotObj.setters} timeSeriesObj={timeSeriesObj} />
     {metadata && <Metadata data={metadata} /> }
 

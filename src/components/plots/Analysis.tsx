@@ -8,7 +8,6 @@ import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU'
 import { createPaneContainer } from '@/components/ui'
 import { useTweakpane, usePaneInput, useButtonBlade } from '@lazarusa/react-tweakpane'
 import { OrbitControls } from '@react-three/drei'
-import { variables } from '@/components/zarr/ZarrLoaderLRU'
 import './Plots.css'
 
 interface Array{
@@ -25,9 +24,10 @@ interface AnalysisParameters{
       canvasWidth:number;
       dimNames: string[];
     }
+    variables: string[]
 }
 
-export const Analysis = ({values}:AnalysisParameters) => {
+export const Analysis = ({values, variables}:AnalysisParameters) => {
   const {ZarrDS, cmap, canvasWidth, dimNames} = values
   const scaleObjRef = useRef<Record<string, { min: number; max: number }>>({});
 
