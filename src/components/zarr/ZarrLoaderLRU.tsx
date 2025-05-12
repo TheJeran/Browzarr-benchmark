@@ -2,6 +2,7 @@ import * as zarr from "zarrita";
 import * as THREE from 'three';
 import QuickLRU from 'quick-lru';
 import { parseUVCoords } from "@/utils/HelperFuncs";
+import { GetSize } from "./GetMetadata";
 
 // Define interface using Data Types from zarrita
 // type NumericDataType = zarr.NumberDataType | zarr.BigintDataType;
@@ -38,10 +39,21 @@ export class ZarrDataset{
 		//We may move this up to constructor
 		const group = await d_store.then(store => zarr.open(store, {kind: 'group'}))
 		const outVar = await zarr.open(group.resolve(variable), {kind:"array"})
-
+		const [totalSize,chunkSize,chunkShape] = GetSize(outVar);
 		// Type check using zarr.Array.is
 		if (outVar.is("number") || outVar.is("bigint")) {
-			const chunk = await zarr.get(outVar)
+			let chunk;
+			if (totalSize < 1e8){ //Check if total is less than 100MB
+				chunk = await zarr.get(outVar)
+			}
+			else{ //See how many chunks are < 100MB and load that many
+				const chunkCount = Math.floor(1e8 / chunkSize);
+				const horizontalChunks = Math.ceil(chunkShape[2]/outVar.shape[2])
+				const verticalChunks = Math.ceil(chunkShape[1]/outVar.shape[1])
+				const chunksPerTime = horizontalChunks * verticalChunks;
+				const sliceDistance = chunkShape[0]*chunkCount/chunksPerTime
+				chunk = await zarr.get(outVar,[zarr.slice(0,sliceDistance),null,null])
+			}
 			let typedArray;
 			if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
 				throw new Error("BigInt arrays are not supported for conversion to Float32Array.");

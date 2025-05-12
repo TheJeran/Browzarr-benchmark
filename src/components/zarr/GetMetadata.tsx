@@ -67,6 +67,7 @@ export async function GetZarrMetadata(storePath: string): Promise<ZarrMetadata[]
     for (const item of contents) {
         if (item.path && item.path.length > 1 && item.kind === 'array') {
             const array = await zarr.open(group.resolve(item.path.substring(1)), {kind: "array"});
+
             const dtypeSize = getDtypeSize(array.dtype);
             const totalElements = calculateTotalElements(array.shape);
             const chunkCount = calculateChunkCount(array.shape, array.chunks);
@@ -90,6 +91,16 @@ export async function GetZarrMetadata(storePath: string): Promise<ZarrMetadata[]
     }
 
     return variables;
+}
+
+export function GetSize(outVar: any){
+    const dtypeSize = getDtypeSize(outVar.dtype);
+    const totalElements = calculateTotalElements(outVar.shape);
+    const chunkElements = calculateTotalElements(outVar.chunks);
+    const totalSize = totalElements * dtypeSize;
+    const chunkSize = chunkElements * dtypeSize;
+    const chunkShape = outVar.chunks
+    return [totalSize,chunkSize,chunkShape]
 }
 
 // Common coordinate variable names to filter out
