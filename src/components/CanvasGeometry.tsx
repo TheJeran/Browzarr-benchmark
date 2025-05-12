@@ -10,7 +10,7 @@ import { createPaneContainer, MiddleSlider } from '@/components/ui';
 import { plotContext, DimCoords } from '@/components/contexts';
 import { Metadata, ShowAnalysis } from '@/components/ui';
 // import ComputeModule from '@/components/computation/ComputeModule'
-import { usePaneInput, usePaneFolder, useTweakpane, useButtonBlade } from '@lazarusa/react-tweakpane'
+import { usePaneInput, usePaneFolder, useTweakpane, useButtonBlade, useTextBlade } from '@lazarusa/react-tweakpane'
 
 
 interface Array{
@@ -19,8 +19,8 @@ interface Array{
   stride:number[]
 }
 
-const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
-const zarrMetadata = await GetZarrMetadata(storeURL)
+// const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
+const zarrMetadata = await GetZarrMetadata("https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr")
 // console.log(zarrMetadata)
 const variables = GetVariableNames(zarrMetadata)
 // console.log(variables)
@@ -57,6 +57,7 @@ export function CanvasGeometry() {
   const pane = useTweakpane(
     {
       backgroundcolor: "#292b32",
+      storeURL: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr',
       vName: "Default",
       plottype: "volume",
       cmap: "Spectral",
@@ -73,6 +74,29 @@ export function CanvasGeometry() {
     label: 'bgcolor',
     value: '#292b32'
   })
+
+  const [storeURL] = usePaneInput(pane, 'storeURL', {
+    label: 'Store URL',
+    options: [
+      {
+        text: 'ESDC',
+        value: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr',
+      },
+      {
+        text: 'Seasfire ',
+        value: 'https://s3.bgc-jena.mpg.de:9000/misc/seasfire_v0.4.zarr',
+      },
+    ],
+    value: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr'
+  })
+// TODO: update variables when custom store is selected
+  const [customStore] = useTextBlade(pane, {
+    label: 'Custom Store',
+    value: 'Setup your own store',
+    parse: (value) => value,
+    format: (value) => value,
+  })
+
   const [variable] = usePaneInput(pane, 'vName', {
     label: 'Plot Variable',
     options: [
