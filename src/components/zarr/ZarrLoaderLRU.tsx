@@ -4,9 +4,31 @@ import QuickLRU from 'quick-lru';
 import { parseUVCoords } from "@/utils/HelperFuncs";
 import { GetSize } from "./GetMetadata";
 
-// Define interface using Data Types from zarrita
-// type NumericDataType = zarr.NumberDataType | zarr.BigintDataType;
-// ?TODO: support more types, see https://github.com/manzt/zarrita.js/blob/0e809ef7cd4d1703e2112227e119b8b6a2cc9804/packages/zarrita/src/metadata.ts#L50
+export const ZARR_STORES = {
+    ESDC: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr',
+    SEASFIRE: 'https://s3.bgc-jena.mpg.de:9000/misc/seasfire_rechunked.zarr',
+    ICON_ESM: 'https://eerie.cloud.dkrz.de/datasets/icon-esm-er.hist-1950.v20240618.atmos.native.2d_1h_mean/kerchunk',
+    OLCI_CHL: 'https://s3.waw3-2.cloudferro.com/wekeo/egu2025/OLCI_L1_CHL_cube.zarr',
+    LOCAL: 'http://localhost:5173/GlobalForcingTiny.zarr'
+} as const;
+
+export class ZarrError extends Error {
+    constructor(message: string, public readonly cause?: unknown) {
+        super(message);
+        this.name = 'ZarrError';
+    }
+}
+export async function GetStore(storePath: string): Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>{
+    try {
+        const d_store = zarr.tryWithConsolidated(
+            new zarr.FetchStore(storePath)
+        );
+        const gs = await d_store.then(store => zarr.open(store, {kind: 'group'}));
+        return gs;
+    } catch (error) {
+        throw new ZarrError(`Failed to initialize store at ${storePath}`, error);
+    }
+}
 
 interface TimeSeriesInfo{
 	uv:THREE.Vector2,
@@ -14,13 +36,13 @@ interface TimeSeriesInfo{
 }
   
 export class ZarrDataset{
-	private storePath: string;
+	private groupStore: Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>;
 	private variable: string;
 	private cache: QuickLRU<string,any>;
 	private dimNames: string[];
 
-	constructor(storePath: string){
-		this.storePath = storePath;
+	constructor(store: Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>){
+		this.groupStore = store;
 		this.variable = "Default";
 		this.cache = new QuickLRU({maxSize: 2000});
 		this.dimNames = ["","",""]
@@ -33,26 +55,25 @@ export class ZarrDataset{
 			return this.cache.get(variable)
 		}
 
-		const d_store = zarr.tryWithConsolidated(
-			new zarr.FetchStore(this.storePath)
-		);
-		//We may move this up to constructor
-		const group = await d_store.then(store => zarr.open(store, {kind: 'group'}))
+		const group = await this.groupStore;
 		const outVar = await zarr.open(group.resolve(variable), {kind:"array"})
-		const [totalSize,chunkSize,chunkShape] = GetSize(outVar);
+		const [totalSize, chunkSize, chunkShape] = GetSize(outVar);
+		console.log(totalSize, chunkSize, chunkShape)
 		// Type check using zarr.Array.is
 		if (outVar.is("number") || outVar.is("bigint")) {
 			let chunk;
 			if (totalSize < 1e8){ //Check if total is less than 100MB
 				chunk = await zarr.get(outVar)
 			}
-			else{ //See how many chunks are < 100MB and load that many
-				const chunkCount = Math.floor(1e8 / chunkSize);
+			else { //See how many chunks are < 30MB and load that many ! a 100MB limit is too much for mobile devices
+				const chunkCount = Math.floor(3e7 / chunkSize);
 				const horizontalChunks = Math.ceil(chunkShape[2]/outVar.shape[2])
 				const verticalChunks = Math.ceil(chunkShape[1]/outVar.shape[1])
 				const chunksPerTime = horizontalChunks * verticalChunks;
 				const sliceDistance = chunkShape[0]*chunkCount/chunksPerTime
-				chunk = await zarr.get(outVar,[zarr.slice(0,sliceDistance),null,null])
+				// console.log(sliceDistance)
+				// Slice distance only works fine when the original store is chunked properly.
+				chunk = await zarr.get(outVar, [zarr.slice(0, sliceDistance), null, null])
 			}
 			let typedArray;
 			if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
@@ -77,23 +98,21 @@ export class ZarrDataset{
 		if (this.cache.has(cacheName)){
 			return this.cache.get(cacheName)
 		}
-		const d_store = zarr.tryWithConsolidated(
-			new zarr.FetchStore(this.storePath)
-		);
-
-		const group = await d_store.then(store => zarr.open(store, {kind: 'group'}));
+		const group = await this.groupStore;
 		const outVar = await zarr.open(group.resolve(variable), {kind:"array"});
 		const meta = outVar.attrs;
-		this.cache.set(cacheName,meta);
+		this.cache.set(cacheName, meta);
 		const dims = [];
 		for (const dim of meta._ARRAY_DIMENSIONS as string[]){ //Put the dimension arrays in the cache to access later
 			if (!this.cache.has(dim)){
-				const dimArray = await zarr.open(group.resolve(dim), {kind:"array"}).then((result)=>zarr.get(result));
-				const dimMeta = await zarr.open(group.resolve(dim), {kind:"array"}).then((result)=>result.attrs)
-				this.cache.set(dim,dimArray.data);
-				this.cache.set(`${dim}_meta`,dimMeta)
-			}
-			dims.push(dim)
+				const dimArray = await zarr.open(group.resolve(dim), {kind:"array"})
+						.then((result) => zarr.get(result));
+					const dimMeta = await zarr.open(group.resolve(dim), {kind:"array"})
+						.then((result) => result.attrs)
+					this.cache.set(dim, dimArray.data);
+					this.cache.set(`${dim}_meta`, dimMeta)
+				}
+				dims.push(dim)
 		}
 		this.dimNames = dims;
 		return meta;
@@ -110,13 +129,12 @@ export class ZarrDataset{
 		return [dimArr,dimMetas];
 	}
 
-
 	async GetTimeSeries(TimeSeriesInfo:TimeSeriesInfo){
 		const {uv,normal} = TimeSeriesInfo
 		if (!this.cache.has(this.variable)){
 			return [0]
 		}
-		const {data,shape,stride} = this.cache.get(this.variable)
+		const {data, shape, stride} = this.cache.get(this.variable)
 		//This is a complicated logic check but it works bb
 		const sliceSize = parseUVCoords({normal,uv})
 
@@ -138,26 +156,3 @@ export class ZarrDataset{
 	}
 
 }
-
-
-
-
-//For now we export variables. But we will import these functions over to the plotting component eventually
-// export const variables = await GetVariables("https://s3.bgc-jena.mpg.de:9000/misc/seasfire_v0.4.zarr")
-// export const variables = await GetVariables("https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr")
-
-// export const variables = await GetVariables("https://eerie.cloud.dkrz.de/datasets/icon-esm-er.hist-1950.v20240618.atmos.native.2d_1h_mean/kerchunk")
-
-// export const variables = await GetVariables("https://s3.waw3-2.cloudferro.com/wekeo/egu2025/OLCI_L1_CHL_cube.zarr")
-// CORS issues need to be resolved due to the endpoint.
-
-//export const arr = await myVar.get();
-
-// console.log(d_store)
-
-// const local_store = new zarr.FetchStore("http://localhost:5173/GlobalForcingTiny.zarr");
-// ! note that for local dev you only use `http` without the `s`.
-// ? log a file with proper metadata, set consolidated=true when saving your zarr file
-// export const local_node = await zarr.open.v2(local_store);
-// export const arr = await zarr.open(local_node.resolve("t2m"), { kind: "array" });
-// console.log(local_node)
