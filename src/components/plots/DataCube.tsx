@@ -9,13 +9,14 @@ import { createPaneContainer } from '@/components/ui';
 interface DataCubeProps {
   volTexture: THREE.Data3DTexture | THREE.DataTexture | null,
   shape : THREE.Vector3,
-  colormap: THREE.DataTexture
+  colormap: THREE.DataTexture,
+  flipY:boolean
 }
 
-export const DataCube = ({ volTexture, shape, colormap }: DataCubeProps ) => {
+export const DataCube = ({ volTexture, shape, colormap, flipY }: DataCubeProps ) => {
     const meshRef = useRef<THREE.Mesh>(null);
     const paneContainer = createPaneContainer("plot-pane");
-
+    console.log(flipY)
     const pane = useTweakpane(
         {
           flip: false,
@@ -122,7 +123,7 @@ export const DataCube = ({ volTexture, shape, colormap }: DataCubeProps ) => {
 
   return (
     <>
-    <mesh ref={meshRef} geometry={geometry}>
+    <mesh ref={meshRef} geometry={geometry} scale={[1,flipY ? -1: 1,1]}>
       <primitive attach="material" object={shaderMaterial} />
     </mesh>
     </>

@@ -18,10 +18,10 @@ interface Array{
   shape:number[],
   stride:number[]
 }
-
+const storeURL = "https://s3.bgc-jena.mpg.de:9000/misc/seasfire_rechunked.zarr"
 // const storeURL = "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
-const zarrMetadata = await GetZarrMetadata("https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr")
-// console.log(zarrMetadata)
+const zarrMetadata = await GetZarrMetadata(storeURL)
+console.log(zarrMetadata)
 const variables = GetVariableNames(zarrMetadata)
 // console.log(variables)
 
@@ -84,7 +84,7 @@ export function CanvasGeometry() {
       },
       {
         text: 'Seasfire ',
-        value: 'https://s3.bgc-jena.mpg.de:9000/misc/seasfire_v0.4.zarr',
+        value: 'https://s3.bgc-jena.mpg.de:9000/misc/seasfire_rechunked.zarr',
       },
     ],
     value: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr'
@@ -149,7 +149,7 @@ export function CanvasGeometry() {
   const [dimUnits,setDimUnits] = useState<string[]>(["Default"]);
   const [dimCoords, setDimCoords] = useState<DimCoords>();
   const [plotDim,setPlotDim] = useState<number>(0)
-  const ZarrDS = useMemo(()=>new ZarrDataset(storeURL),[])
+  const ZarrDS = useMemo(()=>new ZarrDataset(storeURL),[storeURL])
 
   //Analysis variables
   const [reduceAxis, setReduceAxis] = useState<number>(0);

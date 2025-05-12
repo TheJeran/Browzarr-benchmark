@@ -185,8 +185,6 @@ export const Analysis = ({values, variables}:AnalysisParameters) => {
     if (secondVar === "Default"){
       setArray2(null)
     }
-    console.log(array)
-    console.log(array2)
   },[firstVar,secondVar])
 
   const valueScales = {
@@ -206,8 +204,6 @@ export const Analysis = ({values, variables}:AnalysisParameters) => {
       valueScales
     }
   }
-
-
   return (
     <div className='analysis-canvas'
       style={{

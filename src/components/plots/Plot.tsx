@@ -43,8 +43,7 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
     const {setShowLoading,setValueScales,setShape,setMetadata,setDimArrays,setDimNames,setDimUnits} = setters;
     const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
     const [currentBg, setCurrentBg] = useState(bgcolor || 'var(--background)')
-    const [dataArray, setDataArray] = useState<Array | null>(null)
-    const [render,setRender] = useState<boolean>(false)
+    const [flipY, setFlipY] = useState<boolean>(false)
     
     const [windowWidth, setWindowWidth] = useState<number>(0);
 
@@ -88,7 +87,6 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
           data: result.data,
           shape: result.shape
         })
-        setDataArray(result)
         if (texture instanceof THREE.DataTexture || texture instanceof THREE.Data3DTexture) {
           setTexture(texture)
         } else {
@@ -112,6 +110,10 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
         setMetadata(result);
         const [dimArrs, dimMetas] = ZarrDS.GetDimArrays()
         setDimArrays(dimArrs)
+        if (dimArrs[1][1] < dimArrs[1][0])
+          {setFlipY(true)}
+        else
+          {setFlipY(false)}
         const dimNames = []
         const tempDimUnits = []
         for (const meta of dimMetas){
@@ -149,7 +151,7 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
         >
             {/* Volume Plots */}
             {plotType == "volume" && <>
-            <DataCube volTexture={texture} shape={shape} colormap={colormap}/>
+            <DataCube volTexture={texture} shape={shape} colormap={colormap} flipY={flipY}/>
             <UVCube {...timeSeriesObj} />
             </>}
             {/* Point Clouds */}
