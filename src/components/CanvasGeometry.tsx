@@ -15,11 +15,13 @@ interface Array{
 
 export function CanvasGeometry() {
   const { bgcolor, initStore, metadata, variables} = DataStores();
-  const variable = <PaneStore variablesPromise={variables} />;
-    
+  const [settings, setSettings] = useState({ variable: 'Default', plotType: 'point-cloud', cmap: 'Spectral', flipCmap: false });
+      
   return (
     <div>
-      {variable}
+      <PaneStore variablesPromise={variables} onSettingsChange={setSettings} />
+      {settings.variable}
+      {settings.plotType}
     </div>
   );
 }
