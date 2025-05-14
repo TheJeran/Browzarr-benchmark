@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef, useMemo } from 'react'
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import { OneArrayCompute, TwoArrayCompute } from './ComputeShaders'
 import * as THREE from 'three'
 import { fragShader, vertShader } from './shaders'
@@ -50,7 +50,12 @@ const ComputeModule = ({arrays,values, setters}:ComputeModule) => {
     const {gl} = useThree()
     const infoRef = useRef<boolean>(false)
 
-    const GPUCompute = secondArray ? new TwoArrayCompute({firstArray,secondArray},gl,valueScales) : new OneArrayCompute(firstArray,gl,valueScales.firstArray)
+    const GPUCompute = useMemo(() => {
+      return secondArray 
+      ? new TwoArrayCompute({ firstArray, secondArray }, gl, valueScales) 
+      : new OneArrayCompute(firstArray, gl, valueScales.firstArray);
+      }, [firstArray, secondArray]);
+
     const [texture,setTexture] = useState<THREE.Texture | null>(null)
 
     const shaderMaterial = new THREE.ShaderMaterial({
@@ -94,22 +99,47 @@ const ComputeModule = ({arrays,values, setters}:ComputeModule) => {
       }
     },[execute])
 
-
-    function HandleMove(e: ThreeEvent<PointerEvent>){
-      if (infoRef.current && e.uv){
-        setLoc([e.clientX,e.clientY])
-        setUV([e.uv.x,e.uv.y])
+    const shapeRatio = useMemo(()=>flipY ? planeShape[0]/planeShape[1]*-2 : planeShape[0]/planeShape[1]*2,[flipY,planeShape])
+    useEffect(()=>{
+      if(GPUCompute){
+        GPUCompute.dispose()
       }
+    },[firstArray,secondArray])
+
+    const eventRef = useRef<ThreeEvent<PointerEvent> | null>(null);
+const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+const handleMove = useCallback((e: ThreeEvent<PointerEvent>) => {
+  if (infoRef.current && e.uv) {
+    // Always store the latest event
+    eventRef.current = e;
+
+    if (!timerRef.current) {
+      timerRef.current = setTimeout(() => {
+        if (eventRef.current) {
+          setLoc([eventRef.current.clientX, eventRef.current.clientY]);
+          //@ts-ignore
+          setUV([eventRef.current.uv.x, eventRef.current.uv.y]);
+        }
+
+        timerRef.current = null; // Reset the timer
+      }, 50); // 0.1s delay
     }
-  const shapeRatio = useMemo(()=>flipY ? planeShape[0]/planeShape[1]*-2 : planeShape[0]/planeShape[1]*2,[flipY])
+  }
+}, [setLoc, setUV]);
+  
+    const geometry = useMemo(()=>new THREE.PlaneGeometry(2,shapeRatio),[shapeRatio])
+
+    useEffect(()=>{
+      geometry.dispose()
+    },[geometry])
   return (
     <mesh material={shaderMaterial} 
       onPointerEnter={()=>{setShowInfo(true); infoRef.current = true }}
       onPointerLeave={()=>{setShowInfo(false); infoRef.current = false }}
-      onPointerMove={HandleMove}
+      onPointerMove={handleMove}
+      geometry={geometry}
     >
-
-      {texture && <planeGeometry args={[2,shapeRatio]} />}
     </mesh>
   )
 }

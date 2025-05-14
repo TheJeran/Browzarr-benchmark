@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU';
 import { parseUVCoords } from '@/utils/HelperFuncs';
 import { useGlobalStore } from '@/utils/GlobalStates';
@@ -63,15 +63,22 @@ export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
     setClickPoint(point);
   }
 
+  const geometry = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
+
+  useEffect(() => {
+    return () => {
+      geometry.dispose(); // Dispose when unmounted
+    };
+  }, []);
+
   return (
     <>
-      <mesh scale={shape} onClick={(e) => {
+      <mesh geometry={geometry} scale={shape} onClick={(e) => {
         e.stopPropagation();
         if (e.intersections.length > 0) {
           HandleTimeSeries(e.intersections[0]);
         }
       }}>
-        <boxGeometry args={[1, 1, 1]} />
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 

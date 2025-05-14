@@ -45,6 +45,7 @@ export class OneArrayCompute{
         const resolution = this.shape.filter((_val,idx)=> idx !== axis)
         this.GPUCompute = new GPUComputationRenderer(resolution[1],resolution[0],this.renderer)
         this.targetAxis = axis;
+        this.renderTarget.texture.dispose()
         this.renderTarget = this.GPUCompute.createRenderTarget(resolution[1],resolution[0],THREE.ClampToEdgeWrapping,THREE.ClampToEdgeWrapping,1006,1006)
         this.renderTarget.texture.minFilter = THREE.NearestFilter;
         this.renderTarget.texture.magFilter = THREE.NearestFilter;
@@ -78,6 +79,12 @@ export class OneArrayCompute{
     
     StDev(axis: number): THREE.Texture {
         return this.performReduction(axis, StDevFrag);
+    }
+
+    dispose(){
+        this.texture?.dispose();
+        this.renderTarget.texture.dispose();
+        this.initTexture.dispose()
     }
 }
 
@@ -157,5 +164,12 @@ export class TwoArrayCompute{
     Correlate(axis: number): THREE.Texture {
         const result = this.performReduction(axis, correlateFrag);
         return result;
+    }
+
+    dispose(){
+        this.textureOne?.dispose();
+        this.textureTwo?.dispose()
+        this.renderTarget.texture.dispose();
+        this.initTexture.dispose()
     }
 }

@@ -151,6 +151,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         background: currentBg
         }}
         >
+
             {/* Volume Plots */}
             {plotType == "volume" && <>
             <DataCube volTexture={texture}/>
