@@ -1,9 +1,11 @@
 'use client';
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
-import { ZarrDataset, GetStore, ZARR_STORES } from '@/components/zarr/ZarrLoaderLRU'
-import { GetZarrMetadata, GetVariableNames } from  '@/components/zarr/GetMetadata'
-import { useEffect, useState, useMemo } from 'react';
+import { DataStores } from './DataStores'
+import { ZarrDataset } from './zarr/ZarrLoaderLRU';
+import { useState } from 'react';
+
+import { useEffect, useMemo } from 'react';
 import { Analysis, PlotArea, Plot } from '@/components/plots';
 import { GetColorMapTexture, colormaps } from '@/components/textures';
 import { createPaneContainer, MiddleSlider } from '@/components/ui';
@@ -153,7 +155,9 @@ export function CanvasGeometry() {
 
   return (
     <>
-    {canvasWidth < 10 && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} canvasWidth={canvasWidth} />}
+      <PaneStore variablesPromise={variables} onSettingsChange={setSettings} />
+
+      {canvasWidth < 10 && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} canvasWidth={canvasWidth} />}
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
     {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}
@@ -161,7 +165,7 @@ export function CanvasGeometry() {
     {metadata && <Metadata data={metadata} /> }
     {timeSeries.length > 2 && <PlotArea />}
     </>
-  )
+  );
 }
 
 export default CanvasGeometry
