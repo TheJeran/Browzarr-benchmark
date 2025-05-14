@@ -53,6 +53,8 @@ export function FixedTicks({
   const xDimSize = xDimArray.length;
   const yDimSize = (valueScales.maxVal-valueScales.minVal)
   //Converts BigInt to DateTime
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
   const textArray = useMemo(()=>{
     if (xDimArray){
       const isBig = xDimArray.every(item => typeof item === "bigint");
@@ -64,7 +66,7 @@ export function FixedTicks({
           // timeStrings.push(new Date(timeStamp).toDateString())
           const date = new Date(timeStamp);
           // const dateString = date.toDateString().replace(/\s(\d{4})$/, '\n$1');
-          const dateString = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}\n${date.getFullYear()}`;
+          const dateString = `${date.getDate().toString().padStart(2, '0')} ${months[date.getMonth()]}\n${date.getFullYear()}`;
           // // timeStrings.push(dateString);
           timeStrings.push(dateString);
         }
@@ -133,7 +135,7 @@ export function FixedTicks({
       clearTimeout(timeoutRef.current);
     }
     if (cameraRef.current){
-          // Set a timeout for 0.5 seconds
+          // Set a timeout for 0.1 seconds
       timeoutRef.current = setTimeout(() => {
       if (cameraRef.current) {
         cameraRef.current.reset();

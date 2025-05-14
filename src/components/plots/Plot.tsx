@@ -111,21 +111,14 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       //Get Metadata
       ZarrDS.GetAttributes(variable).then((result)=>{
         setMetadata(result);
-        const [dimArrs, dimMetas] = ZarrDS.GetDimArrays()
+        const [dimArrs, dimMetas, dimNames] = ZarrDS.GetDimArrays()
         setDimArrays(dimArrs)
         if (dimArrs[1][1] < dimArrs[1][0])
           {setFlipY(true)}
         else
           {setFlipY(false)}
-        const dimNames = []
         const tempDimUnits = []
         for (const meta of dimMetas){
-          if (meta.standard_name){
-            dimNames.push(meta.standard_name)
-          }
-          else if(meta._ARRAY_DIMENSIONS){
-            dimNames.push(meta._ARRAY_DIMENSIONS[0])
-          }
           tempDimUnits.push(meta.units)
         }
         setDimNames(dimNames)

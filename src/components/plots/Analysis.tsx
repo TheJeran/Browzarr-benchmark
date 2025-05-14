@@ -153,6 +153,7 @@ export const Analysis = ({values, variables}:AnalysisParameters) => {
     if (firstVar !== "Default"){
       ZarrDS.GetArray(firstVar).then(result=>{
         setArray(result);
+        
         if (firstVar in scaleObjRef.current){
           setMinVal(scaleObjRef.current[firstVar].min)
           setMaxVal(scaleObjRef.current[firstVar].max)
