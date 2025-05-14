@@ -12,7 +12,7 @@ import { OrbitControls } from '@react-three/drei'
 import { useGlobalStore } from '@/utils/GlobalStates'
 import './Plots.css'
 import { useShallow } from 'zustand/shallow'
-import { set } from 'node_modules/zarrita/dist/src/indexing/set'
+// import { Perf } from 'r3f-perf';
 
 interface Array{
   data:number[],
@@ -71,9 +71,9 @@ function AnalysisLoaded({ values, optionsVariables }: {
     const [xCoord, setXCoord] = useState<number>(0)
     const [yCoord, setYCoord] = useState<number>(0)
 
-    const dimNamesAxis = useMemo(() => dimNames.map((element) => ({
+    const dimNamesAxis = useMemo(() => dimNames.map((element,idx) => ({
         text: element,
-        value: element
+        value: idx
     })), []);
   
     const paneContainer = createPaneContainer("analysis")
@@ -220,16 +220,18 @@ function AnalysisLoaded({ values, optionsVariables }: {
     if (secondVar === "Default"){
       setArray2(null)
     }
-  },[firstVar,secondVar])
 
+  },[firstVar,secondVar])
     useEffect(()=>{
       if (dimArrays){
+      const timeout = setTimeout(() => {
       const xSize = dimArrays[2].length;
       const ySize = dimArrays[1].length;
       const xIdx = Math.round(uv[0]*xSize-.5)
       const yIdx = Math.round(uv[1]*ySize-.5)
       setXCoord(dimArrays[2][xIdx])
-      setYCoord(dimArrays[1][yIdx])
+      setYCoord(dimArrays[1][yIdx])},100)
+      return ()=> clearTimeout(timeout)
     }
     },[uv])
 
@@ -256,8 +258,8 @@ function AnalysisLoaded({ values, optionsVariables }: {
       >      
         <AnalysisInfo loc={loc} show={showInfo} info={[xCoord,yCoord]} plotDim={axis} />
         <Canvas camera={{ position: [0, 0, 50], zoom:400 }} orthographic>
+          {/* <Perf position='bottom-left'/> */}
           {array && <ComputeModule arrays={{firstArray: array, secondArray: array2}} values={computeObj} setters={{setShowInfo, setLoc, setUV}}/>}
-          <axesHelper scale={10} />
           <OrbitControls
             enablePan={true}
             enableRotate={false}

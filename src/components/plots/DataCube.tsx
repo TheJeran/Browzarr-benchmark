@@ -1,4 +1,4 @@
-import {  useMemo } from 'react'
+import {  useEffect, useMemo } from 'react'
 import * as THREE from 'three'
 import { vertexShader, fragmentShader } from '@/components/textures/shaders';
 import { usePaneInput, usePaneFolder, useSliderBlade, useTweakpane } from '@lazarusa/react-tweakpane'
@@ -119,6 +119,12 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
   // Use geometry once, avoid recreating -- Using a sphere to avoid the weird angles you get with cube
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(4, 8), []);
 
+    useEffect(() => {
+      return () => {
+        geometry.dispose(); // Dispose when unmounted
+      };
+    }, []);
+  
   return (
     <>
     <mesh geometry={geometry} scale={[1,flipY ? -1: 1,1]}>

@@ -58,7 +58,6 @@ export class ZarrDataset{
 		const group = await this.groupStore;
 		const outVar = await zarr.open(group.resolve(variable), {kind:"array"})
 		const [totalSize, chunkSize, chunkShape] = GetSize(outVar);
-		console.log(totalSize, chunkSize, chunkShape)
 		// Type check using zarr.Array.is
 		if (outVar.is("number") || outVar.is("bigint")) {
 			let chunk;

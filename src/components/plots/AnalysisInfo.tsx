@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react'
+import React, {useMemo, useState, useEffect} from 'react'
 import './Plots.css'
 import { useGlobalStore } from '@/utils/GlobalStates'
 
@@ -7,6 +7,7 @@ const AnalysisInfo = ({loc, show, info, plotDim} : {loc: number[], show: boolean
     const dimNames = useGlobalStore(state=>state.dimNames)
 
     const plotNames = useMemo(()=>dimNames.filter((val,idx)=> idx != plotDim),[dimNames, plotDim])
+
 
   return (
     <div className='analysis-info'
