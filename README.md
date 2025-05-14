@@ -2,7 +2,7 @@
 A browser-based visualization toolkit for exploring and analyzing Zarr data stores.
 
 > [!IMPORTANT]
-> Visit at https://earthyscience.github.io/browzarr/
+> Visit at https://earthyscience.github.io/Browzarr/
 
 Stay tuned for updates! 🚀
 

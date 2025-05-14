@@ -26,7 +26,7 @@ const AboutModal = () => {
         <button className="close-btn" onClick={handleClose}>
           &times;
         </button>
-        <h1>vi-zarr-stores</h1>
+        <h1>Browzarr</h1>
         builds on the lessons learned from the visualization prototype from the SeasFire project.
         
         <br/><br/>
