@@ -3,22 +3,12 @@ import { useButtonBlade, usePaneInput, useTweakpane } from '@lazarusa/react-twea
 import { createPaneContainer } from '@/components/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { colormaps } from '@/components/textures';
+import { getVariablesOptions } from '@/utils/HelperFuncs';
 
 interface PaneStoreProps {
     variablesPromise: Promise<string[]>;
     onSettingsChange: (settings: { variable: string; plotType: string; cmap: string; flipCmap: boolean }) => void;
 }
-
-async function getVariablesOptions(variablesPromise: Promise<string[]>) {
-    return [
-        { text: 'cube', value: 'Default' },
-        ...(await variablesPromise).map((element: string) => ({
-            text: element,
-            value: element
-        }))
-    ];
-}
-
 // This wrapper handles loading state
 export function PaneStore({ variablesPromise, onSettingsChange }: PaneStoreProps) {
     const [optionsVariables, setOptionsVariables] = useState<{ text: string; value: string }[] | null>(null);
@@ -49,7 +39,7 @@ function PaneStoreLoaded({ optionsVariables, onSettingsChange }: {
     const pane = useTweakpane(
         {
             varName: 'Default',
-            plottype: 'point-cloud',
+            plottype: 'volume',
             cmap: 'Spectral'
         },
         {
@@ -85,7 +75,7 @@ function PaneStoreLoaded({ optionsVariables, onSettingsChange }: {
             { text: 'volume', value: 'volume' },
             { text: 'point-cloud', value: 'point-cloud' },
         ],
-        value: 'point-cloud'
+        value: 'volume'
     });
      
     const [cmap] = usePaneInput(pane, 'cmap', {

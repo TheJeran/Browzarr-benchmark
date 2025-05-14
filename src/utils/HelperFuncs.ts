@@ -94,3 +94,23 @@ export function ArrayMinMax(array:number[]){
   }
   return [minVal,maxVal]
 }
+
+export async function getVariablesOptions(variablesPromise: Promise<string[]> | undefined) {
+    if (!variablesPromise) return [{ text: 'Default', value: 'Default' }];
+    
+    try {
+        const variables = await variablesPromise;
+        if (!Array.isArray(variables)) return [{ text: 'Default', value: 'Default' }];
+        
+        return [
+            { text: 'Default', value: 'Default' },
+            ...variables.map((element: string) => ({
+                text: element,
+                value: element
+            }))
+        ];
+    } catch (error) {
+        console.error('Error getting variables:', error);
+        return [{ text: 'Default', value: 'Default' }];
+    }
+}

@@ -38,14 +38,14 @@ const pane = useTweakpane(
     value: ZARR_STORES.SEASFIRE
   })
   const initStore = GetStore(currentStoreURL);
-  const metadata = GetZarrMetadata(initStore);
-  const variables = GetVariableNames(metadata);
+  const fullmetadata = GetZarrMetadata(initStore);
+  const variables = GetVariableNames(fullmetadata);
   
   return (
     { 
     bgcolor,
     initStore,
-    metadata,
+    fullmetadata,
     variables
     }
   );
