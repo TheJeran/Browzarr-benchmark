@@ -1,22 +1,20 @@
 import {  useMemo } from 'react'
-import {  useRef } from 'react'
 import * as THREE from 'three'
 import { vertexShader, fragmentShader } from '@/components/textures/shaders';
 import { usePaneInput, usePaneFolder, useSliderBlade, useTweakpane } from '@lazarusa/react-tweakpane'
 import { createPaneContainer } from '@/components/ui';
-
+import { useGlobalStore } from '@/utils/GlobalStates';
+import { useShallow } from 'zustand/shallow';
 
 interface DataCubeProps {
   volTexture: THREE.Data3DTexture | THREE.DataTexture | null,
-  shape : THREE.Vector3,
-  colormap: THREE.DataTexture,
-  flipY:boolean
 }
 
-export const DataCube = ({ volTexture, shape, colormap, flipY }: DataCubeProps ) => {
-    const meshRef = useRef<THREE.Mesh>(null);
+export const DataCube = ({ volTexture }: DataCubeProps ) => {
+
+    const {shape, colormap, flipY} = useGlobalStore(useShallow(state=>({shape:state.shape, colormap:state.colormap, flipY:state.flipY}))) //We have to useShallow when returning an object instead of a state. I don't fully know the logic yet
+
     const paneContainer = createPaneContainer("plot-pane");
-    // console.log(flipY)
     const pane = useTweakpane(
         {
           flip: false,
@@ -123,7 +121,7 @@ export const DataCube = ({ volTexture, shape, colormap, flipY }: DataCubeProps )
 
   return (
     <>
-    <mesh ref={meshRef} geometry={geometry} scale={[1,flipY ? -1: 1,1]}>
+    <mesh geometry={geometry} scale={[1,flipY ? -1: 1,1]}>
       <primitive attach="material" object={shaderMaterial} />
     </mesh>
     </>

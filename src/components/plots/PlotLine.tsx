@@ -1,11 +1,11 @@
 
 import * as THREE from 'three'
-import { useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { plotContext } from '../contexts/PlotContext';
+import {  useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber';
 import { createPaneContainer } from '../ui';
 import { useButtonBlade, useSliderBlade, useTweakpane, usePaneInput } from '@lazarusa/react-tweakpane';
-
+import { useGlobalStore } from '@/utils/GlobalStates';
+import { useShallow } from 'zustand/shallow';
 interface PlotLineProps {
   color?: string;
   lineWidth?: number;
@@ -166,7 +166,7 @@ export const PlotLine = ({
     step:1
   })
 
-  const {scaling, timeSeries} = useContext(plotContext)
+  const {valueScales, timeSeries, colormap} = useGlobalStore(useShallow(state=>({valueScales:state.valueScales, timeSeries:state.timeSeries, colormap:state.colormap})))
   const data = timeSeries
 
   //LinSpace to take up entire extent
@@ -175,7 +175,7 @@ export const PlotLine = ({
     return Array.from({ length: num }, (_, i) => start + step * i);
   }
 
-  const {maxVal,minVal,colormap} = scaling;
+  const {maxVal,minVal} = valueScales;
 
   function duplicateArray(arr:number[], times:number) {
     return arr.flatMap(item => Array(times).fill(item));

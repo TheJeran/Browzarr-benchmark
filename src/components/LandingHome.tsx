@@ -7,25 +7,21 @@ import { useEffect, useState, useMemo } from 'react';
 import { Analysis, PlotArea, Plot } from '@/components/plots';
 import { GetColorMapTexture, colormaps } from '@/components/textures';
 import { createPaneContainer, MiddleSlider } from '@/components/ui';
-import { plotContext, DimCoords } from '@/components/contexts';
 import { Metadata, ShowAnalysis, Loading } from '@/components/ui';
 // import ComputeModule from '@/components/computation/ComputeModule'
 import { usePaneInput, usePaneFolder, useTweakpane, useButtonBlade, useTextBlade } from '@lazarusa/react-tweakpane'
+import { useGlobalStore } from '@/utils/GlobalStates';
+import { useShallow } from 'zustand/shallow';
 
-
-interface Array{
-  data:number[],
-  shape:number[],
-  stride:number[]
-}
 const initStore = GetStore(ZARR_STORES.SEASFIRE)
-console.log(initStore)
+
 
 const zarrMetadata = await GetZarrMetadata(ZARR_STORES.SEASFIRE)
-console.log(zarrMetadata)
+// console.log(zarrMetadata)
 const variables = GetVariableNames(zarrMetadata)
 
 export function CanvasGeometry() {
+
   const [flipCmap, setFlipCmap] = useState<boolean>(false)
   
   const optionsVars = useMemo(() => variables.map((element) => ({
@@ -114,28 +110,16 @@ export function CanvasGeometry() {
   useButtonBlade(pane,{
     title:"Flip Colors"
   },()=>setFlipCmap(x=>!x))
-
-
-  const [shape, setShape] = useState<THREE.Vector3 | THREE.Vector3>(new THREE.Vector3(2, 2, 2))
-  const [valueScales,setValueScales] = useState({maxVal:1,minVal:-1})
-  const [colormap,setColormap] = useState<THREE.DataTexture>(GetColorMapTexture())
-  const [timeSeries, setTimeSeries] = useState<number[]>([0]);
-  const [showLoading, setShowLoading] = useState<boolean>(false);
-  const [metadata,setMetadata] = useState<object[] | null>(null)
-  const [dataArray, setDataArray] = useState<Array | null>(null)
   
+  const setColormap = useGlobalStore(state=>state.setColormap)
+  const metadata = useGlobalStore(state=>state.metadata)
+  const {colormap, timeSeries} = useGlobalStore(useShallow(state=>({colormap:state.colormap, timeSeries:state.timeSeries})))
+  const [showLoading, setShowLoading] = useState<boolean>(false);
+
   //Timeseries Plotting Information
-  const [dimArrays,setDimArrays] = useState<number[][]>([[0],[0],[0]])
-  const [dimNames,setDimNames] = useState<string[]>(["default"])
-  const [dimUnits,setDimUnits] = useState<string[]>(["Default"]);
-  const [dimCoords, setDimCoords] = useState<DimCoords>();
-  const [plotDim,setPlotDim] = useState<number>(0)
+ 
   const ZarrDS = useMemo(()=>new ZarrDataset(initStore),[])
 
-  //Analysis variables
-  const [reduceAxis, setReduceAxis] = useState<number>(0);
-  const [reduceOperation, setReduceOperation] = useState<string>("Mean")
-  const [executeReduction,setExecuteReduction] = useState<boolean>(false)
 
   const [canvasWidth, setCanvasWidth] = useState<number>(0)
 
@@ -145,88 +129,25 @@ export function CanvasGeometry() {
 
   useEffect(()=>{
     setColormap(GetColorMapTexture(colormap,cmap,1,"#000000",0,flipCmap));
-  },[cmap, colormap,flipCmap])
+  },[cmap, flipCmap])
 
   //These values are passed to the Plot Component
   const plotObj = {
-    values:{
       plotType,
-      colormap,
       ZarrDS,
       variable,
-      shape,
       bgcolor,
       canvasWidth
-    },
-    setters:{
-      setShowLoading,
-      setDataArray,
-      setValueScales,
-      setShape,
-      setMetadata,
-      setDimArrays,
-      setDimNames,
-      setDimUnits,
-    }
   }
-
-  const timeSeriesObj ={
-    setters:{
-      setTimeSeries,
-      setPlotDim,
-      setDimCoords
-    },
-    values:{
-      ZarrDS,
-      shape,
-      dimArrays,
-      dimNames,
-      dimUnits
-    }
-  }
-
-  const defaultDimCoords: DimCoords = {
-    first: { name: "", loc: 0, units: "" },
-    second: { name: "", loc: 0, units: "" },
-    plot: { units: "" }
-  };
 
 //This is the data being passed down the plot tree
-  const lineObj = {
-    coords: dimCoords ?? defaultDimCoords,
-    plotDim,
-    dimNames,
-    dimUnits,
-    dimArrays,
-    plotUnits:metadata ? (metadata as any).units : "Default",
-    yRange:[valueScales.minVal,valueScales.maxVal],
-    timeSeries,
-    scaling:{...valueScales,colormap}
-  } 
-
-  const analysisSetters = {
-    setAxis:setReduceAxis,
-    setOperation:setReduceOperation,
-    setExecute:setExecuteReduction
-  }
-
-  const analysisVars = {
-    axis:reduceAxis,
-    operation:reduceOperation,
-    execute:executeReduction
-  }
 
   const analysisObj = {
     setters:{
-
     },
     values:{
       ZarrDS,
-      cmap:colormap,
-      shape:shape.toArray(),
       canvasWidth,
-      dimNames,
-      valueScales
     }
   }
 
@@ -236,12 +157,9 @@ export function CanvasGeometry() {
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
     {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}
-    <Plot values={plotObj.values} setters={plotObj.setters} timeSeriesObj={timeSeriesObj} />
+    <Plot values={plotObj} setShowLoading={setShowLoading} />
     {metadata && <Metadata data={metadata} /> }
-
-    <plotContext.Provider value={lineObj} >
-      {timeSeries.length > 2 && <PlotArea />}
-    </plotContext.Provider>
+    {timeSeries.length > 2 && <PlotArea />}
     </>
   )
 }

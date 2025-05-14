@@ -8,6 +8,7 @@ import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU'
 import { createPaneContainer } from '@/components/ui'
 import { useTweakpane, usePaneInput, useButtonBlade } from '@lazarusa/react-tweakpane'
 import { OrbitControls } from '@react-three/drei'
+import { useGlobalStore } from '@/utils/GlobalStates'
 import './Plots.css'
 
 interface Array{
@@ -19,16 +20,14 @@ interface AnalysisParameters{
 
     values:{
       ZarrDS:ZarrDataset;
-      cmap: THREE.DataTexture;
-      shape: number[];
       canvasWidth:number;
-      dimNames: string[];
     }
     variables: string[]
 }
 
 export const Analysis = ({values, variables}:AnalysisParameters) => {
-  const {ZarrDS, cmap, canvasWidth, dimNames} = values
+  const dimNames = useGlobalStore(state=>state.dimNames)
+  const {ZarrDS, canvasWidth} = values
   const scaleObjRef = useRef<Record<string, { min: number; max: number }>>({});
 
   const [maxVal, setMaxVal] = useState<number>(100);
@@ -155,7 +154,6 @@ export const Analysis = ({values, variables}:AnalysisParameters) => {
       ZarrDS.GetArray(firstVar).then(result=>{
         setArray(result);
         if (firstVar in scaleObjRef.current){
-          console.log("cached")
           setMinVal(scaleObjRef.current[firstVar].min)
           setMaxVal(scaleObjRef.current[firstVar].max)
         }
@@ -199,7 +197,6 @@ export const Analysis = ({values, variables}:AnalysisParameters) => {
   }
   const computeObj = {
     values:{
-      cmap,
       stateVars,
       valueScales
     }

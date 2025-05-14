@@ -1,19 +1,31 @@
 import { Canvas } from '@react-three/fiber'
 import { parseLoc } from '@/utils/HelperFuncs'
 import { PlotLine, FixedTicks } from '@/components/plots'
-import { useContext, useEffect, useRef, useState } from 'react'
-import { plotContext } from '@/components/contexts'
+import {  useEffect, useRef, useState } from 'react'
 import { ResizeBar, YScaler,XScaler } from '@/components/ui'
 import './LinePlot.css'
+import { useGlobalStore } from '@/utils/GlobalStates'
+import { useShallow } from 'zustand/shallow'
 
 interface pointInfo{
   pointID:number,
   pointLoc:number[],
   showPointInfo:boolean
+  plotUnits:string
 }
 
-function PointInfo({pointID,pointLoc,showPointInfo}:pointInfo){
-  const {plotDim,dimArrays, timeSeries,dimNames,dimUnits,plotUnits} = useContext(plotContext);
+function PointInfo({pointID,pointLoc,showPointInfo, plotUnits}:pointInfo){
+
+  const {plotDim, dimArrays, dimNames, dimUnits, timeSeries} = useGlobalStore(
+    useShallow(state=>({
+      plotDim:state.plotDim,
+      dimArrays:state.dimArrays,
+      dimNames:state.dimNames,
+      dimUnits:state.dimUnits,
+      timeSeries:state.timeSeries,
+    }))
+  );
+
   const pointY = timeSeries[pointID];
   const pointX = dimArrays[plotDim][pointID];
   const [divX,divY] = pointLoc;
@@ -47,7 +59,7 @@ function PointInfo({pointID,pointLoc,showPointInfo}:pointInfo){
 }
 
 function PointCoords(){
-  const {coords} = useContext(plotContext);
+  const coords = useGlobalStore(state=>state.dimCoords)
   const [moving,setMoving] = useState<boolean>(false)
   const initialMouse = useRef<number[]>([0,Math.round(window.innerHeight*0.255)])
   const initialDiv = useRef<number[]>([0,Math.round(window.innerHeight*0.255)])
@@ -113,6 +125,8 @@ export function PlotArea() {
   const [pointLoc, setPointLoc] = useState<number[]>([0,0])
   const [showPointInfo,setShowPointInfo] = useState<boolean>(false)
   const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.25)))
+  const metadata = useGlobalStore(state=>state.metadata)
+  const plotUnits = metadata ? (metadata as any).units : "Default"
 
   const [yScale,setYScale] = useState<number>(1)
   const [xScale,setXScale] = useState<number>(1)
@@ -149,7 +163,7 @@ export function PlotArea() {
 
   return (
     <div className='plot-canvas'>
-      <PointInfo pointID={pointID} pointLoc={pointLoc} showPointInfo={showPointInfo} />
+      <PointInfo pointID={pointID} pointLoc={pointLoc} showPointInfo={showPointInfo} plotUnits={plotUnits}/>
       <ResizeBar height={height} setHeight={setHeight}/> 
       <YScaler scale={yScale} setScale={setYScale} />
       <XScaler scale={xScale} setScale={setXScale} />
