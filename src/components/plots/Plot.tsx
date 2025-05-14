@@ -6,44 +6,47 @@ import { PointCloud, UVCube, DataCube } from '@/components/plots';
 import { Canvas, useThree } from '@react-three/fiber';
 import { ArrayToTexture, DefaultCubeTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
-import { TimeSeriesProps } from './UVCube';
-interface Array{
-  data:number[],
-  shape:number[],
-  stride:number[]
-}
+import { useGlobalStore } from '@/utils/GlobalStates';
+import { useShallow } from 'zustand/shallow';
 
 interface PlotParameters{
     values:{
         plotType:string;
-        colormap:THREE.DataTexture;
         ZarrDS: ZarrDataset;
         variable:string;
-        shape:THREE.Vector3;
         bgcolor:string;
         canvasWidth:number
-    },
-    setters:{
-      setShowLoading: React.Dispatch<React.SetStateAction<boolean>>;
-      setDataArray: React.Dispatch<React.SetStateAction<Array | null>>;
-      setValueScales: React.Dispatch<React.SetStateAction<{maxVal:number,minVal:number}>>;
-      setShape: React.Dispatch<React.SetStateAction<THREE.Vector3>>;
-      setMetadata: React.Dispatch<React.SetStateAction<object[] | null>>;
-      setDimArrays: React.Dispatch<React.SetStateAction<number[][]>>;
-      setDimNames: React.Dispatch<React.SetStateAction<string[]>>;
-      setDimUnits:React.Dispatch<React.SetStateAction<string[]>>;
-    },
-    timeSeriesObj: TimeSeriesProps
+    }
+    setShowLoading: React.Dispatch<React.SetStateAction<boolean>>;
+    
 }
 
 
-const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
+const Plot = ({values,setShowLoading}:PlotParameters) => {
 
-    const {plotType,colormap,ZarrDS,variable,shape,bgcolor,canvasWidth} = values;
-    const {setShowLoading,setValueScales,setShape,setMetadata,setDimArrays,setDimNames,setDimUnits} = setters;
+    const {
+      setShape, 
+      setFlipY, 
+      setValueScales, 
+      setMetadata, 
+      setDimArrays, 
+      setDimNames, 
+      setDimUnits} = useGlobalStore(
+        useShallow(state => ({  //UseShallow for object returns
+          setShape:state.setShape,
+          setFlipY:state.setFlipY,
+          setValueScales:state.setValueScales,
+          setMetadata: state.setMetadata,
+          setDimArrays:state.setDimArrays, 
+          setDimNames:state.setDimNames,
+          setDimUnits:state.setDimUnits}
+        )))
+
+    const colormap = useGlobalStore(state=>state.colormap)
+    const {plotType,ZarrDS,variable,bgcolor,canvasWidth} = values;
+
     const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
     const [currentBg, setCurrentBg] = useState(bgcolor || 'var(--background)')
-    const [flipY, setFlipY] = useState<boolean>(false)
     
     const [windowWidth, setWindowWidth] = useState<number>(0);
 
@@ -117,7 +120,12 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
         const dimNames = []
         const tempDimUnits = []
         for (const meta of dimMetas){
-          dimNames.push(meta.standard_name)
+          if (meta.standard_name){
+            dimNames.push(meta.standard_name)
+          }
+          else if(meta._ARRAY_DIMENSIONS){
+            dimNames.push(meta._ARRAY_DIMENSIONS[0])
+          }
           tempDimUnits.push(meta.units)
         }
         setDimNames(dimNames)
@@ -126,6 +134,7 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
 
     }
       else{
+        console.log("here?")
         const texture = DefaultCubeTexture();
         // again need to check type before using it
         if (texture instanceof THREE.Data3DTexture || texture instanceof THREE.DataTexture) {
@@ -151,8 +160,8 @@ const Plot = ({values,setters,timeSeriesObj}:PlotParameters) => {
         >
             {/* Volume Plots */}
             {plotType == "volume" && <>
-            <DataCube volTexture={texture} shape={shape} colormap={colormap} flipY={flipY}/>
-            <UVCube {...timeSeriesObj} />
+            <DataCube volTexture={texture}/>
+            <UVCube ZarrDS={ZarrDS} />
             </>}
             {/* Point Clouds */}
             {plotType == "point-cloud" && <PointCloud textures={{texture,colormap}} />}

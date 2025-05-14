@@ -1,29 +1,29 @@
 import * as THREE from 'three'
 import { useState } from 'react';
-import { DimCoords } from '@/components/contexts/PlotContext';
 import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU';
 import { parseUVCoords } from '@/utils/HelperFuncs';
+import { useGlobalStore } from '@/utils/GlobalStates';
+import { useShallow } from 'zustand/shallow';
 
-export interface TimeSeriesProps{
-  setters:{
-    setTimeSeries:React.Dispatch<React.SetStateAction<number[]>>,
-    setPlotDim:React.Dispatch<React.SetStateAction<number>>,
-    setDimCoords:React.Dispatch<React.SetStateAction<DimCoords | undefined>>,
-  },
-  values:{
-    shape:THREE.Vector3,
-    ZarrDS:ZarrDataset,
-    dimArrays:number[][],
-    dimNames:string[]
-    dimUnits:string[]
-  }
-}
 
-export const UVCube = (timeSeriesProps : TimeSeriesProps )=>{
+export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
+
   const [clickPoint, setClickPoint] = useState<THREE.Vector3 | null>(null);
-  const {setTimeSeries,setPlotDim,setDimCoords} = timeSeriesProps.setters;
-  const {shape,ZarrDS,dimArrays,dimNames,dimUnits} = timeSeriesProps.values;
-  
+  const {setTimeSeries,setPlotDim,setDimCoords} = useGlobalStore(
+    useShallow(state=>({
+      setTimeSeries:state.setTimeSeries, 
+      setPlotDim:state.setPlotDim, 
+      setDimCoords:state.setDimCoords})))
+
+  const {shape,dimArrays,dimNames,dimUnits} = useGlobalStore(
+    useShallow(state=>({
+      shape:state.shape,
+      dimArrays:state.dimArrays,
+      dimNames:state.dimNames,
+      dimUnits:state.dimUnits
+    })))
+
+
   function HandleTimeSeries(event: THREE.Intersection){
     const point = event.point;
     const uv = event.uv!;

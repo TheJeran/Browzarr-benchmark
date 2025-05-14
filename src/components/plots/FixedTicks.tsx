@@ -1,9 +1,10 @@
 import { Text, OrbitControls } from '@react-three/drei'
 import { useThree, useFrame } from '@react-three/fiber'
-import { useState, useMemo, useEffect, useRef, useContext } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { parseTimeUnit } from '@/utils/HelperFuncs'
 import { Fragment } from 'react'
-import { plotContext } from '@/components/contexts/PlotContext'
+import { useGlobalStore } from '@/utils/GlobalStates'
+import { useShallow } from 'zustand/shallow'
 
 
 interface ViewportBounds {
@@ -36,20 +37,27 @@ export function FixedTicks({
 }: FixedTicksProps) {
   const { camera } = useThree()
   const [bounds, setBounds] = useState<ViewportBounds>({ left: 0, right: 0, top: 0, bottom: 0 })
-  const {coords, yRange, dimArrays, plotDim} = useContext(plotContext)
+  const {dimCoords, dimArrays, plotDim, valueScales} = useGlobalStore(
+    useShallow(state=>({
+      dimCoords:state.dimCoords,
+      dimArrays:state.dimArrays,
+      plotDim:state.plotDim,
+      valueScales:state.valueScales
+    }))
+  )
+  const coords = dimCoords
   const xDimArray = dimArrays[plotDim]
   const xTickCount = 10;
   const yTickCount = 8;
 
   const xDimSize = xDimArray.length;
-  const yDimSize = (yRange[1]-yRange[0])
-
+  const yDimSize = (valueScales.maxVal-valueScales.minVal)
   //Converts BigInt to DateTime
   const textArray = useMemo(()=>{
     if (xDimArray){
       const isBig = xDimArray.every(item => typeof item === "bigint");
       if (isBig){
-        const unit = parseTimeUnit(coords.plot.units);
+        const unit = coords ? parseTimeUnit(coords.plot.units) : 1;
         const timeStrings = []
         for (let i = 0 ; i < xDimArray.length; i++){
           const timeStamp = Number(xDimArray[i])*unit
@@ -254,7 +262,7 @@ export function FixedTicks({
                       anchorX="right"
                       anchorY="middle"
                     >
-                      {(yRange[0]+(normY*yDimSize)).toFixed(1)}
+                      {(valueScales.minVal+(normY*yDimSize)).toFixed(1)}
 
 
                     </Text>

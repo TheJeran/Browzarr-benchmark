@@ -5,6 +5,8 @@ import { OneArrayCompute, TwoArrayCompute } from './ComputeShaders'
 import * as THREE from 'three'
 import { fragShader, vertShader } from './shaders'
 import { useThree } from '@react-three/fiber';
+import { useGlobalStore } from '@/utils/GlobalStates';
+import { useShallow } from 'zustand/shallow';
 
 interface Array{
     data:number[],
@@ -24,7 +26,6 @@ interface ComputeModule{
     secondArray: Array | null;
   },
   values:{
-    cmap:THREE.DataTexture;
     stateVars:StateVars;
     valueScales:{firstArray:{maxVal:number,minVal:number},secondArray:{maxVal:number,minVal:number}}
   }
@@ -32,7 +33,8 @@ interface ComputeModule{
 
 
 const ComputeModule = ({arrays,values}:ComputeModule) => {
-    const {stateVars,cmap,valueScales} = values
+    const colormap = useGlobalStore(state=>state.colormap)
+    const {stateVars,valueScales} = values
     const {firstArray, secondArray} = arrays;
     const {axis, operation, execute} = stateVars;
     const shape = firstArray.shape
@@ -46,7 +48,7 @@ const ComputeModule = ({arrays,values}:ComputeModule) => {
         glslVersion: THREE.GLSL3,
         uniforms:{
           data : {value: texture},
-          cmap : { value : cmap},
+          cmap : { value : colormap},
         },
         vertexShader: vertShader,
         fragmentShader: fragShader,
