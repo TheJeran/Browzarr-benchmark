@@ -118,7 +118,7 @@ const handleMove = useCallback((e: ThreeEvent<PointerEvent>) => {
       timerRef.current = setTimeout(() => {
         if (eventRef.current) {
           setLoc([eventRef.current.clientX, eventRef.current.clientY]);
-          //@ts-ignore
+          // @ts-expect-error
           setUV([eventRef.current.uv.x, eventRef.current.uv.y]);
         }
 
