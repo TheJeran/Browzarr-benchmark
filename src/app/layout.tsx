@@ -5,8 +5,8 @@ import { Navbar, Footer, Overlays} from "@/components/ui";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "vi-zarr-stores",
-  description: "A browser based visualization toolkit for Zarr Stores",
+  title: "Browzarr",
+  description: "A browser-based visualization toolkit for exploring and analyzing Zarr data stores",
 };
 
 export default function RootLayout({

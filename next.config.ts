@@ -4,7 +4,7 @@ import path from 'path';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export' as const,
-  basePath: process.env.NODE_ENV === 'production' ? '/vi-zarr-stores' : '',
+  basePath: process.env.NODE_ENV === 'production' ? '/Browzarr' : '',
   images: {
     unoptimized: true,
   },
