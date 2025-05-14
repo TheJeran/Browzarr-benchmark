@@ -1,8 +1,8 @@
 .metadata-container {
     position: fixed;
-    top: calc(2.5rem + 30px); /* 2.5rem from plot-pane + some spacing */
-    right: 0.35rem;
-    z-index: 5;
+    top: calc(0.5rem + 2px); /* 2.5rem from plot-pane + some spacing */
+    right: calc(5rem + 8px);
+    z-index: 15;
     display: inline-block;
 }
 
@@ -41,7 +41,7 @@
     overflow-wrap: break-word;
     overflow-y: auto;
     user-select: none;
-    z-index: 1000;
+    z-index: 15;
 }
 
 .metadata p {
