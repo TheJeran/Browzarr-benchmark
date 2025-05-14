@@ -55,11 +55,9 @@ function calculateChunkCount(shape: number[], chunks: number[]): number {
     return shape.reduce((acc, dim, i) => acc * Math.ceil(dim / chunks[i]), 1);
 }
 
-export async function GetZarrMetadata(storePath: string): Promise<ZarrMetadata[]> {
-    const store = zarr.tryWithConsolidated(
-        new zarr.FetchStore(storePath)
-    );
-    const group = await store.then(s => zarr.open(s, {kind: 'group'}));
+export async function GetZarrMetadata(groupStore: Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>): Promise<ZarrMetadata[]> {
+
+    const group = await groupStore
     
     const contents = ('contents' in group.store) ? group.store.contents() as ZarrItem[] : [];
     const variables: ZarrMetadata[] = [];
@@ -116,8 +114,9 @@ function isCoordinateVariable(name: string): boolean {
     return COORDINATE_VARS.some(coord => lowerName === coord);
 }
 
-export function GetVariableNames(variables: ZarrMetadata[]): string[] {
-    return variables
+export async function GetVariableNames(variables: Promise<ZarrMetadata[]>): Promise<string[]> {
+    const metadata = await variables;
+    return metadata
         .filter(variable => !isCoordinateVariable(variable.name))
         .map(variable => variable.name)
         .sort((a, b) => a.localeCompare(b));

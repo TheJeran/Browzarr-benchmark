@@ -190,23 +190,30 @@ a[href]:hover::after {
 /* } */
 
 /* This is my custom tweakpane container  */
+.data-stores-pane{
+  position: fixed;
+  top: 2.75rem;
+  right: 0.35rem;
+  z-index: 11;
+}
+
 .data-settings-pane{
   position: fixed;
-  top: 0.5rem;
-  right: 24%;
+  top: 8rem;
+  right: 0.35rem;
   z-index: 10;
 }
 
 .plot-pane{
   position: fixed;
-  top: 2.5rem;
+  top: 17rem;
   right: 0.35rem;
   z-index: 10;
 }
 
 .plot-cloud{
   position: fixed;
-  top: 2.5rem;
+  top: 17rem;
   right: 0.35rem;
   z-index: 10;
 }
@@ -234,8 +241,8 @@ a[href]:hover::after {
 
 .loading{
   position: fixed;
-  top: calc(2.5rem + 30px); /* Align with metadata-icon */
-  right: calc(0.35rem + 22px); /* 0.35rem (metadata-icon position) + 20px (icon width) + 2px (desired gap) */
+  top: calc(0.5rem + 0px);
+  right: calc(5rem + 28px);
   z-index: 5;
   background-color: var(--background-plot);
   color: var(--text-plot);
