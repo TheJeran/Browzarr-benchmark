@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useRef, useMemo } from 'react'
 import { OneArrayCompute, TwoArrayCompute } from './ComputeShaders'
 import * as THREE from 'three'
 import { fragShader, vertShader } from './shaders'
 import { useThree } from '@react-three/fiber';
 import { useGlobalStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
+import { ThreeEvent } from '@react-three/fiber';
 
 interface Array{
     data:number[],
@@ -28,11 +29,18 @@ interface ComputeModule{
   values:{
     stateVars:StateVars;
     valueScales:{firstArray:{maxVal:number,minVal:number},secondArray:{maxVal:number,minVal:number}}
+  },
+  setters:{
+    setShowInfo:React.Dispatch<React.SetStateAction<boolean>>;
+    setLoc:React.Dispatch<React.SetStateAction<number[]>>;
+    setUV:React.Dispatch<React.SetStateAction<number[]>>;
   }
+  
 }
 
 
-const ComputeModule = ({arrays,values}:ComputeModule) => {
+const ComputeModule = ({arrays,values, setters}:ComputeModule) => {
+  const {setShowInfo, setLoc, setUV} = setters;
     const {colormap, flipY} = useGlobalStore(useShallow(state=>({colormap:state.colormap, flipY:state.flipY})))
     const {stateVars,valueScales} = values
     const {firstArray, secondArray} = arrays;
@@ -40,6 +48,7 @@ const ComputeModule = ({arrays,values}:ComputeModule) => {
     const shape = firstArray.shape
     const [planeShape,setPlaneShape] = useState<number[]>(shape.filter((_val,idx)=> idx !== axis))
     const {gl} = useThree()
+    const infoRef = useRef<boolean>(false)
 
     const GPUCompute = secondArray ? new TwoArrayCompute({firstArray,secondArray},gl,valueScales) : new OneArrayCompute(firstArray,gl,valueScales.firstArray)
     const [texture,setTexture] = useState<THREE.Texture | null>(null)
@@ -62,7 +71,6 @@ const ComputeModule = ({arrays,values}:ComputeModule) => {
           newText = GPUCompute.Correlate(axis);
         }
         else{
-          console.log(secondArray)
           switch(operation){
             case "Max":
               newText = GPUCompute instanceof OneArrayCompute ? GPUCompute.Max(axis) : null;
@@ -85,9 +93,22 @@ const ComputeModule = ({arrays,values}:ComputeModule) => {
         setPlaneShape(shape.filter((_val,idx)=> idx !== axis))
       }
     },[execute])
-  const shapeRatio = flipY ? planeShape[0]/planeShape[1]*-2 : planeShape[0]/planeShape[1]*2
+
+
+    function HandleMove(e: ThreeEvent<PointerEvent>){
+      if (infoRef.current && e.uv){
+        setLoc([e.clientX,e.clientY])
+        setUV([e.uv.x,e.uv.y])
+      }
+    }
+  const shapeRatio = useMemo(()=>flipY ? planeShape[0]/planeShape[1]*-2 : planeShape[0]/planeShape[1]*2,[flipY])
   return (
-    <mesh material={shaderMaterial}>
+    <mesh material={shaderMaterial} 
+      onPointerEnter={()=>{setShowInfo(true); infoRef.current = true }}
+      onPointerLeave={()=>{setShowInfo(false); infoRef.current = false }}
+      onPointerMove={HandleMove}
+    >
+
       {texture && <planeGeometry args={[2,shapeRatio]} />}
     </mesh>
   )

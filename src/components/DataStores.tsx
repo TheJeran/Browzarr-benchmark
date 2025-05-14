@@ -13,7 +13,7 @@ export function DataStores() {
         text: key,
         value: value
       })), []);
-    
+const setTimeSeries = useGlobalStore(state=>state.setTimeSeries)
 const paneContainer = createPaneContainer("data-stores-pane");
 const pane = useTweakpane(
     {
@@ -46,6 +46,7 @@ const pane = useTweakpane(
   useEffect(()=>{
     if(currentStoreURL){
       setZarrStore(currentStoreURL)
+      setTimeSeries([0])
     }
   },[currentStoreURL])
 

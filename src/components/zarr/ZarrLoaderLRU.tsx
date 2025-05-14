@@ -126,7 +126,7 @@ export class ZarrDataset{
 			dimArr.push(this.cache.get(dim));
 			dimMetas.push(this.cache.get(`${dim}_meta`))
 		}
-		return [dimArr,dimMetas];
+		return [dimArr,dimMetas, this.dimNames];
 	}
 
 	async GetTimeSeries(TimeSeriesInfo:TimeSeriesInfo){
