@@ -5,6 +5,7 @@ import { useMemo } from 'react'
 import { pointFrag, pointVert } from '@/components/textures/shaders'
 import { usePaneInput, usePaneFolder, useSliderBlade, useTweakpane } from '@lazarusa/react-tweakpane'
 import { createPaneContainer } from '@/components/ui';
+import { useGlobalStore } from '@/utils/GlobalStates';
 
 interface PCProps {
   texture: THREE.Data3DTexture | THREE.DataTexture | null,
@@ -14,7 +15,7 @@ interface PCProps {
 export const PointCloud = ({textures} : {textures:PCProps} )=>{
     const {texture, colormap } = textures;
     const paneContainer = createPaneContainer("plot-cloud");
-
+    const flipY = useGlobalStore(state=>state.flipY)
     const pane = useTweakpane(
       {
         scalePoints: false,
@@ -117,6 +118,8 @@ export const PointCloud = ({textures} : {textures:PCProps} )=>{
     });
   
     return (
-      <points geometry={geometry} material={shaderMaterial} />
+      <mesh scale={[1,flipY ? -1:1, 1]}>
+        <points geometry={geometry} material={shaderMaterial} />
+      </mesh>
     );
   }

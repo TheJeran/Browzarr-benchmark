@@ -33,7 +33,7 @@ interface ComputeModule{
 
 
 const ComputeModule = ({arrays,values}:ComputeModule) => {
-    const colormap = useGlobalStore(state=>state.colormap)
+    const {colormap, flipY} = useGlobalStore(useShallow(state=>({colormap:state.colormap, flipY:state.flipY})))
     const {stateVars,valueScales} = values
     const {firstArray, secondArray} = arrays;
     const {axis, operation, execute} = stateVars;
@@ -85,10 +85,10 @@ const ComputeModule = ({arrays,values}:ComputeModule) => {
         setPlaneShape(shape.filter((_val,idx)=> idx !== axis))
       }
     },[execute])
-
+  const shapeRatio = flipY ? planeShape[0]/planeShape[1]*-2 : planeShape[0]/planeShape[1]*2
   return (
     <mesh material={shaderMaterial}>
-      {texture && <planeGeometry args={[2,planeShape[0]/planeShape[1]*2]} />}
+      {texture && <planeGeometry args={[2,shapeRatio]} />}
     </mesh>
   )
 }
