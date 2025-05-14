@@ -2,10 +2,11 @@
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { GetStore, ZARR_STORES } from '@/components/zarr/ZarrLoaderLRU'
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, use } from 'react';
 import { createPaneContainer } from '@/components/ui';
 import { usePaneInput, useTweakpane } from '@lazarusa/react-tweakpane'
 import { GetZarrMetadata,  GetVariableNames } from './zarr/GetMetadata';
+import { useGlobalStore } from '@/utils/GlobalStates';
 
 export function DataStores() {
     const optionsStores = useMemo(() => Object.entries(ZARR_STORES).map(([key, value]) => ({
@@ -40,7 +41,14 @@ const pane = useTweakpane(
   const initStore = GetStore(currentStoreURL);
   const fullmetadata = GetZarrMetadata(initStore);
   const variables = GetVariableNames(fullmetadata);
+  const setZarrStore = useGlobalStore(state=>state.setInitStore)
   
+  useEffect(()=>{
+    if(initStore){
+      setZarrStore(initStore)
+    }
+  },[initStore])
+
   return (
     { 
     bgcolor,

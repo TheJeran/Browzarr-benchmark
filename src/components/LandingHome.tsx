@@ -15,9 +15,10 @@ import { useShallow } from 'zustand/shallow';
 import { PaneStore } from '@/components/PaneStore';
 
 export function CanvasGeometry() {
-  const { bgcolor, initStore, fullmetadata, variables} = DataStores();
+  const { bgcolor, fullmetadata, variables} = DataStores();
   const [settings, setSettings] = useState({ variable: 'Default', plotType: 'volume', cmap: 'Spectral', flipCmap: false });
-  const ZarrDS = useMemo(()=>new ZarrDataset(initStore),[initStore])
+  const initStore = useGlobalStore(useShallow(state=>state.initStore))
+  const ZarrDS = useMemo(()=>{new ZarrDataset(initStore)},[initStore])
 
   const setColormap = useGlobalStore(state=>state.setColormap)
   const metadata = useGlobalStore(state=>state.metadata)
