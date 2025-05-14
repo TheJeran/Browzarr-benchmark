@@ -118,7 +118,7 @@ const handleMove = useCallback((e: ThreeEvent<PointerEvent>) => {
       timerRef.current = setTimeout(() => {
         if (eventRef.current) {
           setLoc([eventRef.current.clientX, eventRef.current.clientY]);
-          // @ts-expect-error
+          // @ts-expect-error: uv is not defined ?
           setUV([eventRef.current.uv.x, eventRef.current.uv.y]);
         }
 
