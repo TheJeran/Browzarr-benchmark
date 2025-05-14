@@ -18,6 +18,7 @@ export function CanvasGeometry() {
   const { bgcolor, fullmetadata, variables} = DataStores();
   const [settings, setSettings] = useState({ variable: 'Default', plotType: 'volume', cmap: 'Spectral', flipCmap: false });
   const initStore = useGlobalStore(useShallow(state=>state.initStore))
+  
   const ZarrDS = useMemo(() => new ZarrDataset(initStore), [initStore])
 
   const setColormap = useGlobalStore(state=>state.setColormap)

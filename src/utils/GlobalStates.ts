@@ -29,7 +29,7 @@ type StoreState = {
   dimCoords?: DimCoords;
   plotDim: number;
   flipY:boolean;
-  initStore:Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>
+  initStore:string;
 
   setShape: (shape: THREE.Vector3) => void;
   setValueScales: (valueScales: { maxVal: number; minVal: number }) => void;
@@ -44,7 +44,7 @@ type StoreState = {
   setDimCoords: (dimCoords?: DimCoords) => void;
   setPlotDim: (plotDim: number) => void;
   setFlipY: (flipY:boolean) => void;
-  setInitStore: (initStore:Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>> ) => void;
+  setInitStore: (initStore:string ) => void;
 };
 
 export const useGlobalStore = create<StoreState>((set) => ({
@@ -61,7 +61,7 @@ export const useGlobalStore = create<StoreState>((set) => ({
   dimCoords: undefined,
   plotDim: 0,
   flipY: false,
-  initStore: GetStore("https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"),
+  initStore: "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr",
 
   setShape: (shape) => set({ shape }),
   setValueScales: (valueScales) => set({ valueScales }),

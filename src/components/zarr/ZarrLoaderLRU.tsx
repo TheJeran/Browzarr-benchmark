@@ -41,8 +41,8 @@ export class ZarrDataset{
 	private cache: QuickLRU<string,any>;
 	private dimNames: string[];
 
-	constructor(store: Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>){
-		this.groupStore = store;
+	constructor(store: string){
+		this.groupStore = GetStore(store);
 		this.variable = "Default";
 		this.cache = new QuickLRU({maxSize: 2000});
 		this.dimNames = ["","",""]

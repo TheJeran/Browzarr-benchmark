@@ -44,10 +44,10 @@ const pane = useTweakpane(
   const setZarrStore = useGlobalStore(state=>state.setInitStore)
   
   useEffect(()=>{
-    if(initStore){
-      setZarrStore(initStore)
+    if(currentStoreURL){
+      setZarrStore(currentStoreURL)
     }
-  },[initStore])
+  },[currentStoreURL])
 
   return (
     { 
