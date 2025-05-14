@@ -62,7 +62,7 @@ export function CanvasGeometry() {
       {canvasWidth < 10 && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} canvasWidth={canvasWidth} />}
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
-    {/* {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />} */}
+    {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}
     <Plot values={plotObj} setShowLoading={setShowLoading} />
     {metadata && <Metadata data={metadata} /> }
     {timeSeries.length > 2 && <PlotArea />}
