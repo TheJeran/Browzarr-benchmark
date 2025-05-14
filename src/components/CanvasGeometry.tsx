@@ -3,14 +3,12 @@ import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { DataStores } from './DataStores'
 import { ZarrDataset } from './zarr/ZarrLoaderLRU';
-import { GetZarrMetadata,  GetVariableNames } from './zarr/GetMetadata';
 import { useState } from 'react';
-import { usePaneInput, usePaneFolder, useTweakpane, useButtonBlade, useTextBlade } from '@lazarusa/react-tweakpane'
 
-import { useEffect, useMemo, useLayoutEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Analysis, PlotArea, Plot } from '@/components/plots';
-import { GetColorMapTexture, colormaps } from '@/components/textures';
-import { createPaneContainer, MiddleSlider } from '@/components/ui';
+import { GetColorMapTexture } from '@/components/textures';
+import { MiddleSlider } from '@/components/ui';
 import { plotContext, DimCoords } from '@/components/contexts';
 import { Metadata, ShowAnalysis, Loading } from '@/components/ui';
 
@@ -140,17 +138,20 @@ export function CanvasGeometry() {
   }
 
   return (
-    <div>
+    <>
       <PaneStore variablesPromise={variables} onSettingsChange={setSettings} />
+
       {canvasWidth < 10 && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} canvasWidth={canvasWidth} />}
-      {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
-      <Loading showLoading={showLoading} />
-      {/* {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />} */}
-      <Plot values={plotObj.values} setters={plotObj.setters} timeSeriesObj={timeSeriesObj} />
-      {metadata && <Metadata data={metadata} /> }
-      <plotContext.Provider value={lineObj} > {timeSeries.length > 2 && <PlotArea />}
-      </plotContext.Provider>
-    </div>
+    {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
+    <Loading showLoading={showLoading} />
+    {/* {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />} */}
+    <Plot values={plotObj.values} setters={plotObj.setters} timeSeriesObj={timeSeriesObj} />
+    {metadata && <Metadata data={metadata} /> }
+
+    <plotContext.Provider value={lineObj} >
+      {timeSeries.length > 2 && <PlotArea />}
+    </plotContext.Provider>
+    </>
   );
 }
 
