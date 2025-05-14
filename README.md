@@ -1,7 +1,8 @@
-# vi-zarr-stores
+# Browzarr
+A browser-based visualization toolkit for exploring and analyzing Zarr data stores.
 
 > [!IMPORTANT]
-> Visit at https://earthyscience.github.io/vi-zarr-stores/
+> Visit at https://earthyscience.github.io/browzarr/
 
 Stay tuned for updates! 🚀
 
