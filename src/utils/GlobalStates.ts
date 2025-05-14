@@ -59,7 +59,6 @@ export const useGlobalStore = create<StoreState>((set) => ({
   plotDim: 0,
   flipY: false,
 
-
   setShape: (shape) => set({ shape }),
   setValueScales: (valueScales) => set({ valueScales }),
   setColormap: (colormap) => set({ colormap }),

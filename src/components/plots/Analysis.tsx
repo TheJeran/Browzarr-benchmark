@@ -29,6 +29,7 @@ export const Analysis = ({values, variables}:AnalysisParameters) => {
   const dimNames = useGlobalStore(state=>state.dimNames)
   const {ZarrDS, canvasWidth} = values
   const scaleObjRef = useRef<Record<string, { min: number; max: number }>>({});
+  const setFlipY = useGlobalStore(state=>state.setFlipY)
 
   const [maxVal, setMaxVal] = useState<number>(100);
   const [minVal, setMinVal] = useState<number>(0);
@@ -165,6 +166,13 @@ export const Analysis = ({values, variables}:AnalysisParameters) => {
           scaleObjRef.current[firstVar] = {min:minVal,max:maxVal}
         }
       })
+      ZarrDS.GetAttributes(firstVar).then(()=>{
+        const [dimArrs, _dimMetas, _dimNames] = ZarrDS.GetDimArrays()
+        if (dimArrs[1][1] < dimArrs[1][0])
+          {setFlipY(true)}
+        else
+          {setFlipY(false)}
+      })
     }
     if (secondVar !== "Default"){
       ZarrDS.GetArray(secondVar).then(result=>{
@@ -185,6 +193,7 @@ export const Analysis = ({values, variables}:AnalysisParameters) => {
       setArray2(null)
     }
   },[firstVar,secondVar])
+
 
   const valueScales = {
     firstArray:{

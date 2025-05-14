@@ -62,7 +62,6 @@ const ComputeModule = ({arrays,values}:ComputeModule) => {
           newText = GPUCompute.Correlate(axis);
         }
         else{
-          console.log(secondArray)
           switch(operation){
             case "Max":
               newText = GPUCompute instanceof OneArrayCompute ? GPUCompute.Max(axis) : null;
