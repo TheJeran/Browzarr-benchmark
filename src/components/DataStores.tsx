@@ -52,7 +52,6 @@ const pane = useTweakpane(
   return (
     { 
     bgcolor,
-    initStore,
     fullmetadata,
     variables
     }
