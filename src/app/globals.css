@@ -190,11 +190,58 @@ a[href]:hover::after {
 /* } */
 
 /* This is my custom tweakpane container  */
-.data-stores-pane{
+.data-stores-pane {
   position: fixed;
   top: 2.75rem;
   right: 0.35rem;
   z-index: 11;
+  transition: opacity 0.5s ease;
+}
+
+.data-stores-pane::before {
+  content: '';
+  position: absolute;
+  top: -0.25rem;
+  right: 0.5rem;
+  width: 10px;
+  height: 10px;
+  background-color: var(--foreground);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.data-stores-pane:not(:hover)::before {
+  opacity: 1;
+}
+
+.data-stores-pane:hover::before {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(2.5);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.data-stores-pane:hover {
+  opacity: 1;
+}
+
+.data-stores-pane:not(:hover) {
+  opacity: 0.6;
 }
 
 .data-settings-pane{

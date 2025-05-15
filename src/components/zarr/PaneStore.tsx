@@ -45,7 +45,7 @@ function PaneStoreLoaded({ optionsVariables, onSettingsChange }: {
         {
             title: 'Data Plots',
             container: paneContainer ?? undefined,
-            expanded: true,
+            expanded: false,
         }
     );
 

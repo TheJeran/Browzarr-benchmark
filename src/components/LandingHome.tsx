@@ -1,8 +1,8 @@
 'use client';
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
-import { DataStores } from './DataStores'
-import { ZarrDataset } from './zarr/ZarrLoaderLRU';
+import { DataStores } from '@/components/zarr/DataStores'
+import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU';
 import { useState } from 'react';
 
 import { useEffect, useMemo } from 'react';
@@ -12,9 +12,10 @@ import { MiddleSlider } from '@/components/ui';
 import { Metadata, ShowAnalysis, Loading } from '@/components/ui';
 import { useGlobalStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
-import { PaneStore } from '@/components/PaneStore';
+import { PaneStore } from '@/components/zarr/PaneStore';
+// import { PaneManager } from '@/components/PaneManager';
 
-export function CanvasGeometry() {
+export function LandingHome() {
   const { bgcolor, fullmetadata, variables} = DataStores();
   const [settings, setSettings] = useState({ variable: 'Default', plotType: 'volume', cmap: 'Spectral', flipCmap: false });
   const initStore = useGlobalStore(useShallow(state=>state.initStore))
@@ -57,6 +58,7 @@ export function CanvasGeometry() {
 
   return (
     <>
+      {/* <PaneManager /> */}
       <PaneStore variablesPromise={variables} onSettingsChange={setSettings} />
 
       {canvasWidth < 10 && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} canvasWidth={canvasWidth} />}
@@ -70,4 +72,4 @@ export function CanvasGeometry() {
   );
 }
 
-export default CanvasGeometry
+export default LandingHome;

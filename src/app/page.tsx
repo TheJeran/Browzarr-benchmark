@@ -1,4 +1,4 @@
-import CanvasGeometry from "@/components/LandingHome"
+import LandingHome from "@/components/LandingHome"
 export default function Home() {
-  return <CanvasGeometry />
+  return <LandingHome />
 }
