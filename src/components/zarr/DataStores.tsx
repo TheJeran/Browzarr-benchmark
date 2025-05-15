@@ -5,7 +5,7 @@ import { GetStore, ZARR_STORES } from '@/components/zarr/ZarrLoaderLRU'
 import { useEffect, useState, useMemo, use } from 'react';
 import { createPaneContainer } from '@/components/ui';
 import { usePaneInput, useTweakpane } from '@lazarusa/react-tweakpane'
-import { GetZarrMetadata,  GetVariableNames } from './zarr/GetMetadata';
+import { GetZarrMetadata,  GetVariableNames } from '@/components/zarr/GetMetadata';
 import { useGlobalStore } from '@/utils/GlobalStates';
 
 export function DataStores() {
