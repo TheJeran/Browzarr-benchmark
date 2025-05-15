@@ -1,5 +1,5 @@
 name: Setup repo
-description: Install dependencies and perform setup for https://github.com/EarthyScience/browzarr
+description: Install dependencies and perform setup for https://github.com/EarthyScience/Browzarr/
 
 inputs:
   node:
