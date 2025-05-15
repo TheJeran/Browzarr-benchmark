@@ -60,7 +60,6 @@ export function LandingHome() {
     <>
       {/* <PaneManager /> */}
       <PaneStore variablesPromise={variables} onSettingsChange={setSettings} />
-
       {canvasWidth < 10 && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} canvasWidth={canvasWidth} />}
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
