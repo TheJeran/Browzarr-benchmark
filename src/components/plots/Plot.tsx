@@ -8,7 +8,7 @@ import { ArrayToTexture, DefaultCubeTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 import { useGlobalStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
-import BoxApp from '@/components/WelcomeScene';
+import TextOnlyApp from '@/components/WelcomeScene';
 
 interface PlotParameters{
     values:{
@@ -147,7 +147,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       }}
     >
       {variable === "Default" ? (
-        <BoxApp />
+        <TextOnlyApp />
       ) : (
         <Canvas camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
           frameloop="demand"

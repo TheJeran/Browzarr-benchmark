@@ -18,7 +18,7 @@ const paneContainer = createPaneContainer("data-stores-pane");
 const pane = useTweakpane(
     {
       backgroundcolor: "#292b32",
-      storeURL: ZARR_STORES.SEASFIRE,
+      storeURL: ZARR_STORES.ESDC,
       varName: "Default"
     },
     {
