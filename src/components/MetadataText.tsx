@@ -1,4 +1,6 @@
-import { Text } from '@react-three/drei'
+import { useState, useRef } from 'react'
+import { useCursor, RoundedBox, Text } from '@react-three/drei'
+import { Group,  } from 'three'
 
 interface MetadataInfo {
   name: string;
@@ -16,42 +18,118 @@ interface MetadataTextProps {
   position?: [number, number, number];
   metadata: MetadataInfo;
   fontSize?: number;
-  color?: string;
   maxWidth?: number;
+  textColor?: string;
+  backgroundColor?: string;
+  hoverColor?: string;
+  onViewClick?: (name: string) => void;
 }
 
 export default function MetadataText({
   position = [0, 0, 0],
   metadata,
   fontSize = 0.15,
-  color = 'grey60',
-  maxWidth = 2
+  maxWidth = 2.2,
+  textColor = 'white',
+  backgroundColor = '#222831',
+  hoverColor = '#4d4d4d',
+  onViewClick = () => {},
 }: MetadataTextProps) {
+  const groupRef = useRef<Group>(null)
+  const [hovered, setHovered] = useState(false)
+  const [viewHovered, setViewHovered] = useState(false)
+
+  useCursor(viewHovered)
+
+  const handleViewClick = (e: any) => {
+    e.stopPropagation()
+    if (onViewClick) onViewClick(metadata.name)
+  }
+
+
   const formatArray = (value: string | number[]): string => {
-    if (typeof value === 'string') return value;
-    return Array.isArray(value) ? value.join(', ') : String(value);
-  };
+    if (typeof value === 'string') return value
+    return Array.isArray(value) ? value.join(', ') : String(value)
+  }
 
   const content = `
 name: ${metadata.name}
-Shape: [ ${formatArray(metadata.shape)} ]
-Dtype: ${metadata.dtype}
-Total Size: ${metadata.totalSizeFormatted}
-Chunk Count: ${metadata.chunkCount}
-Chunk Size: ${metadata.chunkSizeFormatted}
-  `
+shape:       [${formatArray(metadata.shape)}]
+chunks:     [${formatArray(metadata.chunks)}]
+dtype:       ${metadata.dtype}
+total size:  ${metadata.totalSizeFormatted}
+chunk count: ${metadata.chunkCount}
+chunk size:  ${metadata.chunkSizeFormatted}
+    `.trim()
+  
+  const padding = 0.1
+  // Estimate dimensions based on fontSize and maxWidth
+  const width = maxWidth
+  const lineCount = content.split('\n').length
+  const height = fontSize * lineCount * 1.4
 
   return (
-    <Text
+    <group
+      ref={groupRef}
       position={position}
-      fontSize={fontSize}
-      maxWidth={maxWidth}
-      lineHeight={1.4}
-      color={color}
-      anchorX="left"
-      anchorY="top"
+      onPointerOver={(e) => {
+        e.stopPropagation()
+        setHovered(true)
+      }}
+      onPointerOut={() => setHovered(false)}
     >
-      {content.trim()}
+
+    <RoundedBox
+        args={[width, height + padding, 0.01]}
+        radius={0.025}
+        smoothness={2}
+        position={[width / 2, -height / 2, -0.03]}
+      >
+        <meshStandardMaterial
+            color={hovered ? hoverColor : backgroundColor}
+            metalness={0.7}
+            roughness={0.3}
+        />
+
+      </RoundedBox>
+      {/* Foreground text */}
+      <Text
+        position={[padding, 0, 0]}
+        fontSize={fontSize}
+        maxWidth={maxWidth}
+        lineHeight={1.4}
+        color={textColor}
+        anchorX="left"
+        anchorY="top"
+      >
+        {content}
+      </Text>
+      {/* Top-right "View" button */}
+    <group position={[width - 0.27, -0.1, -0.01]}>
+    <RoundedBox
+        args={[0.45, 0.2, 0.025]}
+        radius={0.025}
+        smoothness={1}
+        onClick={handleViewClick}
+        onPointerOver={(e) => {
+        e.stopPropagation()
+        setViewHovered(true)
+        }}
+        onPointerOut={() => setViewHovered(false)}
+    >
+        <meshStandardMaterial color={viewHovered ? 'white' : 'gold'} metalness={0.3} roughness={0.3} />
+    </RoundedBox>
+    <Text
+        position={[0, 0, 0.012]}
+        fontSize={0.1}
+        color="#222831"
+        anchorX="center"
+        anchorY="middle"   
+    >
+        View
     </Text>
-  );
+    </group>
+
+    </group>
+  )
 }

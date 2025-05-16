@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
+import { Environment, OrbitControls } from '@react-three/drei'
 import MetadataText from './MetadataText'
 
 export default function TextOnlyApp() {
@@ -39,8 +39,12 @@ export default function TextOnlyApp() {
       <ambientLight intensity={0.5} />
       <OrbitControls />
       {metadataList.map((item, i) => (
-        <MetadataText key={i} position={item.position} metadata={item.metadata} />
+        <MetadataText key={i} position={item.position} metadata={item.metadata} onViewClick={(name) => {
+          console.log(`View clicked for ${name}`)
+          // Your logic here
+        }}/>
       ))}
+      <Environment preset="sunset" />
     </Canvas>
   )
 }
