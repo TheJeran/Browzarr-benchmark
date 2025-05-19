@@ -13,6 +13,8 @@ import { Metadata, ShowAnalysis, Loading } from '@/components/ui';
 import { useGlobalStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { PaneStore } from '@/components/zarr/PaneStore';
+import WelcomeText from '@/components/WelcomeText';
+
 // import { PaneManager } from '@/components/PaneManager';
 
 export function LandingHome() {
@@ -55,7 +57,7 @@ export function LandingHome() {
       canvasWidth,
     }
   }
-
+  console.log(fullmetadata)
   return (
     <>
       {/* <PaneManager /> */}
@@ -64,7 +66,9 @@ export function LandingHome() {
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
     {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}
-    <Plot values={plotObj} setShowLoading={setShowLoading} />
+    {settings.variable === "Default" ? (
+            <WelcomeText variablesPromise={variables} />
+          ) : ( <Plot values={plotObj} setShowLoading={setShowLoading} />)}
     {metadata && <Metadata data={metadata} /> }
     {timeSeries.length > 2 && <PlotArea />}
     </>

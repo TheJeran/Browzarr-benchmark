@@ -8,7 +8,6 @@ import { ArrayToTexture, DefaultCubeTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 import { useGlobalStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
-import TextOnlyApp from '@/components/WelcomeScene';
 
 interface PlotParameters{
     values:{
@@ -146,28 +145,24 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         width: windowWidth - canvasWidth         
       }}
     >
-      {variable === "Default" ? (
-        <TextOnlyApp />
-      ) : (
-        <Canvas camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
-          frameloop="demand"
-          style={{
-            background: currentBg
-          }}
-        >
-          {/* Volume Plots */}
-          {plotType == "volume" && <>
-            <DataCube volTexture={texture}/>
-            <UVCube ZarrDS={ZarrDS} />
-          </>}
-          {/* Point Clouds */}
-          {plotType == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
+      <Canvas camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
+        frameloop="demand"
+        style={{
+          background: currentBg
+        }}
+      >
+        {/* Volume Plots */}
+        {plotType == "volume" && <>
+          <DataCube volTexture={texture}/>
+          <UVCube ZarrDS={ZarrDS} />
+        </>}
+        {/* Point Clouds */}
+        {plotType == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
 
-          <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={false}
-            maxDistance={50}
-          />
-        </Canvas>
-      )}
+        <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={false}
+          maxDistance={50}
+        />
+      </Canvas>
     </div>
   )
 }
