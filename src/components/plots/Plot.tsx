@@ -128,12 +128,12 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
     }
       else{
         console.log("here?")
-        const texture = DefaultCubeTexture();
-        // again need to check type before using it
-        if (texture instanceof THREE.Data3DTexture || texture instanceof THREE.DataTexture) {
-          setTexture(texture);
-        }
-        setShape(new THREE.Vector3(2, 2, 2))
+        // const texture = DefaultCubeTexture();
+        // // again need to check type before using it
+        // if (texture instanceof THREE.Data3DTexture || texture instanceof THREE.DataTexture) {
+        //   setTexture(texture);
+        // }
+        // setShape(new THREE.Vector3(2, 2, 2))
         setMetadata(null)
       }
   }, [variable])
@@ -145,25 +145,24 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         width: windowWidth - canvasWidth         
       }}
     >
-        <Canvas camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
+      <Canvas camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
         frameloop="demand"
         style={{
-        background: currentBg
+          background: currentBg
         }}
-        >
+      >
+        {/* Volume Plots */}
+        {plotType == "volume" && <>
+          <DataCube volTexture={texture}/>
+          <UVCube ZarrDS={ZarrDS} />
+        </>}
+        {/* Point Clouds */}
+        {plotType == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
 
-            {/* Volume Plots */}
-            {plotType == "volume" && <>
-            <DataCube volTexture={texture}/>
-            <UVCube ZarrDS={ZarrDS} />
-            </>}
-            {/* Point Clouds */}
-            {plotType == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
-
-            <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={false}
-            maxDistance={50}
-            />
-        </Canvas>
+        <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={false}
+          maxDistance={50}
+        />
+      </Canvas>
     </div>
   )
 }

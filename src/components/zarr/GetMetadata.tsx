@@ -1,21 +1,5 @@
 import * as zarr from "zarrita";
-
-interface ZarrMetadata {
-    name: string;
-    shape: number[];
-    chunks: number[];
-    dtype: string;
-    totalSize: number;  // in bytes
-    totalSizeFormatted: string;  // human readable
-    chunkCount: number;
-    chunkSize: number;  // in bytes
-    chunkSizeFormatted: string;  // human readable
-}
-
-interface ZarrItem {
-    path: `/${string}`;
-    kind: "group" | "array";
-}
+import { ZarrMetadata, ZarrItem } from "./Interfaces";
 
 function formatBytes(bytes: number): string {
     const units = ["bytes", "KB", "MB", "GB", "TB", "PB"];

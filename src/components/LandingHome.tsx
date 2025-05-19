@@ -13,14 +13,17 @@ import { Metadata, ShowAnalysis, Loading } from '@/components/ui';
 import { useGlobalStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { PaneStore } from '@/components/zarr/PaneStore';
+import WelcomeText from '@/components/WelcomeText';
+
 // import { PaneManager } from '@/components/PaneManager';
 
 export function LandingHome() {
   const { bgcolor, fullmetadata, variables} = DataStores();
-  const [settings, setSettings] = useState({ variable: 'Default', plotType: 'volume', cmap: 'Spectral', flipCmap: false });
+  const [settings, setSettings] = useState({plotType: 'volume', cmap: 'Spectral', flipCmap: false });
   const initStore = useGlobalStore(useShallow(state=>state.initStore))
   
   const ZarrDS = useMemo(() => new ZarrDataset(initStore), [initStore])
+  const variable = useGlobalStore((state) => state.variable);
 
   const setColormap = useGlobalStore(state=>state.setColormap)
   const metadata = useGlobalStore(state=>state.metadata)
@@ -35,13 +38,13 @@ export function LandingHome() {
 
   useEffect(()=>{
     setColormap(GetColorMapTexture(colormap, settings.cmap, 1, "#000000", 0, settings.flipCmap));
-  },[settings.cmap,  colormap, settings.flipCmap])
+  },[settings.cmap,  colormap, settings.flipCmap, setColormap])
 
   //These values are passed to the Plot Component
   const plotObj = {
       plotType: settings.plotType,
       ZarrDS,
-      variable: settings.variable,
+      variable,
       bgcolor,
       canvasWidth
   }
@@ -55,17 +58,22 @@ export function LandingHome() {
       canvasWidth,
     }
   }
-
+  
   return (
     <>
       {/* <PaneManager /> */}
       <PaneStore variablesPromise={variables} onSettingsChange={setSettings} />
-
       {canvasWidth < 10 && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} canvasWidth={canvasWidth} />}
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
     {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}
-    <Plot values={plotObj} setShowLoading={setShowLoading} />
+    {variable === "Default" ? (
+        <WelcomeText 
+          variablesPromise={fullmetadata} 
+        />
+      ) : (
+        <Plot values={plotObj} setShowLoading={setShowLoading} />
+      )}
     {metadata && <Metadata data={metadata} /> }
     {timeSeries.length > 2 && <PlotArea />}
     </>
