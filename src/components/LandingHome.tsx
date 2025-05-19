@@ -57,7 +57,15 @@ export function LandingHome() {
       canvasWidth,
     }
   }
-  console.log(fullmetadata)
+  // Handler for variable selection from WelcomeText
+  const handleVariableSelect = (variableName: string) => {
+    setSettings(prev => ({
+      ...prev,
+      variable: variableName
+    }));
+    console.log(settings.variable)
+  };
+  
   return (
     <>
       {/* <PaneManager /> */}
@@ -67,8 +75,13 @@ export function LandingHome() {
     <Loading showLoading={showLoading} />
     {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}
     {settings.variable === "Default" ? (
-            <WelcomeText variablesPromise={variables} />
-          ) : ( <Plot values={plotObj} setShowLoading={setShowLoading} />)}
+        <WelcomeText 
+          variablesPromise={fullmetadata} 
+          onVariableSelect={handleVariableSelect} // Pass the handler
+        />
+      ) : (
+        <Plot values={plotObj} setShowLoading={setShowLoading} />
+      )}
     {metadata && <Metadata data={metadata} /> }
     {timeSeries.length > 2 && <PlotArea />}
     </>

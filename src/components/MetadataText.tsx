@@ -1,22 +1,11 @@
 import { useState, useRef } from 'react'
 import { useCursor, RoundedBox, Text, Edges } from '@react-three/drei'
 import { Group } from 'three'
-
-interface MetadataInfo {
-  name: string;
-  shape: string | number[];
-  chunks: string | number[];
-  dtype: string;
-  totalSize: number;
-  totalSizeFormatted: string;
-  chunkCount: number;
-  chunkSize: number;
-  chunkSizeFormatted: string;
-}
+import { ZarrMetadata } from '@/components/zarr/Interfaces'
 
 interface MetadataTextProps {
   position?: [number, number, number];
-  metadata: MetadataInfo;
+  metadata: ZarrMetadata;
   fontSize?: number;
   maxWidth?: number;
   textColor?: string;
@@ -32,7 +21,7 @@ export default function MetadataText({
   fontSize = 0.15,
   maxWidth = 2.85,
   textColor = 'white',
-  backgroundColor = '#222831',
+  backgroundColor = '#292b32',
   hoverColor = '#1e1e1e',
   viewHoverColor = 'gold',
   onViewClick = () => {},
@@ -90,7 +79,7 @@ chunk size: ${metadata.chunkSizeFormatted}
           roughness={0.3}
         />
         {hovered && (
-          <Edges scale={1.0} threshold={20} color={viewHoverColor} />
+          <Edges scale={1.0} threshold={20} color={viewHoverColor} lineWidth={0.0} />
         )}
       </RoundedBox>
       {/* Foreground text */}
@@ -105,10 +94,10 @@ chunk size: ${metadata.chunkSizeFormatted}
       >
         {content}
       </Text>
-      {/* Top-right "View" button */}
-      <group position={[width - 0.27, -0.1, -0.0]}>
+      {/* middle-right "View" button */}
+      <group position={[width -0.55, -1.2, -0.0]}>
         <RoundedBox
-          args={[0.45, 0.2, 0.02]}
+          args={[0.9, 0.35, 0.02]}
           radius={0.025}
           smoothness={1}
           onClick={handleViewClick}
@@ -118,11 +107,11 @@ chunk size: ${metadata.chunkSizeFormatted}
           }}
           onPointerOut={() => setViewHovered(false)}
         >
-          <meshStandardMaterial color={viewHovered ? 'white' : 'gold'} metalness={0.3} roughness={0.3} />
+          <meshStandardMaterial color={viewHovered ? 'gold' : 'white'} metalness={0} roughness={0.1} />
         </RoundedBox>
         <Text
-          position={[0.075, 0.025, 0.011]}
-          fontSize={0.1}
+          position={[0.2, 0.02, 0.011]}
+          fontSize={0.16}
           color="#222831"
           anchorX="center"
           anchorY="middle"
