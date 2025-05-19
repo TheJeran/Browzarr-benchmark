@@ -19,10 +19,11 @@ import WelcomeText from '@/components/WelcomeText';
 
 export function LandingHome() {
   const { bgcolor, fullmetadata, variables} = DataStores();
-  const [settings, setSettings] = useState({ variable: 'Default', plotType: 'volume', cmap: 'Spectral', flipCmap: false });
+  const [settings, setSettings] = useState({plotType: 'volume', cmap: 'Spectral', flipCmap: false });
   const initStore = useGlobalStore(useShallow(state=>state.initStore))
   
   const ZarrDS = useMemo(() => new ZarrDataset(initStore), [initStore])
+  const variable = useGlobalStore((state) => state.variable);
 
   const setColormap = useGlobalStore(state=>state.setColormap)
   const metadata = useGlobalStore(state=>state.metadata)
@@ -37,13 +38,13 @@ export function LandingHome() {
 
   useEffect(()=>{
     setColormap(GetColorMapTexture(colormap, settings.cmap, 1, "#000000", 0, settings.flipCmap));
-  },[settings.cmap,  colormap, settings.flipCmap])
+  },[settings.cmap,  colormap, settings.flipCmap, setColormap])
 
   //These values are passed to the Plot Component
   const plotObj = {
       plotType: settings.plotType,
       ZarrDS,
-      variable: settings.variable,
+      variable,
       bgcolor,
       canvasWidth
   }
@@ -57,14 +58,6 @@ export function LandingHome() {
       canvasWidth,
     }
   }
-  // Handler for variable selection from WelcomeText
-  const handleVariableSelect = (variableName: string) => {
-    setSettings(prev => ({
-      ...prev,
-      variable: variableName
-    }));
-    console.log(settings.variable)
-  };
   
   return (
     <>
@@ -74,10 +67,9 @@ export function LandingHome() {
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
     {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}
-    {settings.variable === "Default" ? (
+    {variable === "Default" ? (
         <WelcomeText 
           variablesPromise={fullmetadata} 
-          onVariableSelect={handleVariableSelect} // Pass the handler
         />
       ) : (
         <Plot values={plotObj} setShowLoading={setShowLoading} />

@@ -4,10 +4,11 @@ import { createPaneContainer } from '@/components/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { colormaps } from '@/components/textures';
 import { getVariablesOptions } from '@/utils/HelperFuncs';
+import { useGlobalStore } from '@/utils/GlobalStates';
 
 interface PaneStoreProps {
     variablesPromise: Promise<string[]>;
-    onSettingsChange: (settings: { variable: string; plotType: string; cmap: string; flipCmap: boolean }) => void;
+    onSettingsChange: (settings: { plotType: string; cmap: string; flipCmap: boolean }) => void;
 }
 // This wrapper handles loading state
 export function PaneStore({ variablesPromise, onSettingsChange }: PaneStoreProps) {
@@ -25,7 +26,7 @@ export function PaneStore({ variablesPromise, onSettingsChange }: PaneStoreProps
 // This renders only when data is ready and uses hooks safely
 function PaneStoreLoaded({ optionsVariables, onSettingsChange }: { 
     optionsVariables: { text: string; value: string }[];
-    onSettingsChange: (settings: { variable: string; plotType: string; cmap: string; flipCmap: boolean }) => void;
+    onSettingsChange: (settings: { plotType: string; cmap: string; flipCmap: boolean }) => void;
 }) {
     const [flipCmap, setFlipCmap] = useState<boolean>(false)
     
@@ -35,7 +36,9 @@ function PaneStoreLoaded({ optionsVariables, onSettingsChange }: {
     })), []);
       
     const paneContainer = createPaneContainer('data-settings-pane');
-    const [variable, setVariable] = useState('Default');
+    const variable = useGlobalStore((state) => state.variable);
+    const setVariable = useGlobalStore((state) => state.setVariable);
+    
     const pane = useTweakpane(
         {
             varName: 'Default',
@@ -53,7 +56,7 @@ function PaneStoreLoaded({ optionsVariables, onSettingsChange }: {
         index: 0,
         label: 'Variable',
         options: optionsVariables,
-        value: 'Default',
+        value: variable,
     }, (event) => {
         setVariable(event.value);
     });
@@ -67,7 +70,7 @@ function PaneStoreLoaded({ optionsVariables, onSettingsChange }: {
                 pane.current.instance.refresh();
             }
         }
-    }, [optionsVariables, variable, pane]);
+    }, [optionsVariables, variable, setVariable, pane]);
 
     const [plotType] = usePaneInput(pane, 'plottype', {
         label: 'Plot type',
@@ -89,8 +92,8 @@ function PaneStoreLoaded({ optionsVariables, onSettingsChange }: {
     }, () => setFlipCmap(x => !x));
 
     useEffect(() => {
-        onSettingsChange({ variable, plotType, cmap, flipCmap });
-    }, [variable, plotType, cmap, flipCmap, onSettingsChange]);
+        onSettingsChange({ plotType, cmap, flipCmap });
+    }, [plotType, cmap, flipCmap, onSettingsChange]);
 
     return null;
 }

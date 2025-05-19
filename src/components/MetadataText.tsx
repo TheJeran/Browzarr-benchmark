@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { useCursor, RoundedBox, Text, Edges } from '@react-three/drei'
 import { Group } from 'three'
 import { ZarrMetadata } from '@/components/zarr/Interfaces'
+import { useGlobalStore } from '@/utils/GlobalStates' // Import global store
 
 interface MetadataTextProps {
   position?: [number, number, number];
@@ -31,9 +32,12 @@ export default function MetadataText({
   const [viewHovered, setViewHovered] = useState(false)
   useCursor(viewHovered)
 
+  const setVariable = useGlobalStore((state) => state.setVariable) // Access the global setter
+
   const handleViewClick = (e: any) => {
     e.stopPropagation()
     if (onViewClick) onViewClick(metadata.name)
+    setVariable(metadata.name) // Update global variable here
   }
 
   const formatArray = (value: string | number[]): string => {
@@ -52,23 +56,25 @@ chunk size: ${metadata.chunkSizeFormatted}
 `.trim()
 
   const padding = 0.1
-  // Estimate dimensions based on fontSize and maxWidth
   const width = maxWidth
   const lineCount = content.split('\n').length
   const height = fontSize * lineCount * 1.4
-  // console.log(height)
+
   return (
     <group
       ref={groupRef}
       position={position}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
       onPointerOver={(e) => {
         e.stopPropagation()
         setHovered(true)
       }}
       onPointerOut={() => setHovered(false)}
     >
+
       <RoundedBox
-        args={[width, height + 2*padding, 0.01]}
+        args={[width, height + 2 * padding, 0.01]}
         radius={0.025}
         smoothness={2}
         position={[width / 2, -height / 2, -0.03]}
@@ -95,12 +101,12 @@ chunk size: ${metadata.chunkSizeFormatted}
         {content}
       </Text>
       {/* middle-right "View" button */}
-      <group position={[width -0.55, -1.2, -0.0]}>
+      <group position={[width - 0.55, -1.2, -0.0]}>
         <RoundedBox
           args={[0.9, 0.35, 0.02]}
           radius={0.025}
           smoothness={1}
-          onClick={handleViewClick}
+          onClick={handleViewClick} // Calls `setVariable`
           onPointerOver={(e) => {
             e.stopPropagation()
             setViewHovered(true)

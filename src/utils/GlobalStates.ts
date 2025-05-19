@@ -30,6 +30,7 @@ type StoreState = {
   plotDim: number;
   flipY:boolean;
   initStore:string;
+  variable: string;
 
   setShape: (shape: THREE.Vector3) => void;
   setValueScales: (valueScales: { maxVal: number; minVal: number }) => void;
@@ -45,6 +46,8 @@ type StoreState = {
   setPlotDim: (plotDim: number) => void;
   setFlipY: (flipY:boolean) => void;
   setInitStore: (initStore:string ) => void;
+  setVariable: (variable: string) => void;
+
 };
 
 export const useGlobalStore = create<StoreState>((set) => ({
@@ -62,6 +65,7 @@ export const useGlobalStore = create<StoreState>((set) => ({
   plotDim: 0,
   flipY: false,
   initStore: "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr",
+  variable: 'Default',
 
   setShape: (shape) => set({ shape }),
   setValueScales: (valueScales) => set({ valueScales }),
@@ -76,5 +80,9 @@ export const useGlobalStore = create<StoreState>((set) => ({
   setDimCoords: (dimCoords) => set({ dimCoords }),
   setPlotDim: (plotDim) => set({ plotDim }),
   setFlipY: (flipY) => set({ flipY }),
-  setInitStore: (initStore) => set({ initStore })
+  setInitStore: (initStore) => set({ initStore }),
+  setVariable: (variable) => {
+    console.log('✅ setting variable:', variable)
+    set({ variable })
+  },
 }));
