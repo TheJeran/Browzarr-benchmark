@@ -14,6 +14,7 @@ import { useGlobalStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { PaneStore } from '@/components/zarr/PaneStore';
 import WelcomeText from '@/components/WelcomeText';
+import useCSSVariable from '@/components/ui/useCSSVariable';
 
 // import { PaneManager } from '@/components/PaneManager';
 
@@ -29,6 +30,9 @@ export function LandingHome() {
   const metadata = useGlobalStore(state=>state.metadata)
   const {colormap, timeSeries} = useGlobalStore(useShallow(state=>({colormap:state.colormap, timeSeries:state.timeSeries})))
   const [showLoading, setShowLoading] = useState<boolean>(false);
+  const textColor = useCSSVariable('--foreground');
+  const fogColor = useCSSVariable('--background');
+
 
   //Timeseries Plotting Information
   const [canvasWidth, setCanvasWidth] = useState<number>(0)
@@ -69,7 +73,9 @@ export function LandingHome() {
     {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}
     {variable === "Default" ? (
         <WelcomeText 
-          variablesPromise={fullmetadata} 
+          variablesPromise={fullmetadata}
+          fogColor={fogColor}
+          textColor={textColor}
         />
       ) : (
         <Plot values={plotObj} setShowLoading={setShowLoading} />
