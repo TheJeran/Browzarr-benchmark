@@ -1,5 +1,5 @@
 import * as zarr from "zarrita";
-import { ZarrMetadata, ZarrItem } from "./Interfaces";
+import { ZarrMetadata, ZarrItem, ZarrTitleDescription } from "./Interfaces";
 
 function formatBytes(bytes: number): string {
     const units = ["bytes", "KB", "MB", "GB", "TB", "PB"];
@@ -42,7 +42,6 @@ function calculateChunkCount(shape: number[], chunks: number[]): number {
 export async function GetZarrMetadata(groupStore: Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>): Promise<ZarrMetadata[]> {
 
     const group = await groupStore
-    
     const contents = ('contents' in group.store) ? group.store.contents() as ZarrItem[] : [];
     const variables: ZarrMetadata[] = [];
 
@@ -87,7 +86,7 @@ export function GetSize(outVar: any){
 
 // Common coordinate variable names to filter out
 const COORDINATE_VARS = [
-    'longitude', 'lat', 'lon', 'time', 
+    'longitude', 'latitude', 'lat', 'lon', 'time', 
     'depth', 'height', 'altitude',
     'x', 'y', 'z', 't',
     'level'
@@ -105,4 +104,10 @@ export async function GetVariableNames(variables: Promise<ZarrMetadata[]>): Prom
         .map(variable => variable.name)
         .sort((a, b) => a.localeCompare(b));
 }
-// export const zarrMetadata = await GetZarrMetadata("https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr")
+
+export async function GetTitleDescription(groupStore: Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>): Promise<ZarrTitleDescription> {
+    const group = await groupStore;
+    const description = 'attrs' in group ? ('description' in group.attrs ? String(group.attrs.description) : '') : '';
+    const title = 'attrs' in group ? ('title' in group.attrs ? String(group.attrs.title) : '') : '';
+    return { title, description };
+}

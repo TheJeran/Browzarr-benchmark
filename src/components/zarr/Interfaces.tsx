@@ -10,6 +10,11 @@ export interface ZarrMetadata {
     chunkSizeFormatted: string;  // human readable
 }
 
+export interface ZarrTitleDescription {
+    title: string;
+    description: string;
+}
+
 export interface ZarrItem {
     path: `/${string}`;
     kind: "group" | "array";
