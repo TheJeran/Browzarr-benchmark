@@ -10,6 +10,7 @@ import { ZarrMetadata } from "@/components/zarr/Interfaces";
 function Word({
   position,
   text,
+  textColor,
   isActive,
   isDimmed,
   isHovered,
@@ -18,6 +19,7 @@ function Word({
 }: {
   position: [number, number, number],
   text: string | ZarrMetadata,
+  textColor: string,
   isActive: boolean,
   isDimmed: boolean,
   isHovered: boolean,
@@ -32,7 +34,7 @@ function Word({
     if (ref.current) {
       const material = ref.current.material as THREE.MeshBasicMaterial
       if (material?.color) {
-        const baseColor = isHovered ? 'orange' : 'white'
+        const baseColor = isHovered ? 'orange' : textColor
         material.color.lerp(color.set(baseColor), 0.5)
         material.opacity = isDimmed ? 0.65 : 1
         material.transparent = true
@@ -74,9 +76,11 @@ function Word({
 function Cloud({ 
   variables, 
   radius = 20,
+  textColor,
 }: { 
   variables: string[] | ZarrMetadata[]; 
   radius?: number;
+  textColor: string;
 }) {
   const [hoveredWord, setHoveredWord] = useState<string | ZarrMetadata | null>(null);
   const [selectedWord, setSelectedWord] = useState<string | ZarrMetadata | null>(null);
@@ -117,6 +121,7 @@ function Cloud({
           key={index}
           position={[pos.x, pos.y, pos.z]}
           text={word}
+          textColor={textColor}
           isActive={selectedWord === word}
           isDimmed={selectedWord !== null && selectedWord !== word}
           isHovered={hoveredWord === word}
@@ -133,8 +138,12 @@ function Cloud({
 
 export default function WelcomeText({ 
   variablesPromise, 
+  fogColor,
+  textColor,
 }: { 
   variablesPromise: Promise<string[]> | Promise<ZarrMetadata[]>;
+  fogColor: string;
+  textColor: string;
 }) {
   const [variables, setVariables] = useState<string[] | ZarrMetadata[]>([]);
 
@@ -154,12 +163,13 @@ export default function WelcomeText({
           minDistance={85}
           maxDistance={100}
         />
-        <fog attach="fog" args={['grey', 0, 100]} />
+        <fog attach="fog" args={[fogColor, 0, 150]} />
         <ambientLight intensity={2} />
         <Suspense fallback={null}>
           <Cloud 
             variables={variables} 
             radius={60} 
+            textColor={textColor}
           />
         </Suspense>
         <Environment preset="sunset" />

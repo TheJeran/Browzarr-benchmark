@@ -13,6 +13,7 @@ import ThemeSwitch from "./ThemeSwitch";
 import { createPaneContainer } from "./paneContainer";
 import ShowAnalysis from "./ShowAnalysis";
 import { Loading } from "./Loading";
+import useCSSVariable from "./useCSSVariable";
 export {
   Navbar,
   Footer,
@@ -29,5 +30,6 @@ export {
   createPaneContainer,
   MiddleSlider,
   ShowAnalysis,
-  Loading
+  Loading,
+  useCSSVariable
 };
