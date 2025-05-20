@@ -23,7 +23,6 @@ export async function GetStore(storePath: string): Promise<zarr.Group<zarr.Fetch
         const d_store = zarr.tryWithConsolidated(
             new zarr.FetchStore(storePath)
         );
-		// console.log(d_store.then(store => store.get('/.zmetadata/.zattrs')))
         const gs = await d_store.then(store => zarr.open(store, {kind: 'group'}));
         return gs;
     } catch (error) {
