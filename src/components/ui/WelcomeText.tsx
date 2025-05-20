@@ -4,7 +4,7 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { Billboard, Text } from '@react-three/drei'
 import { Environment, OrbitControls } from '@react-three/drei'
 
-import MetadataText from '@/components/MetadataText'
+import MetadataText from '@/components/zarr/MetadataText'
 import { ZarrMetadata } from "@/components/zarr/Interfaces";
 
 function Word({
@@ -27,7 +27,7 @@ function Word({
   onClick: (e: any) => void
 }) {
   const color = new THREE.Color()
-  const fontProps = { fontSize: 2.5, letterSpacing: -0.05, lineHeight: 1 }
+  const fontProps = { fontSize: 2.25, letterSpacing: 0.015, lineHeight: 1 }
   const ref = useRef<THREE.Mesh>(null)
 
   useFrame(() => {
@@ -137,10 +137,14 @@ function Cloud({
 }
 
 export default function WelcomeText({ 
+  title,
+  description,
   variablesPromise, 
   fogColor,
   textColor,
-}: { 
+}: {
+  title: string;
+  description: string;
   variablesPromise: Promise<string[]> | Promise<ZarrMetadata[]>;
   fogColor: string;
   textColor: string;
@@ -153,12 +157,16 @@ export default function WelcomeText({
 
   return (
     <div className="canvas">
+      <div className="canvas-title">
+        <h1>{title}</h1>
+        <p>{description}</p>
+      </div>
       <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 100], fov: 90 }}>
         <OrbitControls
           enablePan={false}
           enableRotate={true}
           enableZoom={true}
-          minAzimuthAngle={0}  
+          minAzimuthAngle={0}
           maxAzimuthAngle={0}
           minDistance={85}
           maxDistance={100}
@@ -168,7 +176,7 @@ export default function WelcomeText({
         <Suspense fallback={null}>
           <Cloud 
             variables={variables} 
-            radius={60} 
+            radius={50} 
             textColor={textColor}
           />
         </Suspense>

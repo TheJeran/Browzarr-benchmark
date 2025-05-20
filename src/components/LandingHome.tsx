@@ -2,7 +2,7 @@
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { DataStores } from '@/components/zarr/DataStores'
-import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU';
+import { ZarrDataset, GetStore } from '@/components/zarr/ZarrLoaderLRU';
 import { useState } from 'react';
 
 import { useEffect, useMemo } from 'react';
@@ -13,8 +13,9 @@ import { Metadata, ShowAnalysis, Loading } from '@/components/ui';
 import { useGlobalStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { PaneStore } from '@/components/zarr/PaneStore';
-import WelcomeText from '@/components/WelcomeText';
+import WelcomeText from '@/components/ui/WelcomeText';
 import useCSSVariable from '@/components/ui/useCSSVariable';
+import { GetTitleDescription } from '@/components/zarr/GetMetadata';
 
 // import { PaneManager } from '@/components/PaneManager';
 
@@ -25,6 +26,17 @@ export function LandingHome() {
   
   const ZarrDS = useMemo(() => new ZarrDataset(initStore), [initStore])
   const variable = useGlobalStore((state) => state.variable);
+  const [titleDescription, setTitleDescription] = useState<{ title?: string; description?: string }>({});
+
+  useEffect(() => {
+    let isMounted = true;
+    GetTitleDescription(GetStore(initStore)).then((result) => {
+      if (isMounted) setTitleDescription(result);
+    });
+    return () => { isMounted = false; };
+  }, [initStore]);
+
+  const { title, description } = titleDescription;
 
   const setColormap = useGlobalStore(state=>state.setColormap)
   const metadata = useGlobalStore(state=>state.metadata)
@@ -72,7 +84,9 @@ export function LandingHome() {
     <Loading showLoading={showLoading} />
     {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}
     {variable === "Default" ? (
-        <WelcomeText 
+        <WelcomeText
+          title={title ?? ''}
+          description={description ?? ''}
           variablesPromise={fullmetadata}
           fogColor={fogColor}
           textColor={textColor}
