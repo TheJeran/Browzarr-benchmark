@@ -314,8 +314,8 @@ a[href]:hover::after {
 
 .loading{
   position: fixed;
-  top: calc(0.5rem + 0px);
-  right: calc(5rem + 28px);
+  top: 50%;
+  right: 50%;
   z-index: 5;
   background-color: var(--background-plot);
   color: var(--text-plot);
@@ -325,6 +325,7 @@ a[href]:hover::after {
   display: flex;
   align-items: center;
   gap: 6px;
+  transform: translate(50%, 50%);
 }
 
 .loading::after {

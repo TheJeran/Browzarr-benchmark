@@ -1,14 +1,16 @@
-import React, {useMemo, useState, useEffect} from 'react'
+import React, {useMemo} from 'react'
 import './Plots.css'
 import { useGlobalStore } from '@/utils/GlobalStates'
+import { useShallow } from 'zustand/shallow'
+import { parseLoc } from '@/utils/HelperFuncs'
 
 
 const AnalysisInfo = ({loc, show, info, plotDim} : {loc: number[], show: boolean, info: number[], plotDim: number}) => {
-    const dimNames = useGlobalStore(state=>state.dimNames)
+    const {dimNames, dimUnits} = useGlobalStore(useShallow(state=>({dimNames: state.dimNames, dimUnits: state.dimUnits})))
 
-    const plotNames = useMemo(()=>dimNames.filter((val,idx)=> idx != plotDim),[dimNames, plotDim])
-
-
+    const plotNames = useMemo(()=>dimNames.filter((_val,idx)=> idx != plotDim),[dimNames, plotDim])
+    const plotUnits = useMemo(()=>dimUnits.filter((_val,idx)=> idx != plotDim),[dimNames, plotDim])
+    
   return (
     <div className='analysis-info'
         style={{
@@ -17,9 +19,9 @@ const AnalysisInfo = ({loc, show, info, plotDim} : {loc: number[], show: boolean
             display: show ? '' : 'none'
         }}
     >
-        {`${plotNames[0]}: ${info[1]}`}<br/>
-        {`${plotNames[1]}: ${info[0]}`}<br/>
-
+        {`${plotNames[0]}: ${parseLoc(info[0],plotUnits[0])}`}<br/>
+        {`${plotNames[1]}: ${parseLoc(info[1],plotUnits[1])}`}<br/>
+        {`Value: ${Math.round(info[2] * 100)/100}`}
     </div>
     )
 }
