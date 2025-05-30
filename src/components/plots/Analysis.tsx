@@ -68,6 +68,7 @@ function AnalysisLoaded({ values, optionsVariables }: {
     const [showInfo, setShowInfo] = useState<boolean>(false)
     const [loc, setLoc] = useState<number[]>([0,0])
     const [uv, setUV] = useState<number[]>([0,0])
+    const [val, setVal] = useState<number>(0);
     const [xCoord, setXCoord] = useState<number>(0)
     const [yCoord, setYCoord] = useState<number>(0)
 
@@ -222,44 +223,47 @@ function AnalysisLoaded({ values, optionsVariables }: {
     }
 
   },[firstVar,secondVar])
-    useEffect(()=>{
-      if (dimArrays){
-      const timeout = setTimeout(() => {
-      const xSize = dimArrays[2].length;
-      const ySize = dimArrays[1].length;
-      const xIdx = Math.round(uv[0]*xSize-.5)
-      const yIdx = Math.round(uv[1]*ySize-.5)
-      setXCoord(dimArrays[2][xIdx])
-      setYCoord(dimArrays[1][yIdx])},100)
-      return ()=> clearTimeout(timeout)
-    }
-    },[uv])
+  const plotArrays = useMemo(()=>dimArrays.filter((_val,idx)=> idx != axis),[axis, dimArrays])
 
-    const valueScales = {
-      firstArray:{
-        maxVal,
-        minVal
-      },
-      secondArray:{
-        maxVal: maxVal2,
-        minVal: minVal2
-      }
+  //Get Info for Display
+  useEffect(()=>{
+    if (dimArrays){
+    const timeout = setTimeout(() => {
+    const xSize = plotArrays[1].length;
+    const ySize = plotArrays[0].length;
+    const xIdx = Math.round(uv[0]*xSize-.5)
+    const yIdx = Math.round(uv[1]*ySize-.5)
+    setXCoord(plotArrays[1][xIdx])
+    setYCoord(plotArrays[0][yIdx])},50)
+    return ()=> clearTimeout(timeout)
     }
-    const computeObj = {
-        stateVars,
-        valueScales
+  },[uv, plotArrays])
+
+  const valueScales = {
+    firstArray:{
+      maxVal,
+      minVal
+    },
+    secondArray:{
+      maxVal: maxVal2,
+      minVal: minVal2
     }
-    return (
-      <div className='analysis-canvas'
-        style={{
-          width:canvasWidth,
-          background:bgcolor
-        }}
+  }
+  const computeObj = {
+      stateVars,
+      valueScales
+  }
+  return (
+    <div className='analysis-canvas'
+      style={{
+        width:canvasWidth,
+        background:bgcolor
+      }}
       >      
-        <AnalysisInfo loc={loc} show={showInfo} info={[xCoord,yCoord]} plotDim={axis} />
+        <AnalysisInfo loc={loc} show={showInfo} info={[yCoord, xCoord, val]} plotDim={axis} />
         <Canvas camera={{ position: [0, 0, 50], zoom:400 }} orthographic>
           {/* <Perf position='bottom-left'/> */}
-          {array && <ComputeModule arrays={{firstArray: array, secondArray: array2}} values={computeObj} setters={{setShowInfo, setLoc, setUV}}/>}
+          {array && <ComputeModule arrays={{firstArray: array, secondArray: array2}} values={computeObj} setters={{setShowInfo, setLoc, setUV, setVal}}/>}
           <OrbitControls
             enablePan={true}
             enableRotate={false}

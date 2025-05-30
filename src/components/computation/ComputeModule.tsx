@@ -34,13 +34,18 @@ interface ComputeModule{
     setShowInfo:React.Dispatch<React.SetStateAction<boolean>>;
     setLoc:React.Dispatch<React.SetStateAction<number[]>>;
     setUV:React.Dispatch<React.SetStateAction<number[]>>;
+    setVal:React.Dispatch<React.SetStateAction<number>>;
   }
   
 }
 
+function Rescale(value: number, scales: {minVal: number, maxVal: number}){
+  const range = scales.maxVal-scales.minVal
+  return value * range + scales.minVal
+}
 
 const ComputeModule = ({arrays,values, setters}:ComputeModule) => {
-  const {setShowInfo, setLoc, setUV} = setters;
+    const {setShowInfo, setLoc, setUV, setVal} = setters;
     const {colormap, flipY} = useGlobalStore(useShallow(state=>({colormap:state.colormap, flipY:state.flipY})))
     const {stateVars,valueScales} = values
     const {firstArray, secondArray} = arrays;
@@ -49,6 +54,7 @@ const ComputeModule = ({arrays,values, setters}:ComputeModule) => {
     const [planeShape,setPlaneShape] = useState<number[]>(shape.filter((_val,idx)=> idx !== axis))
     const {gl} = useThree()
     const infoRef = useRef<boolean>(false)
+    const dataArray = useRef<Float32Array>(new Float32Array(0));
 
     const GPUCompute = useMemo(() => {
       return secondArray 
@@ -69,25 +75,26 @@ const ComputeModule = ({arrays,values, setters}:ComputeModule) => {
         side: THREE.DoubleSide,
     })
 
+
     useEffect(()=>{
       if (firstArray){
-        let newText: THREE.Texture | null;
+        let newText: THREE.Texture | null = null;
         if (secondArray && GPUCompute instanceof TwoArrayCompute){
           newText = GPUCompute.Correlate(axis);
         }
         else{
           switch(operation){
             case "Max":
-              newText = GPUCompute instanceof OneArrayCompute ? GPUCompute.Max(axis) : null;
+              [newText, dataArray.current] = GPUCompute instanceof OneArrayCompute ? GPUCompute.Max(axis) : [null, dataArray.current];
               break
             case "Min":
-              newText = GPUCompute instanceof OneArrayCompute ? GPUCompute.Min(axis) : null;
+              [newText, dataArray.current] = GPUCompute instanceof OneArrayCompute ? GPUCompute.Min(axis) : [null, dataArray.current];
               break
             case "Mean":
-              newText = GPUCompute instanceof OneArrayCompute ? GPUCompute.Mean(axis) : null;
+              [newText, dataArray.current] = GPUCompute instanceof OneArrayCompute ? GPUCompute.Mean(axis) : [null, dataArray.current];
               break
             case "StDev":
-              newText = GPUCompute instanceof OneArrayCompute ? GPUCompute.StDev(axis) : null;
+              [newText, dataArray.current] = GPUCompute instanceof OneArrayCompute ? GPUCompute.StDev(axis) : [null, dataArray.current];
               break;
             default:
               newText = texture;
@@ -97,9 +104,10 @@ const ComputeModule = ({arrays,values, setters}:ComputeModule) => {
         setTexture(newText)
         setPlaneShape(shape.filter((_val,idx)=> idx !== axis))
       }
-    },[execute])
+    },[execute, axis])
 
     const shapeRatio = useMemo(()=>flipY ? planeShape[0]/planeShape[1]*-2 : planeShape[0]/planeShape[1]*2,[flipY,planeShape])
+
     useEffect(()=>{
       if(GPUCompute){
         GPUCompute.dispose()
@@ -119,9 +127,14 @@ const handleMove = useCallback((e: ThreeEvent<PointerEvent>) => {
         if (eventRef.current) {
           setLoc([eventRef.current.clientX, eventRef.current.clientY]);
           // @ts-expect-error: uv is not defined ?
-          setUV([eventRef.current.uv.x, eventRef.current.uv.y]);
+          const {x, y} = eventRef.current.uv
+          setUV([x, y]);
+          const yStep = Math.round(planeShape[0]* y)
+          const xStep = Math.round(planeShape[1] * x)
+          const dataIdx = planeShape[1] * yStep + xStep
+          const dataVal = dataArray.current[dataIdx * 4]
+          setVal(Rescale(dataVal,valueScales.firstArray)) 
         }
-
         timerRef.current = null; // Reset the timer
       }, 50); // 0.1s delay
     }
@@ -139,6 +152,7 @@ const handleMove = useCallback((e: ThreeEvent<PointerEvent>) => {
       onPointerLeave={()=>{setShowInfo(false); infoRef.current = false }}
       onPointerMove={handleMove}
       geometry={geometry}
+      rotation={[0,0,axis == 2 ? Math.PI/2 : 0]}
     >
     </mesh>
   )

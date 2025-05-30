@@ -47,6 +47,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
 
     const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
     const [currentBg, setCurrentBg] = useState(bgcolor || 'var(--background)')
+    const [show, setShow] = useState<boolean>(true)
     
     const [windowWidth, setWindowWidth] = useState<number>(0);
 
@@ -83,6 +84,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
   useEffect(() => {
     if (variable != "Default") {
       setShowLoading(true);
+      setShow(false)
       //Need to add a check somewhere here to swap to 2D or 3D based on shape. Probably export two variables from GetArray
       ZarrDS.GetArray(variable).then((result) => {
         // result now contains: { data: TypedArray, shape: number[], dtype: string }
@@ -107,6 +109,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         const shapeRatio = result.shape[1] / result.shape[2] * 2;
         setShape(new THREE.Vector3(2, shapeRatio, 2));
         setShowLoading(false)
+        setShow(true)
       })
       //Get Metadata
       ZarrDS.GetAttributes(variable).then((result)=>{
@@ -152,12 +155,12 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         }}
       >
         {/* Volume Plots */}
-        {plotType == "volume" && <>
+        {plotType == "volume" && show && <>
           <DataCube volTexture={texture}/>
           <UVCube ZarrDS={ZarrDS} />
         </>}
         {/* Point Clouds */}
-        {plotType == "point-cloud" && <PointCloud textures={{texture,colormap}} />}
+        {plotType == "point-cloud" && show && <PointCloud textures={{texture,colormap}} />}
 
         <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={false}
           maxDistance={50}

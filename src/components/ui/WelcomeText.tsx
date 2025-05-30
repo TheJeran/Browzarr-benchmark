@@ -188,7 +188,7 @@ export default function WelcomeText({
         <CameraController/>
         <OrbitControls
           enablePan={false}
-          enableRotate={false}
+          enableRotate={true}
           enableZoom={false}
           minAzimuthAngle={0}
           maxAzimuthAngle={0}

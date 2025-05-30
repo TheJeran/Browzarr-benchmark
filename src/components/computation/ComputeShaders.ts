@@ -51,7 +51,7 @@ export class OneArrayCompute{
         this.renderTarget.texture.magFilter = THREE.NearestFilter;
         this.renderTarget.texture.needsUpdate = true;
     }
-    private performReduction(axis: number, fragShader: any): THREE.Texture {
+    private performReduction(axis: number, fragShader: any): [THREE.Texture, Float32Array] {
         if (axis != this.targetAxis) {
             this.initAxis(axis);
         }
@@ -61,23 +61,25 @@ export class OneArrayCompute{
         reducer.material.uniforms["axis"] = { value: this.targetAxis };
         
         this.GPUCompute.doRenderTarget(reducer.material, this.renderTarget);
-        return this.renderTarget.texture;
+        const pixelBuffer = new Float32Array(this.renderTarget.width * this.renderTarget.height * 4)
+        this.renderer.readRenderTargetPixels(this.renderTarget, 0, 0, this.renderTarget.width, this.renderTarget.height, pixelBuffer)
+        return [this.renderTarget.texture, pixelBuffer];
     }
 
-    Mean(axis: number): THREE.Texture {
+    Mean(axis: number): [THREE.Texture, Float32Array] {
         const result = this.performReduction(axis, MeanFrag);
         return result;
     }
     
-    Max(axis: number): THREE.Texture {
+    Max(axis: number): [THREE.Texture, Float32Array] {
         return this.performReduction(axis, MaxFrag);
     }
     
-    Min(axis: number): THREE.Texture {
+    Min(axis: number): [THREE.Texture, Float32Array] {
         return this.performReduction(axis, MinFrag);
     }
     
-    StDev(axis: number): THREE.Texture {
+    StDev(axis: number): [THREE.Texture, Float32Array] {
         return this.performReduction(axis, StDevFrag);
     }
 
