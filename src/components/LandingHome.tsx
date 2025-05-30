@@ -25,7 +25,6 @@ export function LandingHome() {
   const initStore = useGlobalStore(useShallow(state=>state.initStore))
   
   const ZarrDS = useMemo(() => new ZarrDataset(initStore), [initStore])
-  const variable = useGlobalStore((state) => state.variable);
   const [titleDescription, setTitleDescription] = useState<{ title?: string; description?: string }>({});
 
   useEffect(() => {
@@ -40,7 +39,7 @@ export function LandingHome() {
 
   const setColormap = useGlobalStore(state=>state.setColormap)
   const metadata = useGlobalStore(state=>state.metadata)
-  const {colormap, timeSeries} = useGlobalStore(useShallow(state=>({colormap:state.colormap, timeSeries:state.timeSeries})))
+  const {colormap, timeSeries, variable} = useGlobalStore(useShallow(state=>({colormap:state.colormap, timeSeries:state.timeSeries, variable:state.variable})))
   const [showLoading, setShowLoading] = useState<boolean>(false);
   const textColor = useCSSVariable('--foreground');
   const fogColor = useCSSVariable('--background');
@@ -79,7 +78,7 @@ export function LandingHome() {
     <>
       {/* <PaneManager /> */}
       <PaneStore variablesPromise={variables} onSettingsChange={setSettings} />
-      {canvasWidth < 10 && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} canvasWidth={canvasWidth} />}
+      {canvasWidth < 10 && variable != "Default" && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} canvasWidth={canvasWidth} />}
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
     {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}

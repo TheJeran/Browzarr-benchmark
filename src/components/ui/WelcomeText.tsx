@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { useRef, useState, useMemo, useEffect, Suspense } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Billboard, Text } from '@react-three/drei'
 import { Environment, OrbitControls } from '@react-three/drei'
 
@@ -155,21 +155,43 @@ export default function WelcomeText({
     variablesPromise.then(setVariables).catch((err) => console.error('Failed to load variables', err));
   }, [variablesPromise]);
 
+  
+  function CameraController() {
+    const { camera } = useThree();
+    const angle = useRef<number>(0)
+
+    useEffect(() => {
+      const handleScroll = (event: any) => {
+        angle.current -=  event.deltaY * 0.0006; //The scaling value is arbitrary. I think it scrool smooth at this value but we can change
+        angle.current = Math.min(angle.current , Math.PI/2) //This is currently because it loops back. May change if we need more than half a circle
+        angle.current = Math.max(angle.current , -Math.PI/2)
+        camera.position.z = Math.cos(angle.current) * 85
+        camera.position.y = Math.sin(angle.current) * 85
+        camera.updateProjectionMatrix()
+      };
+
+      window.addEventListener("wheel", handleScroll);
+      return () => window.removeEventListener("wheel", handleScroll);
+    }, [camera]);
+
+    return null;
+  }
+
+
   return (
-    <div className="canvas">
+    <div className="canvas" >
       <div className="canvas-title">
         <h1>{title}</h1>
         <p>{description}</p>
       </div>
-      <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 100], fov: 90 }}>
+      <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 85], fov: 90 }} >
+        <CameraController/>
         <OrbitControls
           enablePan={false}
-          enableRotate={true}
-          enableZoom={true}
+          enableRotate={false}
+          enableZoom={false}
           minAzimuthAngle={0}
           maxAzimuthAngle={0}
-          minDistance={85}
-          maxDistance={100}
         />
         <fog attach="fog" args={[fogColor, 0, 150]} />
         <ambientLight intensity={2} />
