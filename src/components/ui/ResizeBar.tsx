@@ -3,12 +3,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import './css/ResizeBar.css'
 
-const MIN_HEIGHT = 100; // Minimum height in pixels
+const MIN_HEIGHT = 50; // Minimum height in pixels
 const KEYBOARD_STEP = 10; // Pixels to move per keypress
 
 const ResizeBar = ({height,setHeight}:{height:number,setHeight:React.Dispatch<React.SetStateAction<number>>}) => {
     const [isResizing, setIsResizing] = useState<boolean>(false);
-    const [maxHeight, setMaxHeight] = useState<number>(window.innerHeight - 100);
+    const [maxHeight, setMaxHeight] = useState<number>(window.innerHeight - MIN_HEIGHT);
     
     // Update max height on window resize
     useEffect(() => {
@@ -24,7 +24,7 @@ const ResizeBar = ({height,setHeight}:{height:number,setHeight:React.Dispatch<Re
     const updateHeight = useCallback((newHeight: number) => {
         requestAnimationFrame(() => {
             const boundedHeight = Math.min(Math.max(newHeight, MIN_HEIGHT), maxHeight);
-            setHeight(boundedHeight);
+            setHeight(newHeight);
         });
     }, [setHeight, maxHeight]);
     

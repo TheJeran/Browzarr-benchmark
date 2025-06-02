@@ -2,7 +2,7 @@ import { Canvas } from '@react-three/fiber'
 import { parseLoc } from '@/utils/HelperFuncs'
 import { PlotLine, FixedTicks } from '@/components/plots'
 import {  useEffect, useRef, useState } from 'react'
-import { ResizeBar, YScaler,XScaler } from '@/components/ui'
+import { ResizeBar, YScaler, XScaler, ShowLinePlot } from '@/components/ui'
 import './LinePlot.css'
 import { useGlobalStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
@@ -13,6 +13,7 @@ interface pointInfo{
   showPointInfo:boolean
   plotUnits:string
 }
+const MIN_HEIGHT = 10;
 
 function PointInfo({pointID,pointLoc,showPointInfo, plotUnits}:pointInfo){
 
@@ -96,6 +97,8 @@ function PointCoords(){
     };
   }, [moving]);
 
+
+
   return(
     <>
     { //Only show coords when coords exist
@@ -160,22 +163,27 @@ export function PlotArea() {
   useEffect(() => {
     document.documentElement.style.setProperty('--plot-height', `${height}px`);
   }, [height]);
-
+  const state = window.innerHeight-height >= MIN_HEIGHT;
   return (
-    <div className='plot-canvas'>
-      <PointInfo pointID={pointID} pointLoc={pointLoc} showPointInfo={showPointInfo} plotUnits={plotUnits}/>
-      <ResizeBar height={height} setHeight={setHeight}/> 
-      <YScaler scale={yScale} setScale={setYScale} />
-      <XScaler scale={xScale} setScale={setXScale} />
-      <Canvas
-      orthographic
-        camera={{ position: [0, 0, 40] }}
-        frameloop="demand"
-      >
-        <PlotLine height={height} pointSetters={pointSetters} yScale={yScale} xScale={xScale}/>
-        <FixedTicks height={height} yScale={yScale} xScale={xScale}/>
-      </Canvas>
-      <PointCoords/>
-    </div>
+    <>
+    {!state && <ShowLinePlot onClick={()=>{setHeight(window.innerHeight-(MIN_HEIGHT+50))}}/>}
+      {state && (
+        <div className='plot-canvas'>
+          <PointInfo pointID={pointID} pointLoc={pointLoc} showPointInfo={showPointInfo} plotUnits={plotUnits}/>
+          <ResizeBar height={height} setHeight={setHeight}/> 
+          <YScaler scale={yScale} setScale={setYScale} />
+          <XScaler scale={xScale} setScale={setXScale} />
+          <Canvas
+            orthographic
+            camera={{ position: [0, 0, 40] }}
+            frameloop="demand"
+          >
+            <PlotLine height={height} pointSetters={pointSetters} yScale={yScale} xScale={xScale}/>
+            <FixedTicks height={height} yScale={yScale} xScale={xScale}/>
+          </Canvas>
+          <PointCoords/>
+        </div>
+      )}
+    </>
   )
 }

@@ -14,6 +14,7 @@ import { createPaneContainer } from "./paneContainer";
 import ShowAnalysis from "./ShowAnalysis";
 import { Loading } from "./Loading";
 import useCSSVariable from "./useCSSVariable";
+import ShowLinePlot from "./ShowLinePlot";
 export {
   Navbar,
   Footer,
@@ -31,5 +32,6 @@ export {
   MiddleSlider,
   ShowAnalysis,
   Loading,
-  useCSSVariable
+  useCSSVariable,
+  ShowLinePlot
 };
