@@ -3,7 +3,7 @@
     bottom: 0px;
     left: 0;
     width: 100%;
-    top: var(--plot-height, 100px);
+    top: var(--plot-height, 50px);
     background: var(--background-plot);
     border-top: 1px solid var(--plot-border);
     box-shadow: 0 -2px 8px var(--modal-shadow);
