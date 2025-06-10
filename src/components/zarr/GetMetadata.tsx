@@ -59,7 +59,7 @@ export async function GetZarrMetadata(groupStore: Promise<zarr.Group<zarr.FetchS
 
             variables.push({
                 name: item.path.substring(1),
-                //@ts-expect-error
+                //@ts-expect-error It doesn't know this exists
                 long_name: array.attrs.long_name,
                 shape: array.shape,
                 chunks: array.chunks,
