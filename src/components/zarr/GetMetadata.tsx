@@ -46,9 +46,9 @@ export async function GetZarrMetadata(groupStore: Promise<zarr.Group<zarr.FetchS
     const variables: ZarrMetadata[] = [];
 
     for (const item of contents) {
+        
         if (item.path && item.path.length > 1 && item.kind === 'array') {
             const array = await zarr.open(group.resolve(item.path.substring(1)), {kind: "array"});
-
             const dtypeSize = getDtypeSize(array.dtype);
             const totalElements = calculateTotalElements(array.shape);
             const chunkCount = calculateChunkCount(array.shape, array.chunks);
@@ -59,6 +59,8 @@ export async function GetZarrMetadata(groupStore: Promise<zarr.Group<zarr.FetchS
 
             variables.push({
                 name: item.path.substring(1),
+                //@ts-expect-error It doesn't know this exists
+                long_name: array.attrs.long_name,
                 shape: array.shape,
                 chunks: array.chunks,
                 dtype: array.dtype,
