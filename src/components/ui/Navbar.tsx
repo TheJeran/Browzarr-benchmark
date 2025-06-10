@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { logoSeasFire } from "@/assets/index";
 import { AboutButton } from "@/components/ui";
 import ThemeSwitch  from "@/components/ui/ThemeSwitch";
 import logo from "@/app/logo.png"
@@ -46,7 +45,7 @@ const Navbar = () => {
             <DropdownMenuContent className="w-56" align="start">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuGroup>
-                <DropdownMenuItem>
+                <DropdownMenuItem >
                   Profile
                   <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                 </DropdownMenuItem>

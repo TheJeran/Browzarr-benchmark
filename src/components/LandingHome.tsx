@@ -13,7 +13,6 @@ import { Metadata, ShowAnalysis, Loading } from '@/components/ui';
 import { useGlobalStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { PaneStore } from '@/components/zarr/PaneStore';
-import WelcomeText from '@/components/ui/WelcomeText';
 import useCSSVariable from '@/components/ui/useCSSVariable';
 import { GetTitleDescription } from '@/components/zarr/GetMetadata';
 
@@ -82,20 +81,8 @@ export function LandingHome() {
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
     {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}
-    {/* {variable === "Default" ? (
-        <WelcomeText
-          title={title ?? ''}
-          description={description ?? ''}
-          variablesPromise={fullmetadata}
-          fogColor={fogColor}
-          textColor={textColor}
-        />
-      ) : (
-        <Plot values={plotObj} setShowLoading={setShowLoading} />
-      )} */}
-
-      
-    {variable === "Default" && <Plot values={plotObj} setShowLoading={setShowLoading} />}
+    {variable === "Default" && <VariableScroller vars={variables} zarrDS={ZarrDS}/>}
+    {variable != "Default" && <Plot values={plotObj} setShowLoading={setShowLoading} />}
     {metadata && <Metadata data={metadata} /> }
     {timeSeries.length > 2 && <PlotArea />}
     </>
