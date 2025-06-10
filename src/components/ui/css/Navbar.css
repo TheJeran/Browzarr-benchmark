@@ -40,3 +40,12 @@
 .navbar a:hover::after {
   width: 100%;
 }
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.nav-dropdown {
+  margin-left: 8px;
+}
