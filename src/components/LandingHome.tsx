@@ -4,7 +4,7 @@ THREE.Cache.enabled = true;
 import { DataStores } from '@/components/zarr/DataStores'
 import { ZarrDataset, GetStore } from '@/components/zarr/ZarrLoaderLRU';
 import { useState } from 'react';
-
+import VariableScroller from './ui/VariableScroller';
 import { useEffect, useMemo } from 'react';
 import { Analysis, PlotArea, Plot } from '@/components/plots';
 import { GetColorMapTexture } from '@/components/textures';
@@ -82,7 +82,7 @@ export function LandingHome() {
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
     {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}
-    {variable === "Default" ? (
+    {/* {variable === "Default" ? (
         <WelcomeText
           title={title ?? ''}
           description={description ?? ''}
@@ -92,7 +92,10 @@ export function LandingHome() {
         />
       ) : (
         <Plot values={plotObj} setShowLoading={setShowLoading} />
-      )}
+      )} */}
+
+      
+    {variable === "Default" && <Plot values={plotObj} setShowLoading={setShowLoading} />}
     {metadata && <Metadata data={metadata} /> }
     {timeSeries.length > 2 && <PlotArea />}
     </>
