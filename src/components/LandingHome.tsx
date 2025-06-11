@@ -3,7 +3,7 @@ import * as THREE from 'three'
 THREE.Cache.enabled = true;
 import { DataStores } from '@/components/zarr/DataStores'
 import { ZarrDataset, GetStore } from '@/components/zarr/ZarrLoaderLRU';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import VariableScroller from './ui/VariableScroller';
 import { useEffect, useMemo } from 'react';
 import { Analysis, PlotArea, Plot } from '@/components/plots';
@@ -11,7 +11,7 @@ import { GetColorMapTexture } from '@/components/textures';
 import { MiddleSlider } from '@/components/ui';
 import { Metadata, ShowAnalysis, Loading } from '@/components/ui';
 import { useGlobalStore } from '@/utils/GlobalStates';
-import { useShallow } from 'zustand/shallow';
+import { useShallow, shallow } from 'zustand/shallow';
 import { PaneStore } from '@/components/zarr/PaneStore';
 import useCSSVariable from '@/components/ui/useCSSVariable';
 import { GetTitleDescription } from '@/components/zarr/GetMetadata';
@@ -22,7 +22,7 @@ export function LandingHome() {
   const { bgcolor, fullmetadata, variables} = DataStores();
   const [settings, setSettings] = useState({plotType: 'volume', cmap: 'Spectral', flipCmap: false });
   const initStore = useGlobalStore(useShallow(state=>state.initStore))
-  
+  const [zMeta, setZMeta] = useState<object[]>([])
   const ZarrDS = useMemo(() => new ZarrDataset(initStore), [initStore])
   const [titleDescription, setTitleDescription] = useState<{ title?: string; description?: string }>({});
 
@@ -35,14 +35,19 @@ export function LandingHome() {
   }, [initStore]);
 
   const { title, description } = titleDescription;
-
-  const setColormap = useGlobalStore(state=>state.setColormap)
-  const metadata = useGlobalStore(state=>state.metadata)
-  const {colormap, timeSeries, variable} = useGlobalStore(useShallow(state=>({colormap:state.colormap, timeSeries:state.timeSeries, variable:state.variable})))
+  const {  setColormap, setVariables,  colormap, timeSeries, variable, metadata  } = useGlobalStore(
+    useShallow(state => ({
+      setColormap: state.setColormap,
+      setVariables: state.setVariables,
+      colormap: state.colormap,
+      timeSeries: state.timeSeries,
+      variable: state.variable,
+      metadata: state.metadata,
+    }))
+  );
   const [showLoading, setShowLoading] = useState<boolean>(false);
   const textColor = useCSSVariable('--foreground');
   const fogColor = useCSSVariable('--background');
-
 
   //Timeseries Plotting Information
   const [canvasWidth, setCanvasWidth] = useState<number>(0)
@@ -54,24 +59,28 @@ export function LandingHome() {
     setColormap(GetColorMapTexture(colormap, settings.cmap, 1, "#000000", 0, settings.flipCmap));
   },[settings.cmap,  colormap, settings.flipCmap, setColormap])
 
+  useEffect(()=>{
+    variables.then(e=> setVariables(e))
+    fullmetadata.then(e=> setZMeta(e))
+  },[])
+
   //These values are passed to the Plot Component
-  const plotObj = {
-      plotType: settings.plotType,
-      ZarrDS,
-      variable,
-      bgcolor,
-      canvasWidth
-  }
+  const plotObj = useMemo(() => ({
+    plotType: settings.plotType,
+    ZarrDS,
+    variable,
+    bgcolor,
+    canvasWidth
+  }), [settings.plotType, ZarrDS, variable, bgcolor, canvasWidth]);
 
 //This is the data being passed down the plot tree
-  const analysisObj = {
-    setters:{
-    },
-    values:{
+  const analysisObj = useMemo(() => ({
+    setters: {},
+    values: {
       ZarrDS,
       canvasWidth,
     }
-  }
+  }), [ZarrDS, canvasWidth]);
   
   return (
     <>
@@ -81,7 +90,7 @@ export function LandingHome() {
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
     {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}
-    {variable === "Default" && <VariableScroller vars={variables} zarrDS={ZarrDS}/>}
+    {variable === "Default" && <VariableScroller zMeta={zMeta}/>}
     {variable != "Default" && <Plot values={plotObj} setShowLoading={setShowLoading} />}
     {metadata && <Metadata data={metadata} /> }
     {timeSeries.length > 2 && <PlotArea />}

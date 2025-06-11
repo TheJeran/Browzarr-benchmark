@@ -31,6 +31,7 @@ type StoreState = {
   flipY:boolean;
   initStore:string;
   variable: string;
+  variables: string[];
 
   setShape: (shape: THREE.Vector3) => void;
   setValueScales: (valueScales: { maxVal: number; minVal: number }) => void;
@@ -47,10 +48,12 @@ type StoreState = {
   setFlipY: (flipY:boolean) => void;
   setInitStore: (initStore:string ) => void;
   setVariable: (variable: string) => void;
+  setVariables: (variables: string[]) => void;
 
 };
 
 export const useGlobalStore = create<StoreState>((set) => ({
+  
   shape: new THREE.Vector3(2, 2, 2),
   valueScales: { maxVal: 1, minVal: -1 },
   colormap: GetColorMapTexture(),
@@ -66,7 +69,7 @@ export const useGlobalStore = create<StoreState>((set) => ({
   flipY: false,
   initStore: "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr",
   variable: 'Default',
-
+  variables: [],
   setShape: (shape) => set({ shape }),
   setValueScales: (valueScales) => set({ valueScales }),
   setColormap: (colormap) => set({ colormap }),
@@ -85,4 +88,5 @@ export const useGlobalStore = create<StoreState>((set) => ({
     console.log('✅ setting variable:', variable)
     set({ variable })
   },
+  setVariables: (variables) => set({variables})
 }));
