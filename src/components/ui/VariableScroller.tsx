@@ -1,201 +1,116 @@
-import * as React from "react"
-import { useEffect, useState } from "react"
+import React, {useState, useEffect, useMemo, useRef} from 'react'
 import { useGlobalStore } from '@/utils/GlobalStates'
-import { GetZarrMetadata } from '../zarr/GetMetadata'
-import { ZarrDataset } from '../zarr/ZarrLoaderLRU'
-
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+import { GetStore, ZarrDataset } from '../zarr/ZarrLoaderLRU';
+import { GetZarrMetadata } from '../zarr/GetMetadata';
+import './css/VariableScroller.css'
 
 const formatArray = (value: string | number[]): string => {
-  if (typeof value === 'string') return value
-  return Array.isArray(value) ? value.join(', ') : String(value)
+    if (typeof value === 'string') return value
+    return Array.isArray(value) ? value.join(', ') : String(value)
+  }
+
+const MetaDataInfo = ({meta} : {meta : any}) =>{ 
+    const [show, setShow] = useState<boolean>(false)
+
+    const setVariable = useGlobalStore(state=> state.setVariable)
+    return(
+        <div className='meta-container'>
+            <div className='meta-info'>
+                <b>Long Name:</b> {`${meta.long_name}`}<br/>
+                <div 
+                    style={{
+                        maxHeight: show ? '500px' : '0px',
+                        overflow: 'hidden',
+                        transition: '0.3s'
+                    }}
+                >
+
+                    <b>Shape:</b> {`[${formatArray(meta.shape)}]`}<br/>
+                    <b>dType: </b> {`${meta.dtype}`}<br/>
+                    <b>Total Size: </b>{`${meta.totalSizeFormatted}`}<br/> 
+                    {/* Need to conditionally color the above line if totalsize is greater than specific threshold. Also add an info when hovering the red text to explain the issue*/}
+                    <b>Chunk Shape:</b> {`[${formatArray(meta.chunks)}]`}<br/>
+                    <b>Chunk Count:</b> {`${meta.chunkCount}`}<br/>
+                    <b>Chunk Size:</b> {`${meta.chunkSizeFormatted}`}
+                </div>
+                <div className='meta-hidden'
+                    style={{display:'flex', justifyContent:'center'}}
+                    onClick={()=>setShow(x=>!x)}
+                >{show ? 'Λ' : 'V' }</div>
+            </div>
+            <button onClick={()=>setVariable(meta.name)}><b>Plot</b></button>
+        </div>
+    )
 }
 
-const PopoverCard = ({ meta, isOpen, onOpenChange }: { meta: any, isOpen: boolean, onOpenChange: (open: boolean) => void }) => {
-  const setVariable = useGlobalStore(state => state.setVariable)
 
-  const exceedsThreshold = meta.totalSize > 1e8 // Example threshold: 100 MB
-
-  return (
-    <Popover open={isOpen} onOpenChange={onOpenChange}>
-      <PopoverTrigger asChild>
-        <Button variant="outline">{meta.name}</Button>
-      </PopoverTrigger>
-      <PopoverContent className="max-w-md min-w-[300px]">
-        <div className="space-y-1 text-sm">
-          <div>
-            <b>Long Name:</b> {meta.long_name}
-          </div>
-          <div>
-            <b>Shape:</b> [{formatArray(meta.shape)}]
-          </div>
-          <div>
-            <b>dtype:</b> {meta.dtype}
-          </div>
-          <div>
-            <b>Total Size:</b>{" "}
-            <span
-              className={exceedsThreshold ? "text-red-500" : ""}
-              title={exceedsThreshold ? "Too large to plot efficiently" : ""}
-            >
-              {meta.totalSizeFormatted}
-            </span>
-          </div>
-          <div>
-            <b>Chunk Shape:</b> [{formatArray(meta.chunks)}]
-          </div>
-          <div>
-            <b>Chunk Count:</b> {meta.chunkCount}
-          </div>
-          <div>
-            <b>Chunk Size:</b> {meta.chunkSizeFormatted}
-          </div>
-        </div>
-        <div className="pt-2">
-          <Button onClick={() => setVariable(meta.name)}>Plot</Button>
-        </div>
-      </PopoverContent>
-    </Popover>
-  )
-}
-
-const VariableScroller = ({ vars, zarrDS }: { vars: Promise<string[]>, zarrDS: ZarrDataset }) => {
+const VariableScroller = ({vars, zarrDS} : {vars : Promise<string[]>, zarrDS : ZarrDataset}) => {
   const [variables, setVariables] = useState<string[]>([])
-  const [selectedIndex, setSelectedIndex] = useState(0)
-  const [variable, setVariable] = useState<string>("")
-  const [meta, setMeta] = useState<any>(null)
-  const [zMeta, setZMeta] = useState<any[]>([])
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(Math.floor(variables.length / 2));
+  const [variable, setVariable] = useState<string>("Default")
+  const [meta, setMeta] = useState<any>(null) //This is the individual metadata for the element
+  const [zMeta, setZMeta] = useState<any>(null) //This is all the metadata. 
 
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 768); // Adjust breakpoint as needed
-    };
-
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
-
-
-  const handleScroll = (event: React.WheelEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    const newIndex = selectedIndex + (event.deltaY > 0 ? 1 : -1);
+  const handleScroll = (event: any) => {
+    const newIndex =
+      selectedIndex + (event.deltaY > 0 ? 1 : -1);
     if (newIndex >= 0 && newIndex < variables.length) {
       setSelectedIndex(newIndex);
     }
   };
 
-// TODO: handleTouch for mobile and better transitions, currently is too fast and not really smooth!
-
-  useEffect(() => {
-    vars.then((variableList) => {
-      setVariables(variableList)
-      // Set the middle variable as default selection
-      if (variableList.length > 0) {
-        const middleIndex = Math.floor(variableList.length / 2)
-        setSelectedIndex(middleIndex)
-      }
-    })
-  }, [vars])
-
-  // Update variable when selectedIndex changes
-  useEffect(() => {
-    if (variables.length > 0 && selectedIndex >= 0 && selectedIndex < variables.length) {
-      setVariable(variables[selectedIndex]);
-
-      // Scroll the selected item into view
-      document.getElementById(`var-${selectedIndex}`)?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
+  useEffect(()=>{ //Update variable onScroll
+    if (variables){
+        setVariable(variables[selectedIndex])
     }
-  }, [selectedIndex, variables]);
+  },[selectedIndex, variables])
 
+  useEffect(()=>{
+    vars.then(e=>setVariables(e))
+  },[vars])
 
-  useEffect(() => {
-    if (zarrDS) {
-      //@ts-expect-error groupStore is not exposed
-      GetZarrMetadata(zarrDS.groupStore).then(setZMeta)
+  useEffect(()=>{
+    if(zarrDS){
+        //@ts-expect-error
+        GetZarrMetadata(zarrDS.groupStore).then(e=>{setZMeta(e)}) //groupStore is private but I really don't care
     }
-  }, [zarrDS])
+  },[zarrDS])
 
-  useEffect(() => {
-    if (zMeta && variable) {
-      const found = zMeta.find((e: any) => e.name === variable)
-      setMeta(found)
-
-      // Only auto-open Popover on desktop
-      if (found && !isMobile) {
-        setIsPopoverOpen(true)
-      } else {
-        setIsPopoverOpen(false)
-      }
+  useEffect(()=>{
+    if(zMeta){
+        const relevant = zMeta.find((e : any) => e.name === variable)
+        setMeta(relevant)
     }
-  }, [variable, zMeta, isMobile])
-
+  },[variable])
 
   return (
-    <div className="w-full h-screen flex items-center justify-center p-4">
-      <div className="flex flex-col items-center gap-4">
-        {meta && (
-          <div className={`absolute ${isMobile ? "top-8 left-1/2 -translate-x-1/2 z-10" : "left-0"}`}>
-            <PopoverCard 
-              meta={meta} 
-              isOpen={isPopoverOpen} 
-              onOpenChange={setIsPopoverOpen} 
-            />
-          </div>
-        )}
-        <div 
-          className="relative h-[80vh] min-w-[324px] max-w-xl w-full rounded-md border-none overflow-hidden"
-          onWheel={handleScroll}
+    <div className="scroll-container" onScroll={handleScroll} onWheel={handleScroll}>
+        {meta && <MetaDataInfo meta={meta} />}
+        <div className='scroll-element' 
+            style={{
+                transform: `translateY(calc(50% + ${-selectedIndex * 82}px))` //Need to figure out why it's 82 pixels
+            }}
         >
-          {/* Scrollable variable list */}
-        <ScrollArea className="h-full w-full">
-          <div className="p-2 space-y-2">
-            {variables.map((name, index) => {
-              const distance = Math.abs(selectedIndex - index);
-              return (
-                <React.Fragment key={name}>
-                  <div
-                    id={`var-${index}`}
-                    className="flex justify-between items-center cursor-pointer transition-opacity"
+            {variables.map((variable, index) => {
+                const distance = Math.abs(selectedIndex - index);
+                return (
+                <div
+                    key={index}
+                    className="scroll-item"
                     style={{
-                      opacity: 1 - distance * 0.2,
-                      fontWeight: selectedIndex === index ? "bold" : "normal",
+                    opacity: 1 - distance * 0.3,
+                    fontWeight: selectedIndex === index ? "bold" : "normal",
                     }}
-                    onClick={() => {
-                      setSelectedIndex(index)
-                    }}
-                  >
-                    <span className="text-sm">{name}</span>
-                    <Badge variant={selectedIndex === index ? "default" : "outline"}>
-                      Select
-                    </Badge>
-                  </div>
-                  <Separator style={{ opacity: 1 - distance * 0.2 }} />
-                </React.Fragment>
-              );
-              }
-              )
-            }
-            </div>
-        </ScrollArea>
-      </div>
+                    onClick={(()=>setSelectedIndex(index))}
+                >
+                    {variable}
+                </div>
+                );
+            })}
+       </div>
     </div>
-  </div>
-  )
-}
+  );
+};
+
 
 export default VariableScroller

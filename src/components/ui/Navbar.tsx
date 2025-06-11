@@ -93,7 +93,7 @@ const Navbar = () => {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        {/* <Select>
+        <Select>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select a fruit" />
           </SelectTrigger>
@@ -107,7 +107,7 @@ const Navbar = () => {
               <SelectItem value="pineapple">Pineapple</SelectItem>
             </SelectGroup>
           </SelectContent>
-        </Select> */}
+        </Select>
       </div>
       <ThemeSwitch />
       <AboutButton />
