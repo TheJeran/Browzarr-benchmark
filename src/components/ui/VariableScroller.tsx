@@ -43,7 +43,7 @@ const MetaDataInfo = ({meta} : {meta : any}) =>{
 }
 
 
-const VariableScroller = ({zMeta} : {zMeta : Object[]}) => {
+const VariableScroller = ({zMeta} : {zMeta : object[]}) => {
   const variables = useGlobalStore(useShallow(state=>state.variables))
   const [selectedIndex, setSelectedIndex] = useState(Math.floor(variables.length / 2));
   const [variable, setVariable] = useState<string>("Default")
