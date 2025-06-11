@@ -90,3 +90,16 @@ export const useGlobalStore = create<StoreState>((set) => ({
   },
   setVariables: (variables) => set({variables})
 }));
+
+type PlotState ={
+  plotType: string;
+
+  setPlotType: (plotType: string) => void;
+}
+
+export const usePlotStore = create<PlotState>((set) => ({
+  plotType: "volume",
+
+  setPlotType: (plotType) => set({ plotType })
+  
+}))
