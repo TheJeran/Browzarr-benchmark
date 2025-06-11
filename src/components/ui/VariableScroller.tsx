@@ -1,7 +1,6 @@
 import React, {useState, useEffect, useMemo, useRef} from 'react'
 import { useGlobalStore } from '@/utils/GlobalStates'
-import { GetStore, ZarrDataset } from '../zarr/ZarrLoaderLRU';
-import { GetZarrMetadata } from '../zarr/GetMetadata';
+import { useShallow } from 'zustand/shallow';
 import './css/VariableScroller.css'
 
 const formatArray = (value: string | number[]): string => {
@@ -12,7 +11,7 @@ const formatArray = (value: string | number[]): string => {
 const MetaDataInfo = ({meta} : {meta : any}) =>{ 
     const [show, setShow] = useState<boolean>(false)
 
-    const setVariable = useGlobalStore(state=> state.setVariable)
+    const setVariable = useGlobalStore(useShallow(state=> state.setVariable))
     return(
         <div className='meta-container'>
             <div className='meta-info'>
@@ -44,12 +43,14 @@ const MetaDataInfo = ({meta} : {meta : any}) =>{
 }
 
 
-const VariableScroller = ({vars, zarrDS} : {vars : Promise<string[]>, zarrDS : ZarrDataset}) => {
-  const [variables, setVariables] = useState<string[]>([])
+const VariableScroller = ({zMeta} : {zMeta : Object[]}) => {
+  const variables = useGlobalStore(useShallow(state=>state.variables))
   const [selectedIndex, setSelectedIndex] = useState(Math.floor(variables.length / 2));
   const [variable, setVariable] = useState<string>("Default")
   const [meta, setMeta] = useState<any>(null) //This is the individual metadata for the element
-  const [zMeta, setZMeta] = useState<any>(null) //This is all the metadata. 
+  const [scrollHeight, setScrollHeight] = useState<number>(82);
+  const previousTouch = useRef<number | null>(null)
+  const touchDelta = useRef<number>(0)
 
   const handleScroll = (event: any) => {
     const newIndex =
@@ -59,36 +60,55 @@ const VariableScroller = ({vars, zarrDS} : {vars : Promise<string[]>, zarrDS : Z
     }
   };
 
+  const handleTouchScroll = (event: any) => {
+    const touch = event.touches[0]
+    const newY = touch.clientY
+    const prev = previousTouch.current ? previousTouch.current : newY
+    const thisDelta = prev - newY
+    previousTouch.current = newY
+    touchDelta.current += thisDelta
+    if (Math.abs(touchDelta.current) >= scrollHeight){
+      const newIndex =
+      selectedIndex + (touchDelta.current > 0 ? 1 : -1);
+      if (newIndex >= 0 && newIndex < variables.length) {
+        setSelectedIndex(newIndex);
+        touchDelta.current = 0;
+      }
+    }
+  }
+
   useEffect(()=>{ //Update variable onScroll
     if (variables){
         setVariable(variables[selectedIndex])
     }
   },[selectedIndex, variables])
 
-  useEffect(()=>{
-    vars.then(e=>setVariables(e))
-  },[vars])
-
-  useEffect(()=>{
-    if(zarrDS){
-        //@ts-expect-error
-        GetZarrMetadata(zarrDS.groupStore).then(e=>{setZMeta(e)}) //groupStore is private but I really don't care
-    }
-  },[zarrDS])
-
-  useEffect(()=>{
+  useEffect(()=>{ //Grab relevant metadata
     if(zMeta){
         const relevant = zMeta.find((e : any) => e.name === variable)
         setMeta(relevant)
     }
   },[variable])
 
+  useEffect(()=>{  //Sets scrollsize. Doesn't work with resize though
+    const width = window.innerWidth
+    if (width <= 480){
+      setScrollHeight(42)
+    }
+    else if (width <= 570){
+      setScrollHeight(54)
+    }
+    else {
+      setScrollHeight(82)
+    }
+  },[])
+
   return (
-    <div className="scroll-container" onScroll={handleScroll} onWheel={handleScroll}>
+    <div className="scroll-container" onWheel={handleScroll} onTouchMove={handleTouchScroll} onTouchEnd={()=>{previousTouch.current = null; touchDelta.current = 0}}>
         {meta && <MetaDataInfo meta={meta} />}
         <div className='scroll-element' 
             style={{
-                transform: `translateY(calc(50% + ${-selectedIndex * 82}px))` //Need to figure out why it's 82 pixels
+                transform: `translateY(calc(50% + ${-selectedIndex * scrollHeight}px))` 
             }}
         >
             {variables.map((variable, index) => {
