@@ -6,21 +6,18 @@ import { PointCloud, UVCube, DataCube } from '@/components/plots';
 import { Canvas, useThree } from '@react-three/fiber';
 import { ArrayToTexture, DefaultCubeTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
-import { useGlobalStore } from '@/utils/GlobalStates';
+import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 
 interface PlotParameters{
     values:{
-        plotType:string;
         ZarrDS: ZarrDataset;
         variable:string;
-        bgcolor:string;
         canvasWidth:number
     }
     setShowLoading: React.Dispatch<React.SetStateAction<boolean>>;
     
 }
-
 
 const Plot = ({values,setShowLoading}:PlotParameters) => {
 
@@ -41,12 +38,13 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
           setDimNames:state.setDimNames,
           setDimUnits:state.setDimUnits}
         )))
-
     const colormap = useGlobalStore(state=>state.colormap)
-    const {plotType,ZarrDS,variable,bgcolor,canvasWidth} = values;
+
+    const {ZarrDS,variable,canvasWidth} = values;
+    const plotType = usePlotStore(state => state.plotType)
 
     const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
-    const [currentBg, setCurrentBg] = useState(bgcolor || 'var(--background)')
+    // const [currentBg, setCurrentBg] = useState(bgcolor || 'var(--background)')
     const [show, setShow] = useState<boolean>(true)
     
     const [windowWidth, setWindowWidth] = useState<number>(0);
@@ -63,7 +61,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.attributeName === 'data-theme') {
-                    setCurrentBg('var(--background)')
+                    // setCurrentBg('var(--background)')
                 }
             })
         })
@@ -76,9 +74,9 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
     }, [])
 
     // Update background when bgcolor changes
-    useEffect(() => {
-        setCurrentBg(bgcolor || 'var(--background)')
-    }, [bgcolor])
+    // useEffect(() => {
+    //     setCurrentBg(bgcolor || 'var(--background)')
+    // }, [bgcolor])
 
   //DATA LOADING
   useEffect(() => {
@@ -151,7 +149,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       <Canvas camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
         frameloop="demand"
         style={{
-          background: currentBg
+          // background: currentBg
         }}
       >
         {/* Volume Plots */}

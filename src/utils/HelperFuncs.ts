@@ -10,7 +10,6 @@ import * as THREE from 'three'
 
 export function parseTimeUnit(units: string | undefined): number {
     if (units === "Default"){
-        console.log("Aborting?")
         return 1;
     }
 

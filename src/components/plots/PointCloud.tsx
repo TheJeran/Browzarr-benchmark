@@ -5,7 +5,8 @@ import { useMemo } from 'react'
 import { pointFrag, pointVert } from '@/components/textures/shaders'
 import { usePaneInput, usePaneFolder, useSliderBlade, useTweakpane } from '@lazarusa/react-tweakpane'
 import { createPaneContainer } from '@/components/ui';
-import { useGlobalStore } from '@/utils/GlobalStates';
+import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
+import { useShallow } from 'zustand/shallow';
 
 interface PCProps {
   texture: THREE.Data3DTexture | THREE.DataTexture | null,
@@ -16,39 +17,13 @@ export const PointCloud = ({textures} : {textures:PCProps} )=>{
     const {texture, colormap } = textures;
     const paneContainer = createPaneContainer("plot-cloud");
     const flipY = useGlobalStore(state=>state.flipY)
-    const pane = useTweakpane(
-      {
-        scalePoints: false,
-      },
-      {
-        title: 'Point cloud',
-        container: paneContainer ?? undefined,
-        expanded: false,
-      }
-    );
+    
+    const {scalePoints, scaleIntensity, pointSize} = usePlotStore(useShallow(state => ({
+      scalePoints: state.scalePoints,
+      scaleIntensity: state.scaleIntensity,
+      pointSize: state.pointSize
+    })))
 
-    const [pointScale] = useSliderBlade(pane, {
-      label: 'Point Size',
-      value: 1,
-      min: 1,
-      max: 100,
-      step: 1,
-    })
-    const [scalePoints] = usePaneInput(
-      pane,
-      'scalePoints',
-      {
-        label: 'Scale Points By Value',
-        value: false
-      }
-    )
-    const [scaleIntensity] = useSliderBlade(pane, {
-      label: 'Scale Intensity',
-      value: 2,
-      min: 1,
-      max: 10,
-      step: 0.2,
-    })
     //Extract data and shape from Data3DTexture
     const { data, width, height, depth } = useMemo(() => {
       if (!(texture instanceof THREE.Data3DTexture)) {
@@ -104,7 +79,7 @@ export const PointCloud = ({textures} : {textures:PCProps} )=>{
     const shaderMaterial = new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3,
       uniforms: {
-        pointSize: {value: pointScale},
+        pointSize: {value: pointSize},
         cmap: {value: colormap},
         scalePoints:{value: scalePoints},
         scaleIntensity: {value: scaleIntensity}

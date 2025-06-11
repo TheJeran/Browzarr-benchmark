@@ -84,9 +84,54 @@ export const useGlobalStore = create<StoreState>((set) => ({
   setPlotDim: (plotDim) => set({ plotDim }),
   setFlipY: (flipY) => set({ flipY }),
   setInitStore: (initStore) => set({ initStore }),
-  setVariable: (variable) => {
-    console.log('✅ setting variable:', variable)
-    set({ variable })
+  setVariable: (variable) => {set({ variable })
   },
   setVariables: (variables) => set({variables})
 }));
+
+type PlotState ={
+  plotType: string;
+  pointSize: number;
+  scalePoints: boolean;
+  scaleIntensity: number;
+  valueRange: number[];
+  xRange: number[];
+  yRange: number[];
+  zRange: number[];
+  quality: number;
+
+  setQuality: (quality: number) => void;
+  setValueRange: (valueRange: number[]) => void;
+  setXRange: (xRange: number[]) => void;
+  setYRange: (yRange: number[]) => void;
+  setZRange: (zRange: number[]) => void;
+  setPointSize: (pointSize: number) => void;
+  setScalePoints: (scalePoints: boolean) => void;
+  setScaleIntensity: (scaleIntensity: number) => void;
+  setPlotType: (plotType: string) => void;
+}
+
+export const usePlotStore = create<PlotState>((set) => ({
+  //Create the initial state for the plot store
+  plotType: "volume", 
+  pointSize: 10,
+  scalePoints: false,
+  scaleIntensity: 1,
+  quality: 200,
+  valueRange: [-1, 1],
+  xRange: [-1, 1],
+  yRange: [-1, 1],
+  zRange: [-1, 1],
+
+  setQuality: (quality) => set({ quality }),
+  setValueRange: (valueRange) => set({ valueRange }),
+  setXRange: (xRange) => set({ xRange }),
+  setYRange: (yRange) => set({ yRange }),
+  setZRange: (zRange) => set({ zRange }),
+  setPointSize: (pointSize) => set({ pointSize }),
+  setScalePoints: (scalePoints) => set({ scalePoints }),
+  setScaleIntensity: (scaleIntensity) => set({ scaleIntensity }),
+  setPlotType: (plotType) => {set({ plotType })
+  }
+  
+}))

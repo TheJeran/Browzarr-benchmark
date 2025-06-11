@@ -9,6 +9,7 @@
   overflow: hidden;
   position: fixed;
   left: 50%;
+  user-select: none;
   transform: translateX(-50%);
 }
 
@@ -31,10 +32,9 @@
 .meta-container{
     text-align: left;
     position: absolute;
-    min-width: 400px;
-    max-width: 500px;
-    left: 70%;
-    top: 50%;
+    width: 85%;
+    left: 7.5%;
+    top: 10%;
     z-index: 3;
     font-size: 18px;
     border-radius: 10px;

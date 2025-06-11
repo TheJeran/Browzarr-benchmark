@@ -10,7 +10,6 @@ const formatArray = (value: string | number[]): string => {
 
 const MetaDataInfo = ({meta} : {meta : any}) =>{ 
     const [show, setShow] = useState<boolean>(false)
-
     const setVariable = useGlobalStore(useShallow(state=> state.setVariable))
     return(
         <div className='meta-container'>
@@ -46,7 +45,6 @@ const MetaDataInfo = ({meta} : {meta : any}) =>{
 const VariableScroller = ({zMeta} : {zMeta : object[]}) => {
   const variables = useGlobalStore(useShallow(state=>state.variables))
   const [selectedIndex, setSelectedIndex] = useState(Math.floor(variables.length / 2));
-  const [variable, setVariable] = useState<string>("Default")
   const [meta, setMeta] = useState<any>(null) //This is the individual metadata for the element
   const [scrollHeight, setScrollHeight] = useState<number>(82);
   const previousTouch = useRef<number | null>(null)
@@ -77,19 +75,40 @@ const VariableScroller = ({zMeta} : {zMeta : object[]}) => {
     }
   }
 
+  useEffect(() => { //Supposedly this disables the refresh pull
+  const disablePullToRefresh = (e : any) => {
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+  };
+
+  document.addEventListener("touchmove", disablePullToRefresh, { passive: false });
+
+  return () => {
+    document.removeEventListener("touchmove", disablePullToRefresh);
+  };
+  }, []);
+
   useEffect(()=>{ //Update variable onScroll
-    if (variables){
-        setVariable(variables[selectedIndex])
+    if (variables && zMeta){
+      const tempVar = variables[selectedIndex]
+      const relevant = zMeta.find((e : any) => e.name === tempVar)
+      setMeta(relevant)
     }
   },[selectedIndex, variables])
 
-  useEffect(()=>{ //Grab relevant metadata
-    if(zMeta){
-        const relevant = zMeta.find((e : any) => e.name === variable)
-        setMeta(relevant)
+  function handleResize(){
+    const width = window.innerWidth
+    if (width <= 480){
+      setScrollHeight(42)
     }
-  },[variable])
-
+    else if (width <= 570){
+      setScrollHeight(54)
+    }
+    else {
+      setScrollHeight(82)
+    }
+  }
   useEffect(()=>{  //Sets scrollsize. Doesn't work with resize though
     const width = window.innerWidth
     if (width <= 480){
@@ -101,6 +120,7 @@ const VariableScroller = ({zMeta} : {zMeta : object[]}) => {
     else {
       setScrollHeight(82)
     }
+    return window.addEventListener('resize', handleResize)
   },[])
 
   return (

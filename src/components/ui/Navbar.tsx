@@ -1,10 +1,20 @@
+"use client";
+import { LuChevronsUpDown } from "react-icons/lu";
+import { IoIosCheckmark } from "react-icons/io";
+import { ZARR_STORES } from "../zarr/ZarrLoaderLRU";
 import Image from "next/image";
-import { AboutButton } from "@/components/ui";
+import { AboutButton, PlotTweaker } from "@/components/ui";
 import ThemeSwitch  from "@/components/ui/ThemeSwitch";
 import logo from "@/app/logo.png"
 import './css/Navbar.css'
-
+import { useShallow } from "zustand/shallow";
+import { useGlobalStore, usePlotStore } from "@/utils/GlobalStates";
+import { colormaps } from '@/components/textures';
+import { useEffect, useState } from "react";
+import { GetColorMapTexture } from "@/components/textures";
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +31,21 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+
+import {
   Select,
   SelectContent,
   SelectGroup,
@@ -30,7 +55,75 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
+const ColorMaps = ({cmap, setCmap} : {cmap : string, setCmap : React.Dispatch<React.SetStateAction<string>>}) => {
+  const [open, setOpen] = useState(false)
+  return (
+    <Popover open={open} onOpenChange={setOpen}>    
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-[100%] justify-between"
+        >
+          {cmap === "Default" ?  "Select Colormap..." : cmap }
+          <LuChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[100%] p-0">
+        <Command>
+          <CommandInput placeholder="Search framework..." />
+          <CommandList>
+            <CommandEmpty>No Colormap found.</CommandEmpty>
+            <CommandGroup>
+              {colormaps.map((value) => (
+                <CommandItem
+                  key={value}
+                  value={value}
+                  onSelect={(currentValue) => {
+                    setCmap(currentValue)
+                    setOpen(false);
+                  }}
+                >
+                  <IoIosCheckmark
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === cmap ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {value}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  )
+
+}
+
 const Navbar = () => {
+  const {setInitStore, setVariable, setColormap} = useGlobalStore(
+    useShallow(state=>({
+      setInitStore : state.setInitStore, 
+      setVariable : state.setVariable,
+      setColormap : state.setColormap
+    
+    })))
+
+  const [refresh, setRefresh] = useState<boolean>(false)
+  const variables = useGlobalStore(useShallow(state=>state.variables))
+  const setPlotType = usePlotStore(state=> state.setPlotType)
+  const [cmap, setCmap] = useState<string>("Default")
+  const [flipCmap, setFlipCmap] = useState<boolean>(false)
+  const colormap = useGlobalStore(useShallow(state=>state.colormap))
+
+  useEffect(()=>{
+    setColormap(GetColorMapTexture(colormap, cmap === "Default" ? "Spectral" : cmap, 1, "#000000", 0, flipCmap));
+  },[cmap, flipCmap])
+  
+
   return (
     <nav className="navbar">
       <div className="navbar-left">
@@ -40,74 +133,65 @@ const Navbar = () => {
         <div className="nav-dropdown">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">Open</Button>
+              <Button variant="outline">Settings</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="start">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>Datasets</DropdownMenuLabel>
               <DropdownMenuGroup>
-                <DropdownMenuItem >
-                  Profile
-                  <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                <DropdownMenuItem onSelect={e=>{setInitStore(ZARR_STORES["ESDC"]); setVariable("Default")}}>
+                  ESDC
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  Billing
+                <DropdownMenuItem onSelect={e=>{setInitStore(ZARR_STORES["SEASFIRE"]); setVariable("Default")}}>
+                  Seasfire
                   <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  Settings
+                <DropdownMenuItem onSelect={e=>console.log("setting to Personal and showing text field")}>
+                  Personal
                   <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  Keyboard shortcuts
-                  <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem>Team</DropdownMenuItem>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>Invite users</DropdownMenuSubTrigger>
+              <DropdownMenuLabel>Plot Options</DropdownMenuLabel>
+              <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>Plot Type</DropdownMenuSubTrigger>
                   <DropdownMenuPortal>
                     <DropdownMenuSubContent>
-                      <DropdownMenuItem>Email</DropdownMenuItem>
-                      <DropdownMenuItem>Message</DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>More...</DropdownMenuItem>
+                      <DropdownMenuItem onSelect={()=> setPlotType("volume") }>Volume</DropdownMenuItem>
+                      <DropdownMenuItem onSelect={()=> setPlotType("point-cloud") }>Point Cloud</DropdownMenuItem>
                     </DropdownMenuSubContent>
                   </DropdownMenuPortal>
                 </DropdownMenuSub>
-                <DropdownMenuItem>
-                  New Team
-                  <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>GitHub</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuItem disabled>API</DropdownMenuItem>
+              <DropdownMenuSub>
+                 <DropdownMenuLabel>Colormap</DropdownMenuLabel>
+                  <ColorMaps cmap={cmap} setCmap={setCmap}/>
+                  <Button className="w-[100%] h-[20px] cursor-[pointer]" variant="destructive" onClick={()=>setFlipCmap(x=>!x)}>Flip Colormap</Button>
+                </DropdownMenuSub>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                Log out
-                <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-              </DropdownMenuItem>
+              <DropdownMenuItem> 
+                <a href="https://github.com/EarthyScience/Browzarr/" target="_blank" rel="noopener noreferrer">
+                  GitHub
+                </a></DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <Select>
+
+
+        <Select onValueChange={e=>setVariable(e)}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select a fruit" />
+            <SelectValue placeholder="Select a variable" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectLabel>Fruits</SelectLabel>
-              <SelectItem value="apple">Apple</SelectItem>
-              <SelectItem value="banana">Banana</SelectItem>
-              <SelectItem value="blueberry">Blueberry</SelectItem>
-              <SelectItem value="grapes">Grapes</SelectItem>
-              <SelectItem value="pineapple">Pineapple</SelectItem>
+              <SelectLabel>Variables</SelectLabel>
+              {variables.map((val,idx)=>(
+                <SelectItem value={val} key={idx} >{val}</SelectItem>
+              ))}
             </SelectGroup>
           </SelectContent>
         </Select>
+      
+      <PlotTweaker/>
       </div>
       <ThemeSwitch />
       <AboutButton />
