@@ -1,3 +1,5 @@
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-nocheck Analysis requires quite a lot of work to mesh with new UI. Will Monkey with that later
 import React, { useEffect, useMemo, useRef } from 'react'
 import { useState } from 'react'
