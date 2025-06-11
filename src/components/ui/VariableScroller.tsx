@@ -75,6 +75,20 @@ const VariableScroller = ({zMeta} : {zMeta : object[]}) => {
     }
   }
 
+  useEffect(() => { //Supposedly this disables the refresh pull
+  const disablePullToRefresh = (e : any) => {
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+  };
+
+  document.addEventListener("touchmove", disablePullToRefresh, { passive: false });
+
+  return () => {
+    document.removeEventListener("touchmove", disablePullToRefresh);
+  };
+  }, []);
+
   useEffect(()=>{ //Update variable onScroll
     if (variables && zMeta){
       const tempVar = variables[selectedIndex]

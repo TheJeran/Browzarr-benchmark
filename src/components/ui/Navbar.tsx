@@ -122,7 +122,7 @@ const Navbar = () => {
   useEffect(()=>{
     setColormap(GetColorMapTexture(colormap, cmap === "Default" ? "Spectral" : cmap, 1, "#000000", 0, flipCmap));
   },[cmap, flipCmap])
-
+  
 
   return (
     <nav className="navbar">
@@ -138,10 +138,10 @@ const Navbar = () => {
             <DropdownMenuContent className="w-56" align="start">
               <DropdownMenuLabel>Datasets</DropdownMenuLabel>
               <DropdownMenuGroup>
-                <DropdownMenuItem onSelect={e=>setInitStore(ZARR_STORES["ESDC"])}>
+                <DropdownMenuItem onSelect={e=>{setInitStore(ZARR_STORES["ESDC"]); setVariable("Default")}}>
                   ESDC
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={e=>setInitStore(ZARR_STORES["SEASFIRE"])}>
+                <DropdownMenuItem onSelect={e=>{setInitStore(ZARR_STORES["SEASFIRE"]); setVariable("Default")}}>
                   Seasfire
                   <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
                 </DropdownMenuItem>
