@@ -81,7 +81,7 @@ export function LandingHome() {
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
     {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}
-    {variable === "Default" && <VariableScroller vars={variables} zarrDS={ZarrDS}/>}
+    {variable === "Default" && <VariableScroller variableLoader={() => variables} zarrDS={ZarrDS}/>}
     {variable != "Default" && <Plot values={plotObj} setShowLoading={setShowLoading} />}
     {metadata && <Metadata data={metadata} /> }
     {timeSeries.length > 2 && <PlotArea />}
