@@ -1,7 +1,7 @@
 'use client';
 import * as THREE from 'three'
 THREE.Cache.enabled = true;
-import { DataStores } from '@/components/zarr/DataStores'
+import { GetZarrMetadata, GetVariableNames } from '@/components/zarr/GetMetadata';
 import { ZarrDataset, GetStore } from '@/components/zarr/ZarrLoaderLRU';
 import { useRef, useState } from 'react';
 import VariableScroller from './ui/VariableScroller';
@@ -19,7 +19,7 @@ import { GetTitleDescription } from '@/components/zarr/GetMetadata';
 // import { PaneManager } from '@/components/PaneManager';
 
 export function LandingHome() {
-  const { bgcolor, fullmetadata, variables} = DataStores();
+
   const [settings, setSettings] = useState({plotType: 'volume', cmap: 'Spectral', flipCmap: false });
   const initStore = useGlobalStore(useShallow(state=>state.initStore))
   const [zMeta, setZMeta] = useState<object[]>([])
@@ -31,6 +31,11 @@ export function LandingHome() {
     GetTitleDescription(GetStore(initStore)).then((result) => {
       if (isMounted) setTitleDescription(result);
     });
+    const store = GetStore(initStore);
+    const fullmetadata = GetZarrMetadata(store);
+    const variables = GetVariableNames(fullmetadata);
+    fullmetadata.then(e=>setZMeta(e))
+    variables.then(e=> {setVariables(e)})
     return () => { isMounted = false; };
   }, [initStore]);
 
@@ -57,21 +62,14 @@ export function LandingHome() {
 
   useEffect(()=>{
     setColormap(GetColorMapTexture(colormap, settings.cmap, 1, "#000000", 0, settings.flipCmap));
-  },[settings.cmap,  colormap, settings.flipCmap, setColormap])
-
-  useEffect(()=>{
-    variables.then(e=> setVariables(e))
-    fullmetadata.then(e=> setZMeta(e))
-  },[])
+  },[settings.cmap,  settings.flipCmap])
 
   //These values are passed to the Plot Component
   const plotObj = useMemo(() => ({
-    plotType: settings.plotType,
     ZarrDS,
     variable,
-    bgcolor,
     canvasWidth
-  }), [settings.plotType, ZarrDS, variable, bgcolor, canvasWidth]);
+  }), [settings.plotType, ZarrDS, variable, canvasWidth]);
 
 //This is the data being passed down the plot tree
   const analysisObj = useMemo(() => ({
@@ -84,12 +82,10 @@ export function LandingHome() {
   
   return (
     <>
-      {/* <PaneManager /> */}
-    <PaneStore variablesPromise={variables} onSettingsChange={setSettings} />
     {canvasWidth < 10 && variable != "Default" && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} canvasWidth={canvasWidth} />}
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
-    {canvasWidth > 10 && <Analysis values={analysisObj.values} variables={variables} />}
+    {canvasWidth > 10 && <Analysis values={analysisObj.values} />}
     {variable === "Default" && <VariableScroller zMeta={zMeta}/>}
     {variable != "Default" && <Plot values={plotObj} setShowLoading={setShowLoading} />}
     {metadata && <Metadata data={metadata} /> }

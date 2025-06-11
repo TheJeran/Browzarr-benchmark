@@ -9,50 +9,24 @@ import { GetZarrMetadata,  GetVariableNames } from '@/components/zarr/GetMetadat
 import { useGlobalStore } from '@/utils/GlobalStates';
 
 export function DataStores() {
-    const optionsStores = useMemo(() => Object.entries(ZARR_STORES).map(([key, value]) => ({
-        text: key,
-        value: value
-      })), []);
-const setTimeSeries = useGlobalStore(state=>state.setTimeSeries)
-const paneContainer = createPaneContainer("data-stores-pane");
-const pane = useTweakpane(
-    {
-      backgroundcolor: "#292b32",
-      storeURL: ZARR_STORES.ESDC,
-      varName: "Default"
-    },
-    {
-      title: 'Data Stores',
-      container: paneContainer ?? undefined,
-      expanded: false,
-    }
-  );
+  const storeURL = useGlobalStore(state => state.initStore)
 
-  const [bgcolor] = usePaneInput(pane, 'backgroundcolor', {
-    label: 'bgcolor',
-    value: '#292b32'
-  })
+  const setTimeSeries = useGlobalStore(state=>state.setTimeSeries)
 
-  const [currentStoreURL] = usePaneInput(pane, 'storeURL', {
-    label: 'Store URL',
-    options: optionsStores,
-    value: ZARR_STORES.SEASFIRE
-  })
-  const initStore = GetStore(currentStoreURL);
+  const initStore = GetStore(storeURL);
   const fullmetadata = GetZarrMetadata(initStore);
   const variables = GetVariableNames(fullmetadata);
   const setZarrStore = useGlobalStore(state=>state.setInitStore)
   
   useEffect(()=>{
-    if(currentStoreURL){
-      setZarrStore(currentStoreURL)
+    if(storeURL){
+      setZarrStore(storeURL)
       setTimeSeries([0])
     }
-  },[currentStoreURL])
+  },[storeURL])
 
   return (
     { 
-    bgcolor,
     fullmetadata,
     variables
     }

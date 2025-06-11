@@ -10,7 +10,8 @@ void main() {
     //If it is nan we just yeet it tf out of the screen space. LMAO I love this solution
     float pointScale = pointSize/gl_Position.w;
     pointScale = scalePoints ? pointScale*pow(vValue,scaleIntensity) : pointScale;
-    if (value == 255. || (pointScale < 0.75 && scalePoints)){
+
+    if (value == 255. || (pointScale*gl_Position.w < 0.75 && scalePoints)){
         gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
     }
 

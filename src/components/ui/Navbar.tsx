@@ -1,7 +1,9 @@
 "use client";
-
+import { LuChevronsUpDown } from "react-icons/lu";
+import { IoIosCheckmark } from "react-icons/io";
+import { ZARR_STORES } from "../zarr/ZarrLoaderLRU";
 import Image from "next/image";
-import { AboutButton } from "@/components/ui";
+import { AboutButton, PlotTweaker } from "@/components/ui";
 import ThemeSwitch  from "@/components/ui/ThemeSwitch";
 import logo from "@/app/logo.png"
 import './css/Navbar.css'
@@ -11,6 +13,8 @@ import { colormaps } from '@/components/textures';
 import { useEffect, useState } from "react";
 import { GetColorMapTexture } from "@/components/textures";
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +31,21 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+
+import {
   Select,
   SelectContent,
   SelectGroup,
@@ -36,6 +55,54 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
+const ColorMaps = ({cmap, setCmap} : {cmap : string, setCmap : React.Dispatch<React.SetStateAction<string>>}) => {
+  const [open, setOpen] = useState(false)
+  return (
+    <Popover open={open} onOpenChange={setOpen}>    
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-[100%] justify-between"
+        >
+          {cmap === "Default" ?  "Select Colormap..." : cmap }
+          <LuChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[100%] p-0">
+        <Command>
+          <CommandInput placeholder="Search framework..." />
+          <CommandList>
+            <CommandEmpty>No Colormap found.</CommandEmpty>
+            <CommandGroup>
+              {colormaps.map((value) => (
+                <CommandItem
+                  key={value}
+                  value={value}
+                  onSelect={(currentValue) => {
+                    setCmap(currentValue)
+                    setOpen(false);
+                  }}
+                >
+                  <IoIosCheckmark
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === cmap ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {value}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  )
+
+}
+
 const Navbar = () => {
   const {setInitStore, setVariable, setColormap} = useGlobalStore(
     useShallow(state=>({
@@ -44,13 +111,19 @@ const Navbar = () => {
       setColormap : state.setColormap
     
     })))
+
+  const [refresh, setRefresh] = useState<boolean>(false)
   const variables = useGlobalStore(useShallow(state=>state.variables))
   const setPlotType = usePlotStore(state=> state.setPlotType)
-  const [cmap, setCmap] = useState<string>("viridis")
+  const [cmap, setCmap] = useState<string>("Default")
+  const [flipCmap, setFlipCmap] = useState<boolean>(false)
+  const colormap = useGlobalStore(useShallow(state=>state.colormap))
 
-  // useEffect(()=>{
-  //     setColormap(GetColorMapTexture(colormap, settings.cmap, 1, "#000000", 0, settings.flipCmap));
-  //   },[settings.cmap,  colormap, settings.flipCmap, setColormap])
+  useEffect(()=>{
+    setColormap(GetColorMapTexture(colormap, cmap === "Default" ? "Spectral" : cmap, 1, "#000000", 0, flipCmap));
+  },[cmap, flipCmap])
+
+
   return (
     <nav className="navbar">
       <div className="navbar-left">
@@ -60,15 +133,15 @@ const Navbar = () => {
         <div className="nav-dropdown">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">Open</Button>
+              <Button variant="outline">Settings</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="start">
               <DropdownMenuLabel>Datasets</DropdownMenuLabel>
               <DropdownMenuGroup>
-                <DropdownMenuItem onSelect={e=>console.log("setting to ESDC")}>
+                <DropdownMenuItem onSelect={e=>setInitStore(ZARR_STORES["ESDC"])}>
                   ESDC
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={e=>console.log("setting to Seasfire")}>
+                <DropdownMenuItem onSelect={e=>setInitStore(ZARR_STORES["SEASFIRE"])}>
                   Seasfire
                   <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
                 </DropdownMenuItem>
@@ -77,7 +150,7 @@ const Navbar = () => {
                   <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
-              {/* <DropdownMenuSeparator /> */}
+              <DropdownMenuSeparator />
               <DropdownMenuLabel>Plot Options</DropdownMenuLabel>
               <DropdownMenuSub>
                   <DropdownMenuSubTrigger>Plot Type</DropdownMenuSubTrigger>
@@ -88,31 +161,17 @@ const Navbar = () => {
                     </DropdownMenuSubContent>
                   </DropdownMenuPortal>
                 </DropdownMenuSub>
-
+              <DropdownMenuSeparator />
               <DropdownMenuSub>
-                  <Select onValueChange={e=>setCmap(e)}>
-                    <SelectTrigger className="w-[100%]">
-                      <SelectValue placeholder="Select a Colormap" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>ColorMaps</SelectLabel>
-                        {colormaps.map((val,idx)=>(
-                          <SelectItem value={val} key={idx} >{val}</SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                 <DropdownMenuLabel>Colormap</DropdownMenuLabel>
+                  <ColorMaps cmap={cmap} setCmap={setCmap}/>
+                  <Button className="w-[100%] h-[20px] cursor-[pointer]" variant="destructive" onClick={()=>setFlipCmap(x=>!x)}>Flip Colormap</Button>
                 </DropdownMenuSub>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>GitHub</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuItem disabled>API</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                Log out
-                <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-              </DropdownMenuItem>
+              <DropdownMenuItem> 
+                <a href="https://github.com/EarthyScience/Browzarr/" target="_blank" rel="noopener noreferrer">
+                  GitHub
+                </a></DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -131,6 +190,8 @@ const Navbar = () => {
             </SelectGroup>
           </SelectContent>
         </Select>
+      
+      <PlotTweaker/>
       </div>
       <ThemeSwitch />
       <AboutButton />

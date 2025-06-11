@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { vertexShader, fragmentShader } from '@/components/textures/shaders';
 import { usePaneInput, usePaneFolder, useSliderBlade, useTweakpane } from '@lazarusa/react-tweakpane'
 import { createPaneContainer } from '@/components/ui';
-import { useGlobalStore } from '@/utils/GlobalStates';
+import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 
 interface DataCubeProps {
@@ -12,8 +12,16 @@ interface DataCubeProps {
 
 export const DataCube = ({ volTexture }: DataCubeProps ) => {
 
+
     const {shape, colormap, flipY} = useGlobalStore(useShallow(state=>({shape:state.shape, colormap:state.colormap, flipY:state.flipY}))) //We have to useShallow when returning an object instead of a state. I don't fully know the logic yet
 
+    const {valueRange, xRange, yRange, zRange, quality} = usePlotStore(useShallow(state => ({
+      valueRange: state.valueRange,
+      xRange: state.xRange,
+      yRange: state.yRange,
+      zRange: state.zRange,
+      quality: state.quality
+    })))
     const paneContainer = createPaneContainer("plot-pane");
     const pane = useTweakpane(
         {
@@ -43,49 +51,6 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
         step: 25,
       })
 
-      const [xMin] = useSliderBlade(pane, {
-        label: 'xmin',
-        value: -1,
-        min: -1,
-        max: 1,
-        step: 0.01,
-      })
-      const [xMax] = useSliderBlade(pane, {
-        label: 'xmax',
-        value: 1,
-        min: -1,
-        max: 1,
-        step: 0.01,
-      })
-      const [yMin] = useSliderBlade(pane, {
-        label: 'ymin',
-        value: -1,
-        min: -1,
-        max: 1,
-        step: 0.01,
-      })
-      const [yMax] = useSliderBlade(pane, {
-        label: 'ymax',
-        value: 1,
-        min: -1,
-        max: 1,
-        step: 0.01,
-      })
-      const [zMin] = useSliderBlade(pane, {
-        label: 'zmin',
-        value: -1,
-        min: -1,
-        max: 1,
-        step: 0.01,
-      })
-      const [zMax] = useSliderBlade(pane, {
-        label: 'zmax',
-        value: 1,
-        min: -1,
-        max: 1,
-        step: 0.01,
-      })
-
       const [flip] = usePaneInput(
         pane,
         'flip',
@@ -103,9 +68,9 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
           cameraPos: { value: new THREE.Vector3() },
           threshold: {value: threshold},
           scale: {value: shape},
-          flatBounds:{value: new THREE.Vector4(xMin,xMax,yMin,yMax)},
-          vertBounds:{value: new THREE.Vector2(zMin,zMax)},
-          steps: { value: steps },
+          flatBounds:{value: new THREE.Vector4(xRange[0],xRange[1],zRange[0],zRange[1])},
+          vertBounds:{value: new THREE.Vector2(yRange[0],yRange[1])},
+          steps: { value: quality },
           flip: {value: flip }
       },
       vertexShader,

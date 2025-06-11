@@ -9,6 +9,7 @@
   overflow: hidden;
   position: fixed;
   left: 50%;
+  user-select: none;
   transform: translateX(-50%);
 }
 

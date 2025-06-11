@@ -1,3 +1,4 @@
+//@ts-nocheck Analysis requires quite a lot of work to mesh with new UI. Will Monkey with that later
 import React, { useEffect, useMemo, useRef } from 'react'
 import { useState } from 'react'
 import { Canvas } from '@react-three/fiber'
@@ -19,31 +20,12 @@ interface Array{
   shape:number[],
   stride:number[]
 }
-interface AnalysisParameters {
-    values: {
-        ZarrDS: ZarrDataset;
-        canvasWidth: number;
-    }
-    variables: Promise<string[]>
-}
 
 // This wrapper handles loading state
-export function Analysis({ values, variables }: AnalysisParameters) {
-    const [optionsVariables, setOptionsVariables] = useState<{ text: string; value: string }[] | null>(null);
-
-    useEffect(() => {
-        getVariablesOptions(variables).then(setOptionsVariables);
-    }, [variables]);
-
-    if (!optionsVariables) return null;
-
-    return <AnalysisLoaded values={values} optionsVariables={optionsVariables} />;
-}
 
 // This renders only when data is ready and uses hooks safely
-function AnalysisLoaded({ values, optionsVariables }: { 
+export function Analysis({ values }: { 
     values: { ZarrDS: ZarrDataset; canvasWidth: number };
-    optionsVariables: { text: string; value: string }[];
 }) {
     const {dimNames, dimArrays, dimUnits, setDimNames, setDimArrays, setDimUnits} = useGlobalStore(
       useShallow(state=>({
@@ -55,6 +37,8 @@ function AnalysisLoaded({ values, optionsVariables }: {
         setDimUnits: state.setDimUnits
       })))
 
+
+    const variables = useGlobalStore(state => state.variables)
     const {ZarrDS, canvasWidth} = values
     const scaleObjRef = useRef<Record<string, { min: number; max: number }>>({});
     const setFlipY = useGlobalStore(state=>state.setFlipY)

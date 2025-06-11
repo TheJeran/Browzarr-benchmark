@@ -43,16 +43,12 @@ export function GetColorMapTexture(
   colData[lastIndex + 2] = to_nan[2];
   colData[lastIndex + 3] = nan_alpha;
   if (texture) {
-    // Update the existing texture data
-    (texture.image.data as Uint8Array).set(colData);
-    texture.needsUpdate = true;
-    return texture;
-  } else {
+    texture.dispose()
+  } 
     // Create a new texture if not already available
     const newTexture = new THREE.DataTexture(colData, rgbv.length + 1, 1, THREE.RGBAFormat);
     newTexture.needsUpdate = true;
     return newTexture;
-  }
 }
 
 // export function genRand(count: number) {
