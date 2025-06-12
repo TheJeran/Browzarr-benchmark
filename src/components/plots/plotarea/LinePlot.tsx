@@ -6,6 +6,7 @@ import { ResizeBar, YScaler, XScaler, ShowLinePlot } from '@/components/ui'
 import './LinePlot.css'
 import { useGlobalStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
+import PlotLineOptions from '@/components/ui/PlotLineOptions'
 
 interface pointInfo{
   pointID:number,
@@ -169,6 +170,7 @@ export function PlotArea() {
     {!state && <ShowLinePlot onClick={()=>{setHeight(window.innerHeight-(MIN_HEIGHT+50))}}/>}
       {state && (
         <div className='plot-canvas'>
+          <PlotLineOptions/>
           <PointInfo pointID={pointID} pointLoc={pointLoc} showPointInfo={showPointInfo} plotUnits={plotUnits}/>
           <ResizeBar height={height} setHeight={setHeight}/> 
           <YScaler scale={yScale} setScale={setYScale} />

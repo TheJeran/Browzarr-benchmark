@@ -104,7 +104,12 @@ type PlotState ={
   zRange: number[];
   quality: number;
   selectTS: boolean;
-  
+  showPoints: boolean;
+  linePointSize: number;
+  lineWidth: number;
+  lineColor: string;
+  pointColor: string;
+
 
   setQuality: (quality: number) => void;
   setValueRange: (valueRange: number[]) => void;
@@ -116,6 +121,11 @@ type PlotState ={
   setScaleIntensity: (scaleIntensity: number) => void;
   setPlotType: (plotType: string) => void;
   setSelectTS: (selectTS: boolean) => void;
+  setShowPoints: (showPoints: boolean) => void;
+  setLinePointSize: (linePointSize: number) => void;
+  setLineWidth: (lineWidth: number) => void;
+  setLineColor: (lineColor: string) => void;
+  setPointColor: (pointColor: string) => void;
 }
 
 export const usePlotStore = create<PlotState>((set) => ({
@@ -130,6 +140,11 @@ export const usePlotStore = create<PlotState>((set) => ({
   yRange: [-1, 1],
   zRange: [-1, 1],
   selectTS: false,
+  showPoints: false,
+  linePointSize: 5,
+  lineWidth: 5,
+  lineColor: "#ffffff",
+  pointColor: "#ffffff",
 
   setQuality: (quality) => set({ quality }),
   setValueRange: (valueRange) => set({ valueRange }),
@@ -141,6 +156,11 @@ export const usePlotStore = create<PlotState>((set) => ({
   setScaleIntensity: (scaleIntensity) => set({ scaleIntensity }),
   setPlotType: (plotType) => set({ plotType }),
   setSelectTS: (selectTS) => set({ selectTS }),
+  setShowPoints: (showPoints) => set({ showPoints }),
+  setLinePointSize: (linePointSize) => set({ linePointSize }),
+  setLineWidth: (lineWidth) => set({ lineWidth }),
+  setLineColor: (lineColor) => set({ lineColor }),
+  setPointColor: (pointColor) => set({ pointColor })
 }))
 
 type AnalysisState = {

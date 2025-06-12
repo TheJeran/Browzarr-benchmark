@@ -4,8 +4,9 @@ import {  useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber';
 import { createPaneContainer } from '../ui';
 import { useButtonBlade, useSliderBlade, useTweakpane, usePaneInput } from '@lazarusa/react-tweakpane';
-import { useGlobalStore } from '@/utils/GlobalStates';
+import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
+import PlotLineOptions from '../ui/PlotLineOptions';
 interface PlotLineProps {
   color?: string;
   lineWidth?: number;
@@ -110,63 +111,12 @@ export const PlotLine = ({
   xScale
 }: PlotLineProps) => {
 
-  const [showPoints,setShowPoints] = useState<boolean>(false)
-
-  const paneContainer = createPaneContainer("line-plot-pane");
-
-  const pane = useTweakpane(
-    {
-      pointColor: "#777777",
-      interpolation: "linear"
-    },
-    {
-      title: 'Line',
-      container: paneContainer ?? undefined,
-      expanded: true,
-    }
-  );
-
-  useButtonBlade(pane,{
-    title:`${showPoints ? "Hide" : "Show"} Points`
-
-  },()=>setShowPoints(x=>!x))
-
-  const [pointColor] = usePaneInput(pane, 'pointColor', {
-    label: 'Point Color',
-    value: '#2d4967'
-  })
-
-  const [pointSize] = useSliderBlade(pane, {
-    label:"Point Size",
-    value:5,
-    min:1,
-    max:20,
-    step:1
-  })
-
-  const [interpolation] = usePaneInput(pane, 'interpolation', {
-    label: "Line Interpolation",
-    options:[
-      {
-        text:"Linear",
-        value:'linear'
-      },
-      {
-        text: "Curved",
-        value:"curved"
-      }
-    ]
-  })
-
-  const [lineWidth] = useSliderBlade(pane, {
-    label:"Line Width",
-    value:5,
-    min:1,
-    max:20,
-    step:1
-  })
-
   const {valueScales, timeSeries, colormap} = useGlobalStore(useShallow(state=>({valueScales:state.valueScales, timeSeries:state.timeSeries, colormap:state.colormap})))
+  const {lineWidth, linePointSize, showPoints} = usePlotStore(useShallow(state =>({
+    lineWidth: state.lineWidth,
+    linePointSize: state.linePointSize,
+    showPoints: state.showPoints
+  })))
   const data = timeSeries
 
   //LinSpace to take up entire extent
@@ -180,6 +130,7 @@ export const PlotLine = ({
   function duplicateArray(arr:number[], times:number) {
     return arr.flatMap(item => Array(times).fill(item));
   }
+  const interpolation = useMemo(()=>'linear',[])
 
   const [points,normed] = useMemo(()=>{
     if (!data || data.length === 0) return [[new THREE.Vector3(0,0,0)],[0]];
@@ -246,7 +197,7 @@ export const PlotLine = ({
   return (
     <group>
       {geometry && <primitive object={new THREE.Line(geometry, material)}  />}
-      {showPoints && <PlotPoints points={points} pointSize={pointSize} pointColor={pointColor} pointSetters={pointSetters}/>}
+      {showPoints && <PlotPoints points={points} pointSize={linePointSize} pointColor={"#bbbbbb"} pointSetters={pointSetters}/>}
     </group>
   );
 };
