@@ -47,7 +47,7 @@ const twoVarOps = [
 
 const axes = [0,1,2]
 
-const AnalysisOptions = ()=> {
+const AnalysisOptions = React.memo(function AnalysisOptions() {
     const {setAxis, setVariable1, setVariable2, setOperation, setExecute, execute, variable1, variable2, operation, axis} = useAnalysisStore(useShallow(state => ({
         setAxis: state.setAxis,
         setVariable1: state.setVariable1,
@@ -61,7 +61,7 @@ const AnalysisOptions = ()=> {
         axis: state.axis
     })))
     const variables = useGlobalStore(state => state.variables)
-
+    console.log("options render")
     const [useTwo, setUseTwo] = useState<boolean>(false)
     const [operations, setOperations] = useState<string[]>(oneVarOps)
 
@@ -158,6 +158,7 @@ const AnalysisOptions = ()=> {
         </div>
         </>
     )
-}
+})
 
 export default AnalysisOptions
+

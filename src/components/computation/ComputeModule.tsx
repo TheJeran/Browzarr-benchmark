@@ -32,7 +32,8 @@ interface ComputeModule{
   },
   setters:{
     setShowInfo:React.Dispatch<React.SetStateAction<boolean>>;
-    uv:React.RefObject<number[]>;
+    setUV: React.Dispatch<React.SetStateAction<number[]>>
+
     val:React.RefObject<number>;
     loc: React.RefObject<number[]>;
   }
@@ -45,7 +46,7 @@ function Rescale(value: number, scales: {minVal: number, maxVal: number}){
 }
 
 const ComputeModule = ({arrays,values, setters}:ComputeModule) => {
-    const {setShowInfo, loc, uv, val} = setters;
+    const {setShowInfo, loc, setUV, val} = setters;
     const {colormap, flipY} = useGlobalStore(useShallow(state=>({colormap:state.colormap, flipY:state.flipY})))
     const {stateVars,valueScales} = values
     const {firstArray, secondArray} = arrays;
@@ -119,27 +120,17 @@ const timerRef = useRef<NodeJS.Timeout | null>(null);
 
 const handleMove = useCallback((e: ThreeEvent<PointerEvent>) => {
   if (infoRef.current && e.uv) {
-    // Always store the latest event
     eventRef.current = e;
-
-    if (!timerRef.current) {
-      timerRef.current = setTimeout(() => {
-        if (eventRef.current) {
-          loc.current = [eventRef.current.clientX, eventRef.current.clientY];
-          // @ts-expect-error: uv is not defined ?
-          const {x, y} = eventRef.current.uv
-          uv.current = [x, y];
-          const yStep = Math.round(planeShape[0]* y)
-          const xStep = Math.round(planeShape[1] * x)
-          const dataIdx = planeShape[1] * yStep + xStep
-          const dataVal = dataArray.current[dataIdx * 4]
-          val.current = Rescale(dataVal,valueScales.firstArray)
-        }
-        timerRef.current = null; // Reset the timer
-      }, 50); // 0.1s delay
-    }
+    loc.current = [e.clientX, e.clientY];
+    const { x, y } = e.uv;
+    setUV([x, y]);
+    const yStep = Math.round(planeShape[0] * y);
+    const xStep = Math.round(planeShape[1] * x);
+    const dataIdx = planeShape[1] * yStep + xStep;
+    const dataVal = dataArray.current[dataIdx * 4];
+    val.current = Rescale(dataVal, valueScales.firstArray);
   }
-}, [loc.current, uv.current]);
+}, []);
   
     const geometry = useMemo(()=>new THREE.PlaneGeometry(2,shapeRatio),[shapeRatio])
 

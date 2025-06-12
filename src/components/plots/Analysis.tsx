@@ -54,10 +54,10 @@ export function Analysis({ values }: {
     const [array2 , setArray2] = useState<Array | null>(null)
     const [showInfo, setShowInfo] = useState<boolean>(false)
     const loc = useRef<number[]>([0,0])
-    const uv = useRef<number[]>([0,0])
+    const [uv, setUV] = useState<number[]>([0,0])
     const val = useRef<number>(0);
-    const xCoord = useState<number>(0)
-    const yCoord = useState<number>(0)
+    const xCoord = useRef<number>(0)
+    const yCoord = useRef<number>(0)
 
     const dimNamesAxis = useMemo(() => dimNames.map((element,idx) => ({
         text: element,
@@ -124,20 +124,19 @@ export function Analysis({ values }: {
   },[variable1,variable2, axis])
 
   const plotArrays = useMemo(()=>dimArrays.filter((_val,idx)=> idx != axis),[axis, dimArrays])
-
   //Get Info for Display
   useEffect(()=>{
     if (dimArrays){
     const timeout = setTimeout(() => {
     const xSize = plotArrays[1].length;
     const ySize = plotArrays[0].length;
-    const xIdx = Math.round(uv.current[0]*xSize-.5)
-    const yIdx = Math.round(uv.current[1]*ySize-.5)
-    setXCoord(plotArrays[1][xIdx])
-    setYCoord(plotArrays[0][yIdx])},50)
+    const xIdx = Math.round(uv[0]*xSize-.5)
+    const yIdx = Math.round(uv[1]*ySize-.5)
+    xCoord.current = plotArrays[1][xIdx]
+    yCoord.current = plotArrays[0][yIdx]},50)
     return ()=> clearTimeout(timeout)
     }
-  },[uv.current, plotArrays])
+  },[uv, plotArrays])
 
 
   const valueScales = useMemo(()=>({
@@ -155,19 +154,18 @@ export function Analysis({ values }: {
       stateVars,
       valueScales
   }),[stateVars,valueScales])
-
-
+  const Options = useMemo(()=> AnalysisOptions,[])
   return (
     <div className='analysis-canvas'
       style={{
         width:canvasWidth,
       }}
       >      
-        <AnalysisOptions />
-        <AnalysisInfo loc={loc.current} show={showInfo} info={[yCoord, xCoord, val.current]} plotDim={axis} />
+        <Options />
+        <AnalysisInfo loc={loc.current} show={showInfo} info={[yCoord.current, xCoord.current, val.current]}/>
         <Canvas camera={{ position: [0, 0, 50], zoom:400 }} orthographic>
           {/* <Perf position='bottom-left'/> */}
-          {array && <ComputeModule arrays={{firstArray: array, secondArray: array2}} values={computeObj} setters={{setShowInfo, loc, uv, val}}/>}
+          {array && <ComputeModule arrays={{firstArray: array, secondArray: array2}} values={computeObj} setters={{setShowInfo, loc, setUV, val}}/>}
           <OrbitControls
             enablePan={true}
             enableRotate={false}
