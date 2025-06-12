@@ -3,7 +3,7 @@
     background: var(--background-plot);
     height: 24px;
     position: fixed;
-    z-index: 3;
+    z-index: 1;
     left: calc(50% - 50px);
     bottom: calc(100% - 12px);
     cursor: pointer;
