@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { LuChevronsUpDown } from "react-icons/lu";
 import { IoIosCheckmark } from "react-icons/io";
 import { ZARR_STORES } from "../zarr/ZarrLoaderLRU";
@@ -103,12 +104,13 @@ const ColorMaps = ({cmap, setCmap} : {cmap : string, setCmap : React.Dispatch<Re
 
 }
 
-const Navbar = () => {
-  const {setInitStore, setVariable, setColormap} = useGlobalStore(
+const Navbar = React.memo(function Navbar(){
+  const {setInitStore, setVariable, setColormap, setTimeSeries} = useGlobalStore(
     useShallow(state=>({
       setInitStore : state.setInitStore, 
       setVariable : state.setVariable,
-      setColormap : state.setColormap
+      setColormap : state.setColormap,
+      setTimeSeries: state.setTimeSeries
     })))
 
   const variables = useGlobalStore(useShallow(state=>state.variables))
@@ -121,7 +123,7 @@ const Navbar = () => {
     setColormap(GetColorMapTexture(colormap, cmap === "Default" ? "Spectral" : cmap, 1, "#000000", 0, flipCmap));
   },[cmap, flipCmap])
   
-
+  console.log("rerender")
   return (
     <nav className="navbar">
       <div className="navbar-left">
@@ -155,7 +157,7 @@ const Navbar = () => {
                   <DropdownMenuPortal>
                     <DropdownMenuSubContent>
                       <DropdownMenuItem onSelect={()=> setPlotType("volume") }>Volume</DropdownMenuItem>
-                      <DropdownMenuItem onSelect={()=> setPlotType("point-cloud") }>Point Cloud</DropdownMenuItem>
+                      <DropdownMenuItem onSelect={()=> {setPlotType("point-cloud"); setTimeSeries([])} }>Point Cloud</DropdownMenuItem>
                     </DropdownMenuSubContent>
                   </DropdownMenuPortal>
                 </DropdownMenuSub>
@@ -195,6 +197,6 @@ const Navbar = () => {
       <AboutButton />
     </nav>
   );
-};
+});
 
 export default Navbar;

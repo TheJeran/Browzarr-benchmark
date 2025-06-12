@@ -11,7 +11,7 @@ const AnalysisInfo = ({loc, show, info, } : {loc: number[], show: boolean, info:
 
     const plotNames = useMemo(()=>dimNames.filter((_val,idx)=> idx != axis),[dimNames, axis])
     const plotUnits = useMemo(()=>dimUnits.filter((_val,idx)=> idx != axis),[dimNames, axis])
-
+    
   return (
     <div className='analysis-info'
         style={{
@@ -20,8 +20,8 @@ const AnalysisInfo = ({loc, show, info, } : {loc: number[], show: boolean, info:
             display: show ? '' : 'none'
         }}
     >
-        {`${plotNames[0]}: ${parseLoc(info[0],plotUnits[0])}`}<br/>
-        {`${plotNames[1]}: ${parseLoc(info[1],plotUnits[1])}`}<br/>
+        {`${plotNames[0]}: ${show && parseLoc(info[0],plotUnits[0])}`}<br/>
+        {`${plotNames[1]}: ${show && parseLoc(info[1],plotUnits[1])}`}<br/>
         {`Value: ${Math.round(info[2] * 100)/100}`}
     </div>
     )

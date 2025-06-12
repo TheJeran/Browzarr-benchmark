@@ -53,11 +53,12 @@ export function Analysis({ values }: {
     const [array , setArray] = useState<Array | null>(null)
     const [array2 , setArray2] = useState<Array | null>(null)
     const [showInfo, setShowInfo] = useState<boolean>(false)
-    const loc = useRef<number[]>([0,0])
+    const [loc, setLoc] = useState<number[]>([0,0])
     const [uv, setUV] = useState<number[]>([0,0])
-    const val = useRef<number>(0);
-    const xCoord = useRef<number>(0)
-    const yCoord = useRef<number>(0)
+    const [val, setVal] = useState<number>(0);
+    const [xCoord, setXCoord] = useState<number>(0)
+    const [yCoord, setYCoord] = useState<number>(0)
+
 
     const dimNamesAxis = useMemo(() => dimNames.map((element,idx) => ({
         text: element,
@@ -118,6 +119,7 @@ export function Analysis({ values }: {
       })
     }
     if (variable2 === "Default"){
+      console.log("reset")
       setArray2(null)
     }
 
@@ -127,14 +129,12 @@ export function Analysis({ values }: {
   //Get Info for Display
   useEffect(()=>{
     if (dimArrays){
-    const timeout = setTimeout(() => {
     const xSize = plotArrays[1].length;
     const ySize = plotArrays[0].length;
     const xIdx = Math.round(uv[0]*xSize-.5)
     const yIdx = Math.round(uv[1]*ySize-.5)
-    xCoord.current = plotArrays[1][xIdx]
-    yCoord.current = plotArrays[0][yIdx]},50)
-    return ()=> clearTimeout(timeout)
+    setXCoord(plotArrays[1][xIdx])
+    setYCoord(plotArrays[0][yIdx])
     }
   },[uv, plotArrays])
 
@@ -162,10 +162,10 @@ export function Analysis({ values }: {
       }}
       >      
         <Options />
-        <AnalysisInfo loc={loc.current} show={showInfo} info={[yCoord.current, xCoord.current, val.current]}/>
+        <AnalysisInfo loc={loc} show={showInfo} info={[yCoord, xCoord, val]} />
         <Canvas camera={{ position: [0, 0, 50], zoom:400 }} orthographic>
           {/* <Perf position='bottom-left'/> */}
-          {array && <ComputeModule arrays={{firstArray: array, secondArray: array2}} values={computeObj} setters={{setShowInfo, loc, setUV, val}}/>}
+          {array && <ComputeModule arrays={{firstArray: array, secondArray: array2}} values={computeObj} setters={{setShowInfo, setLoc, setUV, setVal}}/>}
           <OrbitControls
             enablePan={true}
             enableRotate={false}

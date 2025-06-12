@@ -47,6 +47,7 @@ export class OneArrayCompute{
         this.targetAxis = axis;
         this.renderTarget.texture.dispose()
         this.renderTarget = this.GPUCompute.createRenderTarget(resolution[1],resolution[0],THREE.ClampToEdgeWrapping,THREE.ClampToEdgeWrapping,1006,1006)
+        this.renderTarget.texture.format = THREE.RedFormat;
         this.renderTarget.texture.minFilter = THREE.NearestFilter;
         this.renderTarget.texture.magFilter = THREE.NearestFilter;
         this.renderTarget.texture.needsUpdate = true;
@@ -61,7 +62,8 @@ export class OneArrayCompute{
         reducer.material.uniforms["axis"] = { value: this.targetAxis };
         
         this.GPUCompute.doRenderTarget(reducer.material, this.renderTarget);
-        const pixelBuffer = new Float32Array(this.renderTarget.width * this.renderTarget.height * 4)
+        const pixelBuffer = new Float32Array(this.renderTarget.width * this.renderTarget.height)
+        console.log(this.renderTarget.width * this.renderTarget.height)
         this.renderer.readRenderTargetPixels(this.renderTarget, 0, 0, this.renderTarget.width, this.renderTarget.height, pixelBuffer)
         return [this.renderTarget.texture, pixelBuffer];
     }
@@ -149,7 +151,7 @@ export class TwoArrayCompute{
         this.renderTarget.texture.magFilter = THREE.NearestFilter;
         this.renderTarget.texture.needsUpdate = true;
     }
-    private performReduction(axis: number, fragShader: any): THREE.Texture {
+    private performReduction(axis: number, fragShader: any): [THREE.Texture, Float32Array] {
         if (axis !== this.targetAxis) {
             this.initAxis(axis);
         }
@@ -161,11 +163,13 @@ export class TwoArrayCompute{
         reducer.material.uniforms["axis"] = { value: this.targetAxis };
         
         this.GPUCompute.doRenderTarget(reducer.material, this.renderTarget);
-        return this.renderTarget.texture;
+        const pixelBuffer = new Float32Array(this.renderTarget.width * this.renderTarget.height * 4)
+        this.renderer.readRenderTargetPixels(this.renderTarget, 0, 0, this.renderTarget.width, this.renderTarget.height, pixelBuffer)
+        return [this.renderTarget.texture, pixelBuffer];
+
     }
-    Correlate(axis: number): THREE.Texture {
-        const result = this.performReduction(axis, correlateFrag);
-        return result;
+    Correlate(axis: number): [THREE.Texture, Float32Array] {
+        return this.performReduction(axis, correlateFrag);
     }
 
     dispose(){

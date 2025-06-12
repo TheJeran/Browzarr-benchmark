@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react'
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 import Slider  from 'rc-slider';
 import { useShallow } from 'zustand/shallow';
 import 'rc-slider/assets/index.css';
@@ -26,20 +25,38 @@ import {
 
 function DeNorm(val : number, min : number, max : number){
     const range = max-min;
-    return Math.round((val*range+min)*100)/100;
+    return val*range+min;
 }
 
+function Norm(val : number, min : number, max : number){
+    const range = max-min;
+    return (val-min)/range;
+}
 
-const MinMaxSlider = ({range, setRange, valueScales, min=-1} : 
+const MinMaxSlider = ({range, setRange, valueScales, min=-1, array} : 
     {
         range : number[], 
         setRange : (value: number[]) => void, 
         valueScales : {minVal : number, maxVal  : number},
-        min?: number
+        min?: number,
+        array?: number[]
     }) => {
         let {minVal, maxVal} = valueScales;
         minVal = Number(minVal)
         maxVal = Number(maxVal)
+        let [trueMin, trueMax] = [min, 1]
+        if (array){
+            const size = array.length
+            const minIdx = Math.round(Norm(range[0], min, 1) * size)
+            const maxIdx = Math.round(Norm(range[1], min, 1) * size)
+            trueMin = array[minIdx]
+            trueMax = array[maxIdx-1]
+        }
+        else {
+            trueMin = Math.round(DeNorm(range[0], minVal, maxVal)*100)/100
+            trueMax = Math.round(DeNorm(range[1], minVal, maxVal)*100)/100
+        }
+
     return(
         <div className='w-full flex justify-between flex-col'>
             <Slider
@@ -54,8 +71,8 @@ const MinMaxSlider = ({range, setRange, valueScales, min=-1} :
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginTop: 18 }}>
                 {/* <span>Min: {DeNorm(range[0], minVal, maxVal)}</span>
                 <span>Max: {DeNorm(range[1], minVal, maxVal)}</span> */}
-                <span>Min: {range[0]}</span>
-                <span>Max: {range[1]}</span>
+                <span>Min: {trueMin}</span>
+                <span>Max: {trueMax}</span>
             </div>
         </div>
 
@@ -126,13 +143,13 @@ const VolumeTweaks = () => {
                     <DropdownMenuLabel>Spatial Cropping</DropdownMenuLabel>
                     <DropdownMenuGroup>
                         <DropdownMenuItem onSelect={e=> e.preventDefault()}>
-                            <MinMaxSlider range={xRange} setRange={setXRange} valueScales={xScales}/>
+                            <MinMaxSlider range={xRange} setRange={setXRange} valueScales={xScales} array={dimArrays[2]}/>
                         </DropdownMenuItem>
                         <DropdownMenuItem onSelect={e=> e.preventDefault()}>
-                            <MinMaxSlider range={yRange} setRange={setYRange} valueScales={yScales}/>
+                            <MinMaxSlider range={yRange} setRange={setYRange} valueScales={yScales} array={dimArrays[1]}/>
                         </DropdownMenuItem>
                         <DropdownMenuItem onSelect={e=> e.preventDefault()}>
-                            <MinMaxSlider range={zRange} setRange={setZRange} valueScales={zScales}/>
+                            <MinMaxSlider range={zRange} setRange={setZRange} valueScales={zScales} array={dimArrays[0]}/>
                         </DropdownMenuItem>
                     </DropdownMenuGroup>
                 </DropdownMenuGroup>

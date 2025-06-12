@@ -1,5 +1,5 @@
 import { OrbitControls } from '@react-three/drei';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { PointCloud, UVCube, DataCube } from '@/components/plots';
@@ -8,7 +8,9 @@ import { ArrayToTexture, DefaultCubeTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
-import { Navbar } from '../ui';
+import { Navbar, PlotLineButton } from '../ui';
+
+
 interface PlotParameters{
     values:{
         ZarrDS: ZarrDataset;
@@ -38,7 +40,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
           setDimUnits:state.setDimUnits}
         )))
     const {colormap, variable} = useGlobalStore(useShallow(state=>({colormap: state.colormap, variable: state.variable})))
-
+    
     const {ZarrDS,canvasWidth} = values;
     const plotType = usePlotStore(state => state.plotType)
 
@@ -71,11 +73,6 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
 
         return () => observer.disconnect()
     }, [])
-
-    // Update background when bgcolor changes
-    // useEffect(() => {
-    //     setCurrentBg(bgcolor || 'var(--background)')
-    // }, [bgcolor])
 
   //DATA LOADING
   useEffect(() => {
@@ -138,14 +135,15 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       }
   }, [variable])
 
-
+  const Nav = useMemo(()=>Navbar,[])
   return (
     <div className='main-canvas'
       style={{
         width: windowWidth - canvasWidth         
       }}
     >
-      <Navbar />
+      {plotType == "volume" && <PlotLineButton />}
+      <Nav />
       <Canvas camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
         frameloop="demand"
         style={{

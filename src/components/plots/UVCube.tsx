@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { useMemo, useState, useEffect } from 'react';
 import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU';
 import { parseUVCoords } from '@/utils/HelperFuncs';
-import { useGlobalStore } from '@/utils/GlobalStates';
+import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 
 
@@ -22,7 +22,8 @@ export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
       dimNames:state.dimNames,
       dimUnits:state.dimUnits
     })))
-
+  
+  const selectTS = usePlotStore(state => state.selectTS)
 
   function HandleTimeSeries(event: THREE.Intersection){
     const point = event.point;
@@ -75,7 +76,7 @@ export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
     <>
       <mesh geometry={geometry} scale={shape} onClick={(e) => {
         e.stopPropagation();
-        if (e.intersections.length > 0) {
+        if (e.intersections.length > 0 && selectTS) {
           HandleTimeSeries(e.intersections[0]);
         }
       }}>
