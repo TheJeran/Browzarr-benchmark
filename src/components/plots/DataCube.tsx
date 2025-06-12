@@ -22,43 +22,6 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
       zRange: state.zRange,
       quality: state.quality
     })))
-    const paneContainer = createPaneContainer("plot-pane");
-    const pane = useTweakpane(
-        {
-          flip: false,
-        },
-        {
-          title: 'Volume',
-          container: paneContainer ?? undefined,
-          expanded: false,
-        }
-      );
-
-      const [threshold] = useSliderBlade(pane, {
-        label: 'Clip Values',
-        value: 0.0,
-        min: 0,
-        max: 1,
-        step: 0.01,
-        format: (value) => value.toFixed(2),
-      })
-
-      const [steps] = useSliderBlade(pane, {
-        label: 'Quality',
-        value: 200,
-        min: 50,
-        max: 1000,
-        step: 25,
-      })
-
-      const [flip] = usePaneInput(
-        pane,
-        'flip',
-        {
-          label: 'Invert values',
-          value: false
-        }
-      )
   // We need to check if moving this outside of useMemo means it's creating a ton of materials. This was how it was done in THREE Journey when I was doing that, so I know it's not stricly speaking wrong
     const shaderMaterial = new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3,
@@ -66,12 +29,11 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
           map: { value: volTexture },
           cmap:{value: colormap},
           cameraPos: { value: new THREE.Vector3() },
-          threshold: {value: threshold},
+          threshold: {value: new THREE.Vector2(valueRange[0],valueRange[1])},
           scale: {value: shape},
           flatBounds:{value: new THREE.Vector4(xRange[0],xRange[1],zRange[0],zRange[1])},
           vertBounds:{value: new THREE.Vector2(yRange[0],yRange[1])},
-          steps: { value: quality },
-          flip: {value: flip }
+          steps: { value: quality }
       },
       vertexShader,
       fragmentShader,

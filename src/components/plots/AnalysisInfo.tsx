@@ -1,16 +1,17 @@
-import React, {useMemo} from 'react'
+import React, {useEffect, useMemo} from 'react'
 import './Plots.css'
-import { useGlobalStore } from '@/utils/GlobalStates'
+import { useAnalysisStore, useGlobalStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
 import { parseLoc } from '@/utils/HelperFuncs'
 
 
-const AnalysisInfo = ({loc, show, info, plotDim} : {loc: number[], show: boolean, info: number[], plotDim: number}) => {
+const AnalysisInfo = ({loc, show, info, } : {loc: number[], show: boolean, info: number[]}) => {
     const {dimNames, dimUnits} = useGlobalStore(useShallow(state=>({dimNames: state.dimNames, dimUnits: state.dimUnits})))
+    const axis = useAnalysisStore(state=> state.axis)
 
-    const plotNames = useMemo(()=>dimNames.filter((_val,idx)=> idx != plotDim),[dimNames, plotDim])
-    const plotUnits = useMemo(()=>dimUnits.filter((_val,idx)=> idx != plotDim),[dimNames, plotDim])
-    
+    const plotNames = useMemo(()=>dimNames.filter((_val,idx)=> idx != axis),[dimNames, axis])
+    const plotUnits = useMemo(()=>dimUnits.filter((_val,idx)=> idx != axis),[dimNames, axis])
+
   return (
     <div className='analysis-info'
         style={{

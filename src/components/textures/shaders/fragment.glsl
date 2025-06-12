@@ -14,9 +14,8 @@ uniform sampler3D map;
 uniform sampler2D cmap;
 
 uniform vec3 scale;
-uniform float threshold;
+uniform vec2 threshold;
 uniform float steps;
-uniform bool flip;
 uniform vec4 flatBounds;
 uniform vec2 vertBounds;
 uniform float intensity;
@@ -71,8 +70,8 @@ void main() {
 
         float d = sample1(p / scale + 0.5);
 
-        bool cond = (d > threshold) || (d == 0.0 && threshold == 0.0);
-        cond = flip ? !cond : cond;
+        bool cond = (d > threshold.x) && (d < threshold.y);
+        
 
         if (cond) {
             vec4 col = texture(cmap, vec2(d, 0.5));

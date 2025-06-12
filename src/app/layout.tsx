@@ -19,7 +19,6 @@ export default function RootLayout({
       <body className="antialiased">
       <ThemeProvider defaultTheme="system">
         <Overlays />
-        <Navbar />
         {children}
       </ThemeProvider>
       </body>

@@ -16,6 +16,7 @@ import { Loading } from "./Loading";
 import useCSSVariable from "./useCSSVariable";
 import ShowLinePlot from "./ShowLinePlot";
 import PlotTweaker from "./PlotTweaker";
+import AnalysisOptions from "./AnalysisOptions";
 export {
   Navbar,
   Footer,
@@ -35,5 +36,6 @@ export {
   Loading,
   useCSSVariable,
   ShowLinePlot,
-  PlotTweaker
+  PlotTweaker,
+  AnalysisOptions
 };
