@@ -67,13 +67,11 @@ export function LandingHome() {
   //These values are passed to the Plot Component
   const plotObj = useMemo(() => ({
     ZarrDS,
-    variable,
     canvasWidth
-  }), [settings.plotType, ZarrDS, variable, canvasWidth]);
+  }), [ ZarrDS, canvasWidth]);
 
 //This is the data being passed down the plot tree
   const analysisObj = useMemo(() => ({
-    setters: {},
     values: {
       ZarrDS,
       canvasWidth,

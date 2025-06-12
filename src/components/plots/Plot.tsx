@@ -8,11 +8,10 @@ import { ArrayToTexture, DefaultCubeTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
-
+import { Navbar } from '../ui';
 interface PlotParameters{
     values:{
         ZarrDS: ZarrDataset;
-        variable:string;
         canvasWidth:number
     }
     setShowLoading: React.Dispatch<React.SetStateAction<boolean>>;
@@ -38,9 +37,9 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
           setDimNames:state.setDimNames,
           setDimUnits:state.setDimUnits}
         )))
-    const colormap = useGlobalStore(state=>state.colormap)
+    const {colormap, variable} = useGlobalStore(useShallow(state=>({colormap: state.colormap, variable: state.variable})))
 
-    const {ZarrDS,variable,canvasWidth} = values;
+    const {ZarrDS,canvasWidth} = values;
     const plotType = usePlotStore(state => state.plotType)
 
     const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
@@ -146,6 +145,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         width: windowWidth - canvasWidth         
       }}
     >
+      <Navbar />
       <Canvas camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
         frameloop="demand"
         style={{

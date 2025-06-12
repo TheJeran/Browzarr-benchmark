@@ -1,9 +1,5 @@
-.analysis-container{
-    position: fixed;
-    width: 200px;
-    height: 100px;
-    background-color: white;
-    z-index: 6;
-    left: 100px;
-    top: 800px;
+.analysis-options{
+    position: absolute;
+    z-index: 2;
+    left: calc(50% - 100px);
 }

@@ -30,11 +30,12 @@ function DeNorm(val : number, min : number, max : number){
 }
 
 
-const MinMaxSlider = ({range, setRange, valueScales} : 
+const MinMaxSlider = ({range, setRange, valueScales, min=-1} : 
     {
         range : number[], 
         setRange : (value: number[]) => void, 
-        valueScales : {minVal : number, maxVal  : number}
+        valueScales : {minVal : number, maxVal  : number},
+        min?: number
     }) => {
         let {minVal, maxVal} = valueScales;
         minVal = Number(minVal)
@@ -43,7 +44,7 @@ const MinMaxSlider = ({range, setRange, valueScales} :
         <div className='w-full flex justify-between flex-col'>
             <Slider
                 range
-                min={-1}
+                min={min}
                 max={1}
                 defaultValue={range}
                 step={0.01}
@@ -117,7 +118,7 @@ const VolumeTweaks = () => {
                 <DropdownMenuGroup>
                     <DropdownMenuLabel>Value Cropping</DropdownMenuLabel>
                     <DropdownMenuItem onSelect={e=> e.preventDefault()}>
-                        <MinMaxSlider range={valueRange} setRange={setValueRange} valueScales={valueScales}/>
+                        <MinMaxSlider range={valueRange} setRange={setValueRange} valueScales={valueScales} min={0}/>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />

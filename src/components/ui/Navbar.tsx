@@ -109,10 +109,8 @@ const Navbar = () => {
       setInitStore : state.setInitStore, 
       setVariable : state.setVariable,
       setColormap : state.setColormap
-    
     })))
 
-  const [refresh, setRefresh] = useState<boolean>(false)
   const variables = useGlobalStore(useShallow(state=>state.variables))
   const setPlotType = usePlotStore(state=> state.setPlotType)
   const [cmap, setCmap] = useState<string>("Default")

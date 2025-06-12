@@ -32,6 +32,7 @@ type StoreState = {
   initStore:string;
   variable: string;
   variables: string[];
+  plotOn: boolean;
 
   setShape: (shape: THREE.Vector3) => void;
   setValueScales: (valueScales: { maxVal: number; minVal: number }) => void;
@@ -49,6 +50,7 @@ type StoreState = {
   setInitStore: (initStore:string ) => void;
   setVariable: (variable: string) => void;
   setVariables: (variables: string[]) => void;
+  setPlotOn: (plotOn: boolean) => void;
 
 };
 
@@ -70,6 +72,8 @@ export const useGlobalStore = create<StoreState>((set) => ({
   initStore: "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr",
   variable: 'Default',
   variables: [],
+  plotOn: false,
+
   setShape: (shape) => set({ shape }),
   setValueScales: (valueScales) => set({ valueScales }),
   setColormap: (colormap) => set({ colormap }),
@@ -86,7 +90,8 @@ export const useGlobalStore = create<StoreState>((set) => ({
   setInitStore: (initStore) => set({ initStore }),
   setVariable: (variable) => {set({ variable })
   },
-  setVariables: (variables) => set({variables})
+  setVariables: (variables) => set({variables}),
+  setPlotOn: (plotOn) => set({ plotOn }),
 }));
 
 type PlotState ={
@@ -118,7 +123,7 @@ export const usePlotStore = create<PlotState>((set) => ({
   scalePoints: false,
   scaleIntensity: 1,
   quality: 200,
-  valueRange: [-1, 1],
+  valueRange: [0, 1],
   xRange: [-1, 1],
   yRange: [-1, 1],
   zRange: [-1, 1],
@@ -135,3 +140,30 @@ export const usePlotStore = create<PlotState>((set) => ({
   }
   
 }))
+
+type AnalysisState = {
+  axis: number;
+  operation: string;
+  execute: boolean;
+  variable1: string;
+  variable2: string;
+
+  setAxis: (axis: number) => void;
+  setOperation: (operation: string) => void;
+  setExecute: (execute: boolean) => void;
+  setVariable1: (variable1: string) => void;
+  setVariable2: (variable2: string) => void;
+}
+
+export const useAnalysisStore = create<AnalysisState>((set) => ({
+  axis: 0,
+  operation: "Mean", 
+  execute: false,
+  variable1: "Default",
+  variable2: "Default",
+  setAxis: (axis) => set({ axis }),
+  setOperation: (operation) => set({ operation }),
+  setExecute: (execute) => set({ execute }),
+  setVariable1: (variable1) => set({ variable1 }),
+  setVariable2: (variable2) => set({ variable2 }),  
+}));
