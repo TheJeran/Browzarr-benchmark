@@ -66,12 +66,12 @@ const AnalysisOptions = React.memo(function AnalysisOptions() {
     const [operations, setOperations] = useState<string[]>(oneVarOps)
 
     useEffect(()=>{
-        !useTwo && setVariable2("Default") //This reset variable2 when going back to one variable
         if (useTwo){
             setOperations(twoVarOps); 
             setOperation("Correlation")
         }
         else {
+            setVariable2("Default") //This reset variable2 when going back to one variable
             setOperations(oneVarOps);
             setOperation("Mean")
         }
