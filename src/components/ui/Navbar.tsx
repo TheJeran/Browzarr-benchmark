@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { LuChevronsUpDown } from "react-icons/lu";
 import { IoIosCheckmark } from "react-icons/io";
 import { ZARR_STORES } from "../zarr/ZarrLoaderLRU";
@@ -103,7 +104,7 @@ const ColorMaps = ({cmap, setCmap} : {cmap : string, setCmap : React.Dispatch<Re
 
 }
 
-const Navbar = () => {
+const Navbar = React.memo(function Navbar(){
   const {setInitStore, setVariable, setColormap} = useGlobalStore(
     useShallow(state=>({
       setInitStore : state.setInitStore, 
@@ -195,6 +196,6 @@ const Navbar = () => {
       <AboutButton />
     </nav>
   );
-};
+});
 
 export default Navbar;

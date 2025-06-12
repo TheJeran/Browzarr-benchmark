@@ -1,5 +1,5 @@
 import { OrbitControls } from '@react-three/drei';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { PointCloud, UVCube, DataCube } from '@/components/plots';
@@ -138,14 +138,14 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       }
   }, [variable])
 
-
+  const Nav = useMemo(()=>Navbar,[])
   return (
     <div className='main-canvas'
       style={{
         width: windowWidth - canvasWidth         
       }}
     >
-      <Navbar />
+      <Nav />
       <Canvas camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
         frameloop="demand"
         style={{
