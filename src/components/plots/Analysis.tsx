@@ -163,10 +163,10 @@ export function Analysis({ values }: {
       }}
       >      
         <Options />
-        <AnalysisInfo loc={loc.current} show={showInfo} info={[yCoord.current, xCoord.current, val.current]}/>
+        <AnalysisInfo loc={loc} show={showInfo} info={[yCoord, xCoord, val]} />
         <Canvas camera={{ position: [0, 0, 50], zoom:400 }} orthographic>
           {/* <Perf position='bottom-left'/> */}
-          {array && <ComputeModule arrays={{firstArray: array, secondArray: array2}} values={computeObj} setters={{setShowInfo, loc, setUV, val}}/>}
+          {array && <ComputeModule arrays={{firstArray: array, secondArray: array2}} values={computeObj} setters={{setShowInfo, setLoc, setUV, setVal}}/>}
           <OrbitControls
             enablePan={true}
             enableRotate={false}
