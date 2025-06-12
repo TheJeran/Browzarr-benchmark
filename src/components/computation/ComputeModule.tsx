@@ -32,10 +32,9 @@ interface ComputeModule{
   },
   setters:{
     setShowInfo:React.Dispatch<React.SetStateAction<boolean>>;
-    setUV: React.Dispatch<React.SetStateAction<number[]>>
-
-    val:React.RefObject<number>;
-    loc: React.RefObject<number[]>;
+    setLoc:React.Dispatch<React.SetStateAction<number[]>>;
+    setUV:React.Dispatch<React.SetStateAction<number[]>>;
+    setVal:React.Dispatch<React.SetStateAction<number>>;
   }
   
 }
@@ -46,7 +45,7 @@ function Rescale(value: number, scales: {minVal: number, maxVal: number}){
 }
 
 const ComputeModule = ({arrays,values, setters}:ComputeModule) => {
-    const {setShowInfo, loc, setUV, val} = setters;
+    const {setShowInfo, setLoc, setUV, setVal} = setters;
     const {colormap, flipY} = useGlobalStore(useShallow(state=>({colormap:state.colormap, flipY:state.flipY})))
     const {stateVars,valueScales} = values
     const {firstArray, secondArray} = arrays;
@@ -105,7 +104,7 @@ const ComputeModule = ({arrays,values, setters}:ComputeModule) => {
         setTexture(newText)
         setPlaneShape(shape.filter((_val,idx)=> idx !== axis))
       }
-    },[execute, axis, operation])
+    },[execute, axis])
 
     const shapeRatio = useMemo(()=>flipY ? planeShape[0]/planeShape[1]*-2 : planeShape[0]/planeShape[1]*2,[flipY,planeShape])
 
@@ -120,15 +119,25 @@ const timerRef = useRef<NodeJS.Timeout | null>(null);
 
 const handleMove = useCallback((e: ThreeEvent<PointerEvent>) => {
   if (infoRef.current && e.uv) {
+    // Always store the latest event
     eventRef.current = e;
-    loc.current = [e.clientX, e.clientY];
-    const { x, y } = e.uv;
-    setUV([x, y]);
-    const yStep = Math.round(planeShape[0] * y);
-    const xStep = Math.round(planeShape[1] * x);
-    const dataIdx = planeShape[1] * yStep + xStep;
-    const dataVal = dataArray.current[dataIdx * 4];
-    val.current = Rescale(dataVal, valueScales.firstArray);
+
+    if (!timerRef.current) {
+      timerRef.current = setTimeout(() => {
+        if (eventRef.current) {
+          setLoc([eventRef.current.clientX, eventRef.current.clientY]);
+          // @ts-expect-error: uv is not defined ?
+          const {x, y} = eventRef.current.uv
+          setUV([x, y]);
+          const yStep = Math.round(planeShape[0]* y)
+          const xStep = Math.round(planeShape[1] * x)
+          const dataIdx = planeShape[1] * yStep + xStep
+          const dataVal = dataArray.current[dataIdx * 4]
+          setVal(Rescale(dataVal,valueScales.firstArray)) 
+        }
+        timerRef.current = null; // Reset the timer
+      }, 50); // 0.1s delay
+    }
   }
 }, []);
   

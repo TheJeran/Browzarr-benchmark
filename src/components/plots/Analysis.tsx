@@ -128,14 +128,12 @@ export function Analysis({ values }: {
   //Get Info for Display
   useEffect(()=>{
     if (dimArrays){
-    const timeout = setTimeout(() => {
     const xSize = plotArrays[1].length;
     const ySize = plotArrays[0].length;
     const xIdx = Math.round(uv[0]*xSize-.5)
     const yIdx = Math.round(uv[1]*ySize-.5)
-    xCoord.current = plotArrays[1][xIdx]
-    yCoord.current = plotArrays[0][yIdx]},50)
-    return ()=> clearTimeout(timeout)
+    setXCoord(plotArrays[1][xIdx])
+    setYCoord(plotArrays[0][yIdx])
     }
   },[uv, plotArrays])
 
