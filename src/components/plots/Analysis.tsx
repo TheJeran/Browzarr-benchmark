@@ -53,11 +53,12 @@ export function Analysis({ values }: {
     const [array , setArray] = useState<Array | null>(null)
     const [array2 , setArray2] = useState<Array | null>(null)
     const [showInfo, setShowInfo] = useState<boolean>(false)
-    const loc = useRef<number[]>([0,0])
+    const [loc, setLoc] = useState<number[]>([0,0])
     const [uv, setUV] = useState<number[]>([0,0])
-    const val = useRef<number>(0);
-    const xCoord = useRef<number>(0)
-    const yCoord = useRef<number>(0)
+    const [val, setVal] = useState<number>(0);
+    const [xCoord, setXCoord] = useState<number>(0)
+    const [yCoord, setYCoord] = useState<number>(0)
+
 
     const dimNamesAxis = useMemo(() => dimNames.map((element,idx) => ({
         text: element,
