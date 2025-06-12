@@ -47,7 +47,7 @@
 
 .analysis-info{
     position: fixed;
-    width: 100px;
+    max-width: 200px;
     height: 60px;
     z-index: 6;
     background-color: aliceblue;

@@ -88,8 +88,7 @@ export const useGlobalStore = create<StoreState>((set) => ({
   setPlotDim: (plotDim) => set({ plotDim }),
   setFlipY: (flipY) => set({ flipY }),
   setInitStore: (initStore) => set({ initStore }),
-  setVariable: (variable) => {set({ variable })
-  },
+  setVariable: (variable) => set({ variable }),
   setVariables: (variables) => set({variables}),
   setPlotOn: (plotOn) => set({ plotOn }),
 }));
@@ -104,6 +103,8 @@ type PlotState ={
   yRange: number[];
   zRange: number[];
   quality: number;
+  selectTS: boolean;
+  
 
   setQuality: (quality: number) => void;
   setValueRange: (valueRange: number[]) => void;
@@ -114,6 +115,7 @@ type PlotState ={
   setScalePoints: (scalePoints: boolean) => void;
   setScaleIntensity: (scaleIntensity: number) => void;
   setPlotType: (plotType: string) => void;
+  setSelectTS: (selectTS: boolean) => void;
 }
 
 export const usePlotStore = create<PlotState>((set) => ({
@@ -127,6 +129,7 @@ export const usePlotStore = create<PlotState>((set) => ({
   xRange: [-1, 1],
   yRange: [-1, 1],
   zRange: [-1, 1],
+  selectTS: false,
 
   setQuality: (quality) => set({ quality }),
   setValueRange: (valueRange) => set({ valueRange }),
@@ -136,9 +139,8 @@ export const usePlotStore = create<PlotState>((set) => ({
   setPointSize: (pointSize) => set({ pointSize }),
   setScalePoints: (scalePoints) => set({ scalePoints }),
   setScaleIntensity: (scaleIntensity) => set({ scaleIntensity }),
-  setPlotType: (plotType) => {set({ plotType })
-  }
-  
+  setPlotType: (plotType) => set({ plotType }),
+  setSelectTS: (selectTS) => set({ selectTS }),
 }))
 
 type AnalysisState = {

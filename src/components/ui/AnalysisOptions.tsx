@@ -1,5 +1,4 @@
 "use client";
-
 import './css/Analysis.css'
 import React, {useEffect, useState} from 'react'
 import { useAnalysisStore, useGlobalStore } from '@/utils/GlobalStates'
@@ -61,7 +60,6 @@ const AnalysisOptions = React.memo(function AnalysisOptions() {
         axis: state.axis
     })))
     const variables = useGlobalStore(state => state.variables)
-    console.log("options render")
     const [useTwo, setUseTwo] = useState<boolean>(false)
     const [operations, setOperations] = useState<string[]>(oneVarOps)
 
@@ -100,12 +98,16 @@ const AnalysisOptions = React.memo(function AnalysisOptions() {
 
     return(
         <>
-        <div className="analysis-options">
+        <div className="analysis-options"
+            style={{
+                top:variable1 === "Default" ? "49%" : "1%"
+            }}
+        >
             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline">Analyze</Button>
+                <DropdownMenuTrigger asChild >
+                    <Button className=" cursor-pointer" variant="outline">Analyze</Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-60" align="center">
+                <DropdownMenuContent className="w-60 items-center" align="center">
                     <DropdownMenuLabel>Variable</DropdownMenuLabel>
                     <DropdownMenuGroup onClick={e => e.preventDefault()}>
                         <DropdownMenuItem>
@@ -140,7 +142,7 @@ const AnalysisOptions = React.memo(function AnalysisOptions() {
                         <Select onValueChange={e=>setAxis(parseInt(e))}>
                             <SelectTrigger className="w-[180px]">
                                 <label htmlFor="">Axis</label>
-                                <SelectValue placeholder={axis} />
+                                <SelectValue placeholder={String(axis)} />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>

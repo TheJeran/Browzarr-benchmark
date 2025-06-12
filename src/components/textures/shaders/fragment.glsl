@@ -55,7 +55,7 @@ void main() {
     vec4 accumColor = vec4(0.0);
     float alphaAcc = 0.0;
     for (float t = bounds.x; t < bounds.y; t += delta) {
-        if (p.x > -flatBounds.x || p.x < -flatBounds.y) {
+        if (p.x > -flatBounds.x || p.x < -flatBounds.y) { 
             p += rayDir * delta;
             continue;
         }

@@ -119,6 +119,7 @@ export function Analysis({ values }: {
       })
     }
     if (variable2 === "Default"){
+      console.log("reset")
       setArray2(null)
     }
 
