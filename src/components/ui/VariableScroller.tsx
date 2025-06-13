@@ -43,7 +43,7 @@ const MetaDataInfo = ({meta} : {meta : any}) =>{
 
 
 const VariableScroller = ({zMeta} : {zMeta : object[]}) => {
-  const variables = useGlobalStore(useShallow(state=>state.variables))
+  const {variables, setVariable} = useGlobalStore(useShallow(state=>({variables: state.variables, setVariable: state.setVariable})))
   const [selectedIndex, setSelectedIndex] = useState(Math.floor(variables.length / 2));
   const [meta, setMeta] = useState<any>(null) //This is the individual metadata for the element
   const [scrollHeight, setScrollHeight] = useState<number>(82);
@@ -142,6 +142,7 @@ const VariableScroller = ({zMeta} : {zMeta : object[]}) => {
                     fontWeight: selectedIndex === index ? "bold" : "normal",
                     }}
                     onClick={(()=>setSelectedIndex(index))}
+                    onDoubleClick={(()=>setVariable(variable))}
                 >
                     {variable}
                 </div>

@@ -109,6 +109,7 @@ type PlotState ={
   lineWidth: number;
   lineColor: string;
   pointColor: string;
+  useLineColor: boolean;
 
 
   setQuality: (quality: number) => void;
@@ -126,6 +127,7 @@ type PlotState ={
   setLineWidth: (lineWidth: number) => void;
   setLineColor: (lineColor: string) => void;
   setPointColor: (pointColor: string) => void;
+  setUseLineColor: (lineColor: boolean) => void;
 }
 
 export const usePlotStore = create<PlotState>((set) => ({
@@ -143,8 +145,9 @@ export const usePlotStore = create<PlotState>((set) => ({
   showPoints: false,
   linePointSize: 5,
   lineWidth: 5,
-  lineColor: "#ffffff",
-  pointColor: "#ffffff",
+  lineColor: "#111111",
+  pointColor: "#EA8686",
+  useLineColor: false,
 
   setQuality: (quality) => set({ quality }),
   setValueRange: (valueRange) => set({ valueRange }),
@@ -160,8 +163,12 @@ export const usePlotStore = create<PlotState>((set) => ({
   setLinePointSize: (linePointSize) => set({ linePointSize }),
   setLineWidth: (lineWidth) => set({ lineWidth }),
   setLineColor: (lineColor) => set({ lineColor }),
-  setPointColor: (pointColor) => set({ pointColor })
+  setPointColor: (pointColor) => set({ pointColor }),
+  setUseLineColor: (useLineColor) => set({ useLineColor })
 }))
+
+
+
 
 type AnalysisState = {
   axis: number;

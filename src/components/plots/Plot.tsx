@@ -124,13 +124,6 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
 
     }
       else{
-        console.log("here?")
-        // const texture = DefaultCubeTexture();
-        // // again need to check type before using it
-        // if (texture instanceof THREE.Data3DTexture || texture instanceof THREE.DataTexture) {
-        //   setTexture(texture);
-        // }
-        // setShape(new THREE.Vector3(2, 2, 2))
         setMetadata(null)
       }
   }, [variable])
