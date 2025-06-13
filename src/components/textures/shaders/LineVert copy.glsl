@@ -3,61 +3,61 @@ attribute vec3 next;
 attribute vec3 previous;
 attribute float normed;
 
+
 varying float vNormed;
 
-uniform float aspect;
-
+uniform float zoom;
 uniform float thickness;
 uniform int miter;
+uniform float aspect; // Pass the viewport aspect ratio as a uniform
 
-void main() {
-    vec2 aspectVec = vec2(aspect, 1.0);
-    mat4 projViewModel = projectionMatrix * modelViewMatrix;
-    vec4 previousProjected = projViewModel * vec4(previous, 1.0);
-    vec4 currentProjected = projViewModel * vec4(position, 1.0);
-    vec4 nextProjected = projViewModel * vec4(next, 1.0);
-
-    //get 2D screen space with W divide and aspect correction
-    vec2 currentScreen = currentProjected.xy / currentProjected.w * aspectVec;
-    vec2 previousScreen = previousProjected.xy / previousProjected.w * aspectVec;
-    vec2 nextScreen = nextProjected.xy / nextProjected.w * aspectVec;
-
-    float len = thickness;
-    float orientation = direction;
-
-    vNormed = normed;
-
-    //starting point uses (next - current)
-    vec2 dir = vec2(0.0);
-    if (currentScreen == previousScreen) {
-    dir = normalize(nextScreen - currentScreen);
-    } 
-    //ending point uses (current - previous)
-    else if (currentScreen == nextScreen) {
-    dir = normalize(currentScreen - previousScreen);
-    }
-    //somewhere in middle, needs a join
-    else {
-    //get directions from (C - B) and (B - A)
-    vec2 dirA = normalize((currentScreen - previousScreen));
-    if (miter == 1) {
-        vec2 dirB = normalize((nextScreen - currentScreen));
-        //now compute the miter join normal and length
-        vec2 tangent = normalize(dirA + dirB);
-        vec2 perp = vec2(-dirA.y, dirA.x);
-        vec2 miter = vec2(-tangent.y, tangent.x);
-        dir = tangent;
-        len = thickness / dot(miter, perp);
-    } else {
-        dir = dirA;
-    }
-    }
-    vec2 normal = vec2(-dir.y, dir.x);
-    normal *= len/5.;
-    normal.x /= aspect;
-
-    vec4 offset = vec4(normal * orientation, 0.0, 1.0);
-    gl_Position = currentProjected + offset;
-    gl_PointSize = 1.0;
+float getOrthographicZoom(mat4 projectionMatrix, float referenceWidth) {
+    float m0 = projectionMatrix[0][0]; // Scaling factor: 2/(right-left)
+    float viewWidth = 2.0 / m0; // Viewable width
+    return referenceWidth / viewWidth; // Zoom level
 }
 
+void main() {
+    // Transform positions to view space (before projection)
+    float zoom = getOrthographicZoom(projectionMatrix, 2.);
+    float zoomLevel = 2. / projectionMatrix[0][0]; // Extract vertical scale
+    vec4 currentView = modelViewMatrix * vec4(position, 1.0);
+    vec4 prevView = modelViewMatrix * vec4(previous, 1.0);
+    vec4 nextView = modelViewMatrix * vec4(next, 1.0);
+
+    // Compute directions in view space
+    vec3 dir = vec3(0.0);
+    if (currentView.xyz == prevView.xyz) {
+        dir = normalize(nextView.xyz - currentView.xyz);
+    } else if (currentView.xyz == nextView.xyz) {
+        dir = normalize(currentView.xyz - prevView.xyz);
+    } else {
+        vec3 dirA = normalize(currentView.xyz - prevView.xyz);
+        if (miter == 1) {
+            vec3 dirB = normalize(nextView.xyz - currentView.xyz);
+            vec3 tangent = normalize(dirA + dirB);
+            vec3 perp = vec3(-dirA.y, dirA.x, 0.0); // Perpendicular in view space
+            vec3 miterVec = vec3(-tangent.y, tangent.x, 0.0);
+            float miterLen = dot(miterVec, perp);
+            miterLen = max(miterLen, 0.5); // Avoid division by zero
+            dir = tangent;
+        } else {
+            dir = dirA;
+        }
+    }
+
+    // Compute normal in view space
+    vec3 normal = vec3(-dir.y, dir.x, 0.0); // Perpendicular to direction
+    float len = thickness / zoom/500.; // Thickness in world/view space units
+    normal *= 0.5 * len * direction; // Apply thickness and direction
+
+    // Apply offset in view space
+    currentView.xyz += normal;
+
+    // Project to clip space
+    gl_Position = projectionMatrix * currentView;
+
+
+    vNormed = normed;
+    gl_PointSize = 1.0;
+}

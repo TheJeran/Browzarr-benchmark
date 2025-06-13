@@ -53,9 +53,10 @@ export function FixedTicks({
   const xDimSize = xDimArray.length;
   const yDimSize = (valueScales.maxVal-valueScales.minVal)
   //Converts BigInt to DateTime
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+ 
 
   const textArray = useMemo(()=>{
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     if (xDimArray){
       const isBig = xDimArray.every(item => typeof item === "bigint");
       if (isBig){

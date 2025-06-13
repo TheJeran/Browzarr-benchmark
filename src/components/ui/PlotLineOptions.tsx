@@ -50,13 +50,15 @@ const PointOptions = React.memo(function PointOptions(){
 
 // Memoized Line Options
 const LineOptions = React.memo(function LineOptions(){
-  const { lineWidth, lineColor, useLineColor, setLineWidth, setLineColor, setUseLineColor } = usePlotStore(useShallow(state => ({
+  const { lineWidth, lineColor, useLineColor, lineResolution, setLineWidth, setLineColor, setUseLineColor, setLineResolution } = usePlotStore(useShallow(state => ({
     lineWidth: state.lineWidth,
     lineColor: state.lineColor,
     useLineColor: state.useLineColor,
+    lineResolution: state.lineResolution,
     setLineWidth: state.setLineWidth,
     setLineColor: state.setLineColor,
     setUseLineColor: state.setUseLineColor,
+    setLineResolution: state.setLineResolution
   })))
   return (
     <>
@@ -69,6 +71,17 @@ const LineOptions = React.memo(function LineOptions(){
           step={.2}
           value={lineWidth}
           onChange={e => setLineWidth(parseFloat(e.target.value))}
+        />
+      </div>
+      <div className='w-full flex items-center'>
+        <div className='w-[40%]'><b>Line Resolution</b></div>
+        <input
+          type="range"
+          min={1}
+          max={10}
+          step={1}
+          value={lineResolution}
+          onChange={e => setLineResolution(parseFloat(e.target.value))}
         />
       </div>
       <div className='w-full flex items-center'>
