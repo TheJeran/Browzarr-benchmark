@@ -2,11 +2,9 @@
 import * as THREE from 'three'
 import {  useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber';
-import { createPaneContainer } from '../ui';
-import { useButtonBlade, useSliderBlade, useTweakpane, usePaneInput } from '@lazarusa/react-tweakpane';
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
-import PlotLineOptions from '../ui/PlotLineOptions';
+
 interface PlotLineProps {
   color?: string;
   lineWidth?: number;
@@ -143,6 +141,7 @@ export const PlotLine = ({
     const xCoords = linspace(-viewWidth*xScale/2,viewWidth*xScale/2,data.length)
     const normed = data.map((i) => (i - minVal) / (maxVal - minVal));
     const points = normed.map((val,idx) => new THREE.Vector3(xCoords[idx], (val-.5)*viewHeight*yScale, 5)); 
+    console.log(points)
     return [points,normed]
   }, [data, interpolation, height, yScale,xScale])
 

@@ -6,3 +6,5 @@ export {PlotArea} from './plotarea/LinePlot'
 export {FixedTicks} from './FixedTicks'
 export {Plot} from './Plot'
 export {Analysis} from './Analysis';
+export {ThickLine} from './ThickLine'
+export {PlotPoints} from './PlotPoints'

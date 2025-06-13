@@ -122,8 +122,6 @@ const Navbar = React.memo(function Navbar(){
   useEffect(()=>{
     setColormap(GetColorMapTexture(colormap, cmap === "Default" ? "Spectral" : cmap, 1, "#000000", 0, flipCmap));
   },[cmap, flipCmap])
-  
-  console.log("rerender")
   return (
     <nav className="navbar">
       <div className="navbar-left">
