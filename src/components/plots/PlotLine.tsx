@@ -26,12 +26,14 @@ interface pointSetters{
   setShowPointInfo:React.Dispatch<React.SetStateAction<boolean>>,
 }
 
-function PlotPoints({ points, pointSize, pointColor, pointSetters }: { points: THREE.Vector3[]; pointSize: number; pointColor:string, pointSetters:pointSetters }) {
+function PlotPoints({ points, pointSetters }: { points: THREE.Vector3[]; pointSetters:pointSetters }) {
   const ref = useRef<THREE.InstancedMesh | null>(null)
   const count = points.length
   const [_reRender,setreRender] = useState<boolean>(false)
   const {setPointID, setPointLoc,setShowPointInfo} = pointSetters;
   const [zoom,setZoom] = useState<number>(1)
+  const {pointColor, pointSize} = usePlotStore(useShallow(state => ({pointColor: state.pointColor, pointSize: state.linePointSize})))
+
 
   const geometry = useMemo(() => new THREE.SphereGeometry(pointSize), [pointSize])
   const material = useMemo(()=> new THREE.MeshBasicMaterial({color:pointColor}),[pointColor])
@@ -111,13 +113,15 @@ export const PlotLine = ({
   xScale
 }: PlotLineProps) => {
 
-  const {valueScales, timeSeries, colormap} = useGlobalStore(useShallow(state=>({valueScales:state.valueScales, timeSeries:state.timeSeries, colormap:state.colormap})))
-  const {lineWidth, linePointSize, showPoints} = usePlotStore(useShallow(state =>({
+  const {valueScales, data, colormap} = useGlobalStore(useShallow(state=>({valueScales:state.valueScales, data:state.timeSeries, colormap:state.colormap})))
+  const {lineWidth, showPoints, useLineColor, lineColor} = usePlotStore(useShallow(state =>({
     lineWidth: state.lineWidth,
     linePointSize: state.linePointSize,
-    showPoints: state.showPoints
+    showPoints: state.showPoints,
+    useLineColor: state.useLineColor,
+    lineColor: state.lineColor
   })))
-  const data = timeSeries
+
 
   //LinSpace to take up entire extent
   function linspace(start: number, stop: number, num: number): number[] {
@@ -190,14 +194,18 @@ export const PlotLine = ({
         });
   }, [lineWidth]);
 
+  const colorMat = useMemo(()=> (
+    new THREE.LineBasicMaterial({color: lineColor, linewidth: lineWidth})
+  ),[lineWidth, lineColor])
+
   if (!data || data.length === 0) {
     return null;
   }
 
   return (
     <group>
-      {geometry && <primitive object={new THREE.Line(geometry, material)}  />}
-      {showPoints && <PlotPoints points={points} pointSize={linePointSize} pointColor={"#bbbbbb"} pointSetters={pointSetters}/>}
+      {geometry && <primitive object={new THREE.Line(geometry, useLineColor ? colorMat : material)}  />}
+      {showPoints && <PlotPoints points={points} pointSetters={pointSetters}/>}
     </group>
   );
 };
