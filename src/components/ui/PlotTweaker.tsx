@@ -95,10 +95,10 @@ const VolumeTweaks = () => {
     const [yScales, setYScales] = useState<{minVal: number, maxVal: number}>({minVal: 0, maxVal: 0})
     const [zScales, setZScales] = useState<{minVal: number, maxVal: number}>({minVal: 0, maxVal: 0})
 
-    const {valueScales, dimArrays} = useGlobalStore(useShallow(state => ({valueScales : state.valueScales, dimArrays : state.dimArrays})))
+    const {valueScales, dimArrays} = useGlobalStore(useShallow(state => ({valueScales : state.valueScales, dimArrays : state.dimArrays, isFlat: state.isFlat})))
 
     useEffect(()=>{
-        if (dimArrays){
+        if (dimArrays.length === 3){
             const [xMin, xMax] = ArrayMinMax(dimArrays[2]);
             const [yMin, yMax] = ArrayMinMax(dimArrays[1]); 
             const [zMin, zMax] = ArrayMinMax(dimArrays[0]);

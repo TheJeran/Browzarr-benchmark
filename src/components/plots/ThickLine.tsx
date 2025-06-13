@@ -83,6 +83,19 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
 		return curve.getPoints(points.length*lineResolution-1)
 	},[points, lineResolution])
 
+  const normedInterp = useMemo(() => {
+    if (normed.length < 2) return [];
+    const interp: number[] = [];
+    for (let i = 0; i < linePoints.length; i++) {
+        const t = i / (linePoints.length - 1);
+        const idx = t * (normed.length - 1);
+        const idx0 = Math.floor(idx);
+        const idx1 = Math.min(normed.length - 1, Math.ceil(idx));
+        const frac = idx - idx0;
+        interp.push(normed[idx0] * (1 - frac) + normed[idx1] * frac);
+    }
+    return interp;
+}, [normed, linePoints.length]);
   const geometry = useMemo(() => {			
         if (linePoints.length < 2) return new THREE.BufferGeometry(); // Need at least 2 points
         // Step 2: Duplicate vertices and compute attributes
@@ -103,7 +116,7 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
             directions.push(1.0, -1.0);
             previous.push(...prevPoint, ...prevPoint);
             next.push(...nextPoint, ...nextPoint);
-            normValues.push(...Array(lineResolution).fill(normed[i]),...Array(lineResolution).fill(normed[i]))
+            normValues.push(normedInterp[i], normedInterp[i]);
         }
 
 

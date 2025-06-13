@@ -8,3 +8,4 @@ export {Plot} from './Plot'
 export {Analysis} from './Analysis';
 export {ThickLine} from './ThickLine'
 export {PlotPoints} from './PlotPoints'
+export {FlatMap} from './FlatMap'
