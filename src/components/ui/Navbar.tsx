@@ -105,12 +105,14 @@ const ColorMaps = ({cmap, setCmap} : {cmap : string, setCmap : React.Dispatch<Re
 }
 
 const Navbar = React.memo(function Navbar(){
-  const {setInitStore, setVariable, setColormap, setTimeSeries} = useGlobalStore(
+  const {setInitStore, setVariable, setColormap, setTimeSeries, isFlat, plotOn} = useGlobalStore(
     useShallow(state=>({
       setInitStore : state.setInitStore, 
       setVariable : state.setVariable,
       setColormap : state.setColormap,
-      setTimeSeries: state.setTimeSeries
+      setTimeSeries: state.setTimeSeries,
+      isFlat: state.isFlat,
+      plotOn: state.plotOn
     })))
 
   const variables = useGlobalStore(useShallow(state=>state.variables))
@@ -149,7 +151,6 @@ const Navbar = React.memo(function Navbar(){
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuLabel>Plot Options</DropdownMenuLabel>
               <DropdownMenuSub>
                   <DropdownMenuSubTrigger>Plot Type</DropdownMenuSubTrigger>
                   <DropdownMenuPortal>
@@ -161,7 +162,6 @@ const Navbar = React.memo(function Navbar(){
                 </DropdownMenuSub>
               <DropdownMenuSeparator />
               <DropdownMenuSub>
-                 <DropdownMenuLabel>Colormap</DropdownMenuLabel>
                   <ColorMaps cmap={cmap} setCmap={setCmap}/>
                   <Button className="w-[100%] h-[20px] cursor-[pointer]" variant="destructive" onClick={()=>setFlipCmap(x=>!x)}>Flip Colormap</Button>
                 </DropdownMenuSub>
@@ -189,7 +189,7 @@ const Navbar = React.memo(function Navbar(){
           </SelectContent>
         </Select>
       
-      <PlotTweaker/>
+      {!isFlat && <PlotTweaker/>}
       </div>
       <ThemeSwitch />
       <AboutButton />

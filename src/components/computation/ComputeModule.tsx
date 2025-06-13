@@ -107,7 +107,6 @@ const ComputeModule = ({arrays,values, setters}:ComputeModule) => {
     },[execute, axis, secondArray, firstArray, operation])
 
     const shapeRatio = useMemo(()=>flipY ? planeShape[0]/planeShape[1]*-2 : planeShape[0]/planeShape[1]*2,[flipY,planeShape])
-    console.log(shapeRatio)
     useEffect(()=>{
       if(GPUCompute){
         GPUCompute.dispose()

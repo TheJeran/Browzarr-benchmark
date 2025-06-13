@@ -13,10 +13,8 @@ function ArrayTo2D(array: Array){
     //We assume there is no slicing here. That will occur in the ZarrLoader stage. This is just pure data transfer
     const shape = array.shape;
     const data = Array.from(array.data);
-
-    const width = shape[0];
-    const height = shape[1];
-
+    const width = shape[1];
+    const height = shape[0];
     const [minVal,maxVal] = ArrayMinMax(data)
 
     const normed = data.map((i)=>(i-minVal)/(maxVal-minVal))
@@ -47,7 +45,6 @@ export function ArrayTo3D(array: Array){
     volTexture.format = THREE.RedFormat;
     volTexture.minFilter = THREE.NearestFilter;
     volTexture.magFilter = THREE.NearestFilter;
-    // volTexture.unpackAlignment = 1;
     volTexture.needsUpdate = true;
     return [volTexture, {maxVal,minVal}]
 

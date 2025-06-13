@@ -2,14 +2,13 @@ import { OrbitControls } from '@react-three/drei';
 import React, { useMemo } from 'react';
 import { useState, useEffect } from 'react';
 import * as THREE from 'three';
-import { PointCloud, UVCube, DataCube } from '@/components/plots';
+import { PointCloud, UVCube, DataCube, FlatMap } from '@/components/plots';
 import { Canvas, useThree } from '@react-three/fiber';
 import { ArrayToTexture, DefaultCubeTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { Navbar, PlotLineButton } from '../ui';
-
 
 interface PlotParameters{
     values:{
@@ -21,7 +20,6 @@ interface PlotParameters{
 }
 
 const Plot = ({values,setShowLoading}:PlotParameters) => {
-
     const {
       setShape, 
       setFlipY, 
@@ -39,10 +37,12 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
           setDimNames:state.setDimNames,
           setDimUnits:state.setDimUnits}
         )))
-    const {colormap, variable} = useGlobalStore(useShallow(state=>({colormap: state.colormap, variable: state.variable})))
-    
+    const {colormap, variable, isFlat, setIsFlat} = useGlobalStore(useShallow(state=>({
+      colormap: state.colormap, variable: state.variable, isFlat: state.isFlat, setIsFlat: state.setIsFlat
+    })))
     const {ZarrDS,canvasWidth} = values;
     const plotType = usePlotStore(state => state.plotType)
+
 
     const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
     // const [currentBg, setCurrentBg] = useState(bgcolor || 'var(--background)')
@@ -100,6 +100,12 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
           setValueScales(scaling as { maxVal: number; minVal: number });
           
         }
+        if (result.shape.length == 2){
+          setIsFlat(true)
+        }
+        else{
+          setIsFlat(false)
+        }
         const shapeRatio = result.shape[1] / result.shape[2] * 2;
         setShape(new THREE.Vector3(2, shapeRatio, 2));
         setShowLoading(false)
@@ -110,10 +116,18 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         setMetadata(result);
         const [dimArrs, dimMetas, dimNames] = ZarrDS.GetDimArrays()
         setDimArrays(dimArrs)
-        if (dimArrs[1][1] < dimArrs[1][0])
-          {setFlipY(true)}
-        else
-          {setFlipY(false)}
+        if (dimArrs.length > 2){
+          if (dimArrs[1][1] < dimArrs[1][0])
+            {setFlipY(true)}
+          else
+            {setFlipY(false)}
+        }
+        else{
+          if (dimArrs[0][1] < dimArrs[0][0])
+            {setFlipY(true)}
+          else
+            {setFlipY(false)}
+        }
         const tempDimUnits = []
         for (const meta of dimMetas){
           tempDimUnits.push(meta.units)
@@ -135,26 +149,33 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         width: windowWidth - canvasWidth         
       }}
     >
-      {plotType == "volume" && <PlotLineButton />}
+      {plotType == "volume" && !isFlat && <PlotLineButton />}
       <Nav />
-      <Canvas camera={{ position: [-4.5, 3, 4.5], fov: 50 }}
+
+      {!isFlat && <>
+      <Canvas camera={{ position: isFlat ? [0,0,5] : [-4.5, 3, 4.5], fov: 50 }}
         frameloop="demand"
-        style={{
-          // background: currentBg
-        }}
       >
-        {/* Volume Plots */}
         {plotType == "volume" && show && <>
           <DataCube volTexture={texture}/>
           <UVCube ZarrDS={ZarrDS} />
         </>}
-        {/* Point Clouds */}
         {plotType == "point-cloud" && show && <PointCloud textures={{texture,colormap}} />}
-
-        <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={false}
-          maxDistance={50}
-        />
+        <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={false} maxDistance={50}/>
       </Canvas>
+      </>}
+
+
+        {isFlat && <>
+        <Canvas camera={{ position: [0,0,5], zoom: 1000 }}
+        frameloop="demand"
+        orthographic
+        >
+          <FlatMap texture={texture as THREE.DataTexture} />
+          <OrbitControls enableRotate={false} enablePan={true} maxDistance={50} minZoom={50} maxZoom={2000}/>
+        </Canvas>
+        </>}
+
     </div>
   )
 }
