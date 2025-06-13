@@ -13,7 +13,7 @@ import { usePlotStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
 
 // Memoized Point Options
-const PointOptions = React.memo(() => {
+const PointOptions = React.memo(function PointOptions(){
   const { showPoints, linePointSize, pointColor, setLinePointSize, setPointColor } = usePlotStore(useShallow(state => ({
     showPoints: state.showPoints,
     linePointSize: state.linePointSize,
@@ -49,7 +49,7 @@ const PointOptions = React.memo(() => {
 })
 
 // Memoized Line Options
-const LineOptions = React.memo(() => {
+const LineOptions = React.memo(function LineOptions(){
   const { lineWidth, lineColor, useLineColor, setLineWidth, setLineColor, setUseLineColor } = usePlotStore(useShallow(state => ({
     lineWidth: state.lineWidth,
     lineColor: state.lineColor,
@@ -93,7 +93,7 @@ const LineOptions = React.memo(() => {
   )
 })
 
-const PlotLineOptions = React.memo(() => {
+const PlotLineOptions = React.memo(function PlotLineOptions(){
   const { showPoints, setShowPoints } = usePlotStore(useShallow(state => ({
     showPoints: state.showPoints,
     setShowPoints: state.setShowPoints,
