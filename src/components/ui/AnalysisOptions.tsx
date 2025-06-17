@@ -71,7 +71,6 @@ const AnalysisOptions = React.memo(function AnalysisOptions() {
         const validMets = zMeta.filter((val : any)=> val.shape.length >= 3)
         const valids = validMets.map((val : any) => val.name)
         setValidVals(valids)
-        console.log(valids)
     },[])
 
     useEffect(()=>{

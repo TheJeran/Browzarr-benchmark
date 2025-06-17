@@ -159,7 +159,6 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         width: windowWidth - canvasWidth         
       }}
       onContextMenu={HandleContext}
-      // onClick={()=>{setShowTweaker(false); console.log("error")}}
     >
       {showTweaker &&  <ContextTweaker loc={tweakerLoc}/>}
       <Nav />
