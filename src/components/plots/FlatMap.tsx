@@ -7,7 +7,6 @@ import { useShallow } from 'zustand/shallow'
 
 const FlatMap = ({texture} : {texture : THREE.DataTexture}) => {
     const {shape, flipY, colormap} = useGlobalStore(useShallow(state => ({shape: state.shape, flipY: state.flipY, colormap: state.colormap})))
-    console.log(flipY)
     const shapeRatio = useMemo(()=> shape.x/shape.z, [shape])
     const geometry = useMemo(()=>new THREE.PlaneGeometry(2,shapeRatio),[shapeRatio])
     const material = new THREE.MeshBasicMaterial({color: 'red'})

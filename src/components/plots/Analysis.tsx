@@ -119,13 +119,19 @@ export function Analysis({ values }: {
       })
     }
     if (variable2 === "Default"){
-      console.log("reset")
       setArray2(null)
     }
 
   },[variable1,variable2, axis])
 
-  const plotArrays = useMemo(()=>dimArrays.filter((_val,idx)=> idx != axis),[axis, dimArrays])
+  const plotArrays = useMemo(()=>{
+    if (dimArrays.length === 3){
+      return dimArrays.filter((_val,idx)=> idx != axis)
+    }
+    else{
+      return dimArrays
+    }
+  },[axis, dimArrays])
   //Get Info for Display
   useEffect(()=>{
     if (dimArrays){
