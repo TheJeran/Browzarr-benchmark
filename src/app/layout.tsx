@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from 'next-themes'
 import { Navbar, Footer, Overlays} from "@/components/ui";
-
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,6 +13,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html suppressHydrationWarning lang="en">
       <body className="antialiased">

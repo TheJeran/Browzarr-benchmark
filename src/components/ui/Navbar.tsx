@@ -4,7 +4,7 @@ import { LuChevronsUpDown } from "react-icons/lu";
 import { IoIosCheckmark } from "react-icons/io";
 import { ZARR_STORES } from "../zarr/ZarrLoaderLRU";
 import Image from "next/image";
-import { AboutButton, PlotTweaker } from "@/components/ui";
+import { AboutButton, PlotTweaker, PlotLineButton } from "@/components/ui";
 import ThemeSwitch  from "@/components/ui/ThemeSwitch";
 import logo from "@/app/logo.png"
 import './css/Navbar.css'
@@ -105,18 +105,20 @@ const ColorMaps = ({cmap, setCmap} : {cmap : string, setCmap : React.Dispatch<Re
 }
 
 const Navbar = React.memo(function Navbar(){
-  const {setInitStore, setVariable, setColormap, setTimeSeries, isFlat, plotOn} = useGlobalStore(
+  const {setInitStore, setVariable, setColormap, setTimeSeries, isFlat, plotOn, variables} = useGlobalStore(
     useShallow(state=>({
       setInitStore : state.setInitStore, 
       setVariable : state.setVariable,
       setColormap : state.setColormap,
       setTimeSeries: state.setTimeSeries,
       isFlat: state.isFlat,
-      plotOn: state.plotOn
+      plotOn: state.plotOn,
+      variables: state.variables
     })))
 
-  const variables = useGlobalStore(useShallow(state=>state.variables))
-  const setPlotType = usePlotStore(state=> state.setPlotType)
+
+  const {setPlotType} = usePlotStore(useShallow(state=> ({
+    setPlotType: state.setPlotType})))
   const [cmap, setCmap] = useState<string>("Default")
   const [flipCmap, setFlipCmap] = useState<boolean>(false)
   const colormap = useGlobalStore(useShallow(state=>state.colormap))
@@ -151,6 +153,7 @@ const Navbar = React.memo(function Navbar(){
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
+              {plotOn && <>
               <DropdownMenuSub>
                   <DropdownMenuSubTrigger>Plot Type</DropdownMenuSubTrigger>
                   <DropdownMenuPortal>
@@ -166,6 +169,7 @@ const Navbar = React.memo(function Navbar(){
                   <Button className="w-[100%] h-[20px] cursor-[pointer]" variant="destructive" onClick={()=>setFlipCmap(x=>!x)}>Flip Colormap</Button>
                 </DropdownMenuSub>
               <DropdownMenuSeparator />
+              </>}
               <DropdownMenuItem> 
                 <a href="https://github.com/EarthyScience/Browzarr/" target="_blank" rel="noopener noreferrer">
                   GitHub
@@ -189,7 +193,8 @@ const Navbar = React.memo(function Navbar(){
           </SelectContent>
         </Select>
       
-      {!isFlat && <PlotTweaker/>}
+      {!isFlat && plotOn && <PlotTweaker/>}
+      {!isFlat && plotOn && <PlotLineButton />}
       </div>
       <ThemeSwitch />
       <AboutButton />
