@@ -113,12 +113,15 @@ const Navbar = React.memo(function Navbar(){
       setTimeSeries: state.setTimeSeries,
       isFlat: state.isFlat,
       plotOn: state.plotOn,
-      variables: state.variables
+      variables: state.variables,
+
     })))
 
 
-  const {setPlotType} = usePlotStore(useShallow(state=> ({
-    setPlotType: state.setPlotType})))
+  const {setPlotType, plotType} = usePlotStore(useShallow(state=> ({
+    setPlotType: state.setPlotType,
+    plotType: state.plotType
+  })))
   const [cmap, setCmap] = useState<string>("Default")
   const [flipCmap, setFlipCmap] = useState<boolean>(false)
   const colormap = useGlobalStore(useShallow(state=>state.colormap))
@@ -195,7 +198,7 @@ const Navbar = React.memo(function Navbar(){
         </Select>
       
       {!isFlat && plotOn && <PlotTweaker/>}
-      {!isFlat && plotOn && <PlotLineButton />}
+      {plotType === "volume" && plotOn && <PlotLineButton />}
       </div>
       <ThemeSwitch />
       <AboutButton />

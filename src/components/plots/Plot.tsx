@@ -7,7 +7,7 @@ import { ArrayToTexture, DefaultCubeTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
-import { Navbar, PlotLineButton, PlotTweaker } from '../ui';
+import { Navbar, PlotLineButton, ContextTweaker } from '../ui';
 
 
 interface PlotParameters{
@@ -46,7 +46,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
     const plotType = usePlotStore(state => state.plotType)
 
     const [showTweaker, setShowTweaker] = useState<boolean>(false);
-    const tweakerLoc = useRef<number[]>([0,0])
+    const [tweakerLoc, setTweakerLoc] = useState<number[]>([0,0])
     const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
     // const [currentBg, setCurrentBg] = useState(bgcolor || 'var(--background)')
     const [show, setShow] = useState<boolean>(true)
@@ -147,8 +147,9 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
   }, [variable])
 
   function HandleContext(e : any){
-    tweakerLoc.current = [e.pageX,e.pageY]
+    setTweakerLoc([e.pageX,e.pageY])
     setShowTweaker(true)
+    console.log(tweakerLoc)
   }
 
   const Nav = useMemo(()=>Navbar,[])
@@ -158,10 +159,9 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         width: windowWidth - canvasWidth         
       }}
       onContextMenu={HandleContext}
-      onClick={()=>setShowTweaker(false)}
+      // onClick={()=>{setShowTweaker(false); console.log("error")}}
     >
-      {showTweaker && <div style={{position:'fixed', left:tweakerLoc.current[0], top:tweakerLoc.current[1], zIndex:'6'}}> <PlotTweaker /></div>}
-      {plotType == "volume" && !isFlat && <PlotLineButton />}
+      {showTweaker &&  <ContextTweaker loc={tweakerLoc}/>}
       <Nav />
 
       {!isFlat && <>
