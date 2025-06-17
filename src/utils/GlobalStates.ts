@@ -22,6 +22,7 @@ type StoreState = {
   timeSeries: number[];
   showLoading: boolean;
   metadata: object[] | null;
+  zMeta: object[];
   dataArray: Array<any> | null;
   dimArrays: number[][];
   dimNames: string[];
@@ -41,6 +42,7 @@ type StoreState = {
   setTimeSeries: (timeSeries: number[]) => void;
   setShowLoading: (showLoading: boolean) => void;
   setMetadata: (metadata: object[] | null) => void;
+  setZMeta: (zMeta: object[]) => void;
   setDataArray: (dataArray: Array<any> | null) => void;
   setDimArrays: (dimArrays: number[][]) => void;
   setDimNames: (dimNames: string[]) => void;
@@ -64,6 +66,7 @@ export const useGlobalStore = create<StoreState>((set) => ({
   timeSeries: [0],
   showLoading: false,
   metadata: null,
+  zMeta: [{}],
   dataArray: null,
   dimArrays: [[0], [0], [0]],
   dimNames: ["Default"],
@@ -83,6 +86,7 @@ export const useGlobalStore = create<StoreState>((set) => ({
   setTimeSeries: (timeSeries) => set({ timeSeries }),
   setShowLoading: (showLoading) => set({ showLoading }),
   setMetadata: (metadata) => set({ metadata }),
+  setZMeta: (zMeta) => set({ zMeta}),
   setDataArray: (dataArray) => set({ dataArray }),
   setDimArrays: (dimArrays) => set({ dimArrays }),
   setDimNames: (dimNames) => set({ dimNames }),
@@ -199,6 +203,8 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
   execute: false,
   variable1: "Default",
   variable2: "Default",
+
+
   setAxis: (axis) => set({ axis }),
   setOperation: (operation) => set({ operation }),
   setExecute: (execute) => set({ execute }),

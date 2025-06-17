@@ -20,9 +20,7 @@ import { GetTitleDescription } from '@/components/zarr/GetMetadata';
 
 export function LandingHome() {
 
-  const [settings, setSettings] = useState({plotType: 'volume', cmap: 'Spectral', flipCmap: false });
-  const initStore = useGlobalStore(useShallow(state=>state.initStore))
-  const [zMeta, setZMeta] = useState<object[]>([])
+  const {initStore, setZMeta} = useGlobalStore(useShallow(state=>({initStore: state.initStore, setZMeta: state.setZMeta})))
   const ZarrDS = useMemo(() => new ZarrDataset(initStore), [initStore])
   const [titleDescription, setTitleDescription] = useState<{ title?: string; description?: string }>({});
 
@@ -62,10 +60,6 @@ export function LandingHome() {
     setCanvasWidth(Math.round(window.innerWidth * 0.0))
   }, [])
 
-  useEffect(()=>{
-    setColormap(GetColorMapTexture(colormap, settings.cmap, 1, "#000000", 0, settings.flipCmap));
-  },[settings.cmap,  settings.flipCmap])
-
   //These values are passed to the Plot Component
   const plotObj = useMemo(() => ({
     ZarrDS,
@@ -94,7 +88,7 @@ export function LandingHome() {
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
     {canvasWidth > 10 && variable != "Default" && <Analysis values={analysisObj.values} />}
-    {variable === "Default" && <VariableScroller zMeta={zMeta}/>}
+    {variable === "Default" && <VariableScroller />}
     {variable != "Default" && <Plot values={plotObj} setShowLoading={setShowLoading} />}
     {metadata && <Metadata data={metadata} /> }
     {timeSeries.length > 2 && <PlotArea />}

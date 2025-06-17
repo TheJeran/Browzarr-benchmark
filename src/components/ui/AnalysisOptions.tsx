@@ -47,7 +47,7 @@ const twoVarOps = [
 const axes = [0,1,2]
 
 const AnalysisOptions = React.memo(function AnalysisOptions() {
-    const {setAxis, setVariable1, setVariable2, setOperation, setExecute, execute, variable1, variable2, operation, axis} = useAnalysisStore(useShallow(state => ({
+    const {setAxis, setVariable1, setVariable2, setOperation, variable1, variable2, operation, axis} = useAnalysisStore(useShallow(state => ({
         setAxis: state.setAxis,
         setVariable1: state.setVariable1,
         setVariable2: state.setVariable2,
@@ -59,9 +59,20 @@ const AnalysisOptions = React.memo(function AnalysisOptions() {
         operation: state.operation,
         axis: state.axis
     })))
-    const variables = useGlobalStore(state => state.variables)
+
+
+    const {variables, zMeta} = useGlobalStore(useShallow(state => ({variables: state.variables, zMeta: state.zMeta})))
+
     const [useTwo, setUseTwo] = useState<boolean>(false)
     const [operations, setOperations] = useState<string[]>(oneVarOps)
+    const [validVals, setValidVals] = useState<string[]>([]) // This will hold variables that are 3D or greater 
+
+    useEffect(()=>{
+        const validMets = zMeta.filter((val : any)=> val.shape.length >= 3)
+        const valids = validMets.map((val : any) => val.name)
+        setValidVals(valids)
+        console.log(valids)
+    },[])
 
     useEffect(()=>{
         if (useTwo){
@@ -86,7 +97,7 @@ const AnalysisOptions = React.memo(function AnalysisOptions() {
                 <SelectContent>
                     <SelectGroup>
                     <SelectLabel>Variables</SelectLabel>
-                    {variables.map((val,idx)=>(
+                    {validVals.map((val,idx)=>(
                         <SelectItem value={val} key={idx} >{val}</SelectItem>
                     ))}
                     </SelectGroup>
