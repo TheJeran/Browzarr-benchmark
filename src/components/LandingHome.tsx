@@ -9,7 +9,7 @@ import { useEffect, useMemo } from 'react';
 import { Analysis, PlotArea, Plot } from '@/components/plots';
 import { GetColorMapTexture } from '@/components/textures';
 import { MiddleSlider } from '@/components/ui';
-import { Metadata, ShowAnalysis, Loading } from '@/components/ui';
+import { Metadata, ShowAnalysis, Loading, Navbar } from '@/components/ui';
 import { useGlobalStore } from '@/utils/GlobalStates';
 import { useShallow, shallow } from 'zustand/shallow';
 import { PaneStore } from '@/components/zarr/PaneStore';
@@ -40,14 +40,16 @@ export function LandingHome() {
   }, [initStore]);
 
   const { title, description } = titleDescription;
-  const {  setColormap, setVariables,  colormap, timeSeries, variable, metadata  } = useGlobalStore(
+  const {  setColormap, setVariables, setPlotOn, colormap, timeSeries, variable, metadata, plotOn  } = useGlobalStore(
     useShallow(state => ({
       setColormap: state.setColormap,
       setVariables: state.setVariables,
+      setPlotOn: state.setPlotOn,
       colormap: state.colormap,
       timeSeries: state.timeSeries,
       variable: state.variable,
       metadata: state.metadata,
+      plotOn: state.plotOn
     }))
   );
   const [showLoading, setShowLoading] = useState<boolean>(false);
@@ -77,13 +79,21 @@ export function LandingHome() {
       canvasWidth,
     }
   }), [ZarrDS, canvasWidth]);
+
+  useEffect(()=>{
+    if (variable === "Default"){
+      setCanvasWidth(0);
+      setPlotOn(false)
+    }
+  },[variable])
   
   return (
     <>
+    {!plotOn && <Navbar />}
     {canvasWidth < 10 && variable != "Default" && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} canvasWidth={canvasWidth} />}
     {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
-    {canvasWidth > 10 && <Analysis values={analysisObj.values} />}
+    {canvasWidth > 10 && variable != "Default" && <Analysis values={analysisObj.values} />}
     {variable === "Default" && <VariableScroller zMeta={zMeta}/>}
     {variable != "Default" && <Plot values={plotObj} setShowLoading={setShowLoading} />}
     {metadata && <Metadata data={metadata} /> }

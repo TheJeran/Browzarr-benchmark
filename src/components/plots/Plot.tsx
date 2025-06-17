@@ -27,7 +27,8 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       setMetadata, 
       setDimArrays, 
       setDimNames, 
-      setDimUnits} = useGlobalStore(
+      setDimUnits,
+      setPlotOn} = useGlobalStore(
         useShallow(state => ({  //UseShallow for object returns
           setShape:state.setShape,
           setFlipY:state.setFlipY,
@@ -35,7 +36,8 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
           setMetadata: state.setMetadata,
           setDimArrays:state.setDimArrays, 
           setDimNames:state.setDimNames,
-          setDimUnits:state.setDimUnits}
+          setDimUnits:state.setDimUnits,
+          setPlotOn: state.setPlotOn}
         )))
     const {colormap, variable, isFlat, setIsFlat} = useGlobalStore(useShallow(state=>({
       colormap: state.colormap, variable: state.variable, isFlat: state.isFlat, setIsFlat: state.setIsFlat
@@ -110,6 +112,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         setShape(new THREE.Vector3(2, shapeRatio, 2));
         setShowLoading(false)
         setShow(true)
+        setPlotOn(true)
       })
       //Get Metadata
       ZarrDS.GetAttributes(variable).then((result)=>{
@@ -149,7 +152,6 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         width: windowWidth - canvasWidth         
       }}
     >
-      {plotType == "volume" && !isFlat && <PlotLineButton />}
       <Nav />
 
       {!isFlat && <>
