@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useMemo } from "react";
 import { LuChevronsUpDown } from "react-icons/lu";
 import { IoIosCheckmark } from "react-icons/io";
 import { ZARR_STORES } from "../zarr/ZarrLoaderLRU";
@@ -113,12 +113,15 @@ const Navbar = React.memo(function Navbar(){
       setTimeSeries: state.setTimeSeries,
       isFlat: state.isFlat,
       plotOn: state.plotOn,
-      variables: state.variables
+      variables: state.variables,
+
     })))
 
 
-  const {setPlotType} = usePlotStore(useShallow(state=> ({
-    setPlotType: state.setPlotType})))
+  const {setPlotType, plotType} = usePlotStore(useShallow(state=> ({
+    setPlotType: state.setPlotType,
+    plotType: state.plotType
+  })))
   const [cmap, setCmap] = useState<string>("Default")
   const [flipCmap, setFlipCmap] = useState<boolean>(false)
   const colormap = useGlobalStore(useShallow(state=>state.colormap))
@@ -126,6 +129,7 @@ const Navbar = React.memo(function Navbar(){
   useEffect(()=>{
     setColormap(GetColorMapTexture(colormap, cmap === "Default" ? "Spectral" : cmap, 1, "#000000", 0, flipCmap));
   },[cmap, flipCmap])
+  const Tweak = useMemo(()=><PlotTweaker/> ,[])
   return (
     <nav className="navbar">
       <div className="navbar-left">
@@ -194,7 +198,7 @@ const Navbar = React.memo(function Navbar(){
         </Select>
       
       {!isFlat && plotOn && <PlotTweaker/>}
-      {!isFlat && plotOn && <PlotLineButton />}
+      {plotType === "volume" && plotOn && <PlotLineButton />}
       </div>
       <ThemeSwitch />
       <AboutButton />

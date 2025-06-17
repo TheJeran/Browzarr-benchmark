@@ -15,9 +15,10 @@ import ShowAnalysis from "./ShowAnalysis";
 import { Loading } from "./Loading";
 import useCSSVariable from "./useCSSVariable";
 import ShowLinePlot from "./ShowLinePlot";
-import PlotTweaker from "./PlotTweaker";
+import {PlotTweaker} from "./PlotTweaker";
 import AnalysisOptions from "./AnalysisOptions";
 import PlotLineButton from "./PlotLineButton";
+import { ContextTweaker } from "./ContextTweaker";
 
 export {
   Navbar,
@@ -40,5 +41,6 @@ export {
   ShowLinePlot,
   PlotTweaker,
   AnalysisOptions,
-  PlotLineButton
+  PlotLineButton,
+  ContextTweaker
 };
