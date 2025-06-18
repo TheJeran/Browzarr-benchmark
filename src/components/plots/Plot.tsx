@@ -7,7 +7,7 @@ import { ArrayToTexture, DefaultCubeTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
-import { Navbar, ContextTweaker } from '../ui';
+import { Navbar, ContextTweaker, Colorbar } from '../ui';
 import AnalysisInfo from './AnalysisInfo';
 
 interface PlotParameters{
@@ -38,8 +38,14 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
           setDimUnits:state.setDimUnits,
           setPlotOn: state.setPlotOn}
         )))
-    const {colormap, variable, isFlat, setIsFlat, setDataArray} = useGlobalStore(useShallow(state=>({
-      colormap: state.colormap, variable: state.variable, isFlat: state.isFlat, setIsFlat: state.setIsFlat, setDataArray: state.setDataArray
+    const {colormap, variable, isFlat, metadata, valueScales, setIsFlat, setDataArray} = useGlobalStore(useShallow(state=>({
+      colormap: state.colormap, 
+      variable: state.variable, 
+      isFlat: state.isFlat, 
+      metadata: state.metadata, 
+      valueScales: state.valueScales,
+      setIsFlat: state.setIsFlat, 
+      setDataArray: state.setDataArray
     })))
     const {ZarrDS,canvasWidth} = values;
     const plotType = usePlotStore(state => state.plotType)
@@ -176,6 +182,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       }}
       onContextMenu={HandleContext}
     >
+      {show && <Colorbar units={metadata?.units} valueScales={valueScales}/>}
       {showTweaker &&  <ContextTweaker loc={tweakerLoc}/>}
       <Nav />
       {isFlat && <AnalysisInfo loc={loc} show={showInfo} info={[...coords.current,val.current]}/> }
