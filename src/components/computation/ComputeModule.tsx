@@ -33,7 +33,7 @@ interface ComputeModule{
   setters:{
     setShowInfo:React.Dispatch<React.SetStateAction<boolean>>;
     setLoc:React.Dispatch<React.SetStateAction<number[]>>;
-    setUV:React.Dispatch<React.SetStateAction<number[]>>;
+    uv:React.RefObject<number[]>;
     setVal:React.Dispatch<React.SetStateAction<number>>;
   }
   
@@ -45,7 +45,7 @@ function Rescale(value: number, scales: {minVal: number, maxVal: number}){
 }
 
 const ComputeModule = ({arrays,values, setters}:ComputeModule) => {
-    const {setShowInfo, setLoc, setUV, setVal} = setters;
+    const {setShowInfo, setLoc, uv, setVal} = setters;
     const {colormap, flipY} = useGlobalStore(useShallow(state=>({colormap:state.colormap, flipY:state.flipY})))
     const {stateVars,valueScales} = values
     const {firstArray, secondArray} = arrays;
@@ -120,7 +120,7 @@ const handleMove = useCallback((e: ThreeEvent<PointerEvent>) => {
     eventRef.current = e;
     setLoc([e.clientX, e.clientY]);
     const { x, y } = e.uv;
-    setUV([x, y]);
+    uv.current = [x,y]
     const yStep = Math.round(planeShape[0] * y -.5);
     const xStep = Math.round(planeShape[1] * x -.5 );
     const dataIdx = planeShape[1] * yStep + xStep;

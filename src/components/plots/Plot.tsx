@@ -2,13 +2,13 @@ import { OrbitControls } from '@react-three/drei';
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { PointCloud, UVCube, DataCube, FlatMap } from '@/components/plots';
-import { Canvas, useThree } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import { ArrayToTexture, DefaultCubeTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
-import { Navbar, PlotLineButton, ContextTweaker } from '../ui';
-
+import { Navbar, ContextTweaker } from '../ui';
+import AnalysisInfo from './AnalysisInfo';
 
 interface PlotParameters{
     values:{
@@ -16,7 +16,6 @@ interface PlotParameters{
         canvasWidth:number
     }
     setShowLoading: React.Dispatch<React.SetStateAction<boolean>>;
-    
 }
 
 const Plot = ({values,setShowLoading}:PlotParameters) => {
@@ -39,19 +38,25 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
           setDimUnits:state.setDimUnits,
           setPlotOn: state.setPlotOn}
         )))
-    const {colormap, variable, isFlat, setIsFlat} = useGlobalStore(useShallow(state=>({
-      colormap: state.colormap, variable: state.variable, isFlat: state.isFlat, setIsFlat: state.setIsFlat
+    const {colormap, variable, isFlat, setIsFlat, setDataArray} = useGlobalStore(useShallow(state=>({
+      colormap: state.colormap, variable: state.variable, isFlat: state.isFlat, setIsFlat: state.setIsFlat, setDataArray: state.setDataArray
     })))
     const {ZarrDS,canvasWidth} = values;
     const plotType = usePlotStore(state => state.plotType)
 
     const [showTweaker, setShowTweaker] = useState<boolean>(false);
     const [tweakerLoc, setTweakerLoc] = useState<number[]>([0,0])
+
+    const coords = useRef<number[]>([0,0])
+    const val = useRef<number>(0)
+
+    const [showInfo, setShowInfo] = useState<boolean>(false)
+    const [loc, setLoc] = useState<number[]>([0,0])
+
     const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
-    // const [currentBg, setCurrentBg] = useState(bgcolor || 'var(--background)')
-    const [show, setShow] = useState<boolean>(true)
+    const [show, setShow] = useState<boolean>(true) //Prevents rendering of 3D objects until data is fully loaded in
     
-    const [windowWidth, setWindowWidth] = useState<number>(0);
+    const [windowWidth, setWindowWidth] = useState<number>(0); //Use for rescaling
 
     useEffect(() => {
         setWindowWidth(window.innerWidth);
@@ -105,6 +110,8 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         }
         if (result.shape.length == 2){
           setIsFlat(true)
+          setDataArray(result.data)
+
         }
         else{
           setIsFlat(false)
@@ -120,6 +127,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         setMetadata(result);
         const [dimArrs, dimMetas, dimNames] = ZarrDS.GetDimArrays()
         setDimArrays(dimArrs)
+        setDimNames(dimNames)
         if (dimArrs.length > 2){
           if (dimArrs[1][1] < dimArrs[1][0])
             {setFlipY(true)}
@@ -136,7 +144,6 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         for (const meta of dimMetas){
           tempDimUnits.push(meta.units)
         }
-        setDimNames(dimNames)
         setDimUnits(tempDimUnits)
       })
 
@@ -146,11 +153,20 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       }
   }, [variable])
 
-  function HandleContext(e : any){
-    setTweakerLoc([e.pageX,e.pageY])
-    setShowTweaker(true)
-    console.log(tweakerLoc)
+  function HandleContext(e : any){ //Show tweaker at right click
+    if (!isFlat){
+      setTweakerLoc([e.pageX,e.pageY])
+      setShowTweaker(true)
+    }
+    
   }
+
+  const infoSetters = useMemo(()=>({
+    setLoc,
+    setShowInfo,
+    coords,
+    val
+  }),[])
 
   const Nav = useMemo(()=>Navbar,[])
   return (
@@ -162,7 +178,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
     >
       {showTweaker &&  <ContextTweaker loc={tweakerLoc}/>}
       <Nav />
-
+      {isFlat && <AnalysisInfo loc={loc} show={showInfo} info={[...coords.current,val.current]}/> }
       {!isFlat && <>
       <Canvas camera={{ position: isFlat ? [0,0,5] : [-4.5, 3, 4.5], fov: 50 }}
         frameloop="demand"
@@ -182,8 +198,8 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         frameloop="demand"
         orthographic
         >
-          <FlatMap texture={texture as THREE.DataTexture} />
-          <OrbitControls enableRotate={false} enablePan={true} maxDistance={50} minZoom={50} maxZoom={2000}/>
+          <FlatMap texture={texture as THREE.DataTexture} infoSetters={infoSetters} />
+          <OrbitControls enableRotate={false} enablePan={true} maxDistance={50} minZoom={50} maxZoom={3000}/>
         </Canvas>
         </>}
 

@@ -54,10 +54,9 @@ export function Analysis({ values }: {
     const [array2 , setArray2] = useState<Array | null>(null)
     const [showInfo, setShowInfo] = useState<boolean>(false)
     const [loc, setLoc] = useState<number[]>([0,0])
-    const [uv, setUV] = useState<number[]>([0,0])
+    const uv = useRef<number[]>([0,0])
     const [val, setVal] = useState<number>(0);
-    const [xCoord, setXCoord] = useState<number>(0)
-    const [yCoord, setYCoord] = useState<number>(0)
+    const coords = useRef<number[]>([0,0])
 
 
     const dimNamesAxis = useMemo(() => dimNames.map((element,idx) => ({
@@ -137,13 +136,11 @@ export function Analysis({ values }: {
     if (dimArrays){
     const xSize = plotArrays[1].length;
     const ySize = plotArrays[0].length;
-    const xIdx = Math.round(uv[0]*xSize-.5)
-    const yIdx = Math.round(uv[1]*ySize-.5)
-    setXCoord(plotArrays[1][xIdx])
-    setYCoord(plotArrays[0][yIdx])
+    const xIdx = Math.round(uv.current[0]*xSize-.5)
+    const yIdx = Math.round(uv.current[1]*ySize-.5)
+    coords.current = [plotArrays[0][yIdx], plotArrays[1][xIdx] ]
     }
-  },[uv, plotArrays])
-
+  },[uv, loc, plotArrays])
 
   const valueScales = useMemo(()=>({
     firstArray:{
@@ -168,10 +165,10 @@ export function Analysis({ values }: {
       }}
       >      
         <Options />
-        <AnalysisInfo loc={loc} show={showInfo} info={[yCoord, xCoord, val]} />
+        <AnalysisInfo loc={loc} show={showInfo} info={[...coords.current, val]} />
         <Canvas camera={{ position: [0, 0, 50], zoom:400 }} orthographic>
           {/* <Perf position='bottom-left'/> */}
-          {array && <ComputeModule arrays={{firstArray: array, secondArray: array2}} values={computeObj} setters={{setShowInfo, setLoc, setUV, setVal}}/>}
+          {array && <ComputeModule arrays={{firstArray: array, secondArray: array2}} values={computeObj} setters={{setShowInfo, setLoc, uv, setVal}}/>}
           <OrbitControls
             enablePan={true}
             enableRotate={false}
