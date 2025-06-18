@@ -8,16 +8,22 @@ import { useShallow } from 'zustand/shallow';
 import './css/PlotLineButton.css'
 
 const PlotLineButton = () => {
-    const {selectTS, setSelectTS} = usePlotStore(useShallow(state => ({
+    const {selectTS, resetAnim, animate, setSelectTS, setResetAnim} = usePlotStore(useShallow(state => ({
         selectTS: state.selectTS,
-        setSelectTS: state.setSelectTS
+        resetAnim: state.resetAnim,
+        animate: state.animate,
+        setSelectTS: state.setSelectTS,
+        setResetAnim: state.setResetAnim
     })))
 
     const [showInfo, setShowInfo] = useState(false)
 
   return (
 
-    <div className='selectTS' onClick={()=> setSelectTS(!selectTS)}>
+    <div className='selectTS' 
+      style={{display: animate ? 'none' : ''}}
+    
+    onClick={()=> {setResetAnim(!resetAnim); setSelectTS(!selectTS)}}>
       <VscGraphLine size={40}
       style={{
         color:selectTS ? "red" : "grey",
