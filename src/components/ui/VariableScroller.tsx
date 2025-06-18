@@ -12,7 +12,8 @@ const MetaDataInfo = ({meta} : {meta : any}) =>{
     const [show, setShow] = useState<boolean>(false)
     const setVariable = useGlobalStore(useShallow(state=> state.setVariable))
     return(
-        <div className='meta-container'>
+        <div className='meta-container max-w-sm md:max-w-md'
+          style={{ background: 'var(--background)',border: '1px solid var(--border)', borderRadius: '8px', padding: '10px', marginBottom: '10px' }}>
             <div className='meta-info'>
                 <b>Long Name:</b> {`${meta.long_name}`}<br/>
                 <div 
@@ -31,10 +32,8 @@ const MetaDataInfo = ({meta} : {meta : any}) =>{
                     <b>Chunk Count:</b> {`${meta.chunkCount}`}<br/>
                     <b>Chunk Size:</b> {`${meta.chunkSizeFormatted}`}
                 </div>
-                <div className='meta-hidden'
-                    style={{display:'flex', justifyContent:'center'}}
-                    onClick={()=>setShow(x=>!x)}
-                >{show ? 'Λ' : 'V' }</div>
+                <div className='meta-hidden' onClick={()=>setShow(x=>!x)}
+                >{show ? 'less ↑' : 'more ↓' }</div>
             </div>
             <button onClick={()=>setVariable(meta.name)}><b>Plot</b></button>
         </div>
