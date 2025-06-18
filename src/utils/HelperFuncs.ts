@@ -55,9 +55,15 @@ export function parseLoc(input:number, units: string | undefined) {
         return input
     }
     if (typeof(input) == 'bigint'){
+      try{
         const scale = parseTimeUnit(units)
         const timeStamp = Number(input) * scale;
         return new Date(timeStamp).toDateString()
+      }
+      catch{
+        return input;
+      }
+        
     }
     if ( units.match(/(degree|degrees|deg|°)/i) ){
         return `${input.toFixed(2)}°`

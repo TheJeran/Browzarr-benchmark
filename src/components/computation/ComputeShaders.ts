@@ -63,7 +63,6 @@ export class OneArrayCompute{
         
         this.GPUCompute.doRenderTarget(reducer.material, this.renderTarget);
         const pixelBuffer = new Float32Array(this.renderTarget.width * this.renderTarget.height)
-        console.log(this.renderTarget.width * this.renderTarget.height)
         this.renderer.readRenderTargetPixels(this.renderTarget, 0, 0, this.renderTarget.width, this.renderTarget.height, pixelBuffer)
         return [this.renderTarget.texture, pixelBuffer];
     }

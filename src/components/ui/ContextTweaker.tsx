@@ -235,6 +235,7 @@ const PointTweaks = React.memo(function PointTweaks({loc} : {loc:number[]}){
 
 const ContextTweaker = React.memo(function ContextTweaker({loc} : {loc:number[]}){
     const plotType = usePlotStore(state => state.plotType)
+    
   return (
     <>
     <div style={{position:'fixed', left:loc[0], top:loc[1]}}>

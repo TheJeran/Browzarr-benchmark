@@ -8,10 +8,24 @@ import { parseLoc } from '@/utils/HelperFuncs'
 const AnalysisInfo = ({loc, show, info, } : {loc: number[], show: boolean, info: number[]}) => {
     const {dimNames, dimUnits} = useGlobalStore(useShallow(state=>({dimNames: state.dimNames, dimUnits: state.dimUnits})))
     const axis = useAnalysisStore(state=> state.axis)
+    const plotNames = useMemo(()=>{
+        if (dimNames.length < 3){
+            return [dimNames[0], dimNames[1]]
+        }
+        else{
+            return dimNames.filter((_val,idx)=> idx != axis)
+        }
+    },[dimNames,  axis]) 
 
-    const plotNames = useMemo(()=>dimNames.filter((_val,idx)=> idx != axis),[dimNames, axis])
-    const plotUnits = useMemo(()=>dimUnits.filter((_val,idx)=> idx != axis),[dimNames, axis])
-    
+    const plotUnits = useMemo(()=>{
+        if (dimNames.length < 3){
+            return [dimUnits[0], dimUnits[1]]
+        }
+        else{
+            return dimUnits.filter((_val,idx)=> idx != axis)
+        }
+    },[dimUnits, axis])
+
   return (
     <div className='analysis-info'
         style={{
