@@ -80,16 +80,20 @@ const MinMaxSlider = React.memo(function MinMaxSlider({range, setRange, valueSca
 })
 
 const VolumeTweaks = React.memo(function VolumeTweaks(){
-    const {valueRange, xRange, yRange, zRange, setValueRange, setXRange, setYRange, setZRange, setQuality} = usePlotStore(useShallow(state => ({
+    const {valueRange, xRange, yRange, zRange, animate, resetAnim, setValueRange, setXRange, setYRange, setZRange, setQuality, setAnimate, setResetAnim} = usePlotStore(useShallow(state => ({
         valueRange: state.valueRange,
         xRange: state.xRange,
         yRange: state.yRange,
         zRange: state.zRange,
+        animate: state.animate,
+        resetAnim: state.resetAnim,
         setValueRange: state.setValueRange,
         setXRange: state.setXRange,
         setYRange: state.setYRange,
         setZRange: state.setZRange,
-        setQuality: state.setQuality
+        setQuality: state.setQuality,
+        setAnimate: state.setAnimate,
+        setResetAnim: state.setResetAnim
     })))
     const [xScales, setXScales] = useState<{minVal: number, maxVal: number}>({minVal: 0, maxVal: 0})
     const [yScales, setYScales] = useState<{minVal: number, maxVal: number}>({minVal: 0, maxVal: 0})
@@ -152,6 +156,13 @@ const VolumeTweaks = React.memo(function VolumeTweaks(){
                             <MinMaxSlider range={zRange} setRange={setZRange} valueScales={zScales} array={dimArrays[0]}/>
                         </DropdownMenuItem>
                     </DropdownMenuGroup>
+                </DropdownMenuGroup>
+                <DropdownMenuGroup >
+                    <DropdownMenuLabel>Animate Time</DropdownMenuLabel>
+                    <div style={{display:'flex', justifyContent:'space-around'}}>
+                        <Button style={{background:animate ? 'red' : ''}} variant="outline" onClick={()=>setAnimate(!animate)}>{animate ? "Pause" : "Start"}</Button>
+                        <Button variant="outline" onClick={()=>setResetAnim(!resetAnim)}>Reset</Button>
+                    </div>
                 </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -2,9 +2,6 @@
 precision highp float;
 precision highp sampler3D;
 
-uniform mat4 modelViewMatrix;
-uniform mat4 projectionMatrix;
-
 in vec3 vOrigin;
 in vec3 vDirection;
 
@@ -18,7 +15,7 @@ uniform vec2 threshold;
 uniform float steps;
 uniform vec4 flatBounds;
 uniform vec2 vertBounds;
-uniform float intensity;
+uniform float animateProg;
 
 vec2 hitBox(vec3 orig, vec3 dir) {
     vec3 box_min = vec3(-(scale * 0.5));
@@ -67,7 +64,7 @@ void main() {
             p += rayDir * delta;
             continue;
         }
-
+        p.z = mod(p.z + animateProg, 1.0001);
         float d = sample1(p / scale + 0.5);
 
         bool cond = (d > threshold.x) && (d < threshold.y);
