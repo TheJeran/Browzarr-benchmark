@@ -33,8 +33,9 @@
     text-align: left;
     position: absolute;
     width: 85%;
-    left: 7.5%;
-    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 12%;
     z-index: 3;
     font-size: 18px;
     border-radius: 10px;
@@ -47,28 +48,35 @@
 
 .meta-container button{
     margin-top: 10px;
-    width: 100%;
-    background-color: rgba(170, 217, 255, 0.171);
+    justify-content: center;
+    background-color: var(--accent-2);
     border-radius: 6px;
     cursor: pointer;
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.342);
+    align-self: center;
+    width: 98%;
+    
 }
 
 .meta-hidden{
     display: flex;
     justify-content: center;
+    background-color: var(--accent-3);
     transition: 0.3s;
-    border-radius: 20px;
+    border-radius: 6px;
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.199);
+    border-width: 0.1rem;
     cursor: pointer;
-    font-size: 10px;
+    font-size: 14px;
     margin-top: 5px;
+    width: 98%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 @media (max-width: 1024px) {
   .meta-container{
-    top: 5%;
-    left: 10%;
+    top: 12%;
     font-size: 16px;
     min-width: 350px;
     max-width: 450px;
@@ -77,8 +85,7 @@
 
 @media (max-width: 570px) {
   .meta-container{
-    top: 5%;
-    left: 7.5%;
+    top: 12%;
     font-size: 16px;
     width: 85%;
   }
@@ -90,8 +97,7 @@
 
 @media (max-width: 480px) {
   .meta-container{
-    top: 48px;
-    left: 7.5%;
+    top: 12%;
     font-size: 14px;
     width: 85%;
   }
