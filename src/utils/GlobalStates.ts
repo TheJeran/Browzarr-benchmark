@@ -21,7 +21,7 @@ type StoreState = {
   colormap: THREE.DataTexture;
   timeSeries: number[];
   showLoading: boolean;
-  metadata: object[] | null;
+  metadata: Record<string, any> | null;
   zMeta: object[];
   dataArray: Array<any> | null;
   dimArrays: number[][];
@@ -41,7 +41,7 @@ type StoreState = {
   setColormap: (colormap: THREE.DataTexture) => void;
   setTimeSeries: (timeSeries: number[]) => void;
   setShowLoading: (showLoading: boolean) => void;
-  setMetadata: (metadata: object[] | null) => void;
+  setMetadata: (metadata: object | null) => void;
   setZMeta: (zMeta: object[]) => void;
   setDataArray: (dataArray: Array<any> | null) => void;
   setDimArrays: (dimArrays: number[][]) => void;

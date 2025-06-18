@@ -119,3 +119,8 @@ export async function getVariablesOptions(variablesPromise: Promise<string[]> | 
         return [{ text: 'Default', value: 'Default' }];
     }
 }
+
+export function linspace(start: number, stop: number, num: number): number[] {
+    const step = (stop - start) / (num - 1);
+    return Array.from({ length: num }, (_, i) => start + step * i);
+  }

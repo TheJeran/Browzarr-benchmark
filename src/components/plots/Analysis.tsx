@@ -8,7 +8,7 @@ import { ArrayMinMax, getVariablesOptions } from '@/utils/HelperFuncs'
 import AnalysisInfo from './AnalysisInfo'
 import ComputeModule from '@/components/computation/ComputeModule'
 import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU'
-import { AnalysisOptions } from '@/components/ui'
+import { AnalysisOptions, Colorbar } from '@/components/ui'
 import { OrbitControls } from '@react-three/drei'
 import { useAnalysisStore, useGlobalStore } from '@/utils/GlobalStates'
 import './Plots.css'
@@ -46,10 +46,8 @@ export function Analysis({ values }: {
     const {ZarrDS, canvasWidth} = values
     const scaleObjRef = useRef<Record<string, { min: number; max: number }>>({});
     const setFlipY = useGlobalStore(state=>state.setFlipY)
-    const [maxVal, setMaxVal] = useState<number>(100);
-    const [minVal, setMinVal] = useState<number>(0);
-    const [maxVal2, setMaxVal2] = useState<number>(100);
-    const [minVal2, setMinVal2] = useState<number>(0);
+    const [valScales1, setValScales1] = useState<number[]>([0, 100]);
+    const [valScales2, setValScales2] = useState<number[]>([0, 100]);
     const [array , setArray] = useState<Array | null>(null)
     const [array2 , setArray2] = useState<Array | null>(null)
     const [showInfo, setShowInfo] = useState<boolean>(false)
@@ -57,7 +55,7 @@ export function Analysis({ values }: {
     const uv = useRef<number[]>([0,0])
     const [val, setVal] = useState<number>(0);
     const coords = useRef<number[]>([0,0])
-
+    const [units, setUnits] = useState<string>("Default")
 
     const dimNamesAxis = useMemo(() => dimNames.map((element,idx) => ({
         text: element,
@@ -77,17 +75,19 @@ export function Analysis({ values }: {
         setArray(result);
         
         if (variable1 in scaleObjRef.current){
-          setMinVal(scaleObjRef.current[variable1].min)
-          setMaxVal(scaleObjRef.current[variable1].max)
+          setValScales1([
+            scaleObjRef.current[variable1].min,
+            scaleObjRef.current[variable1].max
+          ])
         }
         else{
           const [minVal,maxVal] = ArrayMinMax(result.data)
-          setMaxVal(maxVal);
-          setMinVal(minVal);
+          setValScales1([maxVal, minVal])
           scaleObjRef.current[variable1] = {min:minVal,max:maxVal}
         }
       })
-      ZarrDS.GetAttributes(variable1).then(()=>{
+      ZarrDS.GetAttributes(variable1).then((r)=>{
+        setUnits(r.units)
         const [dimArrs, dimMetas, dimNames] = ZarrDS.GetDimArrays()
         setDimArrays(dimArrs)
         setDimNames(dimNames)
@@ -106,13 +106,14 @@ export function Analysis({ values }: {
       ZarrDS.GetArray(variable2).then(result=>{
         setArray2(result);
         if (variable2 in scaleObjRef.current){
-          setMinVal2(scaleObjRef.current[variable2].min)
-          setMaxVal2(scaleObjRef.current[variable2].max)
+          setValScales2([
+            scaleObjRef.current[variable2].min,
+            scaleObjRef.current[variable2].max
+          ])
         }
         else{
           const [minVal,maxVal] = ArrayMinMax(result.data)
-          setMaxVal2(maxVal);
-          setMinVal2(minVal);
+          setValScales2([minVal, maxVal])
           scaleObjRef.current[variable2] = {min:minVal,max:maxVal}
         }
       })
@@ -144,14 +145,14 @@ export function Analysis({ values }: {
 
   const valueScales = useMemo(()=>({
     firstArray:{
-      maxVal,
-      minVal
+      maxVal: valScales1[1],
+      minVal: valScales1[0]
     },
     secondArray:{
-      maxVal: maxVal2,
-      minVal: minVal2
+      maxVal: valScales2[1],
+      minVal: valScales2[0]
     }
-  }),[maxVal,minVal,maxVal2,minVal2],)
+  }),[valScales1,valScales2],)
 
   const computeObj = useMemo(()=>({
       stateVars,
@@ -164,6 +165,11 @@ export function Analysis({ values }: {
         width:canvasWidth,
       }}
       >      
+      {array && 
+      <Colorbar 
+          units={units} 
+          valueScales={array2 ? {maxVal: 1, minVal: 0} : {maxVal: valScales1[0], minVal: valScales1[1]}}
+      />}
         <Options />
         <AnalysisInfo loc={loc} show={showInfo} info={[...coords.current, val]} />
         <Canvas camera={{ position: [0, 0, 50], zoom:400 }} orthographic>

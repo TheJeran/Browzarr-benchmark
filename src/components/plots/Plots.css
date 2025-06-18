@@ -13,6 +13,7 @@
     height: 100vh;
     width: 60%;
     right: 0%;
+    overflow: hidden;
   }
 
 .analysis-ui{
