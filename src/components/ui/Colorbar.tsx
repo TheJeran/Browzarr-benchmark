@@ -52,7 +52,7 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
         const newMin = valueScales.minVal + deltaX/100*range;
         const newMax = valueScales.maxVal + deltaX/100*range;
 
-        setValueScales({minVal: newMin, maxVal: newMax})
+        // setValueScales({minVal: newMin, maxVal: newMax})
 
         console.log(deltaX)
     };
