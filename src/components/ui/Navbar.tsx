@@ -129,6 +129,7 @@ const Navbar = React.memo(function Navbar(){
   useEffect(()=>{
     setColormap(GetColorMapTexture(colormap, cmap === "Default" ? "Spectral" : cmap, 1, "#000000", 0, flipCmap));
   },[cmap, flipCmap])
+  
   const Tweak = useMemo(()=><PlotTweaker/> ,[])
   return (
     <nav className="navbar">

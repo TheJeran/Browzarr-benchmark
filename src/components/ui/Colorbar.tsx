@@ -8,28 +8,77 @@ import './css/Colorbar.css'
 import { linspace } from '@/utils/HelperFuncs';
 
 
-const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: number, minVal:number}}) => {
-    const {colormap} = useGlobalStore(useShallow(state => ({
-        colormap: state.colormap,
-        valueScales: state.valueScales,
-    })))
-const colors = useMemo(()=>{
-    const colors = []
-    const data = colormap.source.data.data
-    for (let i = 0; i < data.length/4; i++){
-        const newIdx = i*4
-        const rgba = `rgba(${data[newIdx]}, ${data[newIdx+1]}, ${data[newIdx+2]}, ${data[newIdx+3]} )`
-        colors.push(rgba)
-    }
-    return colors
-},[colormap])
 
-const [locs, vals] = useMemo(()=>{
-    const locs = linspace(0, 100, 5)
-    const vals = linspace(valueScales.minVal, valueScales.maxVal, 5)
-    return [locs, vals]
-},[valueScales])
-const canvasRef = useRef<HTMLCanvasElement | null>(null);
+const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: number, minVal:number}}) => {
+    const {colormap, setValueScales} = useGlobalStore(useShallow(state => ({
+        colormap: state.colormap,
+        setValueScales: state.setValueScales,
+    })))
+
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const scaling = useRef<boolean>(false)
+    const prevPos = useRef<{ x: number | null; y: number | null }>({ x: null, y: null });
+    const range = useMemo(()=>valueScales.maxVal - valueScales.minVal,[valueScales])
+
+    const colors = useMemo(()=>{
+        const colors = []
+        const data = colormap.source.data.data
+        for (let i = 0; i < data.length/4; i++){
+            const newIdx = i*4
+            const rgba = `rgba(${data[newIdx]}, ${data[newIdx+1]}, ${data[newIdx+2]}, ${data[newIdx+3]} )`
+            colors.push(rgba)
+        }
+        return colors
+    },[colormap])
+
+    const [locs, vals] = useMemo(()=>{
+        const locs = linspace(0, 100, 5)
+        const vals = linspace(valueScales.minVal, valueScales.maxVal, 5)
+        return [locs, vals]
+    },[valueScales])
+
+    // Mouse move handler
+    const handleMouseMove = (e: MouseEvent) => {
+        if (!scaling.current) return;
+        // Your scaling logic here
+        if (prevPos.current.x === null || prevPos.current.y === null){
+            console.log('setting init')
+            prevPos.current.x = e.clientX;
+            prevPos.current.y = e.clientY;
+        }
+        const deltaX = prevPos.current.x - e.clientX;
+        const deltaY = prevPos.current.y - e.clientY;
+
+        const newMin = valueScales.minVal + deltaX/100*range;
+        const newMax = valueScales.maxVal + deltaX/100*range;
+
+        setValueScales({minVal: newMin, maxVal: newMax})
+
+        console.log(deltaX)
+    };
+
+    // Mouse up handler
+    const handleMouseUp = () => {
+        scaling.current = false;
+        prevPos.current = {x: null, y: null}
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    // Mouse down handler
+    const handleMouseDown = () => {
+        scaling.current = true;
+        document.addEventListener("mousemove", handleMouseMove);
+        document.addEventListener("mouseup", handleMouseUp);
+    };
+
+    // Clean up in case component unmounts mid-drag
+    useEffect(() => {
+        return () => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+        };
+    }, []);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -58,7 +107,7 @@ const canvasRef = useRef<HTMLCanvasElement | null>(null);
         >{vals[idx].toFixed(2)}
         </p>
         ))}
-        <canvas  ref={canvasRef} width={512} height={30} />
+        <canvas  ref={canvasRef} width={512} height={30} onMouseDown={handleMouseDown}/>
     <p style={{
         position:'absolute',
         top:'-25px',

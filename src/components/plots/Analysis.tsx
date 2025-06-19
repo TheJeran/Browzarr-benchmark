@@ -13,7 +13,6 @@ import { OrbitControls } from '@react-three/drei'
 import { useAnalysisStore, useGlobalStore } from '@/utils/GlobalStates'
 import './Plots.css'
 import { useShallow } from 'zustand/shallow'
-// import { Perf } from 'r3f-perf';
 
 interface Array{
   data:number[],

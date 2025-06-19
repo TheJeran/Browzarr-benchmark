@@ -1,9 +1,11 @@
 import { OrbitControls } from '@react-three/drei';
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
+import { PerspectiveCamera, OrthographicCamera } from '@react-three/drei'
+
 import { PointCloud, UVCube, DataCube, FlatMap } from '@/components/plots';
 import { Canvas } from '@react-three/fiber';
-import { ArrayToTexture, DefaultCubeTexture } from '@/components/textures';
+import { ArrayToTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
@@ -63,6 +65,8 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
     const [show, setShow] = useState<boolean>(true) //Prevents rendering of 3D objects until data is fully loaded in
     
     const [windowWidth, setWindowWidth] = useState<number>(0); //Use for rescaling
+
+    const isOrthographic = true;
 
     useEffect(() => {
         setWindowWidth(window.innerWidth);
