@@ -10,7 +10,7 @@ import ComputeModule from '@/components/computation/ComputeModule'
 import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU'
 import { AnalysisOptions, Colorbar } from '@/components/ui'
 import { OrbitControls } from '@react-three/drei'
-import { useAnalysisStore, useGlobalStore } from '@/utils/GlobalStates'
+import { useAnalysisStore, useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
 import './Plots.css'
 import { useShallow } from 'zustand/shallow'
 
