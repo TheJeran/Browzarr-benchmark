@@ -64,8 +64,10 @@ void main() {
             p += rayDir * delta;
             continue;
         }
-        p.z = mod(p.z + animateProg, 1.0001);
-        float d = sample1(p / scale + 0.5);
+
+        vec3 texCoord = p / scale + 0.5;
+        texCoord.z = mod(texCoord.z + animateProg, 1.0001);
+        float d = sample1(texCoord);
 
         bool cond = (d > threshold.x) && (d < threshold.y);
         

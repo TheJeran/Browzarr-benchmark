@@ -199,7 +199,7 @@ body {
   max-height: 50vh;
   border-radius: 10px;
   overflow-y: auto;
-  z-index: 20;
+  z-index: 1;
 }
 
 .canvas-title:hover p {

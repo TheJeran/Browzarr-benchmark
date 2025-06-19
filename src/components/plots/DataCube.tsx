@@ -5,7 +5,7 @@ import { usePaneInput, usePaneFolder, useSliderBlade, useTweakpane } from '@laza
 import { createPaneContainer } from '@/components/ui';
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 
 interface DataCubeProps {
   volTexture: THREE.Data3DTexture | THREE.DataTexture | null,
@@ -50,9 +50,10 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
         
   // Use geometry once, avoid recreating -- Using a sphere to avoid the weird angles you get with cube
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(4, 8), []);
+
     useFrame(()=>{
       if (animate){
-        const newProg = animateProg + 1/volTexture?.source.data.depth
+        const newProg = animateProg + 0.001
         setAnimateProg(newProg % 1.)
       }
     })
