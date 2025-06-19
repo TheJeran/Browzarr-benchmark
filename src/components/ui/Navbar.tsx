@@ -105,7 +105,7 @@ const ColorMaps = ({cmap, setCmap} : {cmap : string, setCmap : React.Dispatch<Re
 }
 
 const Navbar = React.memo(function Navbar(){
-  const {setInitStore, setVariable, setColormap, setTimeSeries, isFlat, plotOn, variables} = useGlobalStore(
+  const {setInitStore, setVariable, setColormap, setTimeSeries, isFlat, plotOn, variables, variable} = useGlobalStore(
     useShallow(state=>({
       setInitStore : state.setInitStore, 
       setVariable : state.setVariable,
@@ -114,7 +114,7 @@ const Navbar = React.memo(function Navbar(){
       isFlat: state.isFlat,
       plotOn: state.plotOn,
       variables: state.variables,
-
+      variable: state.variable
     })))
 
 
@@ -184,9 +184,9 @@ const Navbar = React.memo(function Navbar(){
         </div>
 
 
-        <Select onValueChange={e=>setVariable(e)}>
+        <Select value={variable} onValueChange={e=>setVariable(e)}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select a variable" />
+            <SelectValue defaultValue={variable} placeholder="Select a variable" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>

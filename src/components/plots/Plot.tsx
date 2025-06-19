@@ -97,7 +97,6 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
     if (variable != "Default") {
       setShowLoading(true);
       setShow(false)
-      //Need to add a check somewhere here to swap to 2D or 3D based on shape. Probably export two variables from GetArray
       ZarrDS.GetArray(variable).then((result) => {
         // result now contains: { data: TypedArray, shape: number[], dtype: string }
         const [texture, scaling] = ArrayToTexture({
@@ -168,7 +167,6 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       setTweakerLoc([e.pageX,e.pageY])
       setShowTweaker(true)
     }
-    
   }
 
   const infoSetters = useMemo(()=>({

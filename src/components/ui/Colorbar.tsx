@@ -2,7 +2,8 @@
 "use client";
 
 import { RxReset } from "react-icons/rx";
-import React, {useRef, useEffect, useMemo} from 'react'
+import { FaPlus, FaMinus } from "react-icons/fa";
+import React, {useRef, useEffect, useMemo, useState} from 'react'
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
 import './css/Colorbar.css'
@@ -10,7 +11,26 @@ import { linspace } from '@/utils/HelperFuncs';
 
 function RescaleLoc(val : number, offset : number, scale : number){
     const rescale = (val-50)*scale+50;
-    return Math.max(Math.min(rescale+offset, 100),0);
+    return rescale+offset;
+}
+
+function opacity(val : number){
+    const decayFac = 6
+    if (val > 100){
+        const diff = val-100
+        return 1-(diff*decayFac/100)
+    }
+    if (val < 0){
+        const diff = Math.abs(val)
+        return 1-(diff*decayFac/100)
+    }
+    else{
+        return 1;
+    }
+}
+
+function clamp(val : number, min=0 , max=100){
+     return Math.max(Math.min(val, max),min);
 }
 
 const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: number, minVal:number}}) => {
@@ -28,7 +48,7 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const scaling = useRef<boolean>(false)
     const prevPos = useRef<{ x: number | null; y: number | null }>({ x: null, y: null });
-    const range = useMemo(()=>valueScales.maxVal - valueScales.minVal,[valueScales])
+    const [tickCount, setTickCount] = useState<number>(5)
 
     const colors = useMemo(()=>{
         const colors = []
@@ -42,10 +62,10 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
     },[colormap])
 
     const [locs, vals] = useMemo(()=>{
-        const locs = linspace(0, 100, 5)
-        const vals = linspace(valueScales.minVal, valueScales.maxVal, 5)
+        const locs = linspace(0, 100, tickCount)
+        const vals = linspace(valueScales.minVal, valueScales.maxVal, tickCount)
         return [locs, vals]
-    },[valueScales])
+    },[valueScales, tickCount])
 
     // Mouse move handler
     const handleMouseMove = (e: MouseEvent) => {
@@ -101,14 +121,15 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
   return (
     <>
     <div className='colorbar' >
-        {Array.from({length: 5}).map((_val,idx)=>(
+        {Array.from({length: tickCount}).map((_val,idx)=>(
             <p
             key={idx}
             style={{
-                left: `${RescaleLoc(locs[idx], cOffset*100, cScale)}%`,
+                left: `${clamp(RescaleLoc(locs[idx], cOffset*100, cScale))}%`,
                 top:'100%',
                 position:'absolute',
                 transform:'translateX(-50%)',
+                opacity: opacity(RescaleLoc(locs[idx], cOffset*100, cScale))
             }}
         >{vals[idx].toFixed(2)}
         </p>
@@ -118,11 +139,24 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
         position:'absolute',
         top:'-25px',
         left:'50%',
-        transform:'translateX(-50%)'
+        transform:'translateX(-50%)',
     }}>
         {units}
     </p>
     {(cScale != 1 || cOffset != 0) && <RxReset size={25} style={{position:'absolute', top:'-25px', cursor:'pointer'}} onClick={()=>{setCScale(1); setCOffset(0)}}/>}
+    <div
+        style={{
+            position:'absolute',
+            right:'0%',
+            bottom:'100%',
+            display:'flex',
+            width:'10%',
+            justifyContent:'space-around'
+        }}
+    >
+        <FaMinus className='cursor-pointer' onClick={()=>setTickCount(Math.max(tickCount-1, 2))}/>
+        <FaPlus className='cursor-pointer' onClick={()=>setTickCount(Math.min(tickCount+1, 10))}/>
+    </div>
     </div>
 
     </>

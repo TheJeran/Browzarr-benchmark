@@ -5,7 +5,7 @@ import { OneArrayCompute, TwoArrayCompute } from './ComputeShaders'
 import * as THREE from 'three'
 import { fragShader, vertShader } from './shaders'
 import { useThree } from '@react-three/fiber';
-import { useGlobalStore } from '@/utils/GlobalStates';
+import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { ThreeEvent } from '@react-three/fiber';
 
@@ -56,6 +56,11 @@ const ComputeModule = ({arrays,values, setters}:ComputeModule) => {
     const infoRef = useRef<boolean>(false)
     const dataArray = useRef<Float32Array>(new Float32Array(0));
 
+    const {cScale, cOffset} = usePlotStore(useShallow(state => ({
+      cScale: state.cScale,
+      cOffset: state.cOffset
+    })))
+    
     const GPUCompute = useMemo(() => {
       return secondArray 
       ? new TwoArrayCompute({ firstArray, secondArray }, gl, valueScales) 
@@ -67,6 +72,8 @@ const ComputeModule = ({arrays,values, setters}:ComputeModule) => {
     const shaderMaterial = new THREE.ShaderMaterial({
         glslVersion: THREE.GLSL3,
         uniforms:{
+          cScale: {value: cScale},
+          cOffset: {value: cOffset},
           data : {value: texture},
           cmap : { value : colormap},
         },
