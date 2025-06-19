@@ -1,18 +1,28 @@
 
 "use client";
 
+import { RxReset } from "react-icons/rx";
 import React, {useRef, useEffect, useMemo} from 'react'
-import { useGlobalStore } from '@/utils/GlobalStates'
+import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
 import './css/Colorbar.css'
 import { linspace } from '@/utils/HelperFuncs';
 
-
+function RescaleLoc(val : number, offset : number, scale : number){
+    const rescale = (val-50)*scale+50;
+    return Math.max(Math.min(rescale+offset, 100),0);
+}
 
 const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: number, minVal:number}}) => {
-    const {colormap, setValueScales} = useGlobalStore(useShallow(state => ({
+    const {colormap} = useGlobalStore(useShallow(state => ({
         colormap: state.colormap,
-        setValueScales: state.setValueScales,
+    })))
+
+    const {cScale, cOffset, setCScale, setCOffset} = usePlotStore(useShallow(state => ({ 
+        cScale: state.cScale,
+        cOffset: state.cOffset,
+        setCScale: state.setCScale,
+        setCOffset: state.setCOffset
     })))
 
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -48,13 +58,11 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
         }
         const deltaX = prevPos.current.x - e.clientX;
         const deltaY = prevPos.current.y - e.clientY;
-
-        const newMin = valueScales.minVal + deltaX/100*range;
-        const newMax = valueScales.maxVal + deltaX/100*range;
-
+        setCOffset(cOffset - deltaX  / 100)
+        setCScale(cScale + deltaY/100)
+        console.log(cScale)
         // setValueScales({minVal: newMin, maxVal: newMax})
 
-        console.log(deltaX)
     };
 
     // Mouse up handler
@@ -99,10 +107,10 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
             <p
             key={idx}
             style={{
-                left: `${locs[idx]}%`,
+                left: `${RescaleLoc(locs[idx], cOffset*100, cScale)}%`,
                 top:'100%',
                 position:'absolute',
-                transform:'translateX(-50%)'
+                transform:'translateX(-50%)',
             }}
         >{vals[idx].toFixed(2)}
         </p>
@@ -116,6 +124,7 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
     }}>
         {units}
     </p>
+    {(cScale != 1 || cOffset != 0) && <RxReset size={25} style={{position:'absolute', top:'-25px', cursor:'pointer'}} onClick={()=>{setCScale(1); setCOffset(0)}}/>}
     </div>
 
     </>

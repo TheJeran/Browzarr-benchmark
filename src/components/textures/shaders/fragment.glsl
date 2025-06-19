@@ -10,6 +10,8 @@ out vec4 color;
 uniform sampler3D map;
 uniform sampler2D cmap;
 
+uniform float cOffset;
+uniform float cScale;
 uniform vec3 scale;
 uniform vec2 threshold;
 uniform float steps;
@@ -73,7 +75,9 @@ void main() {
         
 
         if (cond) {
-            vec4 col = texture(cmap, vec2(d, 0.5));
+            float sampLoc = d == 1. ? d : (d - 0.5)*cScale + 0.5;
+            sampLoc = d == 1. ? d : min(sampLoc+cOffset,0.99);
+            vec4 col = texture(cmap, vec2(sampLoc, 0.5));
             // Change this later back to use intensity then delete comment. Or maybe we don't need intensity
             float alpha = float(col.a > 0.);
 

@@ -121,6 +121,8 @@ type PlotState ={
   lineResolution: number;
   animate: boolean;
   resetAnim: boolean;
+  cOffset: number;
+  cScale: number;
 
   setQuality: (quality: number) => void;
   setValueRange: (valueRange: number[]) => void;
@@ -141,6 +143,8 @@ type PlotState ={
   setLineResolution: (lineResolution: number) => void;
   setAnimate: (animate: boolean) => void;
   setResetAnim: (resetAnim: boolean) => void;
+  setCOffset: (cOffset: number) => void;
+  setCScale: (cScale: number) => void;
 }
 
 export const usePlotStore = create<PlotState>((set) => ({
@@ -164,6 +168,8 @@ export const usePlotStore = create<PlotState>((set) => ({
   lineResolution: 3,
   animate: false,
   resetAnim: false,
+  cOffset: 0,
+  cScale: 1,
 
   setQuality: (quality) => set({ quality }),
   setValueRange: (valueRange) => set({ valueRange }),
@@ -182,8 +188,11 @@ export const usePlotStore = create<PlotState>((set) => ({
   setPointColor: (pointColor) => set({ pointColor }),
   setUseLineColor: (useLineColor) => set({ useLineColor }),
   setLineResolution: (lineResolution) => set({ lineResolution }),
-  setAnimate: (animate) => set({ animate}),
-  setResetAnim: (resetAnim) => set({ resetAnim})
+  setAnimate: (animate) => set({ animate }),
+  setResetAnim: (resetAnim) => set({ resetAnim }),
+  setCOffset: (cOffset) => set({ cOffset }),
+  setCScale: (cScale) => set({ cScale })
+
 }))
 
 
