@@ -1,8 +1,8 @@
 "use client";
 
-import React, {useMemo, useEffect, useRef, useCallback, useState} from 'react'
+import React, {useMemo, useEffect, useRef, useCallback} from 'react'
 import * as THREE from 'three'
-import { useGlobalStore } from '@/utils/GlobalStates'
+import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
 import { fragShader, vertShader } from '@/components/computation/shaders'
 import { useShallow } from 'zustand/shallow'
 import { ThreeEvent } from '@react-three/fiber';
@@ -31,6 +31,11 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture, infoSett
       valueScales: state.valueScales,
       dimArrays: state.dimArrays,
     })))
+    const {cScale, cOffset} = usePlotStore(useShallow(state => ({
+      cOffset: state.cOffset,
+      cScale: state.cScale
+    })))
+
     const shapeRatio = useMemo(()=> shape.x/shape.z, [shape])
     const geometry = useMemo(()=>new THREE.PlaneGeometry(2,shapeRatio),[shapeRatio])
     const infoRef = useRef<boolean>(false)
@@ -38,6 +43,8 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture, infoSett
     const shaderMaterial = new THREE.ShaderMaterial({
             glslVersion: THREE.GLSL3,
             uniforms:{
+              cScale: {value: cScale},
+              cOffset: {value: cOffset},
               data : {value: texture},
               cmap : { value : colormap},
             },
