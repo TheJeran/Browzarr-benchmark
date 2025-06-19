@@ -52,7 +52,6 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
         if (!scaling.current) return;
         // Your scaling logic here
         if (prevPos.current.x === null || prevPos.current.y === null){
-            console.log('setting init')
             prevPos.current.x = e.clientX;
             prevPos.current.y = e.clientY;
         }
@@ -60,7 +59,6 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
         const deltaY = prevPos.current.y - e.clientY;
         setCOffset(cOffset - deltaX  / 100)
         setCScale(cScale + deltaY/100)
-        console.log(cScale)
         // setValueScales({minVal: newMin, maxVal: newMax})
 
     };

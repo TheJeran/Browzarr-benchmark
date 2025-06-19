@@ -1,9 +1,7 @@
 
 import * as THREE from 'three'
 import { useMemo } from 'react'
-// import { useControls } from 'leva'
 import { pointFrag, pointVert } from '@/components/textures/shaders'
-import { usePaneInput, usePaneFolder, useSliderBlade, useTweakpane } from '@lazarusa/react-tweakpane'
 import { createPaneContainer } from '@/components/ui';
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
@@ -18,11 +16,15 @@ export const PointCloud = ({textures} : {textures:PCProps} )=>{
     const paneContainer = createPaneContainer("plot-cloud");
     const flipY = useGlobalStore(state=>state.flipY)
     
-    const {scalePoints, scaleIntensity, pointSize} = usePlotStore(useShallow(state => ({
+    const {scalePoints, scaleIntensity, pointSize, cScale, cOffset} = usePlotStore(useShallow(state => ({
       scalePoints: state.scalePoints,
       scaleIntensity: state.scaleIntensity,
-      pointSize: state.pointSize
+      pointSize: state.pointSize,
+      cScale: state.cScale, 
+      cOffset:state.cOffset
     })))
+
+    
 
     //Extract data and shape from Data3DTexture
     const { data, width, height, depth } = useMemo(() => {
@@ -81,6 +83,8 @@ export const PointCloud = ({textures} : {textures:PCProps} )=>{
       uniforms: {
         pointSize: {value: pointSize},
         cmap: {value: colormap},
+        cOffset: {value: cOffset},
+        cScale: {value: cScale},
         scalePoints:{value: scalePoints},
         scaleIntensity: {value: scaleIntensity}
       },
