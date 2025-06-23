@@ -82,7 +82,6 @@ const ComputeModule = ({arrays,values, setters}:ComputeModule) => {
         side: THREE.DoubleSide,
     })
 
-
     useEffect(()=>{
       if (firstArray){
         let newText: THREE.Texture | null = null;
@@ -140,7 +139,7 @@ const handleMove = useCallback((e: ThreeEvent<PointerEvent>) => {
     }
     
   }
-}, [firstArray,secondArray,axis]);
+}, [firstArray,secondArray,axis,operation]);
   
     const geometry = useMemo(()=>new THREE.PlaneGeometry(2,shapeRatio),[shapeRatio])
 

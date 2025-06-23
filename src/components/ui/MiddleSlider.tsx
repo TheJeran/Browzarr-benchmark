@@ -38,11 +38,11 @@ const MiddleSlider = ({canvasWidth,setCanvasWidth}:MiddleParams) => {
             setCanvasWidth(0);
         }
         if (canvasWidth > screenWidth*0.85){
-            setCanvasWidth(screenWidth-10); //This 10 is the width of the middleslider. May need to adjust
+            setCanvasWidth(screenWidth); //This 10 is the width of the middleslider. May need to adjust
         }
         setIsResizing(false);
     };
-        
+    
     // Add/remove document event listeners based on resizing state
     useEffect(() => {
         if (isResizing) {
