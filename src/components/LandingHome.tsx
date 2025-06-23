@@ -53,7 +53,12 @@ export function LandingHome() {
   const [showLoading, setShowLoading] = useState<boolean>(false);
   const textColor = useCSSVariable('--foreground');
   const fogColor = useCSSVariable('--background');
-  const windowWidth = useMemo(()=> window.innerWidth,[window.innerWidth])
+  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0);
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   //Timeseries Plotting Information
   const [canvasWidth, setCanvasWidth] = useState<number>(0)
