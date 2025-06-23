@@ -118,7 +118,9 @@ const VolumeTweaks = React.memo(function VolumeTweaks(){
         <div className="nav-dropdown">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">Adjust Volume</Button>
+              <Button variant="outline" className="md:static md:transform-none absolute right-0 top-10 z-10 w-full max-w-[35vw] md:w-auto md:max-w-none">
+        Adjust Volume
+      </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="start">
                 <DropdownMenuLabel>Plot Quality</DropdownMenuLabel>
@@ -185,7 +187,7 @@ const PointTweaks = React.memo(function PointTweaks(){
         <div className="nav-dropdown">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">Adjust Points</Button>
+              <Button variant="outline" className="md:static md:transform-none absolute right-0 top-10 z-10 w-full max-w-[35vw] md:w-auto md:max-w-none">Adjust Points</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="start">
               <DropdownMenuGroup>

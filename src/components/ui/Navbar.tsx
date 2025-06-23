@@ -185,7 +185,7 @@ const Navbar = React.memo(function Navbar(){
 
 
         <Select value={variable} onValueChange={e=>setVariable(e)}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full max-w-[50vw] md:w-[180px] md:max-w-none md:static md:transform-none absolute left-0 top-10 z-10">
             <SelectValue defaultValue={variable} placeholder="Select a variable" />
           </SelectTrigger>
           <SelectContent>
