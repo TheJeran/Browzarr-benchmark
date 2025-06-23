@@ -24,15 +24,16 @@ const PlotLineButton = () => {
       style={{display: animate ? 'none' : ''}}
     
     onClick={()=> {setResetAnim(!resetAnim); setSelectTS(!selectTS)}}>
-      <VscGraphLine size={40}
+      <VscGraphLine size={32}
       style={{
-        color:selectTS ? "red" : "grey",
-        filter: selectTS ? "drop-shadow(0px 0px 10px red)" : "",
+        color:selectTS ? "gold" : "grey",
+        filter: selectTS ? "drop-shadow(0px 0px 10px gold)" : "",
         cursor:'pointer'
       }}/>
       <IoMdInformationCircleOutline 
+        size={15}
         style={{
-          height:'15px',
+          height:'30px',
           position:'absolute',
           right:'-10px',
           bottom:'0',
@@ -47,9 +48,10 @@ const PlotLineButton = () => {
           width:'100px',
           top:'100%',
           left:'100%',
-          borderRadius: '6px',
+          borderRadius: '10px',
+          border: '1px solid var(--accent-2)',
           display: showInfo ? '' : 'none',
-          background: 'rgb(223, 234, 255)',
+          backgroundImage: 'linear-gradient(-125deg, var(--background) 0%, var(--background-modal) 100%)',
           padding:'2px'
         }}
       >
