@@ -53,6 +53,7 @@ export function LandingHome() {
   const [showLoading, setShowLoading] = useState<boolean>(false);
   const textColor = useCSSVariable('--foreground');
   const fogColor = useCSSVariable('--background');
+  const windowWidth = useMemo(()=> window.innerWidth,[window.innerWidth])
 
   //Timeseries Plotting Information
   const [canvasWidth, setCanvasWidth] = useState<number>(0)
@@ -84,15 +85,15 @@ export function LandingHome() {
   return (
     <>
     {!plotOn && <Navbar />}
-    {canvasWidth < 15 && variable != "Default" && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} />}
-    {canvasWidth > window.innerWidth-15 && variable != "Default" && 
-    <ShowPlot onClick={()=>setCanvasWidth(window.innerWidth*.5)} />}
-    {canvasWidth > 15 && canvasWidth < window.innerWidth-15 && 
+    {canvasWidth < 15 && variable != "Default" && <ShowAnalysis onClick={()=>setCanvasWidth(windowWidth*.5)} />}
+    {canvasWidth > windowWidth-15 && variable != "Default" && 
+    <ShowPlot onClick={()=>setCanvasWidth(windowWidth*.5)} />}
+    {canvasWidth > 15 && canvasWidth < windowWidth-15 && 
       <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
     {canvasWidth > 10 && variable != "Default" && <Analysis values={analysisObj.values} />}
     {variable === "Default" && <VariableScroller />}
-    {variable != "Default" && canvasWidth < window.innerWidth-15 && <Plot values={plotObj} setShowLoading={setShowLoading} />}
+    {variable != "Default" && canvasWidth < windowWidth-15 && <Plot values={plotObj} setShowLoading={setShowLoading} />}
     {metadata && <Metadata data={metadata} /> }
     {timeSeries.length > 2 && <PlotArea />}
     </>
