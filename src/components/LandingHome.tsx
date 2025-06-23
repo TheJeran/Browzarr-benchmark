@@ -9,7 +9,7 @@ import { useEffect, useMemo } from 'react';
 import { Analysis, PlotArea, Plot } from '@/components/plots';
 import { GetColorMapTexture } from '@/components/textures';
 import { MiddleSlider } from '@/components/ui';
-import { Metadata, ShowAnalysis, Loading, Navbar } from '@/components/ui';
+import { Metadata, ShowAnalysis, Loading, Navbar, ShowPlot } from '@/components/ui';
 import { useGlobalStore } from '@/utils/GlobalStates';
 import { useShallow, shallow } from 'zustand/shallow';
 import { PaneStore } from '@/components/zarr/PaneStore';
@@ -84,12 +84,15 @@ export function LandingHome() {
   return (
     <>
     {!plotOn && <Navbar />}
-    {canvasWidth < 10 && variable != "Default" && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} canvasWidth={canvasWidth} />}
-    {canvasWidth > 10 && <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
+    {canvasWidth < 15 && variable != "Default" && <ShowAnalysis onClick={()=>setCanvasWidth(window.innerWidth*.5)} />}
+    {canvasWidth > window.innerWidth-15 && variable != "Default" && 
+    <ShowPlot onClick={()=>setCanvasWidth(window.innerWidth*.5)} />}
+    {canvasWidth > 15 && canvasWidth < window.innerWidth-15 && 
+      <MiddleSlider canvasWidth={canvasWidth} setCanvasWidth={setCanvasWidth}/>}
     <Loading showLoading={showLoading} />
     {canvasWidth > 10 && variable != "Default" && <Analysis values={analysisObj.values} />}
     {variable === "Default" && <VariableScroller />}
-    {variable != "Default" && <Plot values={plotObj} setShowLoading={setShowLoading} />}
+    {variable != "Default" && canvasWidth < window.innerWidth-15 && <Plot values={plotObj} setShowLoading={setShowLoading} />}
     {metadata && <Metadata data={metadata} /> }
     {timeSeries.length > 2 && <PlotArea />}
     </>

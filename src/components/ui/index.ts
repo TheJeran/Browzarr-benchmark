@@ -20,6 +20,7 @@ import AnalysisOptions from "./AnalysisOptions";
 import PlotLineButton from "./PlotLineButton";
 import { ContextTweaker } from "./ContextTweaker";
 import Colorbar from "./Colorbar";
+import ShowPlot from "./ShowPlot";
 export {
   Navbar,
   Footer,
@@ -43,5 +44,6 @@ export {
   AnalysisOptions,
   PlotLineButton,
   ContextTweaker,
-  Colorbar
+  Colorbar,
+  ShowPlot
 };
