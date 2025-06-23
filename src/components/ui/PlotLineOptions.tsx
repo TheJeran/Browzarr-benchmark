@@ -68,7 +68,7 @@ const LineOptions = React.memo(function LineOptions(){
           type="range"
           min={1}
           max={10}
-          step={.2}
+          step={0.2}
           value={lineWidth}
           onChange={e => setLineWidth(parseFloat(e.target.value))}
         />
