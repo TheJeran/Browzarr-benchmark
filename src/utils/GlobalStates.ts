@@ -161,7 +161,7 @@ export const usePlotStore = create<PlotState>((set) => ({
   selectTS: false,
   showPoints: false,
   linePointSize: 5,
-  lineWidth: 5,
+  lineWidth: 1.25,
   lineColor: "#111111",
   pointColor: "#EA8686",
   useLineColor: false,
