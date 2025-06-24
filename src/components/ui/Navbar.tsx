@@ -118,9 +118,10 @@ const Navbar = React.memo(function Navbar(){
     })))
 
 
-  const {setPlotType, plotType} = usePlotStore(useShallow(state=> ({
+  const {setPlotType, plotType, setAnimate} = usePlotStore(useShallow(state=> ({
     setPlotType: state.setPlotType,
-    plotType: state.plotType
+    plotType: state.plotType,
+    setAnimate: state.setAnimate
   })))
   const [cmap, setCmap] = useState<string>("Default")
   const [flipCmap, setFlipCmap] = useState<boolean>(false)
@@ -184,7 +185,7 @@ const Navbar = React.memo(function Navbar(){
         </div>
 
 
-        <Select value={variable} onValueChange={e=>setVariable(e)}>
+        <Select value={variable} onValueChange={e=>{setVariable(e); setAnimate(false)}}>
           <SelectTrigger className="w-full max-w-[50vw] md:w-[180px] md:max-w-none md:static md:transform-none absolute left-0 top-10 z-10">
             <SelectValue defaultValue={variable} placeholder="Select a variable" />
           </SelectTrigger>
