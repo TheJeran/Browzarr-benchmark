@@ -139,7 +139,7 @@ const handleMove = useCallback((e: ThreeEvent<PointerEvent>) => {
     }
     
   }
-}, [firstArray,secondArray,axis,operation]);
+}, [firstArray,secondArray,axis,operation, planeShape]);
   
     const geometry = useMemo(()=>new THREE.PlaneGeometry(2,shapeRatio),[shapeRatio])
 
