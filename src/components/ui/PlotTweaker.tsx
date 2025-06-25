@@ -228,12 +228,40 @@ const PointTweaks = React.memo(function PointTweaks(){
     )
 })
 
+const SphereTweaks = React.memo(function SphereTweaks(){
+    const { animate, resetAnim, setAnimate, setResetAnim} = usePlotStore(useShallow(state => ({
+        animate: state.animate,
+        resetAnim: state.resetAnim,
+        setAnimate: state.setAnimate,
+        setResetAnim: state.setResetAnim
+    })))
+
+    return(
+        <div className="nav-dropdown">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="md:static md:transform-none absolute right-0 top-10 z-10 w-full max-w-[35vw] md:w-auto md:max-w-none">Adjust Sphere</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="start">
+              <DropdownMenuGroup >
+                    <DropdownMenuLabel>Animate Time</DropdownMenuLabel>
+                    <div style={{display:'flex', justifyContent:'space-around'}}>
+                        <Button style={{background:animate ? 'red' : ''}} variant="outline" onClick={()=>setAnimate(!animate)}>{animate ? "Pause" : "Start"}</Button>
+                        <Button variant="outline" onClick={()=>setResetAnim(!resetAnim)}>Reset</Button>
+                    </div>
+                </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+    )
+})
 const PlotTweaker = React.memo(function PlotTweaker(){
     const plotType = usePlotStore(state => state.plotType)
   return (
     <>
     {plotType === "volume" && <VolumeTweaks/>}
     {plotType === "point-cloud" && <PointTweaks/>}
+    {plotType === "sphere" && <SphereTweaks/>}
     </>
   )
 })

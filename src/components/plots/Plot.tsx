@@ -1,9 +1,7 @@
 import { OrbitControls } from '@react-three/drei';
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
-import { PerspectiveCamera, OrthographicCamera } from '@react-three/drei'
-
-import { PointCloud, UVCube, DataCube, FlatMap } from '@/components/plots';
+import { PointCloud, UVCube, DataCube, FlatMap, Sphere } from '@/components/plots';
 import { Canvas } from '@react-three/fiber';
 import { ArrayToTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
@@ -197,6 +195,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
           <UVCube ZarrDS={ZarrDS} />
         </>}
         {plotType == "point-cloud" && show && <PointCloud textures={{texture,colormap}} />}
+        {plotType == "sphere" && show && <Sphere texture={texture} /> }
         <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={false} maxDistance={50}/>
       </Canvas>
       </>}

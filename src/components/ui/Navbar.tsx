@@ -164,8 +164,9 @@ const Navbar = React.memo(function Navbar(){
                   <DropdownMenuSubTrigger>Plot Type</DropdownMenuSubTrigger>
                   <DropdownMenuPortal>
                     <DropdownMenuSubContent>
-                      <DropdownMenuItem onSelect={()=> setPlotType("volume") }>Volume</DropdownMenuItem>
-                      <DropdownMenuItem onSelect={()=> {setPlotType("point-cloud"); setTimeSeries([])} }>Point Cloud</DropdownMenuItem>
+                      <DropdownMenuItem onSelect={()=> {setPlotType("volume"); setAnimate(false)} }>Volume</DropdownMenuItem>
+                      <DropdownMenuItem onSelect={()=> {setPlotType("point-cloud"); setTimeSeries([]); setAnimate(false)} }>Point Cloud</DropdownMenuItem>
+                      <DropdownMenuItem onSelect={()=> {setPlotType("sphere"); setTimeSeries([]); setAnimate(false)} }>Sphere</DropdownMenuItem>
                     </DropdownMenuSubContent>
                   </DropdownMenuPortal>
                 </DropdownMenuSub>
