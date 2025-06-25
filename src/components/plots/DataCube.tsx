@@ -53,7 +53,7 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
     });
         
   // Use geometry once, avoid recreating -- Using a sphere to avoid the weird angles you get with cube
-    const geometry = useMemo(() => new THREE.IcosahedronGeometry(4, 8), []);
+    const geometry = useMemo(() => new THREE.IcosahedronGeometry(4, 9), []);
 
     useFrame(()=>{
       if (animate){
