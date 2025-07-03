@@ -174,14 +174,22 @@ const VolumeTweaks = React.memo(function VolumeTweaks(){
 
 
 const PointTweaks = React.memo(function PointTweaks(){
-    const {setPointSize, setScaleIntensity, setScalePoints} = usePlotStore(useShallow(
-        (state => ({setPointSize: state.setPointSize, setScaleIntensity: state.setScaleIntensity, setScalePoints: state.setScalePoints}))))
+    const {setPointSize, setScaleIntensity, setScalePoints, setValueRange} = usePlotStore(useShallow(
+        (state => ({
+            setPointSize: state.setPointSize, 
+            setScaleIntensity: state.setScaleIntensity, 
+            setScalePoints: state.setScalePoints,
+            setValueRange: state.setValueRange
+        }))))
 
-    const {scalePoints, scaleIntensity, pointSize} = usePlotStore(useShallow(state => ({
+    const {scalePoints, scaleIntensity, pointSize, valueRange} = usePlotStore(useShallow(state => ({
       scalePoints: state.scalePoints,
       scaleIntensity: state.scaleIntensity,
-      pointSize: state.pointSize
+      pointSize: state.pointSize,
+      valueRange: state.valueRange
     })))
+
+    const valueScales = useGlobalStore(useShallow(state => state.valueScales))
 
     return(
         <div className="nav-dropdown">
@@ -222,6 +230,12 @@ const PointTweaks = React.memo(function PointTweaks(){
                 </div>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
+              <DropdownMenuGroup>
+                    <DropdownMenuLabel>Value Cropping</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={e=> e.preventDefault()}>
+                        <MinMaxSlider range={valueRange} setRange={setValueRange} valueScales={valueScales} min={0}/>
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

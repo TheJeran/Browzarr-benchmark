@@ -13,15 +13,15 @@ interface PCProps {
 
 export const PointCloud = ({textures} : {textures:PCProps} )=>{
     const {texture, colormap } = textures;
-    const paneContainer = createPaneContainer("plot-cloud");
     const flipY = useGlobalStore(state=>state.flipY)
     
-    const {scalePoints, scaleIntensity, pointSize, cScale, cOffset} = usePlotStore(useShallow(state => ({
+    const {scalePoints, scaleIntensity, pointSize, cScale, cOffset, valueRange} = usePlotStore(useShallow(state => ({
       scalePoints: state.scalePoints,
       scaleIntensity: state.scaleIntensity,
       pointSize: state.pointSize,
       cScale: state.cScale, 
-      cOffset:state.cOffset
+      cOffset:state.cOffset,
+      valueRange: state.valueRange
     })))
 
     
@@ -78,13 +78,14 @@ export const PointCloud = ({textures} : {textures:PCProps} )=>{
     }, [positions, values]);
   
   
-    const shaderMaterial = new THREE.ShaderMaterial({
+    const shaderMaterial = useMemo(()=> (new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3,
       uniforms: {
         pointSize: {value: pointSize},
         cmap: {value: colormap},
         cOffset: {value: cOffset},
         cScale: {value: cScale},
+        valueRange: {value: new THREE.Vector2(valueRange[0], valueRange[1])},
         scalePoints:{value: scalePoints},
         scaleIntensity: {value: scaleIntensity}
       },
@@ -94,7 +95,8 @@ export const PointCloud = ({textures} : {textures:PCProps} )=>{
       transparent: true,
       blending:THREE.NormalBlending,
       side:THREE.DoubleSide,
-    });
+    })
+    ),[pointSize, colormap, cOffset, cScale, valueRange, scalePoints, scaleIntensity]);
   
     return (
       <mesh scale={[1,flipY ? -1:1, 1]}>
