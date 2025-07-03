@@ -1,8 +1,10 @@
 attribute float value;
 varying float vValue;
+
 uniform float pointSize;
 uniform bool scalePoints;
 uniform float scaleIntensity;
+uniform vec2 valueRange;
 
 void main() {
     vValue = value/255.;
@@ -12,6 +14,10 @@ void main() {
     pointScale = scalePoints ? pointScale*pow(vValue,scaleIntensity) : pointScale;
 
     if (value == 255. || (pointScale*gl_Position.w < 0.75 && scalePoints)){
+        gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    }
+
+    if (vValue < valueRange.x || vValue > valueRange.y){
         gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
     }
 

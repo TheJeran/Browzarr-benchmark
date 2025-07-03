@@ -168,19 +168,23 @@ const VolumeTweaks = React.memo(function VolumeTweaks({loc} : {loc:number[]}){
 
 
 const PointTweaks = React.memo(function PointTweaks({loc} : {loc:number[]}){
-    const {setPointSize, setScaleIntensity, setScalePoints, setPlotType} = usePlotStore(useShallow(
+    const {setPointSize, setScaleIntensity, setScalePoints, setPlotType, setValueRange} = usePlotStore(useShallow(
         (state => ({
             setPointSize: state.setPointSize, 
             setScaleIntensity: state.setScaleIntensity, 
             setScalePoints: state.setScalePoints,
-            setPlotType: state.setPlotType
+            setPlotType: state.setPlotType,
+            setValueRange: state.setValueRange
         }))))
 
-    const {scalePoints, scaleIntensity, pointSize} = usePlotStore(useShallow(state => ({
+    const {scalePoints, scaleIntensity, pointSize, valueRange, } = usePlotStore(useShallow(state => ({
       scalePoints: state.scalePoints,
       scaleIntensity: state.scaleIntensity,
-      pointSize: state.pointSize
+      pointSize: state.pointSize,
+      valueRange: state.valueRange,
     })))
+
+    const valueScales = useGlobalStore(useShallow(state => state.valueScales))
 
     const [isOpen, setIsOpen] = useState(false);
     useEffect(()=>{
@@ -224,6 +228,12 @@ const PointTweaks = React.memo(function PointTweaks({loc} : {loc:number[]}){
                 </div>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
+              <DropdownMenuGroup>
+                    <DropdownMenuLabel>Value Cropping</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={e=> e.preventDefault()}>
+                        <MinMaxSlider range={valueRange} setRange={setValueRange} valueScales={valueScales} min={0}/>
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
               <DropdownMenuItem onSelect={e=> e.preventDefault()}>
                     <Button variant="destructive" className="w-[100%] h-[20px] cursor-[pointer]" onClick={() => setPlotType("volume")}>Change to Volume</Button>
                 </DropdownMenuItem>
