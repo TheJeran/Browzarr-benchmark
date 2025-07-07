@@ -70,7 +70,7 @@ export function Analysis({ values }: {
 
   useEffect(()=>{
     if (variable1 !== "Default"){
-      ZarrDS.GetArray(variable1).then(result=>{
+      ZarrDS.GetArray(variable1, [0,10]).then(result=>{
         setArray(result);
         
         if (variable1 in scaleObjRef.current){
