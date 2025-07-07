@@ -34,6 +34,7 @@ type StoreState = {
   variables: string[];
   plotOn: boolean;
   isFlat: boolean;
+  progress: number,
 
   setShape: (shape: THREE.Vector3) => void;
   setValueScales: (valueScales: { maxVal: number; minVal: number }) => void;
@@ -54,6 +55,7 @@ type StoreState = {
   setVariables: (variables: string[]) => void;
   setPlotOn: (plotOn: boolean) => void;
   setIsFlat: (isFlat: boolean) => void;
+  setProgress: (progress: number) => void;
 
 };
 
@@ -77,6 +79,7 @@ export const useGlobalStore = create<StoreState>((set) => ({
   variables: [],
   plotOn: false,
   isFlat:false,
+  progress: 0,
 
   setShape: (shape) => set({ shape }),
   setValueScales: (valueScales) => set({ valueScales }),
@@ -96,7 +99,8 @@ export const useGlobalStore = create<StoreState>((set) => ({
   setVariable: (variable) => set({ variable }),
   setVariables: (variables) => set({variables}),
   setPlotOn: (plotOn) => set({ plotOn }),
-  setIsFlat: (isFlat) => set({ isFlat})
+  setIsFlat: (isFlat) => set({ isFlat}),
+  setProgress: (progress) => set({ progress })
 }));
 
 type PlotState ={
