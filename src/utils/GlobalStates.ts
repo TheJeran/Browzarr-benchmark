@@ -250,6 +250,7 @@ type DataState = {
 
 }
 
+//May delete this later. At the moment got it working in the class. 
 export const useDataStore = create<DataState>((set) => ({
   dataCache: new QuickLRU({ maxSize: 2000 }), 
   metadata: null,
