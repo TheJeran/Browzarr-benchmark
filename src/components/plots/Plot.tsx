@@ -95,7 +95,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
     if (variable != "Default") {
       setShowLoading(true);
       setShow(false)
-      ZarrDS.GetArray(variable).then((result) => {
+      ZarrDS.GetArray(variable, [0,10]).then((result) => {
         // result now contains: { data: TypedArray, shape: number[], dtype: string }
         const [texture, scaling] = ArrayToTexture({
           data: result.data,

@@ -48,7 +48,7 @@ export class ZarrDataset{
 		this.dimNames = ["","",""]
 	}
 
-	async GetArray(variable: string){
+	async GetArray(variable: string, slice: number[]){
 		//Check if cached
 		this.variable = variable;
 		if (this.cache.has(variable)){
@@ -58,33 +58,55 @@ export class ZarrDataset{
 		const group = await this.groupStore;
 		const outVar = await zarr.open(group.resolve(variable), {kind:"array"})
 		const [totalSize, chunkSize, chunkShape] = GetSize(outVar);
+
+		console.log(outVar)
 		// Type check using zarr.Array.is
 		if (outVar.is("number") || outVar.is("bigint")) {
 			let chunk;
+			let typedArray;
+			let shape;
 			if (totalSize < 1e8){ //Check if total is less than 100MB
 				chunk = await zarr.get(outVar)
+				shape = chunk.shape
+				if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
+							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
+				} else {
+					typedArray = new Float32Array(chunk.data)
+				}
 			}
-			else { //See how many chunks are < 30MB and load that many ! a 100MB limit is too much for mobile devices
-				const chunkCount = Math.floor(3e7 / chunkSize);
-				const horizontalChunks = Math.ceil(chunkShape[2]/outVar.shape[2])
-				const verticalChunks = Math.ceil(chunkShape[1]/outVar.shape[1])
-				const chunksPerTime = horizontalChunks * verticalChunks;
-				const sliceDistance = chunkShape[0]*chunkCount/chunksPerTime
-				// console.log(sliceDistance)
-				// Slice distance only works fine when the original store is chunked properly.
-				chunk = await zarr.get(outVar, [zarr.slice(0, sliceDistance), null, null])
+			else { 
+				const startIdx = Math.floor(slice[0]/chunkShape[0])
+				const endIdx = Math.ceil(slice[1]/chunkShape[0])
+				const arraySize = (endIdx-startIdx)*chunkShape[0]*outVar.shape[1]*outVar.shape[2]
+				shape = [(endIdx-startIdx)*chunkShape[0],outVar.shape[1],outVar.shape[2]]
+				typedArray = new Float32Array(arraySize);
+				let accum = 0;
+				for (let i= startIdx ; i < endIdx ; i++){
+					const cacheName = `${variable}_chunk_${i}`
+					if (this.cache.has(cacheName)){
+						console.log('using cache')
+						chunk = this.cache.get(cacheName)
+						typedArray.set(chunk.data,accum*chunk.data.length)
+						accum ++;
+					}
+					else{
+						chunk = await zarr.get(outVar, [zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]-1), null, null])
+						if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
+							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
+						} else {
+							typedArray.set(chunk.data,accum*chunk.data.length)
+							this.cache.set(cacheName,chunk)
+							accum ++;
+						}
+					}
+				}
+				console.log(this.cache)
+				console.log(`arraySize: ${arraySize}`)
 			}
-			let typedArray;
-			if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
-				throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
-			} else {
-				typedArray = new Float32Array(chunk.data);
-			}
-			this.cache.set(variable, chunk);
-			// TypeScript will now infer the correct numeric type
+			
 			return {
 				data: typedArray,
-				shape: chunk.shape,
+				shape: shape,
 				dtype: outVar.dtype
 			}
 		} else {
