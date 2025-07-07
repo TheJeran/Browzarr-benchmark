@@ -47,7 +47,6 @@ export function ArrayTo3D(array: Array){
     volTexture.magFilter = THREE.NearestFilter;
     volTexture.needsUpdate = true;
     return [volTexture, {maxVal,minVal}]
-
 }
 
 export function ArrayToTexture(array: Array){

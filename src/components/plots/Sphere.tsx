@@ -16,7 +16,6 @@ function XYZtoUV(xyz : THREE.Vector3, width: number, height : number){
     let v = (lat + Math.PI / 2) / Math.PI;
     u = Math.round(u*width-.5)/width
     v = Math.round(v*height-.5)/height
-    console.log([u,v])
     return new THREE.Vector2(u,v)
 }
 

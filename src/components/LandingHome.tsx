@@ -12,7 +12,6 @@ import { MiddleSlider } from '@/components/ui';
 import { Metadata, ShowAnalysis, Loading, Navbar, ShowPlot } from '@/components/ui';
 import { useGlobalStore } from '@/utils/GlobalStates';
 import { useShallow, shallow } from 'zustand/shallow';
-import { PaneStore } from '@/components/zarr/PaneStore';
 import useCSSVariable from '@/components/ui/useCSSVariable';
 import { GetTitleDescription } from '@/components/zarr/GetMetadata';
 

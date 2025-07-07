@@ -1,8 +1,7 @@
 import { create } from "zustand";
 import * as THREE from 'three';
-import { ZarrDataset, GetStore } from "@/components/zarr/ZarrLoaderLRU";
 import { GetColorMapTexture } from "@/components/textures";
-import * as zarr from 'zarrita'
+import QuickLRU from 'quick-lru';
 
 interface Coord {
     name: string; 
@@ -35,6 +34,7 @@ type StoreState = {
   variables: string[];
   plotOn: boolean;
   isFlat: boolean;
+  progress: number,
 
   setShape: (shape: THREE.Vector3) => void;
   setValueScales: (valueScales: { maxVal: number; minVal: number }) => void;
@@ -55,11 +55,11 @@ type StoreState = {
   setVariables: (variables: string[]) => void;
   setPlotOn: (plotOn: boolean) => void;
   setIsFlat: (isFlat: boolean) => void;
+  setProgress: (progress: number) => void;
 
 };
 
 export const useGlobalStore = create<StoreState>((set) => ({
-  
   shape: new THREE.Vector3(2, 2, 2),
   valueScales: { maxVal: 1, minVal: -1 },
   colormap: GetColorMapTexture(),
@@ -79,6 +79,7 @@ export const useGlobalStore = create<StoreState>((set) => ({
   variables: [],
   plotOn: false,
   isFlat:false,
+  progress: 0,
 
   setShape: (shape) => set({ shape }),
   setValueScales: (valueScales) => set({ valueScales }),
@@ -98,7 +99,8 @@ export const useGlobalStore = create<StoreState>((set) => ({
   setVariable: (variable) => set({ variable }),
   setVariables: (variables) => set({variables}),
   setPlotOn: (plotOn) => set({ plotOn }),
-  setIsFlat: (isFlat) => set({ isFlat})
+  setIsFlat: (isFlat) => set({ isFlat}),
+  setProgress: (progress) => set({ progress })
 }));
 
 type PlotState ={
@@ -196,8 +198,6 @@ export const usePlotStore = create<PlotState>((set) => ({
 }))
 
 
-
-
 type AnalysisState = {
   axis: number;
   operation: string;
@@ -225,4 +225,58 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
   setExecute: (execute) => set({ execute }),
   setVariable1: (variable1) => set({ variable1 }),
   setVariable2: (variable2) => set({ variable2 }),  
+}));
+
+type DataState = {
+  dataCache: QuickLRU<string, any>;
+  metadata: Record<string, any> | null;
+  zMeta: object[];
+  dataArray: Array<any> | null;
+  dimArrays: number[][];
+  dimNames: string[];
+  dimUnits: string[];
+  variable: string;
+  variables: string[];
+  zarrStore: string;
+  compress: boolean;
+
+  setMetadata: (metadata: object | null) => void;
+  setZMeta: (zMeta: object[]) => void;
+  setDataArray: (dataArray: Array<any> | null) => void;
+  setDimArrays: (dimArrays: number[][]) => void;
+  setDimNames: (dimNames: string[]) => void;
+  setDimUnits: (dimUnits: string[]) => void;
+  setVariable: (variable: string) => void;
+  setVariables: (variables: string[]) => void;
+  setZarrStore: (zarrStore: string) => void;
+  setDataCache: (dataCache: QuickLRU<string, any>) => void;
+  setCompress: (compress: boolean) => void;
+
+}
+
+//May delete this later. At the moment got it working in the class. 
+export const useDataStore = create<DataState>((set) => ({
+  dataCache: new QuickLRU({ maxSize: 2000 }), 
+  metadata: null,
+  zMeta: [{}],
+  dataArray: null,
+  dimArrays: [[0], [0], [0]],
+  dimNames: ["Default"],
+  dimUnits: ["Default"],
+  variable: 'Default',
+  variables: [],
+  zarrStore: "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr",
+  compress: true, 
+
+  setMetadata: (metadata) => set({ metadata }),
+  setZMeta: (zMeta) => set({ zMeta }),
+  setDataArray: (dataArray) => set({ dataArray }),
+  setDimArrays: (dimArrays) => set({ dimArrays }),
+  setDimNames: (dimNames) => set({ dimNames }),
+  setDimUnits: (dimUnits) => set({ dimUnits }),
+  setVariable: (variable) => set({ variable }),
+  setVariables: (variables) => set({ variables }),
+  setZarrStore: (zarrStore) => set({ zarrStore }),
+  setDataCache: (dataCache) => set({ dataCache }),
+  setCompress: (compress) => set({ compress })
 }));
