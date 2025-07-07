@@ -8,12 +8,15 @@ import { useFrame } from '@react-three/fiber'
 import { parseUVCoords } from '@/utils/HelperFuncs';
 
 
-function XYZtoUV(xyz : THREE.Vector3){
+function XYZtoUV(xyz : THREE.Vector3, width: number, height : number){
     const lon = Math.atan2(xyz.z,xyz.x)
     const lat = Math.asin(xyz.y);
     let u = (lon + Math.PI) / (2 * Math.PI);
     u = 1 - u;
-    const v = (lat + Math.PI / 2) / Math.PI;
+    let v = (lat + Math.PI / 2) / Math.PI;
+    u = Math.round(u*width-.5)/width
+    v = Math.round(v*height-.5)/height
+    console.log([u,v])
     return new THREE.Vector2(u,v)
 }
 
@@ -47,14 +50,14 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
     const selectBounds = useMemo(()=>{
         const {height, width} = texture?.source.data
         if (highlightPos){
-            const widthID = Math.round(highlightPos.x*width-.5)+.5;
-            const heightID = Math.round(highlightPos.y*height-.5)+.5;
+            const widthID = Math.round(highlightPos.x*width)+.5;
+            const heightID = Math.round(highlightPos.y*height)+.5;
             const delX = 1/width;
             const delY = 1/height;
             const xBounds = [widthID/width-delX/2,widthID/width+delX/2]
             const yBounds = [heightID/height-delY/2,heightID/height+delY/2]
             const bounds = new THREE.Vector4(...xBounds, ...yBounds)
-            console.log(widthID)
+            // console.log(widthID)
             return bounds
         }
         return new THREE.Vector2(width, height)
@@ -95,7 +98,7 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
 
     function HandleTimeSeries(event: THREE.Intersection){
         const point = event.point.normalize();
-        const uv = XYZtoUV(point);
+        const uv = XYZtoUV(point, texture?.source.data.width, texture?.source.data.height);
         const normal = new THREE.Vector3(0,0,1)
     
         if(ZarrDS){
