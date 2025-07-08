@@ -80,17 +80,20 @@ const MinMaxSlider = React.memo(function MinMaxSlider({range, setRange, valueSca
 })
 
 const VolumeTweaks = React.memo(function VolumeTweaks({loc} : {loc:number[]}){
-    const {valueRange, xRange, yRange, zRange, setValueRange, setXRange, setYRange, setZRange, setQuality, setPlotType} = usePlotStore(useShallow(state => ({
+    const {valueRange, xRange, yRange, zRange, useFragOpt, quality, setValueRange, setXRange, setYRange, setZRange, setQuality, setPlotType, setUseFragOpt} = usePlotStore(useShallow(state => ({
         valueRange: state.valueRange,
         xRange: state.xRange,
         yRange: state.yRange,
         zRange: state.zRange,
+        useFragOpt: state.useFragOpt,
+        quality: state.quality,
         setValueRange: state.setValueRange,
         setXRange: state.setXRange,
         setYRange: state.setYRange,
         setZRange: state.setZRange,
         setQuality: state.setQuality,
-        setPlotType: state.setPlotType
+        setPlotType: state.setPlotType,
+        setUseFragOpt: state.setUseFragOpt
     })))
     const [xScales, setXScales] = useState<{minVal: number, maxVal: number}>({minVal: 0, maxVal: 0})
     const [yScales, setYScales] = useState<{minVal: number, maxVal: number}>({minVal: 0, maxVal: 0})
@@ -130,10 +133,14 @@ const VolumeTweaks = React.memo(function VolumeTweaks({loc} : {loc:number[]}){
                         max={1000}
                         step={50}
                         defaultValue={200} 
+                        value={quality}
                     onChange={e => setQuality(parseInt(e.target.value))}
                     />
                     Better
                 </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                    <Button variant="destructive" className="w-[100%] h-[20px] cursor-[pointer]" onClick={() => setUseFragOpt(!useFragOpt)}>{useFragOpt ? "Revert to Normal" : "Use Optimized Shader"}</Button>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>

@@ -48,20 +48,30 @@ void main() {
 
     vec3 p = vOrigin + bounds.x * rayDir;
     vec3 inc = 1.0 / abs(rayDir);
-    float delta = min(inc.x, min(inc.y, inc.z));
-    delta /= steps;
+
+    //Step Sizes
+    float fineDelta = min(inc.x, min(inc.y, inc.z)) / steps;
+
+    float coarseDelta = min(inc.x, min(inc.y, inc.z))/40.;
+
+    float delta = fineDelta;
+
     vec4 accumColor = vec4(0.0);
     float alphaAcc = 0.0;
 
-    for (float t = bounds.x; t < bounds.y; t += delta) {
-        p = vOrigin + rayDir * t;
-        if (p.x > -flatBounds.x || p.x < -flatBounds.y) { 
-            continue;
-        }
-        if (-p.z > -flatBounds.z || -p.z < -flatBounds.w) {
-            continue;
-        }
-        if (p.y < vertBounds.x || p.y > vertBounds.y) {
+    float t = bounds.x;
+    int countdown = 0;
+    bool useCoarseStep = false;
+
+    while (t < bounds.y) {
+        vec3 p = vOrigin + rayDir * t;
+        
+        // --- Boundary checks ---
+        if (p.x < flatBounds.x || p.x > flatBounds.y ||
+            p.z < flatBounds.z || p.z > flatBounds.w ||
+            p.y < vertBounds.x || p.y > vertBounds.y) {
+
+            t += useCoarseStep ? coarseDelta : fineDelta;
             continue;
         }
 
@@ -72,19 +82,37 @@ void main() {
         bool cond = (d > threshold.x) && (d < threshold.y);
         
         if (cond) {
+            // Hit something interesting - switch to fine stepping
+            if (useCoarseStep) {
+                useCoarseStep = false;
+                countdown = 50;
+                // Step back to ensure we don't miss the boundary
+                t -= 2.*coarseDelta;
+                continue;
+            }
             float sampLoc = d == 1. ? d : (d - 0.5)*cScale + 0.5;
             sampLoc = d == 1. ? d : min(sampLoc+cOffset,0.99);
             vec4 col = texture(cmap, vec2(sampLoc, 0.5));
-            // Change this later back to use intensity then delete comment. Or maybe we don't need intensity
             float alpha = float(col.a > 0.);
 
             accumColor.rgb += (1.0 - alphaAcc) * alpha * col.rgb;
             alphaAcc += alpha * (1.0 - alphaAcc);
 
             if (alphaAcc >= 1.0) break;
+            
+            t += fineDelta;
+        }
+        else {
+            // Nothing interesting here
+            if (countdown > 0) {
+                countdown--;
+                t += fineDelta; // Continue with fine steps while countdown > 0
+            } else {
+                useCoarseStep = true;
+                t += coarseDelta; // Switch to coarse steps
+            }
         }
     }
-
     accumColor.a = alphaAcc; // Set the final accumulated alpha
     color = accumColor;
     if (color.a == 0.0) discard;
