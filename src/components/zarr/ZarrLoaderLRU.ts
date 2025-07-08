@@ -41,12 +41,14 @@ export class ZarrDataset{
 	private variable: string;
 	private cache: QuickLRU<string,any>;
 	private dimNames: string[];
+	private chunkIDs: number[];
 
 	constructor(store: string){
 		this.groupStore = GetStore(store);
 		this.variable = "Default";
 		this.cache = new QuickLRU({maxSize: 2000});
 		this.dimNames = ["","",""]
+		this.chunkIDs = [];
 	}
 
 	async GetArray(variable: string, slice: number[]){
@@ -67,6 +69,7 @@ export class ZarrDataset{
 			let chunk;
 			let typedArray;
 			let shape;
+			this.chunkIDs = []
 			if (totalSize < 1e8){ //Check if total is less than 100MB
 				chunk = await zarr.get(outVar)
 				shape = chunk.shape
@@ -74,6 +77,7 @@ export class ZarrDataset{
 							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
 				} else {
 					typedArray = new Float32Array(chunk.data)
+					this.cache.set(variable,chunk)
 				}
 			}
 			else { 
@@ -89,6 +93,7 @@ export class ZarrDataset{
 				let iter = 1;
 				for (let i= startIdx ; i < endIdx ; i++){
 					const cacheName = `${variable}_chunk_${i}`
+					this.chunkIDs.push(i) //identify which chunks to use when recombining cache for timeseries
 					if (this.cache.has(cacheName)){
 						console.log('using cache')
 						chunk = this.cache.get(cacheName)
@@ -160,13 +165,32 @@ export class ZarrDataset{
 
 	async GetTimeSeries(TimeSeriesInfo:TimeSeriesInfo){
 		const {uv,normal} = TimeSeriesInfo
-		if (!this.cache.has(this.variable)){
+		if (!this.cache.has(this.variable) && this.chunkIDs.length == 0){
 			return [0]
 		}
-		const {data, shape, stride} = this.cache.get(this.variable)
+
+		let data, shape : number[], stride; 
+		if (this.chunkIDs.length > 0){
+			console.log("here")
+			const arrays = []
+			for (const id of this.chunkIDs){
+				arrays.push(this.cache.get(`${this.variable}_chunk_${id}`))
+			}
+			({shape, stride} = arrays[0])
+			const totalLength = arrays.reduce((sum, arr) => sum + arr.data.length, 0);
+
+			data = new Float32Array(totalLength);
+			let accum = 0;
+			for (const array of arrays){
+				data.set(array.data, accum);
+				accum += array.data.length
+			}
+		}
+		else{
+			({data, shape, stride} = this.cache.get(this.variable))
+		}
 		//This is a complicated logic check but it works bb
 		const sliceSize = parseUVCoords({normal,uv})
-
 		const slice = sliceSize.map((value, index) =>
 			value === null || shape[index] === null ? null : Math.round(value * shape[index]));
 
