@@ -51,32 +51,27 @@ void main() {
 
     //Step Sizes
     float fineDelta = min(inc.x, min(inc.y, inc.z)) / steps;
-    float coarseDelta = 0.05;
+
+    float coarseDelta = min(inc.x, min(inc.y, inc.z))/40.;
 
     float delta = fineDelta;
 
     vec4 accumColor = vec4(0.0);
     float alphaAcc = 0.0;
 
+    float t = bounds.x;
+    int countdown = 0;
+    bool useCoarseStep = false;
 
-    const int FINE_STEP_MAX_COUNT = 10;
-    int fineStepCountdown = 0;
-
-    for (float t = bounds.x; t < bounds.y; t += delta) {
-        // If in fine-step mode, manage the countdown to eventually return to coarse stepping
-        if (fineStepCountdown > 0) {
-            fineStepCountdown--;
-            if (fineStepCountdown == 0) {
-                delta = coarseDelta;
-            }
-        }
-
+    while (t < bounds.y) {
         vec3 p = vOrigin + rayDir * t;
-
+        
         // --- Boundary checks ---
-        if (p.x > -flatBounds.x || p.x < -flatBounds.y ||
-            -p.z > -flatBounds.z || -p.z < -flatBounds.w ||
+        if (p.x < flatBounds.x || p.x > flatBounds.y ||
+            p.z < flatBounds.z || p.z > flatBounds.w ||
             p.y < vertBounds.x || p.y > vertBounds.y) {
+
+            t += useCoarseStep ? coarseDelta : fineDelta;
             continue;
         }
 
@@ -84,30 +79,19 @@ void main() {
         texCoord.z = mod(texCoord.z + animateProg, 1.0001);
         float d = sample1(texCoord);
 
-        bool isSignificant = (d > threshold.x) && (d < threshold.y);
+        bool cond = (d > threshold.x) && (d < threshold.y);
         
-        if (isSignificant) {
-            // Check if we were using the coarse step. If so, we've overshot the surface.
-            if (delta > fineDelta) {
-                // 1. Back up the ray by the coarse step we just took.
-                t -= delta;
-                
-                // 2. Switch to the fine step size for detailed sampling.
-                delta = fineDelta;
-
-                // 3. Start the countdown to eventually switch back to coarse stepping.
-                fineStepCountdown = FINE_STEP_MAX_COUNT;
-
-                // 4. Continue to the next iteration to re-sample from the backed-up position.
+        if (cond) {
+            // Hit something interesting - switch to fine stepping
+            if (useCoarseStep) {
+                useCoarseStep = false;
+                countdown = 50;
+                // Step back to ensure we don't miss the boundary
+                t -= 2.*coarseDelta;
                 continue;
             }
-            
-            // If we are already in fine-step mode, reset the countdown to stay in this mode
-            fineStepCountdown = FINE_STEP_MAX_COUNT;
-            
-            // --- Color Accumulation ---
-            float sampLoc = d == 1. ? d : (d - 0.5) * cScale + 0.5;
-            sampLoc = d == 1. ? d : min(sampLoc + cOffset, 0.99);
+            float sampLoc = d == 1. ? d : (d - 0.5)*cScale + 0.5;
+            sampLoc = d == 1. ? d : min(sampLoc+cOffset,0.99);
             vec4 col = texture(cmap, vec2(sampLoc, 0.5));
             float alpha = float(col.a > 0.);
 
@@ -115,6 +99,18 @@ void main() {
             alphaAcc += alpha * (1.0 - alphaAcc);
 
             if (alphaAcc >= 1.0) break;
+            
+            t += fineDelta;
+        }
+        else {
+            // Nothing interesting here
+            if (countdown > 0) {
+                countdown--;
+                t += fineDelta; // Continue with fine steps while countdown > 0
+            } else {
+                useCoarseStep = true;
+                t += coarseDelta; // Switch to coarse steps
+            }
         }
     }
     accumColor.a = alphaAcc; // Set the final accumulated alpha

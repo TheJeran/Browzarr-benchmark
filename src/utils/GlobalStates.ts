@@ -125,6 +125,7 @@ type PlotState ={
   resetAnim: boolean;
   cOffset: number;
   cScale: number;
+  useFragOpt: boolean;
 
   setQuality: (quality: number) => void;
   setValueRange: (valueRange: number[]) => void;
@@ -147,6 +148,7 @@ type PlotState ={
   setResetAnim: (resetAnim: boolean) => void;
   setCOffset: (cOffset: number) => void;
   setCScale: (cScale: number) => void;
+  setUseFragOpt: (useFragOpt: boolean) => void;
 }
 
 export const usePlotStore = create<PlotState>((set) => ({
@@ -172,6 +174,7 @@ export const usePlotStore = create<PlotState>((set) => ({
   resetAnim: false,
   cOffset: 0,
   cScale: 1,
+  useFragOpt: false,
 
   setQuality: (quality) => set({ quality }),
   setValueRange: (valueRange) => set({ valueRange }),
@@ -193,7 +196,8 @@ export const usePlotStore = create<PlotState>((set) => ({
   setAnimate: (animate) => set({ animate }),
   setResetAnim: (resetAnim) => set({ resetAnim }),
   setCOffset: (cOffset) => set({ cOffset }),
-  setCScale: (cScale) => set({ cScale })
+  setCScale: (cScale) => set({ cScale }),
+  setUseFragOpt: (useFragOpt) => set({ useFragOpt })
 
 }))
 
