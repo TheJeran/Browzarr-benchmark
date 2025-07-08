@@ -1,11 +1,9 @@
 import {  useEffect, useMemo, useState } from 'react'
 import * as THREE from 'three'
-import { vertexShader, fragmentShader } from '@/components/textures/shaders';
-import { usePaneInput, usePaneFolder, useSliderBlade, useTweakpane } from '@lazarusa/react-tweakpane'
-import { createPaneContainer } from '@/components/ui';
+import { vertexShader, fragmentShader, fragOpt } from '@/components/textures/shaders';
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame } from '@react-three/fiber';
 
 interface DataCubeProps {
   volTexture: THREE.Data3DTexture | THREE.DataTexture | null,
@@ -29,7 +27,7 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
     })))
     const [animateProg, setAnimateProg] = useState<number>(0)
   // We need to check if moving this outside of useMemo means it's creating a ton of materials. This was how it was done in THREE Journey when I was doing that, so I know it's not stricly speaking wrong
-    const shaderMaterial = new THREE.ShaderMaterial({
+    const shaderMaterial = useMemo(()=>new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3,
       uniforms: {
           map: { value: volTexture },
@@ -44,16 +42,17 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
           steps: { value: quality },
           animateProg: {value: animateProg}
       },
+
       vertexShader,
       fragmentShader,
       transparent: true,
       blending: THREE.NormalBlending,
       depthWrite: false,
       side: THREE.BackSide,
-    });
+    }),[volTexture, colormap, cOffset, cScale, valueRange, xRange, yRange, zRange, quality, animateProg]);
         
   // Use geometry once, avoid recreating -- Using a sphere to avoid the weird angles you get with cube
-    const geometry = useMemo(() => new THREE.IcosahedronGeometry(4, 9), []);
+    const geometry = useMemo(() => new THREE.IcosahedronGeometry(2, 4), []);
 
     useFrame(()=>{
       if (animate){
