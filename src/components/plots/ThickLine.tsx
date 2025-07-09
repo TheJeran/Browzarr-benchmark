@@ -142,7 +142,6 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
         geometry.setIndex(new THREE.Uint16BufferAttribute(indices, 1));
         return geometry
     },[linePoints])
-
   return (
     <>
 		<group>
