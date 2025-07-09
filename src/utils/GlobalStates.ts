@@ -2,6 +2,7 @@ import { create } from "zustand";
 import * as THREE from 'three';
 import { GetColorMapTexture } from "@/components/textures";
 import QuickLRU from 'quick-lru';
+import { ZarrDataset } from "@/components/zarr/ZarrLoaderLRU";
 
 interface Coord {
     name: string; 
@@ -19,6 +20,7 @@ type StoreState = {
   valueScales: { maxVal: number; minVal: number };
   colormap: THREE.DataTexture;
   timeSeries: number[];
+  strides: number[];
   showLoading: boolean;
   metadata: Record<string, any> | null;
   zMeta: object[];
@@ -40,6 +42,7 @@ type StoreState = {
   setValueScales: (valueScales: { maxVal: number; minVal: number }) => void;
   setColormap: (colormap: THREE.DataTexture) => void;
   setTimeSeries: (timeSeries: number[]) => void;
+  setStrides: (strides: number[]) => void;
   setShowLoading: (showLoading: boolean) => void;
   setMetadata: (metadata: object | null) => void;
   setZMeta: (zMeta: object[]) => void;
@@ -64,6 +67,7 @@ export const useGlobalStore = create<StoreState>((set) => ({
   valueScales: { maxVal: 1, minVal: -1 },
   colormap: GetColorMapTexture(),
   timeSeries: [0],
+  strides: [10368,144,1],
   showLoading: false,
   metadata: null,
   zMeta: [{}],
@@ -85,6 +89,7 @@ export const useGlobalStore = create<StoreState>((set) => ({
   setValueScales: (valueScales) => set({ valueScales }),
   setColormap: (colormap) => set({ colormap }),
   setTimeSeries: (timeSeries) => set({ timeSeries }),
+  setStrides: (strides) => set({ strides }),
   setShowLoading: (showLoading) => set({ showLoading }),
   setMetadata: (metadata) => set({ metadata }),
   setZMeta: (zMeta) => set({ zMeta}),
@@ -108,6 +113,7 @@ type PlotState ={
   pointSize: number;
   scalePoints: boolean;
   scaleIntensity: number;
+  timeScale: number;
   valueRange: number[];
   xRange: number[];
   yRange: number[];
@@ -128,6 +134,7 @@ type PlotState ={
   useFragOpt: boolean;
 
   setQuality: (quality: number) => void;
+  setTimeScale: (timeScale : number) =>void;
   setValueRange: (valueRange: number[]) => void;
   setXRange: (xRange: number[]) => void;
   setYRange: (yRange: number[]) => void;
@@ -158,6 +165,7 @@ export const usePlotStore = create<PlotState>((set) => ({
   scalePoints: false,
   scaleIntensity: 1,
   quality: 200,
+  timeScale: 1,
   valueRange: [0, 1],
   xRange: [-1, 1],
   yRange: [-1, 1],
@@ -176,7 +184,9 @@ export const usePlotStore = create<PlotState>((set) => ({
   cScale: 1,
   useFragOpt: false,
 
+
   setQuality: (quality) => set({ quality }),
+  setTimeScale: (timeScale) => set({ timeScale }),
   setValueRange: (valueRange) => set({ valueRange }),
   setXRange: (xRange) => set({ xRange }),
   setYRange: (yRange) => set({ yRange }),
@@ -229,58 +239,4 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
   setExecute: (execute) => set({ execute }),
   setVariable1: (variable1) => set({ variable1 }),
   setVariable2: (variable2) => set({ variable2 }),  
-}));
-
-type DataState = {
-  dataCache: QuickLRU<string, any>;
-  metadata: Record<string, any> | null;
-  zMeta: object[];
-  dataArray: Array<any> | null;
-  dimArrays: number[][];
-  dimNames: string[];
-  dimUnits: string[];
-  variable: string;
-  variables: string[];
-  zarrStore: string;
-  compress: boolean;
-
-  setMetadata: (metadata: object | null) => void;
-  setZMeta: (zMeta: object[]) => void;
-  setDataArray: (dataArray: Array<any> | null) => void;
-  setDimArrays: (dimArrays: number[][]) => void;
-  setDimNames: (dimNames: string[]) => void;
-  setDimUnits: (dimUnits: string[]) => void;
-  setVariable: (variable: string) => void;
-  setVariables: (variables: string[]) => void;
-  setZarrStore: (zarrStore: string) => void;
-  setDataCache: (dataCache: QuickLRU<string, any>) => void;
-  setCompress: (compress: boolean) => void;
-
-}
-
-//May delete this later. At the moment got it working in the class. 
-export const useDataStore = create<DataState>((set) => ({
-  dataCache: new QuickLRU({ maxSize: 2000 }), 
-  metadata: null,
-  zMeta: [{}],
-  dataArray: null,
-  dimArrays: [[0], [0], [0]],
-  dimNames: ["Default"],
-  dimUnits: ["Default"],
-  variable: 'Default',
-  variables: [],
-  zarrStore: "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr",
-  compress: true, 
-
-  setMetadata: (metadata) => set({ metadata }),
-  setZMeta: (zMeta) => set({ zMeta }),
-  setDataArray: (dataArray) => set({ dataArray }),
-  setDimArrays: (dimArrays) => set({ dimArrays }),
-  setDimNames: (dimNames) => set({ dimNames }),
-  setDimUnits: (dimUnits) => set({ dimUnits }),
-  setVariable: (variable) => set({ variable }),
-  setVariables: (variables) => set({ variables }),
-  setZarrStore: (zarrStore) => set({ zarrStore }),
-  setDataCache: (dataCache) => set({ dataCache }),
-  setCompress: (compress) => set({ compress })
 }));

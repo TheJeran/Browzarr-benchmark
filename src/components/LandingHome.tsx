@@ -7,15 +7,12 @@ import { useRef, useState } from 'react';
 import VariableScroller from './ui/VariableScroller';
 import { useEffect, useMemo } from 'react';
 import { Analysis, PlotArea, Plot } from '@/components/plots';
-import { GetColorMapTexture } from '@/components/textures';
 import { MiddleSlider } from '@/components/ui';
 import { Metadata, ShowAnalysis, Loading, Navbar, ShowPlot } from '@/components/ui';
 import { useGlobalStore } from '@/utils/GlobalStates';
 import { useShallow, shallow } from 'zustand/shallow';
 import useCSSVariable from '@/components/ui/useCSSVariable';
 import { GetTitleDescription } from '@/components/zarr/GetMetadata';
-
-// import { PaneManager } from '@/components/PaneManager';
 
 export function LandingHome() {
 
@@ -36,13 +33,11 @@ export function LandingHome() {
     return () => { isMounted = false; };
   }, [initStore]);
 
-  const { title, description } = titleDescription;
-  const {  setColormap, setVariables, setPlotOn, colormap, timeSeries, variable, metadata, plotOn  } = useGlobalStore(
+
+  const {   setVariables, setPlotOn, timeSeries, variable, metadata, plotOn  } = useGlobalStore(
     useShallow(state => ({
-      setColormap: state.setColormap,
       setVariables: state.setVariables,
       setPlotOn: state.setPlotOn,
-      colormap: state.colormap,
       timeSeries: state.timeSeries,
       variable: state.variable,
       metadata: state.metadata,
@@ -50,8 +45,6 @@ export function LandingHome() {
     }))
   );
   const [showLoading, setShowLoading] = useState<boolean>(false);
-  const textColor = useCSSVariable('--foreground');
-  const fogColor = useCSSVariable('--background');
   const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0);
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);

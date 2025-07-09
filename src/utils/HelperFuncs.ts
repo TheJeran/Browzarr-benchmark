@@ -80,9 +80,9 @@ export function parseUVCoords({normal,uv}:{normal:THREE.Vector3,uv:THREE.Vector2
     case normal.z === -1:
       return [null,uv.y,1-uv.x]
     case normal.x === 1:
-      return [uv.x,uv.y,null]
-    case normal.x === -1:
       return [1-uv.x,uv.y,null]
+    case normal.x === -1:
+      return [uv.x,uv.y,null]
     case normal.y === 1:
       return [1-uv.y,null,uv.x]
     default:

@@ -54,6 +54,7 @@ export class ZarrDataset{
 	async GetArray(variable: string, slice: number[]){
 
 		const setProgress = useGlobalStore.getState().setProgress
+		const setStrides = useGlobalStore.getState().setStrides
 		//Check if cached
 		this.variable = variable;
 		if (this.cache.has(variable)){
@@ -73,6 +74,7 @@ export class ZarrDataset{
 			if (totalSize < 1e8){ //Check if total is less than 100MB
 				chunk = await zarr.get(outVar)
 				shape = chunk.shape
+				setStrides(chunk.stride) //Need strides for the point cloud
 				if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
 							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
 				} else {
@@ -97,6 +99,7 @@ export class ZarrDataset{
 					if (this.cache.has(cacheName)){
 						console.log('using cache')
 						chunk = this.cache.get(cacheName)
+						setStrides(chunk.stride)
 						typedArray.set(chunk.data,accum)
 						setProgress(Math.round(iter/chunkCount*100))
 						accum += chunk.data.length;
@@ -110,6 +113,7 @@ export class ZarrDataset{
 							typedArray.set(chunk.data,accum)
 							this.cache.set(cacheName,chunk)
 							accum += chunk.data.length;
+							setStrides(chunk.stride)
 							setProgress(Math.round(iter/chunkCount*100))
 							iter ++;
 						}

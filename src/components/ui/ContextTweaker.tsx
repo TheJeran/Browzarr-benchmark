@@ -175,20 +175,22 @@ const VolumeTweaks = React.memo(function VolumeTweaks({loc} : {loc:number[]}){
 
 
 const PointTweaks = React.memo(function PointTweaks({loc} : {loc:number[]}){
-    const {setPointSize, setScaleIntensity, setScalePoints, setPlotType, setValueRange} = usePlotStore(useShallow(
+    const {setPointSize, setScaleIntensity, setScalePoints, setPlotType, setValueRange, setTimeScale} = usePlotStore(useShallow(
         (state => ({
             setPointSize: state.setPointSize, 
             setScaleIntensity: state.setScaleIntensity, 
             setScalePoints: state.setScalePoints,
             setPlotType: state.setPlotType,
-            setValueRange: state.setValueRange
+            setValueRange: state.setValueRange,
+            setTimeScale: state.setTimeScale
         }))))
 
-    const {scalePoints, scaleIntensity, pointSize, valueRange, } = usePlotStore(useShallow(state => ({
+    const {scalePoints, scaleIntensity, pointSize, valueRange, timeScale} = usePlotStore(useShallow(state => ({
       scalePoints: state.scalePoints,
       scaleIntensity: state.scaleIntensity,
       pointSize: state.pointSize,
       valueRange: state.valueRange,
+      timeScale: state.timeScale
     })))
 
     const valueScales = useGlobalStore(useShallow(state => state.valueScales))
@@ -239,6 +241,19 @@ const PointTweaks = React.memo(function PointTweaks({loc} : {loc:number[]}){
                     <DropdownMenuLabel>Value Cropping</DropdownMenuLabel>
                     <DropdownMenuItem onSelect={e=> e.preventDefault()}>
                         <MinMaxSlider range={valueRange} setRange={setValueRange} valueScales={valueScales} min={0}/>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={e=> e.preventDefault()}>
+                        <div className='w-full flex justify-between flex-col items-center'>
+                            <b>Resize Time Dimension</b>
+                            <input type="range"
+                                className='w-full'
+                                min={.05}
+                                max={5}
+                                step={.05}
+                                defaultValue={timeScale} 
+                            onChange={e => setTimeScale(parseFloat(e.target.value))}
+                            />
+                        </div>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
               <DropdownMenuItem onSelect={e=> e.preventDefault()}>
