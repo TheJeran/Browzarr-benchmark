@@ -64,8 +64,6 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
     
     const [windowWidth, setWindowWidth] = useState<number>(0); //Use for rescaling
 
-    const isOrthographic = true;
-
     useEffect(() => {
         setWindowWidth(window.innerWidth);
         const handleResize = () => setWindowWidth(window.innerWidth);
@@ -194,7 +192,10 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
           <DataCube volTexture={texture}/>
           <UVCube ZarrDS={ZarrDS} />
         </>}
-        {plotType == "point-cloud" && show && <PointCloud textures={{texture,colormap}} />}
+        {plotType == "point-cloud" && show &&<>
+          <PointCloud textures={{texture,colormap}} ZarrDS={ZarrDS}/>
+
+        </> }
         {plotType == "sphere" && show && <Sphere texture={texture} ZarrDS={ZarrDS} /> }
         <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={false} maxDistance={50}/>
       </Canvas>
