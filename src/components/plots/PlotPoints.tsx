@@ -94,7 +94,7 @@ function restorePoint(e: any){
       ref.current.instanceMatrix.needsUpdate = true
       setreRender(x=>!x)
       const check = exitID == lastID.current;
-      check && setShowPointInfo(false)
+      setShowPointInfo(check ? false : true)
     }
     
   }
