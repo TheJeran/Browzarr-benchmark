@@ -29,8 +29,8 @@ const PointOptions = React.memo(function PointOptions(){
         <input
           type="range"
           min={1}
-          max={20}
-          step={.5}
+          max={10}
+          step={.1}
           value={linePointSize}
           onChange={e => setLinePointSize(parseFloat(e.target.value))}
         />
