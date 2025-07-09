@@ -95,7 +95,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
     if (variable != "Default") {
       setShowLoading(true);
       setShow(false)
-      ZarrDS.GetArray(variable).then((result) => {
+      ZarrDS.GetArray(variable, [0,10]).then((result) => {
         // result now contains: { data: TypedArray, shape: number[], dtype: string }
         const [texture, scaling] = ArrayToTexture({
           data: result.data,
@@ -195,7 +195,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
           <UVCube ZarrDS={ZarrDS} />
         </>}
         {plotType == "point-cloud" && show && <PointCloud textures={{texture,colormap}} />}
-        {plotType == "sphere" && show && <Sphere texture={texture} /> }
+        {plotType == "sphere" && show && <Sphere texture={texture} ZarrDS={ZarrDS} /> }
         <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={false} maxDistance={50}/>
       </Canvas>
       </>}

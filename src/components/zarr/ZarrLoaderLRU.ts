@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import QuickLRU from 'quick-lru';
 import { parseUVCoords } from "@/utils/HelperFuncs";
 import { GetSize } from "./GetMetadata";
+import { useGlobalStore } from "@/utils/GlobalStates";
 
 export const ZARR_STORES = {
     ESDC: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr',
@@ -40,15 +41,19 @@ export class ZarrDataset{
 	private variable: string;
 	private cache: QuickLRU<string,any>;
 	private dimNames: string[];
+	private chunkIDs: number[];
 
 	constructor(store: string){
 		this.groupStore = GetStore(store);
 		this.variable = "Default";
 		this.cache = new QuickLRU({maxSize: 2000});
 		this.dimNames = ["","",""]
+		this.chunkIDs = [];
 	}
 
-	async GetArray(variable: string){
+	async GetArray(variable: string, slice: number[]){
+
+		const setProgress = useGlobalStore.getState().setProgress
 		//Check if cached
 		this.variable = variable;
 		if (this.cache.has(variable)){
@@ -58,33 +63,63 @@ export class ZarrDataset{
 		const group = await this.groupStore;
 		const outVar = await zarr.open(group.resolve(variable), {kind:"array"})
 		const [totalSize, chunkSize, chunkShape] = GetSize(outVar);
+
 		// Type check using zarr.Array.is
 		if (outVar.is("number") || outVar.is("bigint")) {
 			let chunk;
+			let typedArray;
+			let shape;
+			this.chunkIDs = []
 			if (totalSize < 1e8){ //Check if total is less than 100MB
 				chunk = await zarr.get(outVar)
+				shape = chunk.shape
+				if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
+							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
+				} else {
+					typedArray = new Float32Array(chunk.data)
+					this.cache.set(variable,chunk)
+				}
 			}
-			else { //See how many chunks are < 30MB and load that many ! a 100MB limit is too much for mobile devices
-				const chunkCount = Math.floor(3e7 / chunkSize);
-				const horizontalChunks = Math.ceil(chunkShape[2]/outVar.shape[2])
-				const verticalChunks = Math.ceil(chunkShape[1]/outVar.shape[1])
-				const chunksPerTime = horizontalChunks * verticalChunks;
-				const sliceDistance = chunkShape[0]*chunkCount/chunksPerTime
-				// console.log(sliceDistance)
-				// Slice distance only works fine when the original store is chunked properly.
-				chunk = await zarr.get(outVar, [zarr.slice(0, sliceDistance), null, null])
+			else { 
+				setProgress(0)
+				const startIdx = Math.floor(slice[0]/chunkShape[0])
+				const endIdx = Math.ceil(slice[1]/chunkShape[0])
+				const chunkCount = endIdx-startIdx
+				const timeSize = outVar.shape[1]*outVar.shape[2]
+				const arraySize = (endIdx-startIdx+1)*chunkShape[0]*timeSize
+				shape = [(endIdx-startIdx)*chunkShape[0],outVar.shape[1],outVar.shape[2]]
+				typedArray = new Float32Array(arraySize);
+				let accum = 0;
+				let iter = 1;
+				for (let i= startIdx ; i < endIdx ; i++){
+					const cacheName = `${variable}_chunk_${i}`
+					this.chunkIDs.push(i) //identify which chunks to use when recombining cache for timeseries
+					if (this.cache.has(cacheName)){
+						console.log('using cache')
+						chunk = this.cache.get(cacheName)
+						typedArray.set(chunk.data,accum)
+						setProgress(Math.round(iter/chunkCount*100))
+						accum += chunk.data.length;
+						iter ++;
+					}
+					else{
+						chunk = await zarr.get(outVar, [zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null])
+						if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
+							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
+						} else {
+							typedArray.set(chunk.data,accum)
+							this.cache.set(cacheName,chunk)
+							accum += chunk.data.length;
+							setProgress(Math.round(iter/chunkCount*100))
+							iter ++;
+						}
+					}
+				}
 			}
-			let typedArray;
-			if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
-				throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
-			} else {
-				typedArray = new Float32Array(chunk.data);
-			}
-			this.cache.set(variable, chunk);
-			// TypeScript will now infer the correct numeric type
+
 			return {
 				data: typedArray,
-				shape: chunk.shape,
+				shape: shape,
 				dtype: outVar.dtype
 			}
 		} else {
@@ -130,13 +165,32 @@ export class ZarrDataset{
 
 	async GetTimeSeries(TimeSeriesInfo:TimeSeriesInfo){
 		const {uv,normal} = TimeSeriesInfo
-		if (!this.cache.has(this.variable)){
+		if (!this.cache.has(this.variable) && this.chunkIDs.length == 0){
 			return [0]
 		}
-		const {data, shape, stride} = this.cache.get(this.variable)
+
+		let data, shape : number[], stride; 
+		if (this.chunkIDs.length > 0){
+			console.log("here")
+			const arrays = []
+			for (const id of this.chunkIDs){
+				arrays.push(this.cache.get(`${this.variable}_chunk_${id}`))
+			}
+			({shape, stride} = arrays[0])
+			const totalLength = arrays.reduce((sum, arr) => sum + arr.data.length, 0);
+
+			data = new Float32Array(totalLength);
+			let accum = 0;
+			for (const array of arrays){
+				data.set(array.data, accum);
+				accum += array.data.length
+			}
+		}
+		else{
+			({data, shape, stride} = this.cache.get(this.variable))
+		}
 		//This is a complicated logic check but it works bb
 		const sliceSize = parseUVCoords({normal,uv})
-
 		const slice = sliceSize.map((value, index) =>
 			value === null || shape[index] === null ? null : Math.round(value * shape[index]));
 

@@ -80,20 +80,23 @@ const MinMaxSlider = React.memo(function MinMaxSlider({range, setRange, valueSca
 })
 
 const VolumeTweaks = React.memo(function VolumeTweaks(){
-    const {valueRange, xRange, yRange, zRange, animate, resetAnim, setValueRange, setXRange, setYRange, setZRange, setQuality, setAnimate, setResetAnim} = usePlotStore(useShallow(state => ({
+    const {valueRange, xRange, yRange, zRange, animate, resetAnim, useFragOpt, quality, setValueRange, setXRange, setYRange, setZRange, setQuality, setAnimate, setResetAnim, setUseFragOpt} = usePlotStore(useShallow(state => ({
         valueRange: state.valueRange,
         xRange: state.xRange,
         yRange: state.yRange,
         zRange: state.zRange,
         animate: state.animate,
         resetAnim: state.resetAnim,
+        useFragOpt: state.useFragOpt,
+        quality: state.quality,
         setValueRange: state.setValueRange,
         setXRange: state.setXRange,
         setYRange: state.setYRange,
         setZRange: state.setZRange,
         setQuality: state.setQuality,
         setAnimate: state.setAnimate,
-        setResetAnim: state.setResetAnim
+        setResetAnim: state.setResetAnim,
+        setUseFragOpt: state.setUseFragOpt
     })))
     const [xScales, setXScales] = useState<{minVal: number, maxVal: number}>({minVal: 0, maxVal: 0})
     const [yScales, setYScales] = useState<{minVal: number, maxVal: number}>({minVal: 0, maxVal: 0})
@@ -132,10 +135,14 @@ const VolumeTweaks = React.memo(function VolumeTweaks(){
                         max={1000}
                         step={50}
                         defaultValue={200} 
+                        value={quality}
                     onChange={e => setQuality(parseInt(e.target.value))}
                     />
                     Better
                 </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                    <Button variant="destructive" className="w-[100%] h-[20px] cursor-[pointer]" onClick={() => setUseFragOpt(!useFragOpt)}>{useFragOpt ? "Revert to Normal" : "Use Optimized Shader"}</Button>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
@@ -174,14 +181,22 @@ const VolumeTweaks = React.memo(function VolumeTweaks(){
 
 
 const PointTweaks = React.memo(function PointTweaks(){
-    const {setPointSize, setScaleIntensity, setScalePoints} = usePlotStore(useShallow(
-        (state => ({setPointSize: state.setPointSize, setScaleIntensity: state.setScaleIntensity, setScalePoints: state.setScalePoints}))))
+    const {setPointSize, setScaleIntensity, setScalePoints, setValueRange} = usePlotStore(useShallow(
+        (state => ({
+            setPointSize: state.setPointSize, 
+            setScaleIntensity: state.setScaleIntensity, 
+            setScalePoints: state.setScalePoints,
+            setValueRange: state.setValueRange
+        }))))
 
-    const {scalePoints, scaleIntensity, pointSize} = usePlotStore(useShallow(state => ({
+    const {scalePoints, scaleIntensity, pointSize, valueRange} = usePlotStore(useShallow(state => ({
       scalePoints: state.scalePoints,
       scaleIntensity: state.scaleIntensity,
-      pointSize: state.pointSize
+      pointSize: state.pointSize,
+      valueRange: state.valueRange
     })))
+
+    const valueScales = useGlobalStore(useShallow(state => state.valueScales))
 
     return(
         <div className="nav-dropdown">
@@ -222,6 +237,12 @@ const PointTweaks = React.memo(function PointTweaks(){
                 </div>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
+              <DropdownMenuGroup>
+                    <DropdownMenuLabel>Value Cropping</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={e=> e.preventDefault()}>
+                        <MinMaxSlider range={valueRange} setRange={setValueRange} valueScales={valueScales} min={0}/>
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

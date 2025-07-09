@@ -80,17 +80,20 @@ const MinMaxSlider = React.memo(function MinMaxSlider({range, setRange, valueSca
 })
 
 const VolumeTweaks = React.memo(function VolumeTweaks({loc} : {loc:number[]}){
-    const {valueRange, xRange, yRange, zRange, setValueRange, setXRange, setYRange, setZRange, setQuality, setPlotType} = usePlotStore(useShallow(state => ({
+    const {valueRange, xRange, yRange, zRange, useFragOpt, quality, setValueRange, setXRange, setYRange, setZRange, setQuality, setPlotType, setUseFragOpt} = usePlotStore(useShallow(state => ({
         valueRange: state.valueRange,
         xRange: state.xRange,
         yRange: state.yRange,
         zRange: state.zRange,
+        useFragOpt: state.useFragOpt,
+        quality: state.quality,
         setValueRange: state.setValueRange,
         setXRange: state.setXRange,
         setYRange: state.setYRange,
         setZRange: state.setZRange,
         setQuality: state.setQuality,
-        setPlotType: state.setPlotType
+        setPlotType: state.setPlotType,
+        setUseFragOpt: state.setUseFragOpt
     })))
     const [xScales, setXScales] = useState<{minVal: number, maxVal: number}>({minVal: 0, maxVal: 0})
     const [yScales, setYScales] = useState<{minVal: number, maxVal: number}>({minVal: 0, maxVal: 0})
@@ -130,10 +133,14 @@ const VolumeTweaks = React.memo(function VolumeTweaks({loc} : {loc:number[]}){
                         max={1000}
                         step={50}
                         defaultValue={200} 
+                        value={quality}
                     onChange={e => setQuality(parseInt(e.target.value))}
                     />
                     Better
                 </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                    <Button variant="destructive" className="w-[100%] h-[20px] cursor-[pointer]" onClick={() => setUseFragOpt(!useFragOpt)}>{useFragOpt ? "Revert to Normal" : "Use Optimized Shader"}</Button>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
@@ -168,19 +175,23 @@ const VolumeTweaks = React.memo(function VolumeTweaks({loc} : {loc:number[]}){
 
 
 const PointTweaks = React.memo(function PointTweaks({loc} : {loc:number[]}){
-    const {setPointSize, setScaleIntensity, setScalePoints, setPlotType} = usePlotStore(useShallow(
+    const {setPointSize, setScaleIntensity, setScalePoints, setPlotType, setValueRange} = usePlotStore(useShallow(
         (state => ({
             setPointSize: state.setPointSize, 
             setScaleIntensity: state.setScaleIntensity, 
             setScalePoints: state.setScalePoints,
-            setPlotType: state.setPlotType
+            setPlotType: state.setPlotType,
+            setValueRange: state.setValueRange
         }))))
 
-    const {scalePoints, scaleIntensity, pointSize} = usePlotStore(useShallow(state => ({
+    const {scalePoints, scaleIntensity, pointSize, valueRange, } = usePlotStore(useShallow(state => ({
       scalePoints: state.scalePoints,
       scaleIntensity: state.scaleIntensity,
-      pointSize: state.pointSize
+      pointSize: state.pointSize,
+      valueRange: state.valueRange,
     })))
+
+    const valueScales = useGlobalStore(useShallow(state => state.valueScales))
 
     const [isOpen, setIsOpen] = useState(false);
     useEffect(()=>{
@@ -224,6 +235,12 @@ const PointTweaks = React.memo(function PointTweaks({loc} : {loc:number[]}){
                 </div>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
+              <DropdownMenuGroup>
+                    <DropdownMenuLabel>Value Cropping</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={e=> e.preventDefault()}>
+                        <MinMaxSlider range={valueRange} setRange={setValueRange} valueScales={valueScales} min={0}/>
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
               <DropdownMenuItem onSelect={e=> e.preventDefault()}>
                     <Button variant="destructive" className="w-[100%] h-[20px] cursor-[pointer]" onClick={() => setPlotType("volume")}>Change to Volume</Button>
                 </DropdownMenuItem>
