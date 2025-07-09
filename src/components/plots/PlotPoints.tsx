@@ -10,17 +10,26 @@ interface pointSetters{
   setShowPointInfo:React.Dispatch<React.SetStateAction<boolean>>,
 }
 
-function PlotPoints({ points, pointSetters }: { points: THREE.Vector3[]; pointSetters:pointSetters }) {
+function PlotPoints({ points, pointSetters, scalers }: { points: THREE.Vector3[]; pointSetters:pointSetters; scalers:{xScale:number,yScale:number} }) {
   const ref = useRef<THREE.InstancedMesh | null>(null)
   const count = points.length
   const [_reRender,setreRender] = useState<boolean>(false)
   const {setPointID, setPointLoc,setShowPointInfo} = pointSetters;
   const [zoom,setZoom] = useState<number>(1)
   const {pointColor, pointSize} = usePlotStore(useShallow(state => ({pointColor: state.pointColor, pointSize: state.linePointSize})))
-
+  const {xScale, yScale} = scalers;
 
   const geometry = useMemo(() => new THREE.SphereGeometry(pointSize), [pointSize])
-  const material = useMemo(()=> new THREE.MeshBasicMaterial({color:pointColor}),[pointColor])
+  const material = useMemo(()=> new THREE.ShaderMaterial({
+    glslVersion:THREE.GLSL3,
+    uniforms:{
+      pointColor: {value: new THREE.Color(pointColor)},
+      xScale: {value: xScale},
+      yScale: {value: yScale},
+      
+    },
+    
+    }),[pointColor, xScale, yScale])
 
   useEffect(() => {
     if (ref.current){

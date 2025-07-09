@@ -4,7 +4,7 @@ import React, {useMemo} from 'react'
 import * as THREE from 'three'
 import { usePlotStore, useGlobalStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
-import vertexShader from '@/components/textures/shaders/LineVert copy.glsl'
+import vertexShader from '@/components/textures/shaders/thickLineVert.glsl'
 import { PlotPoints } from './PlotPoints';
 import { useThree } from '@react-three/fiber';
 
@@ -44,6 +44,8 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
                 uniforms: {
                     cmap:{value: colormap},
                     width: { value: lineWidth},
+                    xScale: {value: xScale},
+                    yScale: {value: yScale},
                     aspect: {value : window.innerWidth / window.innerHeight},
                     thickness:{value:lineWidth},
                     miter: {value: 1},
@@ -73,10 +75,10 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
 		const viewWidth = window.innerWidth;
 		const viewHeight = window.innerHeight - height
 		const size = timeSeries.length;
-		const xCoords = linspace(-viewWidth*xScale/2,viewWidth*xScale/2,size)
-		const points = normed.map((val,idx) => new THREE.Vector3(xCoords[idx], (val-.5)*viewHeight*yScale, 5)); 
+		const xCoords = linspace(-viewWidth,viewWidth,size)
+		const points = normed.map((val,idx) => new THREE.Vector3(xCoords[idx], (val-.5)*viewHeight, 5)); 
 		return points
-	},[timeSeries, xScale, yScale, height])
+	},[timeSeries, height])
 
 	const linePoints = useMemo(()=>{
 		const curve = new THREE.CatmullRomCurve3(points);
@@ -145,7 +147,7 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
     <>
 		<group>
 			{geometry && <mesh geometry={geometry} material={material} />}
-			{showPoints && <PlotPoints points={points} pointSetters={pointSetters} />}
+			{showPoints && <PlotPoints points={points} pointSetters={pointSetters} scalers={{xScale,yScale}}/>}
 		</group>
 		</>
   )
