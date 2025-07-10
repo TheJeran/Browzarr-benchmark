@@ -169,13 +169,47 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
     val
   }),[])
 
-  
+
+
+  // Reset Camera Position and Target
   useEffect(()=>{
     if (orbitRef.current){
-      orbitRef.current.object.position.copy(orbitRef.current.position0)
-      orbitRef.current.target.copy(orbitRef.current.target0)
+      const controls = orbitRef.current
+      let frameId: number;
+      const duration = 1000; 
+      const startTime = performance.now();
+      const startPos = controls.object.position.clone();
+      const endPos = controls.position0.clone()
+
+      const startTarget = controls.target.clone();
+      const endTarget = controls.target0.clone()
+
+      const startZoom = controls.object.zoom
+
+      const animate = (time: number) => {
+        const elapsed = time - startTime;
+        const t = Math.min(elapsed / duration, 1); // clamp between 0 and 1
+        if (elapsed < 20){frameId = requestAnimationFrame(animate);
+          return //This 20 is assuuming 60FPS. Will probably need to change it eventuyally
+        }
+        controls.object.position.lerpVectors(startPos, endPos, t);
+        controls.target.lerpVectors(startTarget,endTarget,t)
+
+        if (isFlat) {
+          controls.object.zoom = THREE.MathUtils.lerp(startZoom, 1000, t);
+          controls.object.updateProjectionMatrix();
+          controls.update()
+        } 
+
+        if (t < 1) {
+          frameId = requestAnimationFrame(animate);
+        }
+      };
+
+      frameId = requestAnimationFrame(animate);
+
+      return () => cancelAnimationFrame(frameId);
     }
-    console.log(orbitRef.current)
   },[resetCamera])
 
   const Nav = useMemo(()=>Navbar,[])
@@ -206,8 +240,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       </>}
 
         {isFlat && <>
-        <Canvas camera={{ position: [0,0,5], zoom: 1000 }}
-        frameloop="demand"
+        <Canvas camera={{ position: [0,0,5], zoom: 1000 }} //Removed FrameLoop Demand on this canvas as it wouldn't cause re-renders for the camera reset animation. 
         orthographic
         >
           <FlatMap texture={texture as THREE.DataTexture} infoSetters={infoSetters} />
