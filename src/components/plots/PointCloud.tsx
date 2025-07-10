@@ -61,7 +61,8 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
         setPlotDim(2-plotDim[0]) //I think this 2 is only if there are 3-dims. Need to rework the logic
         
         const coordUV = parseUVCoords({normal:normal,uv:uv})
-        let dimCoords = coordUV.map((val,idx)=>val ? dimArrays[idx][Math.round(val*dimArrays[idx].length)] : null)
+        let dimCoords = coordUV.map((val,idx)=>val ? dimArrays[idx][Math.round(val*dimArrays[idx].length-.5)] : null)
+        console.log(dimCoords)
         const thisDimNames = dimNames.filter((_,idx)=> dimCoords[idx] !== null)
         const thisDimUnits = dimUnits.filter((_,idx)=> dimCoords[idx] !== null)
         dimCoords = dimCoords.filter(val => val !== null)
