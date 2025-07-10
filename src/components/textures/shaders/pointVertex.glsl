@@ -12,10 +12,18 @@ uniform int stride;
 uniform int dimWidth;
 uniform bool showTransect;
 uniform float timeScale;
+uniform float animateProg;
+uniform float depthRatio;
+uniform vec4 flatBounds;
+uniform vec2 vertBounds;
 
 void main() {
     vValue = value/255.;
     vec3 scaledPos = position;
+    scaledPos.z += depthRatio;
+    scaledPos.z = mod(scaledPos.z + animateProg*depthRatio, 2.*depthRatio);
+    scaledPos.z -= depthRatio;
+
     scaledPos.z *= timeScale;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(scaledPos, 1.0);
     //If it is nan we just yeet it tf out of the screen space. LMAO I love this solution
@@ -30,13 +38,22 @@ void main() {
     highlight = isValid ? 1 : 0;
     
 
-    if (value == 255. || (pointScale*gl_Position.w < 0.75 && scalePoints)){
+    if (value == 255. || (pointScale*gl_Position.w < 0.75 && scalePoints)){ //Hide points that are invisible or get too small when scalled
         gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
     }
 
-    if (vValue < valueRange.x || vValue > valueRange.y){
+    if (vValue < valueRange.x || vValue > valueRange.y){ //Hide points that are outside of value range
         gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
     }
+
+    bool xCheck = scaledPos.x < flatBounds.x || scaledPos.x > flatBounds.y;
+    bool zCheck = scaledPos.z < flatBounds.z || scaledPos.z > flatBounds.w;
+    bool yCheck = scaledPos.y < vertBounds.x || scaledPos.y> vertBounds.y;
+
+    if (xCheck || zCheck || yCheck){ //Hide points that are clipped
+        gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    }
+    
     if (showTransect){
         gl_PointSize = isValid ? max(pointScale*5. , pointScale+80./gl_Position.w) : pointScale;
     }
