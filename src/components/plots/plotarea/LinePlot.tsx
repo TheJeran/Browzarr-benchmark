@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber'
 import { parseLoc } from '@/utils/HelperFuncs'
-import { PlotLine, FixedTicks, ThickLine } from '@/components/plots'
+import { FixedTicks, ThickLine } from '@/components/plots'
 import {  useEffect, useRef, useState } from 'react'
 import { ResizeBar, YScaler, XScaler, ShowLinePlot } from '@/components/ui'
 import './LinePlot.css'
@@ -177,11 +177,10 @@ export function PlotArea() {
           <XScaler scale={xScale} setScale={setXScale} />
           <Canvas
             orthographic
-            camera={{ position: [0, 0, 40] }}
+            camera={{ position: [0, 0, 100] }}
             frameloop="demand"
           >
             <ThickLine height={height} yScale={yScale} pointSetters={pointSetters} xScale={xScale}/>
-            {/* <PlotLine height={height} pointSetters={pointSetters} yScale={yScale} xScale={xScale}/> */}
             <FixedTicks height={height} yScale={yScale} xScale={xScale}/>
           </Canvas>
           <PointCoords/>
