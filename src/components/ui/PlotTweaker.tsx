@@ -181,24 +181,38 @@ const VolumeTweaks = React.memo(function VolumeTweaks(){
 
 
 const PointTweaks = React.memo(function PointTweaks(){
-    const {setPointSize, setScaleIntensity, setScalePoints, setValueRange, setTimeScale} = usePlotStore(useShallow(
+    const {setPointSize, setScaleIntensity, setScalePoints, setValueRange, setTimeScale, setResetAnim, setAnimate, setXRange, setYRange, setZRange} = usePlotStore(useShallow(
         (state => ({
             setPointSize: state.setPointSize, 
             setScaleIntensity: state.setScaleIntensity, 
             setScalePoints: state.setScalePoints,
             setValueRange: state.setValueRange,
-            setTimeScale: state.setTimeScale
+            setTimeScale: state.setTimeScale,
+            setResetAnim: state.setResetAnim,
+            setAnimate: state.setAnimate,
+            setXRange: state.setXRange,
+            setYRange: state.setYRange,
+            setZRange: state.setZRange
         }))))
 
-    const {scalePoints, scaleIntensity, pointSize, valueRange, timeScale} = usePlotStore(useShallow(state => ({
+    const {scalePoints, scaleIntensity, pointSize, valueRange, timeScale, animate, resetAnim, xRange, yRange, zRange} = usePlotStore(useShallow(state => ({
       scalePoints: state.scalePoints,
       scaleIntensity: state.scaleIntensity,
       pointSize: state.pointSize,
       valueRange: state.valueRange,
-      timeScale: state.timeScale
+      timeScale: state.timeScale,
+      animate: state.animate,
+      resetAnim: state.resetAnim,
+      xRange: state.xRange,
+      yRange: state.yRange,
+      zRange: state.zRange
     })))
 
-    const valueScales = useGlobalStore(useShallow(state => state.valueScales))
+    const [xScales, setXScales] = useState<{minVal: number, maxVal: number}>({minVal: 0, maxVal: 0})
+    const [yScales, setYScales] = useState<{minVal: number, maxVal: number}>({minVal: 0, maxVal: 0})
+    const [zScales, setZScales] = useState<{minVal: number, maxVal: number}>({minVal: 0, maxVal: 0})
+
+    const {valueScales, dimArrays} = useGlobalStore(useShallow(state => ({valueScales : state.valueScales, dimArrays : state.dimArrays, isFlat: state.isFlat})))
 
     return(
         <div className="nav-dropdown">
@@ -257,6 +271,27 @@ const PointTweaks = React.memo(function PointTweaks(){
                             />
                         </div>
                     </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuGroup onSelect={e=> e.preventDefault()}>
+                    <DropdownMenuLabel>Spatial Cropping</DropdownMenuLabel>
+                    <DropdownMenuGroup>
+                        <DropdownMenuItem onSelect={e=> e.preventDefault()}>
+                            <MinMaxSlider range={xRange} setRange={setXRange} valueScales={xScales} array={dimArrays[2]}/>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={e=> e.preventDefault()}>
+                            <MinMaxSlider range={yRange} setRange={setYRange} valueScales={yScales} array={dimArrays[1]}/>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={e=> e.preventDefault()}>
+                            <MinMaxSlider range={zRange} setRange={setZRange} valueScales={zScales} array={dimArrays[0]}/>
+                        </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                </DropdownMenuGroup>
+                <DropdownMenuGroup >
+                    <DropdownMenuLabel>Animate Time</DropdownMenuLabel>
+                    <div style={{display:'flex', justifyContent:'space-around'}}>
+                        <Button style={{background:animate ? 'red' : ''}} variant="outline" onClick={()=>setAnimate(!animate)}>{animate ? "Pause" : "Start"}</Button>
+                        <Button variant="outline" onClick={()=>setResetAnim(!resetAnim)}>Reset</Button>
+                    </div>
                 </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>

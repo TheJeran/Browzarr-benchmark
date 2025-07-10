@@ -6,6 +6,7 @@ import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 import { parseUVCoords } from '@/utils/HelperFuncs';
+import { useFrame } from '@react-three/fiber';
 
 interface PCProps {
   texture: THREE.Data3DTexture | THREE.DataTexture | null,
@@ -108,16 +109,23 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
 export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrDataset} )=>{
     const {texture, colormap } = textures;
     const flipY = useGlobalStore(state=>state.flipY)
-    const {scalePoints, scaleIntensity, pointSize, cScale, cOffset, valueRange, selectTS, timeScale} = usePlotStore(useShallow(state => ({
+    const {scalePoints, scaleIntensity, pointSize, cScale, cOffset, valueRange, animate, resetAnim, selectTS, timeScale, xRange, yRange, zRange,} = usePlotStore(useShallow(state => ({
       scalePoints: state.scalePoints,
       scaleIntensity: state.scaleIntensity,
       pointSize: state.pointSize,
       cScale: state.cScale, 
       cOffset:state.cOffset,
       valueRange: state.valueRange,
+      animate: state.animate,
+      resetAnim: state.resetAnim,
       selectTS: state.selectTS,
-      timeScale: state.timeScale
+      timeScale: state.timeScale,
+      xRange: state.xRange,
+      yRange: state.yRange,
+      zRange: state.zRange
     })))
+
+    const [animateProg, setAnimateProg] = useState<number>(0)
 
     const [pointID, setPointID] = useState<number | null>(null)
     const [stride, setStride] = useState<number>(1)
@@ -137,8 +145,8 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       };
     }, [texture]);
   
-    const aspectRatio = width/height;
-    const depthRatio = depth/height;
+    const aspectRatio = useMemo(()=>width/height,[width,height]);
+    const depthRatio = useMemo(()=>depth/height,[depth,height]);
     const { positions, values } = useMemo(() => {
       const positions = [];
       const values = [];
@@ -168,8 +176,6 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       geom.setAttribute('value', new THREE.Float32BufferAttribute(values, 1));
       return geom;
     }, [positions, values]);
-  
-  
     const shaderMaterial = useMemo(()=> (new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3,
       uniforms: {
@@ -184,7 +190,11 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
         stride: {value : stride},
         showTransect: { value: selectTS},
         dimWidth: {value: dimWidth},
-        timeScale: {value: timeScale}
+        timeScale: {value: timeScale},
+        animateProg: {value: animateProg},
+        depthRatio: {value: depthRatio},
+        flatBounds:{value: new THREE.Vector4(xRange[0]*aspectRatio, xRange[1]*aspectRatio, zRange[0]*depthRatio, zRange[1]*depthRatio)},
+        vertBounds:{value: new THREE.Vector2(yRange[0], yRange[1])},
       },
       vertexShader:pointVert,
       fragmentShader:pointFrag,
@@ -193,7 +203,19 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       blending:THREE.NormalBlending,
       side:THREE.DoubleSide,
     })
-    ),[pointSize, colormap, cOffset, cScale, valueRange, scalePoints, scaleIntensity, pointID, stride, selectTS, timeScale]);
+    ),[pointSize, colormap, cOffset, cScale, valueRange, scalePoints, scaleIntensity, pointID, stride, selectTS, animateProg, timeScale, depthRatio, aspectRatio, xRange, yRange, zRange]);
+
+    // Animation Funcs
+    useFrame(()=>{
+          if (animate){
+            const newProg = animateProg + 0.001
+            setAnimateProg(newProg % 1.)
+          }
+        })
+    
+    useEffect(()=>{
+      setAnimateProg(0)
+    },[resetAnim])
 
     return (
       <>
