@@ -196,8 +196,7 @@ export class ZarrDataset{
 		//This is a complicated logic check but it works bb
 		const sliceSize = parseUVCoords({normal,uv})
 		const slice = sliceSize.map((value, index) =>
-			value === null || shape[index] === null ? null : Math.round(value * shape[index]));
-
+			value === null || shape[index] === null ? null : Math.round(value * shape[index]-.5));
 		const mapDim = slice.indexOf(null);
 		const dimStride = stride[mapDim];
 		const pz = slice[0] == null ? 0 : stride[0]*slice[0]

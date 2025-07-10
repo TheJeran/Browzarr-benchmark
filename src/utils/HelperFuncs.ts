@@ -1,12 +1,6 @@
 'use client';
-
-/**
- * Parses a CF time unit string and returns the scaling factor (milliseconds per unit).
- * @param units - Time unit string, e.g., "seconds since 1970-01-01" or "days since 1970-01-01"
- * @returns Scaling factor (milliseconds per unit)
- */
-
 import * as THREE from 'three'
+import { useGlobalStore } from './GlobalStates';
 
 export function parseTimeUnit(units: string | undefined): number {
     if (units === "Default"){
@@ -74,17 +68,18 @@ export function parseLoc(input:number, units: string | undefined) {
 }
 
 export function parseUVCoords({normal,uv}:{normal:THREE.Vector3,uv:THREE.Vector2}){
+  const flipY = useGlobalStore.getState().flipY
   switch(true){
     case normal.z === 1:
-      return [null,uv.y,uv.x]
+      return [null, flipY ? 1-uv.y : uv.y, uv.x]
     case normal.z === -1:
-      return [null,uv.y,1-uv.x]
+      return [null, flipY ? 1-uv.y : uv.y, 1-uv.x]
     case normal.x === 1:
-      return [1-uv.x,uv.y,null]
+      return [1-uv.x, flipY ? 1- uv.y : uv.y, null]
     case normal.x === -1:
-      return [uv.x,uv.y,null]
+      return [uv.x, flipY ? 1-uv.y : uv.y, null]
     case normal.y === 1:
-      return [1-uv.y,null,uv.x]
+      return [1-uv.y, null, uv.x]
     default:
       return [0,0,0]
   }
