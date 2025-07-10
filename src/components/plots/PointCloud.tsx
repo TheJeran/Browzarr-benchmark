@@ -161,7 +161,6 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       return { positions, values };
     }, [data, width, height, depth]);
   
-  
     // Create buffer geometry
     const geometry = useMemo(() => {
       const geom = new THREE.BufferGeometry();
@@ -195,12 +194,6 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       side:THREE.DoubleSide,
     })
     ),[pointSize, colormap, cOffset, cScale, valueRange, scalePoints, scaleIntensity, pointID, stride, selectTS, timeScale]);
-  
-    useEffect(()=>{
-      if (!selectTS){
-        setPointID(-1)
-      }
-    },[selectTS])
 
     return (
       <>

@@ -118,10 +118,12 @@ const Navbar = React.memo(function Navbar(){
     })))
 
 
-  const {setPlotType, plotType, setAnimate} = usePlotStore(useShallow(state=> ({
+  const {setPlotType, plotType, resetCamera, setAnimate, setResetCamera} = usePlotStore(useShallow(state=> ({
     setPlotType: state.setPlotType,
     plotType: state.plotType,
-    setAnimate: state.setAnimate
+    resetCamera: state.resetCamera,
+    setAnimate: state.setAnimate,
+    setResetCamera: state.setResetCamera
   })))
   const [cmap, setCmap] = useState<string>("Default")
   const [flipCmap, setFlipCmap] = useState<boolean>(false)
@@ -184,8 +186,6 @@ const Navbar = React.memo(function Navbar(){
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-
-
         <Select value={variable} onValueChange={e=>{setVariable(e); setAnimate(false)}}>
           <SelectTrigger className="w-full max-w-[50vw] md:w-[180px] md:max-w-none md:static md:transform-none absolute left-0 top-10 z-10">
             <SelectValue defaultValue={variable} placeholder="Select a variable" />
@@ -199,6 +199,7 @@ const Navbar = React.memo(function Navbar(){
             </SelectGroup>
           </SelectContent>
         </Select>
+        {plotOn && <Button onClick={()=>setResetCamera(!resetCamera)}>Reset Camera</Button>}
       
       {!isFlat && plotOn && <PlotTweaker/>}
       {plotOn && !isFlat && <PlotLineButton />}
