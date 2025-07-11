@@ -6,107 +6,104 @@ import { useShallow } from 'zustand/shallow'
 import {instanceVert} from '@/components/textures/shaders/'
 
 interface pointSetters{
-  setPointID:React.Dispatch<React.SetStateAction<number>>,
+  setPointID:React.Dispatch<React.SetStateAction<Record<string,number>>>,
   setPointLoc:React.Dispatch<React.SetStateAction<number[]>>,
   setShowPointInfo:React.Dispatch<React.SetStateAction<boolean>>,
 }
 
-function PlotPoints({ points, pointSetters, scalers }: { points: THREE.Vector3[]; pointSetters:pointSetters; scalers:{xScale:number,yScale:number} }) {
-const ref = useRef<THREE.InstancedMesh | null>(null);
-const count = points.length;
-const lastID = useRef<number | null>(null);
+function PlotPoints({ points, tsID, pointSetters, scalers }: { points: THREE.Vector3[]; tsID: string, pointSetters:pointSetters; scalers:{xScale:number,yScale:number} }) {
+  const ref = useRef<THREE.InstancedMesh | null>(null);
+  const count = points.length;
+  const lastID = useRef<number | null>(null);
+  const [_reRender,setreRender] = useState<boolean>(false);
+  const {setPointID, setPointLoc,setShowPointInfo} = pointSetters;
+  const [zoom,setZoom] = useState<number>(1);
+  const {pointColor, pointSize, showPoints} = usePlotStore(useShallow(state => ({pointColor: state.pointColor, pointSize: state.linePointSize, showPoints: state.showPoints})))
+  const {xScale, yScale} = scalers;
 
-const [_reRender,setreRender] = useState<boolean>(false);
-const {setPointID, setPointLoc,setShowPointInfo} = pointSetters;
-const [zoom,setZoom] = useState<number>(1);
-const {pointColor, pointSize} = usePlotStore(useShallow(state => ({pointColor: state.pointColor, pointSize: state.linePointSize})))
-const {xScale, yScale} = scalers;
+  const geometry = useMemo(() => new THREE.SphereGeometry(pointSize), [pointSize])
+  const material = useMemo(()=> new THREE.MeshBasicMaterial({color:pointColor}),[pointColor])
 
-const geometry = useMemo(() => new THREE.SphereGeometry(pointSize), [pointSize])
-const material = useMemo(()=> new THREE.MeshBasicMaterial({color:pointColor}),[pointColor])
-
-useEffect(() => {
-  if (ref.current){
-    const dummy = new THREE.Object3D()
-    for (let i = 0 ; i< count; i++){
-      const position = points[i].toArray()
-      dummy.position.set(position[0]*(xScale/2), position[1]*yScale, 1)
-      // Apply both zoom scaling and data scaling to the instance matrix
-      dummy.scale.set(pointSize/zoom, pointSize/zoom, pointSize/zoom)
-      dummy.updateMatrix()
-      ref.current.setMatrixAt(i, dummy.matrix)
-    }
-    ref.current.instanceMatrix.needsUpdate = true
-  }
-}, [points, zoom, geometry, material, xScale, yScale, pointSize]) // Add xScale, yScale as dependencies
-
-useFrame(({camera})=>{
-  if (camera.zoom !== zoom){
-    setZoom(camera.zoom)
-  }
-})
-
-function scalePoint(e: any) {
-  if (ref.current) {
-    const thisID = e.instanceId;
-    const dummy = new THREE.Object3D();
-    const matrix = new THREE.Matrix4();
-    const position = new THREE.Vector3();
-    if (thisID != lastID.current && lastID.current){ //Revert last big point to small
-      ref.current.getMatrixAt(lastID.current, matrix);
-      position.setFromMatrixPosition(matrix)
-      dummy.scale.set(pointSize/zoom, pointSize/zoom, pointSize/zoom)
-      dummy.position.copy(position)
-      dummy.updateMatrix()
-      ref.current.setMatrixAt(lastID.current,dummy.matrix)
-    }
-    lastID.current = thisID;
-    ref.current.getMatrixAt(thisID, matrix);
-    position.setFromMatrixPosition(matrix);
-    // Apply hover scale with data scaling
-    dummy.scale.set(3 * pointSize/zoom, 3 * pointSize/zoom, 3/zoom);
-    dummy.position.copy(position);
-    dummy.updateMatrix();
-    ref.current.setMatrixAt(e.instanceId, dummy.matrix);
-    ref.current.instanceMatrix.needsUpdate = true;
-    setreRender((x) => !x);
-    setPointID(e.instanceId)
-    setPointLoc([e.clientX,e.clientY])
-    setShowPointInfo(true)
-
-  }
-}
-
-function restorePoint(e: any){
-  const exitID = e.instanceId;
-  if (ref.current){
-    const dummy = new THREE.Object3D();
-    const matrix = new THREE.Matrix4()
-    const position = new THREE.Vector3()
-    if (lastID.current){
-      ref.current.getMatrixAt(exitID,matrix)
-      position.setFromMatrixPosition(matrix)
-      // Restore normal scale with data scaling
-      dummy.scale.set(pointSize/zoom, pointSize/zoom, pointSize/zoom)
-      dummy.position.copy(position)
-      dummy.updateMatrix()
-      ref.current.setMatrixAt(exitID,dummy.matrix)
+  useEffect(() => {
+    if (ref.current){
+      const dummy = new THREE.Object3D()
+      for (let i = 0 ; i< count; i++){
+        const position = points[i].toArray()
+        dummy.position.set(position[0]*(xScale/2), position[1]*yScale, 1)
+        // Apply both zoom scaling and data scaling to the instance matrix
+        dummy.scale.set(pointSize/zoom, pointSize/zoom, pointSize/zoom)
+        dummy.updateMatrix()
+        ref.current.setMatrixAt(i, dummy.matrix)
+      }
       ref.current.instanceMatrix.needsUpdate = true
-      setreRender(x=>!x)
-      const check = exitID == lastID.current;
-      setShowPointInfo(check ? false : true)
     }
-    
-  }
-}
+  }, [points, zoom, geometry, material, xScale, yScale, pointSize]) // Add xScale, yScale as dependencies
 
-return (
-  <>
-  <mesh position={[0, 0, 5]} onPointerEnter={scalePoint} onPointerLeave={restorePoint}>
-    <instancedMesh ref={ref} args={[geometry, material, count]} />
-  </mesh>
-  </>
-  )
-}
+  useFrame(({camera})=>{
+    if (camera.zoom !== zoom){
+      setZoom(camera.zoom)
+    }
+  })
+
+  function scalePoint(e: any) {
+    if (ref.current) {
+      const thisID = e.instanceId;
+      const dummy = new THREE.Object3D();
+      const matrix = new THREE.Matrix4();
+      const position = new THREE.Vector3();
+      if (thisID != lastID.current && lastID.current){ //Revert last big point to small
+        ref.current.getMatrixAt(lastID.current, matrix);
+        position.setFromMatrixPosition(matrix)
+        dummy.scale.set(pointSize/zoom, pointSize/zoom, pointSize/zoom)
+        dummy.position.copy(position)
+        dummy.updateMatrix()
+        ref.current.setMatrixAt(lastID.current,dummy.matrix)
+      }
+      lastID.current = thisID;
+      ref.current.getMatrixAt(thisID, matrix);
+      position.setFromMatrixPosition(matrix);
+      // Apply hover scale with data scaling
+      dummy.scale.set(3 * pointSize/zoom, 3 * pointSize/zoom, 3/zoom);
+      dummy.position.copy(position);
+      dummy.updateMatrix();
+      ref.current.setMatrixAt(e.instanceId, dummy.matrix);
+      ref.current.instanceMatrix.needsUpdate = true;
+      setreRender((x) => !x);
+      setPointID({[tsID] : e.instanceId})
+      setPointLoc([e.clientX,e.clientY])
+      setShowPointInfo(true)
+    }
+  }
+
+  function restorePoint(e: any){
+    const exitID = e.instanceId;
+    if (ref.current){
+      const dummy = new THREE.Object3D();
+      const matrix = new THREE.Matrix4()
+      const position = new THREE.Vector3()
+      if (lastID.current){
+        ref.current.getMatrixAt(exitID,matrix)
+        position.setFromMatrixPosition(matrix)
+        // Restore normal scale with data scaling
+        dummy.scale.set(pointSize/zoom, pointSize/zoom, pointSize/zoom)
+        dummy.position.copy(position)
+        dummy.updateMatrix()
+        ref.current.setMatrixAt(exitID,dummy.matrix)
+        ref.current.instanceMatrix.needsUpdate = true
+        setreRender(x=>!x)
+        const check = exitID == lastID.current;
+        setShowPointInfo(check ? false : true)
+      }
+    }
+  }
+
+  return (
+    <>
+    <mesh position={[0, 0, 5]} onPointerEnter={scalePoint} onPointerLeave={restorePoint}>
+      <instancedMesh ref={ref} args={[geometry, material, count]} />
+    </mesh>
+    </>
+    )
+  }
 
 export {PlotPoints}

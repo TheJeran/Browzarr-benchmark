@@ -1,12 +1,13 @@
 "use client";
 
-import React, {useMemo} from 'react'
+import React, {useEffect, useMemo, useRef, useState} from 'react'
 import * as THREE from 'three'
 import { usePlotStore, useGlobalStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
 import vertexShader from '@/components/textures/shaders/thickLineVert.glsl'
 import { PlotPoints } from './PlotPoints';
 import { useThree } from '@react-three/fiber';
+import { invalidate } from '@react-three/fiber';
 
 function linspace(start: number, stop: number, num: number): number[] {
     const step = (stop - start) / (num - 1);
@@ -14,7 +15,7 @@ function linspace(start: number, stop: number, num: number): number[] {
   }
 
 interface pointSetters{
-  setPointID:React.Dispatch<React.SetStateAction<number>>,
+  setPointID:React.Dispatch<React.SetStateAction<Record<string, number>>>,
   setPointLoc:React.Dispatch<React.SetStateAction<number[]>>,
   setShowPointInfo:React.Dispatch<React.SetStateAction<boolean>>,
 }
@@ -36,21 +37,24 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
     lineColor: state.lineColor,
 		lineResolution: state.lineResolution
   })))
+  const compCache = useRef<string[]> ([]) //Store ids of already calculated spots.
+  const [geometries, setGeometries] = useState<THREE.BufferGeometry[] | null>(null)
+  const [instancePoints, setInstancePoints] = useState<THREE.Vector3[][] | null>(null)
+
 	const {camera} = useThree()
-	const colorItem = useMemo(()=>new THREE.Color(lineColor),[lineColor])
   const {maxVal, minVal} = valueScales
-	const material = new THREE.ShaderMaterial({
+
+	const material = useMemo(()=>new THREE.ShaderMaterial({
                 glslVersion: THREE.GLSL3,
                 uniforms: {
                     cmap:{value: colormap},
-                    width: { value: lineWidth},
                     xScale: {value: xScale},
                     yScale: {value: yScale},
                     aspect: {value : window.innerWidth / window.innerHeight},
                     thickness:{value:lineWidth},
                     miter: {value: 1},
 										useLineColor: {value: useLineColor},
-										lineColor: {value: colorItem},
+										lineColor: {value: new THREE.Color(lineColor)},
 										zoom: {value: camera.zoom}
                 },
                 vertexShader,
@@ -68,85 +72,102 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
                 }
                 `,
                 depthWrite: false,
-                });
+                }),[colormap,lineWidth,xScale,yScale,window.innerWidth, window.innerHeight, useLineColor, lineColor, camera.zoom])
 
-	const normed = useMemo(()=>timeSeries.map((i) => (i - minVal) / (maxVal - minVal)),[timeSeries])
-	const points = useMemo(()=>{
-		const viewWidth = window.innerWidth;
-		const viewHeight = window.innerHeight - height
-		const size = timeSeries.length;
-		const xCoords = linspace(-viewWidth,viewWidth,size)
-		const points = normed.map((val,idx) => new THREE.Vector3(xCoords[idx], (val-.5)*viewHeight, 5)); 
-		return points
-	},[timeSeries, height])
-
-	const linePoints = useMemo(()=>{
-		const curve = new THREE.CatmullRomCurve3(points);
-		return curve.getPoints(points.length*lineResolution-1)
-	},[points, lineResolution])
-
-  const normedInterp = useMemo(() => {
-    if (normed.length < 2) return [];
-    const interp: number[] = [];
-    for (let i = 0; i < linePoints.length; i++) {
-        const t = i / (linePoints.length - 1);
-        const idx = t * (normed.length - 1);
-        const idx0 = Math.floor(idx);
-        const idx1 = Math.min(normed.length - 1, Math.ceil(idx));
-        const frac = idx - idx0;
-        interp.push(normed[idx0] * (1 - frac) + normed[idx1] * frac);
+  const viewWidth = useMemo(()=>window.innerWidth,[window.innerWidth])
+  const viewHeight = useMemo(()=>window.innerHeight - height, [window.innerWidth, height])
+  useEffect(()=>{
+    if (Object.keys(timeSeries).length <= 1){
+      setGeometries(null);
+      setInstancePoints(null)
+      compCache.current = [] //Reset cache when timeSeries length shortens
     }
-    return interp;
-}, [normed, linePoints.length]);
-  const geometry = useMemo(() => {			
-        if (linePoints.length < 2) return new THREE.BufferGeometry(); // Need at least 2 points
-        // Step 2: Duplicate vertices and compute attributes
-        const numPoints = linePoints.length;
-        const positions = [];
-        const directions = [];
-        const previous = [];
-        const next = [];
-        const normValues = []
-        const indices = [];
+    for (const [key, tempTS] of Object.entries(timeSeries) as [string, number[]][]) {
+      if (compCache.current.includes(key)){
+        continue;
+      }
+      compCache.current.push(key)
+      const normed = tempTS.map((i) => (i - minVal) / (maxVal - minVal))
+      const size = tempTS.length;
+      const xCoords = linspace(-viewWidth,viewWidth,size)
+      const points = normed.map((val,idx) => new THREE.Vector3(xCoords[idx], (val-.5)*viewHeight, 5));
 
-        for (let i = 0; i < numPoints; i++) {
-            const point = linePoints[i];
-            const prevPoint = linePoints[Math.max(0, i - 1)];
-            const nextPoint = linePoints[Math.min(numPoints - 1, i + 1)];
-            // Duplicate vertices
-            positions.push(...point, ...point); // [x, y, z, x, y, z]
-            directions.push(1.0, -1.0);
-            previous.push(...prevPoint, ...prevPoint);
-            next.push(...nextPoint, ...nextPoint);
-            normValues.push(normedInterp[i], normedInterp[i]);
-        }
+      const curve = new THREE.CatmullRomCurve3(points);
+      const linePoints = curve.getPoints(points.length*lineResolution-1)
+      const interp: number[] = [];
+      for (let i = 0; i < linePoints.length; i++) {
+          const t = i / (linePoints.length - 1);
+          const idx = t * (normed.length - 1);
+          const idx0 = Math.floor(idx);
+          const idx1 = Math.min(normed.length - 1, Math.ceil(idx));
+          const frac = idx - idx0;
+          interp.push(normed[idx0] * (1 - frac) + normed[idx1] * frac);
+      }
+      const numPoints = linePoints.length;
+
+      //Create Geometry
+      const positions = [];
+      const directions = [];
+      const previous = [];
+      const next = [];
+      const normValues = []
+      const indices = [];
+
+      for (let i = 0; i < numPoints; i++) {
+          const point = linePoints[i];
+          const prevPoint = linePoints[Math.max(0, i - 1)];
+          const nextPoint = linePoints[Math.min(numPoints - 1, i + 1)];
+          // Duplicate vertices
+          positions.push(...point, ...point); // [x, y, z, x, y, z]
+          directions.push(1.0, -1.0);
+          previous.push(...prevPoint, ...prevPoint);
+          next.push(...nextPoint, ...nextPoint);
+          normValues.push(interp[i], interp[i]);
+      }
 
 
-        // Step 3: Create triangle indices
-        for (let i = 0; i < numPoints - 1; i++) {
-            const i0 = i * 2;     // First vertex of current point (+1)
-            const i1 = i0 + 1;    // Second vertex of current point (-1)
-            const i2 = i0 + 2;    // First vertex of next point (+1)
-            const i3 = i0 + 3;    // Second vertex of next point (-1)
-            indices.push(i0, i1, i2); // First triangle
-            indices.push(i1, i3, i2); // Second triangle
-        }
+      // Create triangle indices
+      for (let i = 0; i < numPoints - 1; i++) {
+          const i0 = i * 2;     // First vertex of current point (+1)
+          const i1 = i0 + 1;    // Second vertex of current point (-1)
+          const i2 = i0 + 2;    // First vertex of next point (+1)
+          const i3 = i0 + 3;    // Second vertex of next point (-1)
+          indices.push(i0, i1, i2); // First triangle
+          indices.push(i1, i3, i2); // Second triangle
+      }
 
-        // Step 4: Create geometry
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        geometry.setAttribute('direction', new THREE.Float32BufferAttribute(directions, 1));
-        geometry.setAttribute('previous', new THREE.Float32BufferAttribute(previous, 3));
-        geometry.setAttribute('next', new THREE.Float32BufferAttribute(next, 3));
-        geometry.setAttribute('normed', new THREE.Float32BufferAttribute(normValues, 1));
-        geometry.setIndex(new THREE.Uint16BufferAttribute(indices, 1));
-        return geometry
-    },[linePoints])
+      // Create geometry
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setAttribute('direction', new THREE.Float32BufferAttribute(directions, 1));
+      geometry.setAttribute('previous', new THREE.Float32BufferAttribute(previous, 3));
+      geometry.setAttribute('next', new THREE.Float32BufferAttribute(next, 3));
+      geometry.setAttribute('normed', new THREE.Float32BufferAttribute(normValues, 1));
+      geometry.setIndex(new THREE.Uint16BufferAttribute(indices, 1));
+      setGeometries(prev => (prev ? [...prev, geometry] : [geometry]));
+      setInstancePoints(prev => (prev ? [...prev, points] : [points]));
+  }},[timeSeries])
+
+	// const linePoints = useMemo(()=>{
+	// 	const curve = new THREE.CatmullRomCurve3(points);
+	// 	return curve.getPoints(points.length*lineResolution-1)
+	// },[points, lineResolution])
+
+  useEffect(()=>{
+    geometries?.map((val)=>console.log(val))
+  },[lineResolution])
+
+  useEffect(()=>{
+    invalidate()
+  },[showPoints])
   return (
     <>
 		<group>
-			{geometry && <mesh geometry={geometry} material={material} />}
-			{showPoints && <PlotPoints points={points} pointSetters={pointSetters} scalers={{xScale,yScale}}/>}
+      {geometries?.map((val, idx)=>(
+        <mesh key={`lineMesh_${idx}`} geometry={val} material={material} />))}
+      {showPoints && instancePoints?.map((val, idx)=> 
+        <PlotPoints key={`plotPoints_${idx}`} points={val} tsID={compCache.current[idx]} pointSetters={pointSetters} scalers={{xScale,yScale}}/>
+      )}
 		</group>
 		</>
   )

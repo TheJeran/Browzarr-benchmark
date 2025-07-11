@@ -92,7 +92,7 @@ export function LandingHome() {
     {variable === "Default" && <VariableScroller />}
     {variable != "Default" && canvasWidth < windowWidth-15 && <Plot values={plotObj} setShowLoading={setShowLoading} />}
     {metadata && <Metadata data={metadata} /> }
-    {timeSeries.length > 2 && <PlotArea />}
+    {Object.keys(timeSeries).length >= 1 && <PlotArea />}
     </>
   );
 }

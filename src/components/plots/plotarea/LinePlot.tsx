@@ -9,7 +9,7 @@ import { useShallow } from 'zustand/shallow'
 import PlotLineOptions from '@/components/ui/PlotLineOptions'
 
 interface pointInfo{
-  pointID:number,
+  pointID:Record<string,number>,
   pointLoc:number[],
   showPointInfo:boolean
   plotUnits:string
@@ -27,9 +27,13 @@ function PointInfo({pointID,pointLoc,showPointInfo, plotUnits}:pointInfo){
       timeSeries:state.timeSeries,
     }))
   );
-
-  const pointY = timeSeries[pointID];
-  const pointX = dimArrays[plotDim][pointID];
+  let pointY = 0;
+  let pointX = 0;
+  if (Object.entries(pointID).length > 0 && Object.entries(timeSeries).length > 0){
+    const [tsID, idx] = Object.entries(pointID)[0];
+    pointY = timeSeries[tsID][idx];
+    pointX = dimArrays[plotDim][idx];
+  }
   const [divX,divY] = pointLoc;
   const [show,setShow] = useState(false);
 
@@ -125,7 +129,7 @@ function PointCoords(){
 }
 
 export function PlotArea() {
-  const [pointID, setPointID] = useState<number>(0);
+  const [pointID, setPointID] = useState<Record<string, number>>({});
   const [pointLoc, setPointLoc] = useState<number[]>([0,0])
   const [showPointInfo,setShowPointInfo] = useState<boolean>(false)
   const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.25)))

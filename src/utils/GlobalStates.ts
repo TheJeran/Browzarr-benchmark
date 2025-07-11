@@ -19,7 +19,7 @@ type StoreState = {
   shape: THREE.Vector3;
   valueScales: { maxVal: number; minVal: number };
   colormap: THREE.DataTexture;
-  timeSeries: number[];
+  timeSeries: Record<string, any>;
   strides: number[];
   showLoading: boolean;
   metadata: Record<string, any> | null;
@@ -41,7 +41,8 @@ type StoreState = {
   setShape: (shape: THREE.Vector3) => void;
   setValueScales: (valueScales: { maxVal: number; minVal: number }) => void;
   setColormap: (colormap: THREE.DataTexture) => void;
-  setTimeSeries: (timeSeries: number[]) => void;
+  setTimeSeries: (timeSeries: Record<string, number[]>) => void;
+  updateTimeSeries: (newEntries: Record<string, number[]>) => void;
   setStrides: (strides: number[]) => void;
   setShowLoading: (showLoading: boolean) => void;
   setMetadata: (metadata: object | null) => void;
@@ -62,11 +63,11 @@ type StoreState = {
 
 };
 
-export const useGlobalStore = create<StoreState>((set) => ({
+export const useGlobalStore = create<StoreState>((set, get) => ({
   shape: new THREE.Vector3(2, 2, 2),
   valueScales: { maxVal: 1, minVal: -1 },
   colormap: GetColorMapTexture(),
-  timeSeries: [0],
+  timeSeries: {},
   strides: [10368,144,1],
   showLoading: false,
   metadata: null,
@@ -89,6 +90,13 @@ export const useGlobalStore = create<StoreState>((set) => ({
   setValueScales: (valueScales) => set({ valueScales }),
   setColormap: (colormap) => set({ colormap }),
   setTimeSeries: (timeSeries) => set({ timeSeries }),
+  updateTimeSeries: (newEntries) =>
+    set({
+      timeSeries: {
+        ...get().timeSeries,
+        ...newEntries,
+      },
+    }),
   setStrides: (strides) => set({ strides }),
   setShowLoading: (showLoading) => set({ showLoading }),
   setMetadata: (metadata) => set({ metadata }),

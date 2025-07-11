@@ -85,6 +85,13 @@ export function parseUVCoords({normal,uv}:{normal:THREE.Vector3,uv:THREE.Vector2
   }
 }
 
+export function getUnitAxis(vec: THREE.Vector3) {
+  if (Math.abs(vec.x) === 1) return 2;
+  if (Math.abs(vec.y) === 1) return 1;
+  if (Math.abs(vec.z) === 1) return 0;
+  return null;
+}
+
 export function ArrayMinMax(array:number[]){
   let minVal = Infinity;
   let maxVal = -Infinity;

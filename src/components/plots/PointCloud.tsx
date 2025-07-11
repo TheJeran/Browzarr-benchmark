@@ -1,11 +1,11 @@
 
 import * as THREE from 'three'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { pointFrag, pointVert } from '@/components/textures/shaders'
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
-import { parseUVCoords } from '@/utils/HelperFuncs';
+import { parseUVCoords, getUnitAxis } from '@/utils/HelperFuncs';
 import { useFrame } from '@react-three/fiber';
 
 interface PCProps {
@@ -25,6 +25,7 @@ interface pointSetters{
   setDimWidth: React.Dispatch<React.SetStateAction<number>>;
 }
 
+
 const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProps, ZarrDS: ZarrDataset, setters:pointSetters}) =>{
   const {width, height, depth} = dimensions;
   const {setPointID, setStride, setDimWidth} = setters;
@@ -32,15 +33,18 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
 
   const aspectRatio = width/height;
   const depthRatio = depth/height;
-  const {dimArrays, dimUnits, dimNames, strides, setPlotDim, setTimeSeries, setDimCoords} = useGlobalStore(useShallow(state => ({
+  const {dimArrays, dimUnits, dimNames, strides, setPlotDim, setTimeSeries, updateTimeSeries, setDimCoords} = useGlobalStore(useShallow(state => ({
     dimArrays: state.dimArrays,
     dimUnits: state.dimUnits,
     dimNames: state.dimNames,
     strides: state.strides,
     setPlotDim: state.setPlotDim,
     setTimeSeries: state.setTimeSeries,
+    updateTimeSeries: state.updateTimeSeries,
     setDimCoords: state.setDimCoords
   })))
+
+  const lastNormal = useRef<number | null> ( null)
 
   const timeScale = usePlotStore(state=> state.timeScale)
 
@@ -50,23 +54,27 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
       }
       const uv = event.uv!;
       const normal = event.normal!;
-
-
+      const dimAxis = getUnitAxis(normal);
+      if (dimAxis != lastNormal.current){
+        setTimeSeries({}); //Clear timeseries if new axis
+      }
+      lastNormal.current = dimAxis;
+      
       if(ZarrDS){
-        ZarrDS.GetTimeSeries({uv,normal}).then((e)=> setTimeSeries(e))
+        const tempTS = ZarrDS.GetTimeSeries({uv,normal})
         const plotDim = (normal.toArray()).map((val, idx) => {
           if (Math.abs(val) > 0) {
             return idx;
           }
           return null;}).filter(idx => idx !== null);
         setPlotDim(2-plotDim[0]) //I think this 2 is only if there are 3-dims. Need to rework the logic
-        
         const coordUV = parseUVCoords({normal:normal,uv:uv})
         let dimCoords = coordUV.map((val,idx)=>val ? dimArrays[idx][Math.round(val*dimArrays[idx].length-.5)] : null)
-        console.log(dimCoords)
         const thisDimNames = dimNames.filter((_,idx)=> dimCoords[idx] !== null)
         const thisDimUnits = dimUnits.filter((_,idx)=> dimCoords[idx] !== null)
         dimCoords = dimCoords.filter(val => val !== null)
+        const tsID = `${dimCoords[0]}_${dimCoords[1]}`
+        updateTimeSeries({ [tsID] : tempTS})
         const dimObj = {
           first:{
             name:thisDimNames[0],

@@ -1,7 +1,7 @@
 import * as THREE from 'three'
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU';
-import { parseUVCoords } from '@/utils/HelperFuncs';
+import { parseUVCoords, getUnitAxis } from '@/utils/HelperFuncs';
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 
@@ -9,11 +9,13 @@ import { useShallow } from 'zustand/shallow';
 export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
 
   const [clickPoint, setClickPoint] = useState<THREE.Vector3 | null>(null);
-  const {setTimeSeries,setPlotDim,setDimCoords} = useGlobalStore(
+  const {setTimeSeries,setPlotDim,setDimCoords, updateTimeSeries} = useGlobalStore(
     useShallow(state=>({
       setTimeSeries:state.setTimeSeries, 
       setPlotDim:state.setPlotDim, 
-      setDimCoords:state.setDimCoords})))
+      setDimCoords:state.setDimCoords,
+      updateTimeSeries: state.updateTimeSeries
+    })))
 
   const {shape,dimArrays,dimNames,dimUnits} = useGlobalStore(
     useShallow(state=>({
@@ -24,14 +26,20 @@ export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
     })))
   
   const selectTS = usePlotStore(state => state.selectTS)
+  const lastNormal = useRef<number | null> ( null)
 
   function HandleTimeSeries(event: THREE.Intersection){
     const point = event.point;
     const uv = event.uv!;
     const normal = event.normal!;
-
+    const dimAxis = getUnitAxis(normal);
+    if (dimAxis != lastNormal.current){
+      setTimeSeries({}); //Clear timeseries if new axis
+    }
+    lastNormal.current = dimAxis;
+    
     if(ZarrDS){
-      ZarrDS.GetTimeSeries({uv,normal}).then((e)=> setTimeSeries(e))
+      const tempTS = ZarrDS.GetTimeSeries({uv,normal})
       const plotDim = (normal.toArray()).map((val, idx) => {
         if (Math.abs(val) > 0) {
           return idx;
@@ -44,6 +52,8 @@ export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
       const thisDimNames = dimNames.filter((_,idx)=> dimCoords[idx] !== null)
       const thisDimUnits = dimUnits.filter((_,idx)=> dimCoords[idx] !== null)
       dimCoords = dimCoords.filter(val => val !== null)
+      const tsID = `${dimCoords[0]}_${dimCoords[1]}`
+      updateTimeSeries({ [tsID] : tempTS})
       const dimObj = {
         first:{
           name:thisDimNames[0],
