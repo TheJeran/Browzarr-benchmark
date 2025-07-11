@@ -167,7 +167,7 @@ export class ZarrDataset{
 		return [dimArr,dimMetas, this.dimNames];
 	}
 
-	async GetTimeSeries(TimeSeriesInfo:TimeSeriesInfo){
+	GetTimeSeries(TimeSeriesInfo:TimeSeriesInfo){
 		const {uv,normal} = TimeSeriesInfo
 		if (!this.cache.has(this.variable) && this.chunkIDs.length == 0){
 			return [0]

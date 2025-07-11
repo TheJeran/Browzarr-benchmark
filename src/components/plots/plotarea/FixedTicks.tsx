@@ -60,7 +60,9 @@ export function FixedTicks({
     if (xDimArray){
       const isBig = xDimArray.every(item => typeof item === "bigint");
       if (isBig){
-        const unit = coords ? parseTimeUnit(coords.plot.units) : 1;
+        const check = Object.keys(coords).length > 0;
+        const firstID = check ? Object.keys(coords)[0] : null
+        const unit = firstID ? parseTimeUnit(coords[firstID].plot.units) : 1;
         const timeStrings = []
         for (let i = 0 ; i < xDimArray.length; i++){
           const timeStamp = Number(xDimArray[i])*unit

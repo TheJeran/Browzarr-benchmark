@@ -26,10 +26,6 @@
 }
 
 .plot-coords{
-    position: absolute;
-    max-width:355px;
-    bottom:50%;
-    left:2%;
     padding: 0px 5px;
     background-color:var(--background-plot);
     border-radius: 5px;
@@ -41,6 +37,13 @@
     align-items: center;
     gap: 8px;
     color: var(--text-plot);
+}
+
+.coord-container{
+    position: absolute;
+    max-width:355px;
+    bottom:50%;
+    left:2%;
 }
 
 @media screen and (max-width: 480px) {

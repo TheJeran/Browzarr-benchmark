@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber'
 import { parseLoc } from '@/utils/HelperFuncs'
-import { PlotLine, FixedTicks, ThickLine } from '@/components/plots'
+import { FixedTicks, ThickLine } from '@/components/plots'
 import {  useEffect, useRef, useState } from 'react'
 import { ResizeBar, YScaler, XScaler, ShowLinePlot } from '@/components/ui'
 import './LinePlot.css'
@@ -9,7 +9,7 @@ import { useShallow } from 'zustand/shallow'
 import PlotLineOptions from '@/components/ui/PlotLineOptions'
 
 interface pointInfo{
-  pointID:number,
+  pointID:Record<string,number>,
   pointLoc:number[],
   showPointInfo:boolean
   plotUnits:string
@@ -27,9 +27,13 @@ function PointInfo({pointID,pointLoc,showPointInfo, plotUnits}:pointInfo){
       timeSeries:state.timeSeries,
     }))
   );
-
-  const pointY = timeSeries[pointID];
-  const pointX = dimArrays[plotDim][pointID];
+  let pointY = 0;
+  let pointX = 0;
+  if (Object.entries(pointID).length > 0 && Object.entries(timeSeries).length > 0){
+    const [tsID, idx] = Object.entries(pointID)[0];
+    pointY = timeSeries[tsID][idx];
+    pointX = dimArrays[plotDim][idx];
+  }
   const [divX,divY] = pointLoc;
   const [show,setShow] = useState(false);
 
@@ -97,35 +101,39 @@ function PointCoords(){
       document.removeEventListener('mouseup', handleUp);
     };
   }, [moving]);
-
-
-
   return(
     <>
-    { //Only show coords when coords exist
-      coords && coords.first.name !== 'Default' && 
-      <div className='plot-coords'
-        style={{
+    <div className='coord-container'
+      style={{
           left:`${xy[0]}px`,
           bottom:`${xy[1]}px`
         }}
+    >
+    { //Only show coords when coords exist
+      Object.keys(coords).length > 0 && 
+      Object.keys(coords).map((val,idx)=>(
+        <div className='plot-coords'
+        
         onPointerDown={handleDown}
         onPointerMove={handleMove}
-        onPointerUp={()=>setMoving(false)}     
+        onPointerUp={()=>setMoving(false)}  
+        key={val}   
       >
-        <b>{`${coords['first'].name}: `}</b>
-        {`${parseLoc(coords['first'].loc,coords['first'].units)}`}
+        <b>{`${coords[val]['first'].name}: `}</b>
+        {`${parseLoc(coords[val]['first'].loc,coords[val]['first'].units)}`}
         <br/>
-        <b>{`${coords['second'].name}: `}</b>
-        {`${parseLoc(coords['second'].loc,coords['second'].units)}`}
+        <b>{`${coords[val]['second'].name}: `}</b>
+        {`${parseLoc(coords[val]['second'].loc,coords[val]['second'].units)}`}
       </div>
-    } 
+      ))
+      }
+      </div>
     </>
   )
 }
 
 export function PlotArea() {
-  const [pointID, setPointID] = useState<number>(0);
+  const [pointID, setPointID] = useState<Record<string, number>>({});
   const [pointLoc, setPointLoc] = useState<number[]>([0,0])
   const [showPointInfo,setShowPointInfo] = useState<boolean>(false)
   const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.25)))
@@ -171,17 +179,16 @@ export function PlotArea() {
       {state && (
         <div className='plot-canvas'>
           <PlotLineOptions/>
-          <PointInfo pointID={pointID} pointLoc={pointLoc} showPointInfo={showPointInfo} plotUnits={plotUnits}/>
+          {showPointInfo && <PointInfo pointID={pointID} pointLoc={pointLoc} showPointInfo={showPointInfo} plotUnits={plotUnits}/>}
           <ResizeBar height={height} setHeight={setHeight}/> 
           <YScaler scale={yScale} setScale={setYScale} />
           <XScaler scale={xScale} setScale={setXScale} />
           <Canvas
             orthographic
-            camera={{ position: [0, 0, 40] }}
+            camera={{ position: [0, 0, 100] }}
             frameloop="demand"
           >
             <ThickLine height={height} yScale={yScale} pointSetters={pointSetters} xScale={xScale}/>
-            {/* <PlotLine height={height} pointSetters={pointSetters} yScale={yScale} xScale={xScale}/> */}
             <FixedTicks height={height} yScale={yScale} xScale={xScale}/>
           </Canvas>
           <PointCoords/>

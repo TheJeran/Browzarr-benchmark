@@ -3,7 +3,6 @@ attribute vec3 next;
 attribute vec3 previous;
 attribute float normed;
 
-
 varying float vNormed;
 
 uniform float zoom;

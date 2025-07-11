@@ -24,10 +24,10 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
         colormap: state.colormap,
         flipY: state.flipY
     })))
-    const {setTimeSeries,setPlotDim,setDimCoords} = useGlobalStore(useShallow(state=>({
-      setTimeSeries:state.setTimeSeries, 
+    const {setPlotDim,updateDimCoords, updateTimeSeries} = useGlobalStore(useShallow(state=>({
       setPlotDim:state.setPlotDim, 
-      setDimCoords:state.setDimCoords
+      updateDimCoords:state.updateDimCoords,
+      updateTimeSeries: state.updateTimeSeries
     })))
 
     const {dimArrays,dimNames,dimUnits} = useGlobalStore(useShallow(state=>({
@@ -45,23 +45,19 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
         selectTS: state.selectTS
     })))
 
-    const [highlightPos, setHighlightPos] = useState<THREE.Vector2 | null>(null)
-    const selectBounds = useMemo(()=>{
-        const {height, width} = texture?.source.data
-        if (highlightPos){
-            const widthID = Math.round(highlightPos.x*width)+.5;
-            const heightID = Math.round(highlightPos.y*height)+.5;
-            const delX = 1/width;
-            const delY = 1/height;
-            const xBounds = [widthID/width-delX/2,widthID/width+delX/2]
-            const yBounds = [heightID/height-delY/2,heightID/height+delY/2]
-            const bounds = new THREE.Vector4(...xBounds, ...yBounds)
-            // console.log(widthID)
-            return bounds
-        }
-        return new THREE.Vector2(width, height)
-    },[texture,highlightPos])
+    const [bounds, setBounds] = useState<THREE.Vector4[]>(new Array(10).fill(new THREE.Vector4(-1 , -1, -1, -1)))
+    const {height, width} = useMemo(()=>texture?.source.data, [texture])
 
+    function addBounds(uv : THREE.Vector2){
+      const widthID = Math.round(uv.x*width)+.5;
+      const heightID = Math.round(uv.y*height)+.5;
+      const delX = 1/width;
+      const delY = 1/height;
+      const xBounds = [widthID/width-delX/2,widthID/width+delX/2]
+      const yBounds = [heightID/height-delY/2,heightID/height+delY/2]
+      const bounds = new THREE.Vector4(...xBounds, ...yBounds)
+      setBounds(prev=> [bounds, ...prev].slice(0,10))
+    }
 
     const [animateProg, setAnimateProg] = useState<number>(0);
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(1, 9), []);
@@ -71,7 +67,7 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
             uniforms: {
                 map: { value: texture },
                 selectTS: {value: selectTS},
-                selectBounds: {value: selectBounds},
+                selectBounds: {value: bounds},
                 cmap:{value: colormap},
                 cOffset:{value: cOffset},
                 cScale: {value: cScale},
@@ -82,7 +78,7 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
             blending: THREE.NormalBlending,
         })
         return shader
-    },[texture, animateProg, colormap, cOffset, cScale, animate, selectBounds, selectTS])
+    },[texture, animateProg, colormap, cOffset, cScale, animate, bounds, selectTS])
 
     useFrame(()=>{
         if (animate){
@@ -101,7 +97,7 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
         const normal = new THREE.Vector3(0,0,1)
     
         if(ZarrDS){
-          ZarrDS.GetTimeSeries({uv,normal}).then((e)=> setTimeSeries(e))
+          const tempTS = ZarrDS.GetTimeSeries({uv,normal})
           const plotDim = (normal.toArray()).map((val, idx) => {
             if (Math.abs(val) > 0) {
               return idx;
@@ -114,6 +110,8 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
           const thisDimNames = dimNames.filter((_,idx)=> dimCoords[idx] !== null)
           const thisDimUnits = dimUnits.filter((_,idx)=> dimCoords[idx] !== null)
           dimCoords = dimCoords.filter(val => val !== null)
+          const tsID = `${dimCoords[0]}_${dimCoords[1]}`
+          updateTimeSeries({ [tsID] : tempTS})
           const dimObj = {
             first:{
               name:thisDimNames[0],
@@ -129,9 +127,9 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
               units:dimUnits[2-plotDim[0]]
             }
           }
-          setDimCoords(dimObj)
+          updateDimCoords({[tsID] : dimObj})
         }
-        setHighlightPos(uv);
+        addBounds(uv);
       }
 
 
