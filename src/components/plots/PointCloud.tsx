@@ -20,7 +20,7 @@ interface dimensionsProps{
 }
 
 interface pointSetters{
-  setPointID: React.Dispatch<React.SetStateAction<number | null>>;
+  setPointIDs: React.Dispatch<React.SetStateAction<number[]>>;
   setStride: React.Dispatch<React.SetStateAction<number>>;
   setDimWidth: React.Dispatch<React.SetStateAction<number>>;
 }
@@ -28,12 +28,12 @@ interface pointSetters{
 
 const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProps, ZarrDS: ZarrDataset, setters:pointSetters}) =>{
   const {width, height, depth} = dimensions;
-  const {setPointID, setStride, setDimWidth} = setters;
+  const {setPointIDs, setStride, setDimWidth} = setters;
   const selectTS = usePlotStore(state => state.selectTS)
 
   const aspectRatio = width/height;
   const depthRatio = depth/height;
-  const {dimArrays, dimUnits, dimNames, strides, setPlotDim, setTimeSeries, updateTimeSeries, setDimCoords} = useGlobalStore(useShallow(state => ({
+  const {dimArrays, dimUnits, dimNames, strides, setPlotDim, setTimeSeries, updateTimeSeries, setDimCoords, updateDimCoords} = useGlobalStore(useShallow(state => ({
     dimArrays: state.dimArrays,
     dimUnits: state.dimUnits,
     dimNames: state.dimNames,
@@ -41,7 +41,8 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
     setPlotDim: state.setPlotDim,
     setTimeSeries: state.setTimeSeries,
     updateTimeSeries: state.updateTimeSeries,
-    setDimCoords: state.setDimCoords
+    setDimCoords: state.setDimCoords,
+    updateDimCoords: state.updateDimCoords
   })))
 
   const lastNormal = useRef<number | null> ( null)
@@ -57,6 +58,8 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
       const dimAxis = getUnitAxis(normal);
       if (dimAxis != lastNormal.current){
         setTimeSeries({}); //Clear timeseries if new axis
+        setDimCoords({});
+        setPointIDs(new Array(10).fill(-1))
       }
       lastNormal.current = dimAxis;
       
@@ -90,8 +93,7 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
             units:dimUnits[2-plotDim[0]]
           }
         }
-        setDimCoords(dimObj)
-
+        updateDimCoords({[tsID] : dimObj})
         const dims = [depth, height, width].filter((_,idx)=> coordUV[idx] != null)
         const dimWidth = [depth, height, width].filter((_,idx)=> coordUV[idx] == null)
         const newUV = coordUV.filter((v)=> v != null)
@@ -101,7 +103,10 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
         const newIdx = uIdx * thisStride[0] + vIdx * thisStride[1]
         const dimStride = strides.filter((_,idx)=> coordUV[idx] == null)
         setDimWidth(dimWidth[0])
-        setPointID(newIdx)
+        setPointIDs(prevItems => {
+              const updated = [newIdx, ...prevItems];
+              return updated.slice(0, 10); // keep only first 10 items
+            })
         setStride(dimStride[0])        
       }
 
@@ -135,7 +140,7 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
 
     const [animateProg, setAnimateProg] = useState<number>(0)
 
-    const [pointID, setPointID] = useState<number | null>(null)
+    const [pointIDs, setPointIDs] = useState<number[]>(new Array(10).fill(-1))
     const [stride, setStride] = useState<number>(1)
     const [dimWidth, setDimWidth] = useState<number>(0);
 
@@ -194,7 +199,7 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
         valueRange: {value: new THREE.Vector2(valueRange[0], valueRange[1])},
         scalePoints:{value: scalePoints},
         scaleIntensity: {value: scaleIntensity},
-        startID: {value : pointID},
+        startIDs: {value : pointIDs},
         stride: {value : stride},
         showTransect: { value: selectTS},
         dimWidth: {value: dimWidth},
@@ -211,7 +216,7 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       blending:THREE.NormalBlending,
       side:THREE.DoubleSide,
     })
-    ),[pointSize, colormap, cOffset, cScale, valueRange, scalePoints, scaleIntensity, pointID, stride, selectTS, animateProg, timeScale, depthRatio, aspectRatio, xRange, yRange, zRange]);
+    ),[pointSize, colormap, cOffset, cScale, valueRange, scalePoints, scaleIntensity, pointIDs, stride, selectTS, animateProg, timeScale, depthRatio, aspectRatio, xRange, yRange, zRange]);
 
     // Animation Funcs
     useFrame(()=>{
@@ -230,7 +235,7 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       <mesh scale={[1,flipY ? -1:1, 1]}>
         <points geometry={geometry} material={shaderMaterial} />
       </mesh>
-      <MappingCube dimensions={{width,height,depth}} ZarrDS={ZarrDS} setters={{setPointID, setStride, setDimWidth}}/>
+      <MappingCube dimensions={{width,height,depth}} ZarrDS={ZarrDS} setters={{setPointIDs, setStride, setDimWidth}}/>
       </>
     );
   }

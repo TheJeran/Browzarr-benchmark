@@ -7,7 +7,7 @@ uniform float pointSize;
 uniform bool scalePoints;
 uniform float scaleIntensity;
 uniform vec2 valueRange;
-uniform int startID;
+uniform int[10] startIDs;
 uniform int stride;
 uniform int dimWidth;
 uniform bool showTransect;
@@ -16,6 +16,22 @@ uniform float animateProg;
 uniform float depthRatio;
 uniform vec4 flatBounds;
 uniform vec2 vertBounds;
+
+bool isValidPoint(){
+    for (int i = 0; i < 10; i++){
+        if (startIDs[i] == -1){
+            return false;
+        }
+        int rePos = gl_VertexID - startIDs[i];
+        bool isValid = rePos % stride == 0;
+        bool secondary = gl_VertexID < (startIDs[i] + dimWidth*stride) && gl_VertexID > startIDs[i];
+        isValid = isValid && secondary;
+        if (isValid){
+            return true;
+        }
+    }
+    return false;
+}
 
 void main() {
     vValue = value/255.;
@@ -30,14 +46,9 @@ void main() {
     float pointScale = pointSize/gl_Position.w;
     pointScale = scalePoints ? pointScale*pow(vValue,scaleIntensity) : pointScale;
 
-    int rePos = gl_VertexID - startID;
-    bool isValid = rePos % stride == 0;
-    bool secondary = gl_VertexID < (startID + dimWidth*stride) && gl_VertexID > startID;
-    isValid = isValid && secondary;
-    isValid = isValid && startID != -1; //This is so nothing is selected when pointID is reset to -1.
+    bool isValid = isValidPoint();
     highlight = isValid ? 1 : 0;
     
-
     if (value == 255. || (pointScale*gl_Position.w < 0.75 && scalePoints)){ //Hide points that are invisible or get too small when scalled
         gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
     }

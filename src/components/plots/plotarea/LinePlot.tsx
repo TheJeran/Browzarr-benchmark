@@ -101,29 +101,33 @@ function PointCoords(){
       document.removeEventListener('mouseup', handleUp);
     };
   }, [moving]);
-
-
-
   return(
     <>
-    { //Only show coords when coords exist
-      coords && coords.first.name !== 'Default' && 
-      <div className='plot-coords'
-        style={{
+    <div className='coord-container'
+      style={{
           left:`${xy[0]}px`,
           bottom:`${xy[1]}px`
         }}
+    >
+    { //Only show coords when coords exist
+      Object.keys(coords).length > 0 && 
+      Object.keys(coords).map((val,idx)=>(
+        <div className='plot-coords'
+        
         onPointerDown={handleDown}
         onPointerMove={handleMove}
-        onPointerUp={()=>setMoving(false)}     
+        onPointerUp={()=>setMoving(false)}  
+        key={val}   
       >
-        <b>{`${coords['first'].name}: `}</b>
-        {`${parseLoc(coords['first'].loc,coords['first'].units)}`}
+        <b>{`${coords[val]['first'].name}: `}</b>
+        {`${parseLoc(coords[val]['first'].loc,coords[val]['first'].units)}`}
         <br/>
-        <b>{`${coords['second'].name}: `}</b>
-        {`${parseLoc(coords['second'].loc,coords['second'].units)}`}
+        <b>{`${coords[val]['second'].name}: `}</b>
+        {`${parseLoc(coords[val]['second'].loc,coords[val]['second'].units)}`}
       </div>
-    } 
+      ))
+      }
+      </div>
     </>
   )
 }
@@ -175,7 +179,7 @@ export function PlotArea() {
       {state && (
         <div className='plot-canvas'>
           <PlotLineOptions/>
-          <PointInfo pointID={pointID} pointLoc={pointLoc} showPointInfo={showPointInfo} plotUnits={plotUnits}/>
+          {showPointInfo && <PointInfo pointID={pointID} pointLoc={pointLoc} showPointInfo={showPointInfo} plotUnits={plotUnits}/>}
           <ResizeBar height={height} setHeight={setHeight}/> 
           <YScaler scale={yScale} setScale={setYScale} />
           <XScaler scale={xScale} setScale={setXScale} />

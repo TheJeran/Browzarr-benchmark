@@ -1,8 +1,6 @@
 import { create } from "zustand";
 import * as THREE from 'three';
 import { GetColorMapTexture } from "@/components/textures";
-import QuickLRU from 'quick-lru';
-import { ZarrDataset } from "@/components/zarr/ZarrLoaderLRU";
 
 interface Coord {
     name: string; 
@@ -28,7 +26,7 @@ type StoreState = {
   dimArrays: number[][];
   dimNames: string[];
   dimUnits: string[];
-  dimCoords?: DimCoords;
+  dimCoords: Record<string, DimCoords>;
   plotDim: number;
   flipY:boolean;
   initStore:string;
@@ -51,7 +49,8 @@ type StoreState = {
   setDimArrays: (dimArrays: number[][]) => void;
   setDimNames: (dimNames: string[]) => void;
   setDimUnits: (dimUnits: string[]) => void;
-  setDimCoords: (dimCoords?: DimCoords) => void;
+  setDimCoords: (dimCoords?: Record<string, DimCoords>) => void;
+  updateDimCoords: (newDims: Record<string, DimCoords>) => void;
   setPlotDim: (plotDim: number) => void;
   setFlipY: (flipY:boolean) => void;
   setInitStore: (initStore:string ) => void;
@@ -76,7 +75,7 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   dimArrays: [[0], [0], [0]],
   dimNames: ["Default"],
   dimUnits: ["Default"],
-  dimCoords: undefined,
+  dimCoords: {},
   plotDim: 0,
   flipY: false,
   initStore: "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr",
@@ -90,13 +89,16 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   setValueScales: (valueScales) => set({ valueScales }),
   setColormap: (colormap) => set({ colormap }),
   setTimeSeries: (timeSeries) => set({ timeSeries }),
-  updateTimeSeries: (newEntries) =>
-    set({
-      timeSeries: {
-        ...get().timeSeries,
-        ...newEntries,
-      },
-    }),
+  updateTimeSeries: (newEntries) => {
+    const merged = { ...newEntries, ...get().timeSeries  };
+
+    // Slice to retain only the last 10 entries
+    const limitedEntries = Object.entries(merged).slice(0, 10);
+
+    const limitedTimeSeries = Object.fromEntries(limitedEntries);
+
+    set({ timeSeries: limitedTimeSeries });
+  },
   setStrides: (strides) => set({ strides }),
   setShowLoading: (showLoading) => set({ showLoading }),
   setMetadata: (metadata) => set({ metadata }),
@@ -106,6 +108,17 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   setDimNames: (dimNames) => set({ dimNames }),
   setDimUnits: (dimUnits) => set({ dimUnits }),
   setDimCoords: (dimCoords) => set({ dimCoords }),
+  updateDimCoords: (newDims) => {
+    const merged = { ...newDims,...get().dimCoords  };
+
+    // Convert to array of [key, value] pairs and slice to last 10
+    const limitedEntries = Object.entries(merged)
+      .slice(0, 10); // keep most recent 10 keys
+
+    const limitedDimCoords = Object.fromEntries(limitedEntries);
+
+    set({ dimCoords: limitedDimCoords });
+  },
   setPlotDim: (plotDim) => set({ plotDim }),
   setFlipY: (flipY) => set({ flipY }),
   setInitStore: (initStore) => set({ initStore }),
@@ -171,7 +184,7 @@ type PlotState ={
 export const usePlotStore = create<PlotState>((set) => ({
   //Create the initial state for the plot store
   plotType: "volume", 
-  pointSize: 10,
+  pointSize: 5,
   scalePoints: false,
   scaleIntensity: 1,
   quality: 200,
@@ -182,7 +195,7 @@ export const usePlotStore = create<PlotState>((set) => ({
   zRange: [-1, 1],
   selectTS: false,
   showPoints: false,
-  linePointSize: 5,
+  linePointSize: 2,
   lineWidth: 1.25,
   lineColor: "#111111",
   pointColor: "#EA8686",

@@ -9,12 +9,13 @@ import { useShallow } from 'zustand/shallow';
 export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
 
   const [clickPoint, setClickPoint] = useState<THREE.Vector3 | null>(null);
-  const {setTimeSeries,setPlotDim,setDimCoords, updateTimeSeries} = useGlobalStore(
+  const {setTimeSeries,setPlotDim,setDimCoords, updateTimeSeries, updateDimCoords} = useGlobalStore(
     useShallow(state=>({
       setTimeSeries:state.setTimeSeries, 
       setPlotDim:state.setPlotDim, 
       setDimCoords:state.setDimCoords,
-      updateTimeSeries: state.updateTimeSeries
+      updateTimeSeries: state.updateTimeSeries,
+      updateDimCoords: state.updateDimCoords
     })))
 
   const {shape,dimArrays,dimNames,dimUnits} = useGlobalStore(
@@ -35,6 +36,7 @@ export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
     const dimAxis = getUnitAxis(normal);
     if (dimAxis != lastNormal.current){
       setTimeSeries({}); //Clear timeseries if new axis
+      setDimCoords({});
     }
     lastNormal.current = dimAxis;
     
@@ -69,7 +71,7 @@ export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
           units:dimUnits[2-plotDim[0]]
         }
       }
-      setDimCoords(dimObj)
+      updateDimCoords({[tsID] : dimObj})
     }
     setClickPoint(point);
   }

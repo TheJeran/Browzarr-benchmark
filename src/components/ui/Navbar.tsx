@@ -105,12 +105,13 @@ const ColorMaps = ({cmap, setCmap} : {cmap : string, setCmap : React.Dispatch<Re
 }
 
 const Navbar = React.memo(function Navbar(){
-  const {setInitStore, setVariable, setColormap, setTimeSeries, isFlat, plotOn, variables, variable} = useGlobalStore(
+  const {setInitStore, setVariable, setColormap, setTimeSeries, setDimCoords, isFlat, plotOn, variables, variable} = useGlobalStore(
     useShallow(state=>({
       setInitStore : state.setInitStore, 
       setVariable : state.setVariable,
       setColormap : state.setColormap,
       setTimeSeries: state.setTimeSeries,
+      setDimCoords: state.setDimCoords,
       isFlat: state.isFlat,
       plotOn: state.plotOn,
       variables: state.variables,
@@ -166,9 +167,9 @@ const Navbar = React.memo(function Navbar(){
                   <DropdownMenuSubTrigger>Plot Type</DropdownMenuSubTrigger>
                   <DropdownMenuPortal>
                     <DropdownMenuSubContent>
-                      <DropdownMenuItem onSelect={()=> {setPlotType("volume"); setAnimate(false)} }>Volume</DropdownMenuItem>
-                      <DropdownMenuItem onSelect={()=> {setPlotType("point-cloud"); setTimeSeries([]); setAnimate(false)} }>Point Cloud</DropdownMenuItem>
-                      <DropdownMenuItem onSelect={()=> {setPlotType("sphere"); setTimeSeries([]); setAnimate(false)} }>Sphere</DropdownMenuItem>
+                      <DropdownMenuItem onSelect={()=> {setPlotType("volume"); setTimeSeries({}); setDimCoords({}); setAnimate(false)} }>Volume</DropdownMenuItem>
+                      <DropdownMenuItem onSelect={()=> {setPlotType("point-cloud"); setTimeSeries({}); setDimCoords({}); setAnimate(false)} }>Point Cloud</DropdownMenuItem>
+                      <DropdownMenuItem onSelect={()=> {setPlotType("sphere"); setTimeSeries({}); setDimCoords({}); setAnimate(false)} }>Sphere</DropdownMenuItem>
                     </DropdownMenuSubContent>
                   </DropdownMenuPortal>
                 </DropdownMenuSub>

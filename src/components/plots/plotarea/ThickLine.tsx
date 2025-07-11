@@ -86,7 +86,8 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
       if (compCache.current.includes(key)){
         continue;
       }
-      compCache.current.push(key)
+      compCache.current.unshift(key)
+      compCache.current = compCache.current.slice(0,10);
       const normed = tempTS.map((i) => (i - minVal) / (maxVal - minVal))
       const size = tempTS.length;
       const xCoords = linspace(-viewWidth,viewWidth,size)
@@ -144,8 +145,8 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
       geometry.setAttribute('next', new THREE.Float32BufferAttribute(next, 3));
       geometry.setAttribute('normed', new THREE.Float32BufferAttribute(normValues, 1));
       geometry.setIndex(new THREE.Uint16BufferAttribute(indices, 1));
-      setGeometries(prev => (prev ? [...prev, geometry] : [geometry]));
-      setInstancePoints(prev => (prev ? [...prev, points] : [points]));
+      setGeometries(prev => (prev ? [geometry, ...prev].slice(0, 10) : [geometry]));
+      setInstancePoints(prev => (prev ? [points, ...prev ].slice(0,10) : [points]));
   }},[timeSeries])
 
 	// const linePoints = useMemo(()=>{
@@ -156,7 +157,6 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
   useEffect(()=>{
     geometries?.map((val)=>console.log(val))
   },[lineResolution])
-
   useEffect(()=>{
     invalidate()
   },[showPoints])
