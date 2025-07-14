@@ -272,3 +272,19 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
   setVariable1: (variable1) => set({ variable1 }),
   setVariable2: (variable2) => set({ variable2 }),  
 }));
+
+type ZarrState = {
+  slice: [number  , number | null],
+  compress: boolean,
+
+  setSlice: (slice: [number , number | null]) => void;
+  setCompress: (compress: boolean) => void
+}
+
+export const useZarrStore = create<ZarrState>((set) => ({
+  slice: [0, null],
+  compress: false,
+
+  setSlice: (slice) => set({ slice }),
+  setCompress: (compress) => set({ compress })
+}))

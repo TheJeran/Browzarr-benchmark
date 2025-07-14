@@ -92,7 +92,7 @@ export function getUnitAxis(vec: THREE.Vector3) {
   return null;
 }
 
-export function ArrayMinMax(array:number[]){
+export function ArrayMinMax(array:number[] | Uint8Array<ArrayBufferLike> | Int16Array<ArrayBufferLike> | Int32Array<ArrayBufferLike> | Uint32Array<ArrayBufferLike> | Float32Array<ArrayBufferLike> | Float64Array<ArrayBufferLike>){
   let minVal = Infinity;
   let maxVal = -Infinity;
   for (let i = 0; i < array.length; i++){

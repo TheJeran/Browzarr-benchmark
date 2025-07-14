@@ -5,7 +5,7 @@ import { PointCloud, UVCube, DataCube, FlatMap, Sphere } from '@/components/plot
 import { Canvas, invalidate } from '@react-three/fiber';
 import { ArrayToTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
-import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
+import { useGlobalStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { Navbar, Colorbar } from '../ui';
 import AnalysisInfo from './AnalysisInfo';
@@ -107,6 +107,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       plotType: state.plotType,
       resetCamera: state.resetCamera
     })))
+    const slice = useZarrStore(state=> state.slice)
 
     const coords = useRef<number[]>([0,0])
     const val = useRef<number>(0)
@@ -149,7 +150,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
     if (variable != "Default") {
       setShowLoading(true);
       setShow(false)
-      ZarrDS.GetArray(variable, [0,10]).then((result) => {
+      ZarrDS.GetArray(variable, slice).then((result) => {
         // result now contains: { data: TypedArray, shape: number[], dtype: string }
         const [texture, scaling] = ArrayToTexture({
           data: result.data,

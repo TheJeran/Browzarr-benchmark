@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import QuickLRU from 'quick-lru';
 import { parseUVCoords } from "@/utils/HelperFuncs";
 import { GetSize } from "./GetMetadata";
-import { useGlobalStore } from "@/utils/GlobalStates";
+import { useGlobalStore, useZarrStore } from "@/utils/GlobalStates";
 
 export const ZARR_STORES = {
     ESDC: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr',
@@ -51,10 +51,12 @@ export class ZarrDataset{
 		this.chunkIDs = [];
 	}
 
-	async GetArray(variable: string, slice: number[]){
+	async GetArray(variable: string, slice: [number, number | null]){
 
 		const setProgress = useGlobalStore.getState().setProgress
 		const setStrides = useGlobalStore.getState().setStrides
+		const compress = useZarrStore.getState().compress
+
 		//Check if cached
 		this.variable = variable;
 		if (this.cache.has(variable)){
@@ -64,7 +66,7 @@ export class ZarrDataset{
 		const group = await this.groupStore;
 		const outVar = await zarr.open(group.resolve(variable), {kind:"array"})
 		const [totalSize, chunkSize, chunkShape] = GetSize(outVar);
-
+		console.log(outVar)
 		// Type check using zarr.Array.is
 		if (outVar.is("number") || outVar.is("bigint")) {
 			let chunk;
@@ -85,19 +87,19 @@ export class ZarrDataset{
 			else { 
 				setProgress(0)
 				const startIdx = Math.floor(slice[0]/chunkShape[0])
-				const endIdx = Math.ceil(slice[1]/chunkShape[0])
+				const endIdx = slice[1] ? Math.ceil(slice[1]/chunkShape[0]) : Math.ceil(outVar.shape[0]/chunkShape[0])
 				const chunkCount = endIdx-startIdx
 				const timeSize = outVar.shape[1]*outVar.shape[2]
 				const arraySize = (endIdx-startIdx+1)*chunkShape[0]*timeSize
 				shape = [(endIdx-startIdx)*chunkShape[0],outVar.shape[1],outVar.shape[2]]
-				typedArray = new Float32Array(arraySize);
+				typedArray = compress ? new Uint8Array(arraySize) : new Float32Array(arraySize);
 				let accum = 0;
 				let iter = 1;
 				for (let i= startIdx ; i < endIdx ; i++){
 					const cacheName = `${variable}_chunk_${i}`
 					this.chunkIDs.push(i) //identify which chunks to use when recombining cache for timeseries
 					if (this.cache.has(cacheName)){
-						console.log('using cache')
+						//Add a check and throw error here if user set compress but the local files are not compressed
 						chunk = this.cache.get(cacheName)
 						setStrides(chunk.stride)
 						typedArray.set(chunk.data,accum)
