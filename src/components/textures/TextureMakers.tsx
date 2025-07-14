@@ -12,7 +12,7 @@ interface Array {
 function ArrayTo2D(array: Array){
     //We assume there is no slicing here. That will occur in the ZarrLoader stage. This is just pure data transfer
     const shape = array.shape;
-    const data = Array.from(array.data);
+    const data = array.data;
     const width = shape[1];
     const height = shape[0];
     const [minVal,maxVal] = ArrayMinMax(data)
@@ -35,7 +35,7 @@ function ArrayTo2D(array: Array){
 
 export function ArrayTo3D(array: Array){
     const shape = array.shape;
-    const data = Array.from(array.data);
+    const data = array.data;
     const [lz,ly,lx] = shape
 
     const [minVal,maxVal] = ArrayMinMax(data)

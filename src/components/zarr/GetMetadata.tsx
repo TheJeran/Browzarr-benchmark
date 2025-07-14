@@ -1,7 +1,7 @@
 import * as zarr from "zarrita";
 import { ZarrMetadata, ZarrItem, ZarrTitleDescription } from "./Interfaces";
 
-function formatBytes(bytes: number): string {
+export function formatBytes(bytes: number): string {
     const units = ["bytes", "KB", "MB", "GB", "TB", "PB"];
     let value = bytes;
     let unitIndex = 0;

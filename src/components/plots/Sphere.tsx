@@ -50,7 +50,7 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
 
     function addBounds(uv : THREE.Vector2){
       const widthID = Math.round(uv.x*width)+.5;
-      const heightID = Math.round(uv.y*height)+.5;
+      const heightID = flipY ? Math.round((1-uv.y)*height)-.5 : Math.round(uv.y*height)+.5 ;
       const delX = 1/width;
       const delY = 1/height;
       const xBounds = [widthID/width-delX/2,widthID/width+delX/2]

@@ -33,7 +33,7 @@ function Norm(val : number, min : number, max : number){
     return (val-min)/range;
 }
 
-const MinMaxSlider = React.memo(function MinMaxSlider({range, setRange, valueScales, min=-1, array} : 
+export const MinMaxSlider = React.memo(function MinMaxSlider({range, setRange, valueScales, min=-1, array} : 
     {
         range : number[], 
         setRange : (value: number[]) => void, 

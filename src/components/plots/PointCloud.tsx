@@ -175,7 +175,6 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
             const pz = ((z / (depth - 1)) - 0.5) * depthRatio;
             positions.push(px*2, py*2, pz*2); //This two is to match the scale of the volume which defaults to 2x2
             values.push(value);
-            
           }
         }
       }

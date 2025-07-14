@@ -32,10 +32,10 @@
 .meta-container{
     text-align: left;
     position: absolute;
-    width: 85%;
+    width: 500px;
     left: 50%;
     transform: translateX(-50%);
-    top: 12%;
+    top: 50%;
     z-index: 3;
     font-size: 18px;
     border-radius: 10px;
