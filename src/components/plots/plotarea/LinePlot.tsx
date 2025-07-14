@@ -7,6 +7,10 @@ import './LinePlot.css'
 import { useGlobalStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
 import PlotLineOptions from '@/components/ui/PlotLineOptions'
+import { evaluate_cmap } from 'js-colormaps-es';
+import { IoCloseCircleSharp } from "react-icons/io5";
+import { DimCoords } from '@/utils/GlobalStates'
+
 
 interface pointInfo{
   pointID:Record<string,number>,
@@ -65,11 +69,18 @@ function PointInfo({pointID,pointLoc,showPointInfo, plotUnits}:pointInfo){
 }
 
 function PointCoords(){
-  const coords = useGlobalStore(state=>state.dimCoords)
+  const {coords, timeSeries, setDimCoords, setTimeSeries} = useGlobalStore(useShallow(state=>({coords: state.dimCoords, timeSeries: state.timeSeries, setDimCoords: state.setDimCoords, setTimeSeries: state.setTimeSeries})))
   const [moving,setMoving] = useState<boolean>(false)
   const initialMouse = useRef<number[]>([0,Math.round(window.innerHeight*0.255)])
   const initialDiv = useRef<number[]>([0,Math.round(window.innerHeight*0.255)])
   const [xy, setXY] = useState<number[]>([0,Math.round(window.innerHeight*0.255)])
+
+  function RemoveLine (keyID : string){
+    const { [keyID]: _coord, ...rest } = coords;
+    setDimCoords(rest);
+    const { [keyID]: _ts, ...tsRest } = timeSeries;
+    setTimeSeries(tsRest);
+  };
 
   function handleDown(e: any){
     initialMouse.current = [e.clientX,e.clientY]
@@ -81,7 +92,7 @@ function PointCoords(){
     if (moving){
       const deltaX = initialMouse.current[0]-e.clientX
       const deltaY = initialMouse.current[1]-e.clientY
-      const x = Math.max(initialDiv.current[0]-deltaX,10)
+      const x = Math.min(Math.max(initialDiv.current[0]-deltaX,10),window.innerWidth-120)
       const y = Math.max(initialDiv.current[1]+deltaY,0) //Again hardcoded footer height
       setXY([Math.min(x,window.innerWidth-100),Math.min(y,window.innerHeight-100)])
     }
@@ -90,7 +101,6 @@ function PointCoords(){
   function handleUp(){
     setMoving(false)
   }
-
   useEffect(() => {
     if (moving) {
       document.addEventListener('mousemove', handleMove);
@@ -104,6 +114,9 @@ function PointCoords(){
   return(
     <>
     <div className='coord-container'
+        onPointerDown={handleDown}
+        onPointerMove={handleMove}
+        onPointerUp={()=>setMoving(false)}  
       style={{
           left:`${xy[0]}px`,
           bottom:`${xy[1]}px`
@@ -113,17 +126,25 @@ function PointCoords(){
       Object.keys(coords).length > 0 && 
       Object.keys(coords).map((val,idx)=>(
         <div className='plot-coords'
-        
-        onPointerDown={handleDown}
-        onPointerMove={handleMove}
-        onPointerUp={()=>setMoving(false)}  
         key={val}   
+        style={{
+          background: `rgb(${evaluate_cmap(idx/10,'Paired')})`,
+          justifyContent:'space-between'
+        }}
       >
         <b>{`${coords[val]['first'].name}: `}</b>
         {`${parseLoc(coords[val]['first'].loc,coords[val]['first'].units)}`}
         <br/>
         <b>{`${coords[val]['second'].name}: `}</b>
         {`${parseLoc(coords[val]['second'].loc,coords[val]['second'].units)}`}
+        <IoCloseCircleSharp 
+        onClick={()=>RemoveLine(val)}
+          color='red'
+          style={{
+            cursor:'pointer',
+            zIndex:3
+          }}
+        />
       </div>
       ))
       }

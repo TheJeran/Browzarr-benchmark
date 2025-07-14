@@ -8,6 +8,8 @@ import vertexShader from '@/components/textures/shaders/thickLineVert.glsl'
 import { PlotPoints } from './PlotPoints';
 import { useThree } from '@react-three/fiber';
 import { invalidate } from '@react-three/fiber';
+import { evaluate_cmap } from 'js-colormaps-es';
+
 
 function linspace(start: number, stop: number, num: number): number[] {
     const step = (stop - start) / (num - 1);
@@ -29,22 +31,26 @@ interface ThickLineProps {
 
 const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
     const {valueScales, timeSeries, colormap} = useGlobalStore(useShallow(state=>({valueScales:state.valueScales, timeSeries:state.timeSeries, colormap:state.colormap})))
-    const {lineWidth, useLineColor, lineColor, showPoints, lineResolution} = usePlotStore(useShallow(state =>({
+    const {lineWidth, useLineColor, lineColor, showPoints, lineResolution, useCustomColor} = usePlotStore(useShallow(state =>({
     lineWidth: state.lineWidth,
     linePointSize: state.linePointSize,
     showPoints: state.showPoints,
     useLineColor: state.useLineColor,
     lineColor: state.lineColor,
-		lineResolution: state.lineResolution
+		lineResolution: state.lineResolution,
+    useCustomColor: state.useCustomColor
   })))
   const compCache = useRef<string[]> ([]) //Store ids of already calculated spots.
-  const [geometries, setGeometries] = useState<THREE.BufferGeometry[] | null>(null)
-  const [instancePoints, setInstancePoints] = useState<THREE.Vector3[][] | null>(null)
-
 	const {camera} = useThree()
+
   const {maxVal, minVal} = valueScales
 
-	const material = useMemo(()=>new THREE.ShaderMaterial({
+  const materials = useMemo(()=>{
+        const materialObj: { [key: string]: THREE.ShaderMaterial } = {};
+        Object.keys(timeSeries).map((val, idx)=>{ 
+        const [r,g,b] = evaluate_cmap(idx/10,"Paired");
+        materialObj[val] = 
+        new THREE.ShaderMaterial({
                 glslVersion: THREE.GLSL3,
                 uniforms: {
                     cmap:{value: colormap},
@@ -53,46 +59,46 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
                     aspect: {value : window.innerWidth / window.innerHeight},
                     thickness:{value:lineWidth},
                     miter: {value: 1},
-										useLineColor: {value: useLineColor},
-										lineColor: {value: new THREE.Color(lineColor)},
-										zoom: {value: camera.zoom}
+                    useLineColor: {value: useCustomColor},
+                    useMapColors: {value: useLineColor},
+                    lineColor: {value: new THREE.Color().setRGB(r/255, g/255, b/255)},
+                    userColor: {value: new THREE.Color(lineColor)},
+                    zoom: {value: camera.zoom}
                 },
                 vertexShader,
                 fragmentShader:`
                 out vec4 Color;
                 uniform sampler2D cmap;
-								uniform bool useLineColor;
-        				uniform vec3 lineColor;
+                uniform bool useLineColor;
+                uniform bool useMapColors;
+                uniform vec3 lineColor;
+                uniform vec3 userColor;
                 varying float vNormed;
 
                 void main() {
                     vec4 texColor = texture(cmap, vec2(vNormed, 0.1));
                     texColor.a = 1.;
-                    Color = useLineColor ? vec4(lineColor, 1.0) : texColor;
+                    Color = useLineColor ? vec4(userColor, 1.0) : useMapColors ? texColor : vec4(lineColor, 1.0) ;
                 }
                 `,
                 depthWrite: false,
-                }),[colormap,lineWidth,xScale,yScale,window.innerWidth, window.innerHeight, useLineColor, lineColor, camera.zoom])
-
+                })
+          })
+          return materialObj},[colormap,lineWidth,xScale,yScale,window.innerWidth, window.innerHeight, useLineColor, lineColor, camera.zoom, useCustomColor, timeSeries])
   const viewWidth = useMemo(()=>window.innerWidth,[window.innerWidth])
   const viewHeight = useMemo(()=>window.innerHeight - height, [window.innerWidth, height])
-  useEffect(()=>{
-    if (Object.keys(timeSeries).length <= 1){
-      setGeometries(null);
-      setInstancePoints(null)
-      compCache.current = [] //Reset cache when timeSeries length shortens
-    }
-    for (const [key, tempTS] of Object.entries(timeSeries) as [string, number[]][]) {
-      if (compCache.current.includes(key)){
-        continue;
-      }
-      compCache.current.unshift(key)
-      compCache.current = compCache.current.slice(0,10);
+
+  const [instancePoints, setInstancePoints] = useState<Record<string, THREE.Vector3[]>>({})
+  const geometries = useMemo(()=>{
+    const geomObj: Record<string, THREE.BufferGeometry> = {}
+    const tempInstances: Record<string, THREE.Vector3[]> = {}
+    Object.keys(timeSeries).map((val, idx)=>{ 
+      const tempTS = timeSeries[val] as number[]
       const normed = tempTS.map((i) => (i - minVal) / (maxVal - minVal))
       const size = tempTS.length;
       const xCoords = linspace(-viewWidth,viewWidth,size)
       const points = normed.map((val,idx) => new THREE.Vector3(xCoords[idx], (val-.5)*viewHeight, 5));
-
+      tempInstances[val] = points;
       const curve = new THREE.CatmullRomCurve3(points);
       const linePoints = curve.getPoints(points.length*lineResolution-1)
       const interp: number[] = [];
@@ -125,8 +131,6 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
           next.push(...nextPoint, ...nextPoint);
           normValues.push(interp[i], interp[i]);
       }
-
-
       // Create triangle indices
       for (let i = 0; i < numPoints - 1; i++) {
           const i0 = i * 2;     // First vertex of current point (+1)
@@ -145,28 +149,24 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
       geometry.setAttribute('next', new THREE.Float32BufferAttribute(next, 3));
       geometry.setAttribute('normed', new THREE.Float32BufferAttribute(normValues, 1));
       geometry.setIndex(new THREE.Uint16BufferAttribute(indices, 1));
-      setGeometries(prev => (prev ? [geometry, ...prev].slice(0, 10) : [geometry]));
-      setInstancePoints(prev => (prev ? [points, ...prev ].slice(0,10) : [points]));
-  }},[timeSeries])
+      geomObj[val] = geometry
+    })
+    setInstancePoints(tempInstances)
+    return geomObj
+  },[timeSeries, lineResolution]) 
 
-	// const linePoints = useMemo(()=>{
-	// 	const curve = new THREE.CatmullRomCurve3(points);
-	// 	return curve.getPoints(points.length*lineResolution-1)
-	// },[points, lineResolution])
 
-  useEffect(()=>{
-    geometries?.map((val)=>console.log(val))
-  },[lineResolution])
   useEffect(()=>{
     invalidate()
   },[showPoints])
+
   return (
     <>
 		<group>
-      {geometries?.map((val, idx)=>(
-        <mesh key={`lineMesh_${idx}`} geometry={val} material={material} />))}
-      {showPoints && instancePoints?.map((val, idx)=> 
-        <PlotPoints key={`plotPoints_${idx}`} points={val} tsID={compCache.current[idx]} pointSetters={pointSetters} scalers={{xScale,yScale}}/>
+      {Object.keys(timeSeries).map((val, idx)=>(
+        <mesh key={`lineMesh_${idx}`} geometry={geometries[val]} material={ materials[val]} />))}
+      {showPoints && Object.keys(timeSeries).map((val, idx)=> 
+        <PlotPoints key={`plotPoints_${idx}`} points={instancePoints[val]} tsID={val} colIDX={idx} pointSetters={pointSetters} scalers={{xScale,yScale}}/>
       )}
 		</group>
 		</>
