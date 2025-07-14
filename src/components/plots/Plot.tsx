@@ -1,8 +1,8 @@
 import { OrbitControls } from '@react-three/drei';
-import React, { useMemo, useRef, useState, useEffect, use } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { PointCloud, UVCube, DataCube, FlatMap, Sphere } from '@/components/plots';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, invalidate } from '@react-three/fiber';
 import { ArrayToTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
@@ -11,6 +11,58 @@ import { Navbar, Colorbar } from '../ui';
 import AnalysisInfo from './AnalysisInfo';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
+
+const Orbiter = ({isFlat} : {isFlat  : boolean}) =>{
+  const {resetCamera} = usePlotStore(useShallow(state => ({
+      resetCamera: state.resetCamera
+    })))
+  const orbitRef = useRef<OrbitControlsImpl | null>(null)
+  // Reset Camera Position and Target
+  useEffect(()=>{
+    if (orbitRef.current){
+      const controls = orbitRef.current
+      let frameId: number;
+      const duration = 1000; 
+      const startTime = performance.now();
+      const startPos = controls.object.position.clone();
+      const endPos = controls.position0.clone()
+
+      const startTarget = controls.target.clone();
+      const endTarget = controls.target0.clone()
+
+      const startZoom = controls.object.zoom
+      
+      const animate = (time: number) => {
+        invalidate();
+        const elapsed = time - startTime;
+        const t = Math.min(elapsed / duration, 1); // clamp between 0 and 1
+        controls.object.position.lerpVectors(startPos, endPos, t);
+        controls.target.lerpVectors(startTarget,endTarget,t)
+
+        if (isFlat) {
+          controls.object.zoom = THREE.MathUtils.lerp(startZoom, 1000, t);
+          controls.object.updateProjectionMatrix();
+          controls.update()
+        } 
+
+        if (t < 1) {
+          frameId = requestAnimationFrame(animate);
+        }
+      };
+
+      frameId = requestAnimationFrame(animate);
+
+      return () => cancelAnimationFrame(frameId);
+    }
+  },[resetCamera])
+
+  return (
+    <>
+      {isFlat && <OrbitControls ref={orbitRef} enableRotate={false} enablePan={true} maxDistance={50} minZoom={50} maxZoom={3000}/>}
+      {!isFlat && <OrbitControls ref={orbitRef} minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={true} maxDistance={50}/>}
+    </>
+  );
+}
 
 interface PlotParameters{
     values:{
@@ -66,7 +118,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
     const [show, setShow] = useState<boolean>(true) //Prevents rendering of 3D objects until data is fully loaded in
     
     const [windowWidth, setWindowWidth] = useState<number>(0); //Use for rescaling
-    const orbitRef = useRef<OrbitControlsImpl | null>(null)
+    
 
     useEffect(() => {
         setWindowWidth(window.innerWidth);
@@ -169,49 +221,6 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
     val
   }),[])
 
-
-
-  // Reset Camera Position and Target
-  useEffect(()=>{
-    if (orbitRef.current){
-      const controls = orbitRef.current
-      let frameId: number;
-      const duration = 1000; 
-      const startTime = performance.now();
-      const startPos = controls.object.position.clone();
-      const endPos = controls.position0.clone()
-
-      const startTarget = controls.target.clone();
-      const endTarget = controls.target0.clone()
-
-      const startZoom = controls.object.zoom
-
-      const animate = (time: number) => {
-        const elapsed = time - startTime;
-        const t = Math.min(elapsed / duration, 1); // clamp between 0 and 1
-        if (elapsed < 20){frameId = requestAnimationFrame(animate);
-          return //This 20 is assuuming 60FPS. Will probably need to change it eventuyally
-        }
-        controls.object.position.lerpVectors(startPos, endPos, t);
-        controls.target.lerpVectors(startTarget,endTarget,t)
-
-        if (isFlat) {
-          controls.object.zoom = THREE.MathUtils.lerp(startZoom, 1000, t);
-          controls.object.updateProjectionMatrix();
-          controls.update()
-        } 
-
-        if (t < 1) {
-          frameId = requestAnimationFrame(animate);
-        }
-      };
-
-      frameId = requestAnimationFrame(animate);
-
-      return () => cancelAnimationFrame(frameId);
-    }
-  },[resetCamera])
-
   const Nav = useMemo(()=>Navbar,[])
   return (
     <div className='main-canvas'
@@ -235,16 +244,16 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
 
         </> }
         {plotType == "sphere" && show && <Sphere texture={texture} ZarrDS={ZarrDS} /> }
-        <OrbitControls ref={orbitRef} minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={true} maxDistance={50}/>
+        <Orbiter isFlat={false} />
       </Canvas>
       </>}
 
         {isFlat && <>
-        <Canvas camera={{ position: [0,0,5], zoom: 1000 }} //Removed FrameLoop Demand on this canvas as it wouldn't cause re-renders for the camera reset animation. 
-        orthographic
+        <Canvas camera={{ position: [0,0,5], zoom: 1000 }}
+        orthographic frameloop="demand"
         >
           <FlatMap texture={texture as THREE.DataTexture} infoSetters={infoSetters} />
-          <OrbitControls ref={orbitRef} enableRotate={false} enablePan={true} maxDistance={50} minZoom={50} maxZoom={3000}/>
+          <Orbiter isFlat={true}/>
         </Canvas>
         </>}
 

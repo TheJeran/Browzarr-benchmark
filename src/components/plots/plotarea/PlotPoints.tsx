@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { usePlotStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
-import {instanceVert} from '@/components/textures/shaders/'
+import { evaluate_cmap } from 'js-colormaps-es'
 
 interface pointSetters{
   setPointID:React.Dispatch<React.SetStateAction<Record<string,number>>>,
@@ -11,18 +11,23 @@ interface pointSetters{
   setShowPointInfo:React.Dispatch<React.SetStateAction<boolean>>,
 }
 
-function PlotPoints({ points, tsID, pointSetters, scalers }: { points: THREE.Vector3[]; tsID: string, pointSetters:pointSetters; scalers:{xScale:number,yScale:number} }) {
+function PlotPoints({ points, tsID, pointSetters, colIDX, scalers }: { points: THREE.Vector3[]; tsID: string, pointSetters:pointSetters; colIDX: number, scalers:{xScale:number,yScale:number} }) {
   const ref = useRef<THREE.InstancedMesh | null>(null);
   const count = points.length;
   const lastID = useRef<number | null>(null);
   const [_reRender,setreRender] = useState<boolean>(false);
   const {setPointID, setPointLoc,setShowPointInfo} = pointSetters;
   const [zoom,setZoom] = useState<number>(1);
-  const {pointColor, pointSize, showPoints} = usePlotStore(useShallow(state => ({pointColor: state.pointColor, pointSize: state.linePointSize, showPoints: state.showPoints})))
+  const {pointColor, pointSize, useCustomPointColor} = usePlotStore(useShallow(state => ({
+    pointColor: state.pointColor, 
+    pointSize: state.linePointSize, 
+    showPoints: state.showPoints, 
+    useCustomPointColor: state.useCustomPointColor
+  })))
   const {xScale, yScale} = scalers;
-
+  const [r, g, b] = useMemo(()=>evaluate_cmap(colIDX/10, "Paired"),[colIDX])
   const geometry = useMemo(() => new THREE.SphereGeometry(pointSize), [pointSize])
-  const material = useMemo(()=> new THREE.MeshBasicMaterial({color:pointColor}),[pointColor])
+  const material = useMemo(()=> new THREE.MeshBasicMaterial({color: useCustomPointColor ? pointColor : new THREE.Color().setRGB(r/500, g/500, b/500)}),[pointColor, useCustomPointColor])
 
   useEffect(() => {
     if (ref.current){

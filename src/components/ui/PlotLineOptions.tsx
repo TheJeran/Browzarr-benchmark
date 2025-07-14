@@ -14,12 +14,14 @@ import { useShallow } from 'zustand/shallow'
 
 // Memoized Point Options
 const PointOptions = React.memo(function PointOptions(){
-  const { showPoints, linePointSize, pointColor, setLinePointSize, setPointColor } = usePlotStore(useShallow(state => ({
+  const { showPoints, linePointSize, pointColor, useCustomPointColor, setLinePointSize, setPointColor, setUseCustomPointColor } = usePlotStore(useShallow(state => ({
     showPoints: state.showPoints,
     linePointSize: state.linePointSize,
     pointColor: state.pointColor,
+    useCustomPointColor: state.useCustomPointColor,
     setLinePointSize: state.setLinePointSize,
     setPointColor: state.setPointColor,
+    setUseCustomPointColor: state.setUseCustomPointColor
   })))
   if (!showPoints) return null
   return (
@@ -37,12 +39,21 @@ const PointOptions = React.memo(function PointOptions(){
       </div>
       <div className='w-full flex items-center'>
         <div className='w-[40%]'><b>Point Color</b></div>
-        <input
+
+        {useCustomPointColor && <input
           type='color'
           title='Point Color'
           value={pointColor}
           onChange={e => setPointColor(e.target.value)}
-        />
+        />}
+        <Button
+          className="h-8 px-2 py-1"
+          variant='outline'
+          onClick={() => setUseCustomPointColor(!useCustomPointColor)}
+        >
+          Use  
+          {useCustomPointColor ? " Browzarr Color" : " Custom Color"}
+        </Button>
       </div>
     </>
   )
@@ -50,15 +61,18 @@ const PointOptions = React.memo(function PointOptions(){
 
 // Memoized Line Options
 const LineOptions = React.memo(function LineOptions(){
-  const { lineWidth, lineColor, useLineColor, lineResolution, setLineWidth, setLineColor, setUseLineColor, setLineResolution } = usePlotStore(useShallow(state => ({
+  const { lineWidth, lineColor, useLineColor, lineResolution, useCustomColor, 
+    setLineWidth, setLineColor, setUseLineColor, setLineResolution, setUseCustomColor,  } = usePlotStore(useShallow(state => ({
     lineWidth: state.lineWidth,
     lineColor: state.lineColor,
     useLineColor: state.useLineColor,
     lineResolution: state.lineResolution,
+    useCustomColor: state.useCustomColor,
     setLineWidth: state.setLineWidth,
     setLineColor: state.setLineColor,
     setUseLineColor: state.setUseLineColor,
-    setLineResolution: state.setLineResolution
+    setLineResolution: state.setLineResolution,
+    setUseCustomColor: state.setUseCustomColor,
   })))
   return (
     <>
@@ -86,7 +100,7 @@ const LineOptions = React.memo(function LineOptions(){
       </div>
       <div className='w-full flex items-center'>
         <div className='w-[40%]'><b>Line Color</b></div>
-        {useLineColor && (
+        {useCustomColor && (
           <input
             type='color'
             title='Line Color'
@@ -94,12 +108,22 @@ const LineOptions = React.memo(function LineOptions(){
             onChange={e => setLineColor(e.target.value)}
           />
         )}
+        {!useCustomColor && 
         <Button
-          className="h-8 px-2 py-1"
+          className="h-8 px-2 py-5"
           variant='outline'
           onClick={() => setUseLineColor(!useLineColor)}
         >
-          {useLineColor ? "Use Plot Color" : "Use Single Color"}
+          Use <br/>
+          {useLineColor ? "Individual Color" : "Plot Color"}
+        </Button>}
+        <Button
+          className="h-8 px-2 py-5"
+          variant='outline'
+          onClick={() => setUseCustomColor(!useCustomColor)}
+        >
+          Use <br/>
+          {useCustomColor ? "Browzarr Color" : "Custom Color"}
         </Button>
       </div>
     </>
@@ -118,7 +142,7 @@ const PlotLineOptions = React.memo(function PlotLineOptions(){
         <DropdownMenuTrigger asChild>
           <Button className="cursor-pointer" variant="outline">Line Options</Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-60 items-center" align="center">
+        <DropdownMenuContent className="w-80 items-center" align="center">
           <DropdownMenuGroup onClick={e => e.preventDefault()}>
             <DropdownMenuItem>
               <Button

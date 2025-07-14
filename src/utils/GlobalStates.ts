@@ -51,6 +51,7 @@ type StoreState = {
   setDimUnits: (dimUnits: string[]) => void;
   setDimCoords: (dimCoords?: Record<string, DimCoords>) => void;
   updateDimCoords: (newDims: Record<string, DimCoords>) => void;
+
   setPlotDim: (plotDim: number) => void;
   setFlipY: (flipY:boolean) => void;
   setInitStore: (initStore:string ) => void;
@@ -154,6 +155,8 @@ type PlotState ={
   cScale: number;
   useFragOpt: boolean;
   resetCamera: boolean;
+  useCustomColor: boolean;
+  useCustomPointColor: boolean;
 
   setQuality: (quality: number) => void;
   setTimeScale: (timeScale : number) =>void;
@@ -179,6 +182,8 @@ type PlotState ={
   setCScale: (cScale: number) => void;
   setUseFragOpt: (useFragOpt: boolean) => void;
   setResetCamera: (resetCamera: boolean) => void;
+  setUseCustomColor: (useCustomColor: boolean) => void;
+  setUseCustomPointColor: (useCustomPointColor: boolean) => void;
 }
 
 export const usePlotStore = create<PlotState>((set) => ({
@@ -207,6 +212,8 @@ export const usePlotStore = create<PlotState>((set) => ({
   cScale: 1,
   useFragOpt: false,
   resetCamera: false,
+  useCustomColor: false,
+  useCustomPointColor: false,
 
   setQuality: (quality) => set({ quality }),
   setTimeScale: (timeScale) => set({ timeScale }),
@@ -231,7 +238,9 @@ export const usePlotStore = create<PlotState>((set) => ({
   setCOffset: (cOffset) => set({ cOffset }),
   setCScale: (cScale) => set({ cScale }),
   setUseFragOpt: (useFragOpt) => set({ useFragOpt }),
-  setResetCamera: (resetCamera) => set({ resetCamera })
+  setResetCamera: (resetCamera) => set({ resetCamera }),
+  setUseCustomColor: (useCustomColor) => set({ useCustomColor }),
+  setUseCustomPointColor: (useCustomPointColor) => set({ useCustomPointColor})
 }))
 
 
