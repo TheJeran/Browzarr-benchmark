@@ -52,7 +52,7 @@ void main() {
     //Step Sizes
     float fineDelta = min(inc.x, min(inc.y, inc.z)) / steps;
 
-    float coarseDelta = min(inc.x, min(inc.y, inc.z))/40.;
+    float coarseDelta = min(inc.x, min(inc.y, inc.z))/50.;
 
     float delta = fineDelta;
 
@@ -85,9 +85,9 @@ void main() {
             // Hit something interesting - switch to fine stepping
             if (useCoarseStep) {
                 useCoarseStep = false;
-                countdown = 50;
+                countdown = 40;
                 // Step back to ensure we don't miss the boundary
-                t -= 2.*coarseDelta;
+                t -= coarseDelta;
                 continue;
             }
             float sampLoc = d == 1. ? d : (d - 0.5)*cScale + 0.5;
