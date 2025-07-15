@@ -157,12 +157,11 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
         depth: texture.image.depth,
       };
     }, [texture]);
-  
     const aspectRatio = useMemo(()=>width/height,[width,height]);
     const depthRatio = useMemo(()=>depth/height,[depth,height]);
     const { positions, values } = useMemo(() => {
-      const positions = [];
-      const values = [];
+      const positions = new Float32Array(depth*height*width*3);
+      const values = new Uint8Array(depth*height*width);
       //Generate grid points based on texture shape
       for (let z = 0; z < depth; z++) {
         for (let y = 0; y < height; y++) {
@@ -173,14 +172,16 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
             const px = ((x / (width - 1)) - 0.5) * aspectRatio;
             const py = (y / (height - 1)) - 0.5;
             const pz = ((z / (depth - 1)) - 0.5) * depthRatio;
-            positions.push(px*2, py*2, pz*2); //This two is to match the scale of the volume which defaults to 2x2
-            values.push(value);
+            const posIdx = index*3;
+            positions[posIdx] = px * 2;
+            positions[posIdx + 1] = py * 2;
+            positions[posIdx + 2] = pz * 2;
+            values[index] = value;
           }
         }
       }
       return { positions, values };
     }, [data, width, height, depth]);
-  
     // Create buffer geometry
     const geometry = useMemo(() => {
       const geom = new THREE.BufferGeometry();
