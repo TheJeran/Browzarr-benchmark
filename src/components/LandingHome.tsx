@@ -22,6 +22,7 @@ export function LandingHome() {
 
   useEffect(() => {
     let isMounted = true;
+    console.log(initStore)
     GetTitleDescription(GetStore(initStore)).then((result) => {
       if (isMounted) setTitleDescription(result);
     });
