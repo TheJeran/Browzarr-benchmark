@@ -4,18 +4,82 @@ import { useShallow } from 'zustand/shallow';
 import './css/VariableScroller.css'
 import Slider  from 'rc-slider';
 import { formatBytes } from '../zarr/GetMetadata';
+import { Input } from './input';
 
 const formatArray = (value: string | number[]): string => {
     if (typeof value === 'string') return value
     return Array.isArray(value) ? value.join(', ') : String(value)
   }
 
+const compressFactor = {
+  'int8': 1,
+  'uint8': 1,
+  'int16': 2,
+  'uint16': 2,
+  'int32': 4,
+  'uint32': 4,
+  'int64': 8,
+  'uint64': 8,
+  'float32': 4,
+  'float64': 8,
+}
+
+const Compressor = () =>{
+  const {compress, inferValues, setCompress, setInferValues} = useZarrStore(useShallow(state => ({
+    compress: state.compress,
+    inferValues: state.inferValues,
+    setCompress: state.setCompress,
+    setInferValues: state.setInferValues
+  })))
+  const {valueScales, setValueScales} = useGlobalStore(useShallow(state => ({valueScales: state.valueScales, setValueScales: state.setValueScales})))
+
+
+  return (<>
+  <div className='flex  justify-around mt-2'>
+    <div>
+      <label htmlFor="compress-btn" className='pr-2'>Compress</label>
+      <Input id='compress-btn' className='w-[64px]' type='checkbox' onChange={e=>setCompress(e.target.checked)}/>
+    </div>
+    <div className='flex items-center' style={{visibility: compress ? 'visible' : 'hidden'}}>
+      <div className='flex items-center'>
+        <label htmlFor="compress-btn" className='pr-2 '>Let Browzarr <br/> Infer Values</label>
+        <Input id='compress-btn' className='w-[64px]' type='checkbox' onChange={e=>setInferValues(e.target.checked)}/>
+      </div>
+      <div style={{visibility: !inferValues ? 'visible' : 'hidden'}}>
+        <div className='flex justify-end'>
+          <label htmlFor="max-val" className='pr-2'>Max Value</label>
+          <Input className='w-[64px]' id='max-val' type='number' defaultValue={100}
+            onChange={e=>{
+              const tempValues = valueScales;
+              tempValues.maxVal = parseFloat(e.target.value)
+              setValueScales(tempValues)
+            }}
+          />
+        </div>
+        <div className='flex justify-end'>
+          <label htmlFor="min-val" className='pr-2' >Min Value</label>
+          <Input className='w-[64px]' id='min-val' type='number' defaultValue={0}
+            onChange={e=>{
+              const tempValues = valueScales;
+              tempValues.minVal = parseFloat(e.target.value)
+              setValueScales(tempValues)
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </>
+  )
+}  
+
 const MetaDataInfo = ({meta} : {meta : any}) =>{ 
     const [show, setShow] = useState<boolean>(false)
     const setVariable = useGlobalStore(useShallow(state=> state.setVariable))
-    const {slice, compress, setSlice, setCompress} = useZarrStore(useShallow(state => ({slice: state.slice, compress: state.compress, setSlice: state.setSlice, setCompress: state.setCompress})))
+    const {slice, compress, setSlice} = useZarrStore(useShallow(state => ({slice: state.slice, compress: state.compress, setSlice: state.setSlice})))
     const [warn, setWarn] = useState<boolean>(false)
-    const totalSize = useMemo(()=> meta.totalSize? meta.totalSize : 0, [meta])
+    const totalSize = useMemo(()=> meta.totalSize ? compress ? meta.totalSize/compressFactor[meta.dtype as keyof typeof compressFactor] : meta.totalSize : 0, [meta, compress])
     const length = useMemo(()=>meta.shape ? meta.shape[0] : 0,[meta])
     const is3D =  useMemo(()=>meta.shape ? meta.shape.length > 2 : false,[meta])
     const currentSize = useMemo(()=>{
@@ -29,8 +93,9 @@ const MetaDataInfo = ({meta} : {meta : any}) =>{
       const yChunks = meta.shape[1]/meta.chunks[1]
       const timeChunkSize = xChunks*yChunks*meta.chunkSize
       const chunkTimeStride = meta.chunks? meta.chunks[0] : 1;
-      return Math.ceil(timeSteps/chunkTimeStride) * timeChunkSize
-    },[meta, slice])
+      const current = Math.ceil(timeSteps/chunkTimeStride) * timeChunkSize
+      return compress ? current/compressFactor[meta.dtype as keyof typeof compressFactor] : current
+    },[meta, slice, compress])
 
     useEffect(()=>{
       if (currentSize > 1e8){
@@ -89,6 +154,7 @@ const MetaDataInfo = ({meta} : {meta : any}) =>{
                       padding:'5px'
                     }}>Data will not fit in memory</span>}
                     </>}
+                    <Compressor />
                     {/* Need to conditionally color the above line if totalsize is greater than specific threshold. Also add an info when hovering the red text to explain the issue*/}
  
             </div>

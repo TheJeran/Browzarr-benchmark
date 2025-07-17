@@ -1,7 +1,7 @@
 import * as zarr from "zarrita";
 import * as THREE from 'three';
 import QuickLRU from 'quick-lru';
-import { parseUVCoords } from "@/utils/HelperFuncs";
+import { parseUVCoords, ArrayMinMax } from "@/utils/HelperFuncs";
 import { GetSize } from "./GetMetadata";
 import { useGlobalStore, useZarrStore } from "@/utils/GlobalStates";
 
@@ -55,7 +55,10 @@ export class ZarrDataset{
 
 		const setProgress = useGlobalStore.getState().setProgress
 		const setStrides = useGlobalStore.getState().setStrides
+		const setValueScales = useGlobalStore.getState().setValueScales
 		const compress = useZarrStore.getState().compress
+		const inferValues = useZarrStore.getState().inferValues
+		const valueScales = useGlobalStore.getState().valueScales
 
 		//Check if cached
 		this.variable = variable;
@@ -79,8 +82,26 @@ export class ZarrDataset{
 				if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
 							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
 				} else {
-					typedArray = new Float32Array(chunk.data)
-					this.cache.set(variable,chunk)
+					if (compress){
+						let minVal: number;
+						let maxVal: number;
+						if (inferValues){
+							[minVal, maxVal] = ArrayMinMax(chunk.data)
+							setValueScales({maxVal, minVal})
+						}
+						else{
+							minVal = valueScales.minVal;
+							maxVal = valueScales.maxVal;
+						}
+						const normed = chunk.data.map((i)=>(i-minVal)/(maxVal-minVal))
+						typedArray = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254))
+						chunk.data = typedArray
+						this.cache.set(variable,chunk)
+					}
+					else{
+						this.cache.set(variable,chunk)
+					}
+					
 				}
 			}
 			else { 

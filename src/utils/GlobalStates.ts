@@ -274,17 +274,22 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
 }));
 
 type ZarrState = {
-  slice: [number  , number | null],
-  compress: boolean,
+  slice: [number  , number | null];
+  compress: boolean;
+  inferValues: boolean;
 
   setSlice: (slice: [number , number | null]) => void;
-  setCompress: (compress: boolean) => void
+  setCompress: (compress: boolean) => void;
+  setInferValues: (inferValues: boolean) => void;
+
 }
 
 export const useZarrStore = create<ZarrState>((set) => ({
   slice: [0, null],
   compress: false,
+  inferValues: false,
 
   setSlice: (slice) => set({ slice }),
-  setCompress: (compress) => set({ compress })
+  setCompress: (compress) => set({ compress }),
+  setInferValues: (inferValues) => set({ inferValues })
 }))
