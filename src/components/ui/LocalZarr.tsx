@@ -30,39 +30,80 @@ class MyWebFileSystemStore {
     }
 }
 
+class WebFileSystemStore {
+  root: FileSystemDirectoryHandle
+  constructor(root: FileSystemDirectoryHandle) {
+    this.root = root;
+  }
+  async get(key: string) {
+    // TODO: better error handling. We want to catch when file is missing and just return undefined. Other errors should bubble.
+    let fh = await resolveFileHandleForPath(
+      this.root,
+      key.slice(1),
+    ).catch(() => null);
+    if (!fh) return undefined;
+    let file = await fh.getFile();
+    let buffer = await file.arrayBuffer();
+    return new Uint8Array(buffer);
+  }
+}
 
 const LocalZarr = () => {
-    const [error, setError] = useState<boolean>(false);
-    const [select, setSelect] = useState<boolean>(false)
 
-  function handleChange(e: ChangeEvent<HTMLInputElement>){
-    const { files } = e.target;
+  const handleFileSelect = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+
     if (!files || files.length === 0) {
-      console.log('No directory selected.');
       return;
     }
+    // Create a Map to hold the Zarr store data
+    const store = new Map<string, Promise<ArrayBuffer>>();
 
-    const newStore = new MyWebFileSystemStore(files)
-    let store = zarr.root(newStore);
-    console.log(store)
-    zarr.open(newStore).then(e=>console.log(e));
-    
-  }
+    // The base directory name will be the first part of the relative path
+    const baseDir = files[0].webkitRelativePath.split('/')[0];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      // We need to remove the base directory from the path for zarrita
+      const relativePath = file.webkitRelativePath.substring(baseDir.length + 1);
+      if (relativePath) {
+        store.set('/' + relativePath, file.arrayBuffer()); //Zarrita looks for a leading slash before variables. Need to add it back
+      }
+    }
+
+    // Create a custom zarrita store from the Map
+    const customStore: zarr.AsyncReadable<any> = {
+      async get(key: string) {
+        const buffer = await store.get(key);
+        return buffer ? new Uint8Array(buffer) : undefined;
+      }
+    };
+
+    try {
+      // Open the Zarr store using the custom store
+      const store = await zarr.tryWithConsolidated(customStore);
+      const root = await zarr.open(store)
+      const kind = root.kind; //Will need this if it's a group or array
+      console.log(root)
+
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log(`Error opening Zarr store: ${error.message}`);
+      } else {
+        console.log('An unknown error occurred when opening the Zarr store.');
+      }
+    }
+  };
+  
   return (
     <div>
-        <form  onSubmit={e=>{e.preventDefault();console.log(e)}}>
         <input type="file" id="filepicker"
         // @ts-expect-error `webkitdirectory` is non-standard attribute. TS doesn't know about it. It's used for cross-browser compatibility.
         directory=''
         webkitdirectory='true'
-        onChange={handleChange}
+        onChange={handleFileSelect}
         >
         </input>
-        {/* <button onClick={e=>setSelect(x=>!x)}>Local Check </button> */}
-        <button type='submit'>Check?</button>
-      </form>
-
-
     </div>
   )
 }
