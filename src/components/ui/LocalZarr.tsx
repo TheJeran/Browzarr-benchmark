@@ -41,8 +41,16 @@ const LocalZarr = () => {
     try {
       // Open the Zarr store using the custom store
       const store = await zarr.tryWithConsolidated(customStore);
+      if (!('contents' in store)){
+        //Metadata is missing. We will need to parse variables here. 
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const relativePath = file.webkitRelativePath.substring(baseDir.length + 1);
+          console.log(relativePath)
+        }
+      }
       const gs = zarr.open(store, {kind: 'group'});
-      gs.then(e=>setCurrentStore(e))
+      gs.then(e=>{setCurrentStore(e)})
       setVariable("Default")
 
     } catch (error) {
