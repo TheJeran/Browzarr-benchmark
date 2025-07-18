@@ -128,6 +128,7 @@ const Navbar = React.memo(function Navbar(){
   })))
 
   const [showStoreInput, setShowStoreInput] = useState<boolean>(false)
+  const [showLocalInput, setShowLocalInput] = useState<boolean>(false)
   const [cmap, setCmap] = useState<string>("Default")
   const [flipCmap, setFlipCmap] = useState<boolean>(false)
   const colormap = useGlobalStore(useShallow(state=>state.colormap))
@@ -151,14 +152,17 @@ const Navbar = React.memo(function Navbar(){
             <DropdownMenuContent className="w-56" align="start">
               <DropdownMenuLabel>Datasets</DropdownMenuLabel>
               <DropdownMenuGroup>
-                <DropdownMenuItem onSelect={e=>{setInitStore(ZARR_STORES["ESDC"]); setVariable("Default"); setShowStoreInput(false)}}>
+                <DropdownMenuItem onSelect={e=>{setInitStore(ZARR_STORES["ESDC"]); setVariable("Default"); setShowStoreInput(false); setShowLocalInput(false)}}>
                   ESDC
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={e=>{setInitStore(ZARR_STORES["SEASFIRE"]); setVariable("Default"); setShowStoreInput(false)}}>
+                <DropdownMenuItem onSelect={e=>{setInitStore(ZARR_STORES["SEASFIRE"]); setVariable("Default"); setShowStoreInput(false); setShowLocalInput(false)}}>
                   Seasfire
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={e=>setShowStoreInput(true)}>
+                <DropdownMenuItem onSelect={e=>{setInitStore(""); setShowStoreInput(true);setShowLocalInput(false)}}>
                   Personal
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={e=>{setShowLocalInput(true);setShowStoreInput(false)}}>
+                  Local
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
@@ -195,6 +199,7 @@ const Navbar = React.memo(function Navbar(){
               e.preventDefault();
               const input = (e.currentTarget.elements[0] as HTMLInputElement);
               setInitStore(input.value);
+              setVariable("Default");
             }}
           >
             <Input placeholder="Remote Store URL" /> 
@@ -203,6 +208,8 @@ const Navbar = React.memo(function Navbar(){
             </Button>
           </form>
         }
+        {showLocalInput && <LocalZarr /> }
+        {plotOn && 
         <Select value={variable} onValueChange={e=>{setVariable(e); setAnimate(false)}}>
           <SelectTrigger className="w-full max-w-[50vw] md:w-[180px] md:max-w-none md:static md:transform-none absolute left-0 top-10 z-10">
             <SelectValue defaultValue={variable} placeholder="Select a variable" />
@@ -215,8 +222,8 @@ const Navbar = React.memo(function Navbar(){
               ))}
             </SelectGroup>
           </SelectContent>
-        </Select>
-        <LocalZarr />
+        </Select>}
+        
         {plotOn && <Button onClick={()=>setResetCamera(!resetCamera)}>Reset Camera</Button>}
       
       {!isFlat && plotOn && <PlotTweaker/>}
