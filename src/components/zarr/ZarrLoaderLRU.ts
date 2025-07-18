@@ -35,6 +35,14 @@ interface TimeSeriesInfo{
 	uv:THREE.Vector2,
 	normal:THREE.Vector3
 }
+
+interface CacheInfo{
+	data: ArrayLike<number>;
+	stride: number[];
+	shape: number[];
+	compress:boolean;
+	valueScales:{maxVal:number, minVal:number} | null
+}
   
 export class ZarrDataset{
 	private groupStore: Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>;
@@ -57,6 +65,7 @@ export class ZarrDataset{
 		const setStrides = useGlobalStore.getState().setStrides
 		const setValueScales = useGlobalStore.getState().setValueScales
 		const setInferValues = useZarrStore.getState().setInferValues
+		const setCompress = useZarrStore.getState().setCompress
 		const compress = useZarrStore.getState().compress
 		const inferValues = useZarrStore.getState().inferValues
 		const valueScales = useGlobalStore.getState().valueScales
@@ -66,10 +75,16 @@ export class ZarrDataset{
 		if (this.cache.has(variable)){
 			return this.cache.get(variable)
 		}
-
 		const group = await this.groupStore;
 		const outVar = await zarr.open(group.resolve(variable), {kind:"array"})
-		const [totalSize, chunkSize, chunkShape] = GetSize(outVar);
+		const [totalSize, _chunkSize, chunkShape] = GetSize(outVar);
+		let cacheObj: CacheInfo = { //When we compress we lose the the valueScales. Need to store those in cache
+			data: new Float32Array(1),
+			stride: [1,1,1],
+			shape: [1,1,1],
+			compress: false,
+			valueScales: {maxVal:1,minVal:-1}
+		};
 		// Type check using zarr.Array.is
 		if (outVar.is("number") || outVar.is("bigint")) {
 			let chunk;
@@ -83,6 +98,8 @@ export class ZarrDataset{
 				if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
 							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
 				} else {
+					cacheObj.shape = chunk.shape;
+					cacheObj.stride = chunk.stride;
 					if (compress){
 						let minVal: number;
 						let maxVal: number;
@@ -96,11 +113,16 @@ export class ZarrDataset{
 						}
 						const normed = chunk.data.map((i)=>(i-minVal)/(maxVal-minVal))
 						typedArray = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254))
-						chunk.data = typedArray
-						this.cache.set(variable,chunk)
+						cacheObj.data = typedArray; 
+						cacheObj.compress = true;
+						cacheObj.valueScales = {maxVal,minVal}
+						this.cache.set(variable,cacheObj)
 					}
 					else{
-						this.cache.set(variable,chunk)
+						cacheObj.data = chunk.data; 
+						cacheObj.compress = false;
+						cacheObj.valueScales = null;
+						this.cache.set(variable,cacheObj)
 					}
 					
 				}
@@ -113,6 +135,7 @@ export class ZarrDataset{
 				const timeSize = outVar.shape[1]*outVar.shape[2]
 				const arraySize = (endIdx-startIdx+1)*chunkShape[0]*timeSize
 				shape = [(endIdx-startIdx)*chunkShape[0],outVar.shape[1],outVar.shape[2]]
+				cacheObj.shape = shape;
 				typedArray = compress ? new Uint8Array(arraySize) : new Float32Array(arraySize);
 				let accum = 0;
 				let iter = 1;
@@ -120,9 +143,13 @@ export class ZarrDataset{
 					const cacheName = `${variable}_chunk_${i}`
 					this.chunkIDs.push(i) //identify which chunks to use when recombining cache for timeseries
 					if (this.cache.has(cacheName)){
-						//Add a check and throw error here if user set compress but the local files are not compressed
+						console.log("using_cache")
 						chunk = this.cache.get(cacheName)
-						setStrides(chunk.stride)
+						if (accum == 0){
+							setStrides(chunk.stride)
+							setValueScales(chunk.valueScales)
+							setCompress(chunk.compress)
+						}
 						typedArray.set(chunk.data,accum)
 						setProgress(Math.round(iter/chunkCount*100))
 						accum += chunk.data.length;
@@ -134,34 +161,42 @@ export class ZarrDataset{
 						if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
 							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
 						} else {
+							if (accum == 0){
+								setStrides(chunk.stride)
+								cacheObj.stride = chunk.stride
+							}
 							if (compress){
 								let minVal: number;
 								let maxVal: number;
 								if (inferValues){
-									[minVal, maxVal] = ArrayMinMax(chunk.data)
-									setValueScales({maxVal, minVal})
-									setInferValues(false) //We set the min and max values based on the first chunk
+									[minVal, maxVal] = ArrayMinMax(chunk.data);
+									setValueScales({maxVal, minVal});
+									setInferValues(false); //We set the min and max values based on the first chunk
 								}
 								else{
 									minVal = valueScales.minVal;
 									maxVal = valueScales.maxVal;
 								}
-								const normed = chunk.data.map((i)=>(i-minVal)/(maxVal-minVal))
-								chunkTypeArray = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254))
-								chunk.data = chunkTypeArray
-								typedArray.set(chunkTypeArray,accum)
-								this.cache.set(variable,chunk)
+								const normed = chunk.data.map((i)=>(i-minVal)/(maxVal-minVal));
+								chunkTypeArray = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254));
+								cacheObj.compress = true;
+								cacheObj.valueScales = {minVal,maxVal};
+								const thisObj = {...cacheObj, data: chunkTypeArray }
+								this.cache.set(cacheName,thisObj);
+								typedArray.set(chunkTypeArray,accum);
 								accum += chunk.data.length;
-								setStrides(chunk.stride)
-								setProgress(Math.round(iter/chunkCount*100))
+								setProgress(Math.round(iter/chunkCount*100));
 								iter ++;
 							}
 							else{
-								typedArray.set(chunk.data,accum)
-								this.cache.set(cacheName,chunk)
+								typedArray.set(chunk.data,accum);
+								cacheObj.compress = false;
+								cacheObj.valueScales = null;
+								const thisObj = {...cacheObj, data: chunk.data }
+								this.cache.set(cacheName,thisObj);
 								accum += chunk.data.length;
-								setStrides(chunk.stride)
-								setProgress(Math.round(iter/chunkCount*100))
+								setStrides(chunk.stride);
+								setProgress(Math.round(iter/chunkCount*100));
 								iter ++;
 							}
 						}
