@@ -21,6 +21,7 @@ import PlotLineButton from "./PlotLineButton";
 import { ContextTweaker } from "./ContextTweaker";
 import Colorbar from "./Colorbar";
 import ShowPlot from "./ShowPlot";
+import LocalZarr from "./LocalZarr";
 export {
   Navbar,
   Footer,
@@ -45,5 +46,6 @@ export {
   PlotLineButton,
   ContextTweaker,
   Colorbar,
-  ShowPlot
+  ShowPlot,
+  LocalZarr
 };

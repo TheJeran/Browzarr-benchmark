@@ -9,7 +9,7 @@ import { useEffect, useMemo } from 'react';
 import { Analysis, PlotArea, Plot } from '@/components/plots';
 import { MiddleSlider } from '@/components/ui';
 import { Metadata, ShowAnalysis, Loading, Navbar, ShowPlot } from '@/components/ui';
-import { useGlobalStore } from '@/utils/GlobalStates';
+import { useGlobalStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow, shallow } from 'zustand/shallow';
 import useCSSVariable from '@/components/ui/useCSSVariable';
 import { GetTitleDescription } from '@/components/zarr/GetMetadata';
@@ -17,21 +17,31 @@ import { GetTitleDescription } from '@/components/zarr/GetMetadata';
 export function LandingHome() {
 
   const {initStore, setZMeta} = useGlobalStore(useShallow(state=>({initStore: state.initStore, setZMeta: state.setZMeta})))
-  const ZarrDS = useMemo(() => new ZarrDataset(initStore), [initStore])
+  const {currentStore, setCurrentStore} = useZarrStore(useShallow(state=> ({
+    currentStore: state.currentStore,
+    setCurrentStore: state.setCurrentStore
+  })))
+  
+  useEffect(()=>{ //Update store if URL changes
+    const newStore = GetStore(initStore)
+    setCurrentStore(newStore)
+  },[initStore])
+
+  const ZarrDS = useMemo(() => new ZarrDataset(currentStore), [currentStore]) //Update Dataset if store changes
   const [titleDescription, setTitleDescription] = useState<{ title?: string; description?: string }>({});
 
   useEffect(() => {
     let isMounted = true;
-    GetTitleDescription(GetStore(initStore)).then((result) => {
+    GetTitleDescription(currentStore).then((result) => {
       if (isMounted) setTitleDescription(result);
     });
-    const store = GetStore(initStore);
+    const store = currentStore;
     const fullmetadata = GetZarrMetadata(store);
     const variables = GetVariableNames(fullmetadata);
     fullmetadata.then(e=>setZMeta(e))
     variables.then(e=> {setVariables(e)})
     return () => { isMounted = false; };
-  }, [initStore]);
+  }, [currentStore]);
 
 
   const {   setVariables, setPlotOn, timeSeries, variable, metadata, plotOn  } = useGlobalStore(

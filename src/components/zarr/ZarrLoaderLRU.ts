@@ -43,8 +43,8 @@ export class ZarrDataset{
 	private dimNames: string[];
 	private chunkIDs: number[];
 
-	constructor(store: string){
-		this.groupStore = GetStore(store);
+	constructor(store: Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>){
+		this.groupStore = store;
 		this.variable = "Default";
 		this.cache = new QuickLRU({maxSize: 2000});
 		this.dimNames = ["","",""]
@@ -176,7 +176,6 @@ export class ZarrDataset{
 
 		let data, shape : number[], stride; 
 		if (this.chunkIDs.length > 0){
-			console.log("here")
 			const arrays = []
 			for (const id of this.chunkIDs){
 				arrays.push(this.cache.get(`${this.variable}_chunk_${id}`))

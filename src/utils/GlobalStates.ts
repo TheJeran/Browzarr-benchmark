@@ -1,6 +1,10 @@
 import { create } from "zustand";
 import * as THREE from 'three';
+import * as zarr from 'zarrita'
 import { GetColorMapTexture } from "@/components/textures";
+import { GetStore, ZARR_STORES } from "@/components/zarr/ZarrLoaderLRU";
+
+const ESDC = 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr'
 
 interface Coord {
     name: string; 
@@ -273,18 +277,23 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
   setVariable2: (variable2) => set({ variable2 }),  
 }));
 
+
 type ZarrState = {
   slice: [number  , number | null],
   compress: boolean,
+  currentStore: any;
 
   setSlice: (slice: [number , number | null]) => void;
-  setCompress: (compress: boolean) => void
+  setCompress: (compress: boolean) => void;
+  setCurrentStore: (currentStore: any) => void;
 }
 
 export const useZarrStore = create<ZarrState>((set) => ({
   slice: [0, null],
   compress: false,
+  currentStore: GetStore(ESDC),
 
   setSlice: (slice) => set({ slice }),
-  setCompress: (compress) => set({ compress })
+  setCompress: (compress) => set({ compress }),
+  setCurrentStore: (currentStore) => set({ currentStore })
 }))

@@ -4,7 +4,7 @@ import { LuChevronsUpDown } from "react-icons/lu";
 import { IoIosCheckmark } from "react-icons/io";
 import { ZARR_STORES } from "../zarr/ZarrLoaderLRU";
 import Image from "next/image";
-import { AboutButton, PlotTweaker, PlotLineButton } from "@/components/ui";
+import { AboutButton, PlotTweaker, PlotLineButton, LocalZarr } from "@/components/ui";
 import ThemeSwitch  from "@/components/ui/ThemeSwitch";
 import logo from "@/app/logo.png"
 import './css/Navbar.css'
@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 import { GetColorMapTexture } from "@/components/textures";
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-
+import { Input } from "./input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -126,6 +126,9 @@ const Navbar = React.memo(function Navbar(){
     setAnimate: state.setAnimate,
     setResetCamera: state.setResetCamera
   })))
+
+  const [showStoreInput, setShowStoreInput] = useState<boolean>(false)
+  const [showLocalInput, setShowLocalInput] = useState<boolean>(false)
   const [cmap, setCmap] = useState<string>("Default")
   const [flipCmap, setFlipCmap] = useState<boolean>(false)
   const colormap = useGlobalStore(useShallow(state=>state.colormap))
@@ -149,16 +152,17 @@ const Navbar = React.memo(function Navbar(){
             <DropdownMenuContent className="w-56" align="start">
               <DropdownMenuLabel>Datasets</DropdownMenuLabel>
               <DropdownMenuGroup>
-                <DropdownMenuItem onSelect={e=>{setInitStore(ZARR_STORES["ESDC"]); setVariable("Default")}}>
+                <DropdownMenuItem onSelect={e=>{setInitStore(ZARR_STORES["ESDC"]); setVariable("Default"); setShowStoreInput(false); setShowLocalInput(false)}}>
                   ESDC
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={e=>{setInitStore(ZARR_STORES["SEASFIRE"]); setVariable("Default")}}>
+                <DropdownMenuItem onSelect={e=>{setInitStore(ZARR_STORES["SEASFIRE"]); setVariable("Default"); setShowStoreInput(false); setShowLocalInput(false)}}>
                   Seasfire
-                  <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={e=>console.log("setting to Personal and showing text field")}>
+                <DropdownMenuItem onSelect={e=>{setInitStore(""); setShowStoreInput(true);setShowLocalInput(false)}}>
                   Personal
-                  <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={e=>{setShowLocalInput(true);setShowStoreInput(false)}}>
+                  Local
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
@@ -187,6 +191,25 @@ const Navbar = React.memo(function Navbar(){
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+        {showStoreInput && 
+          <form
+            className="flex max-w-sm items-center gap-2 mr-[10px]"
+            action=""
+            onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
+              e.preventDefault();
+              const input = (e.currentTarget.elements[0] as HTMLInputElement);
+              setInitStore(input.value);
+              setVariable("Default");
+            }}
+          >
+            <Input placeholder="Remote Store URL" /> 
+            <Button type="submit" variant="outline">
+              Fetch
+            </Button>
+          </form>
+        }
+        {showLocalInput && <LocalZarr /> }
+        {plotOn && 
         <Select value={variable} onValueChange={e=>{setVariable(e); setAnimate(false)}}>
           <SelectTrigger className="w-full max-w-[50vw] md:w-[180px] md:max-w-none md:static md:transform-none absolute left-0 top-10 z-10">
             <SelectValue defaultValue={variable} placeholder="Select a variable" />
@@ -199,7 +222,8 @@ const Navbar = React.memo(function Navbar(){
               ))}
             </SelectGroup>
           </SelectContent>
-        </Select>
+        </Select>}
+        
         {plotOn && <Button onClick={()=>setResetCamera(!resetCamera)}>Reset Camera</Button>}
       
       {!isFlat && plotOn && <PlotTweaker/>}
