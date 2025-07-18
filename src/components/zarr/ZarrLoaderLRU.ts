@@ -56,6 +56,7 @@ export class ZarrDataset{
 		const setProgress = useGlobalStore.getState().setProgress
 		const setStrides = useGlobalStore.getState().setStrides
 		const setValueScales = useGlobalStore.getState().setValueScales
+		const setInferValues = useZarrStore.getState().setInferValues
 		const compress = useZarrStore.getState().compress
 		const inferValues = useZarrStore.getState().inferValues
 		const valueScales = useGlobalStore.getState().valueScales
@@ -128,16 +129,41 @@ export class ZarrDataset{
 						iter ++;
 					}
 					else{
+						let chunkTypeArray;
 						chunk = await zarr.get(outVar, [zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null])
 						if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
 							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
 						} else {
-							typedArray.set(chunk.data,accum)
-							this.cache.set(cacheName,chunk)
-							accum += chunk.data.length;
-							setStrides(chunk.stride)
-							setProgress(Math.round(iter/chunkCount*100))
-							iter ++;
+							if (compress){
+								let minVal: number;
+								let maxVal: number;
+								if (inferValues){
+									[minVal, maxVal] = ArrayMinMax(chunk.data)
+									setValueScales({maxVal, minVal})
+									setInferValues(false) //We set the min and max values based on the first chunk
+								}
+								else{
+									minVal = valueScales.minVal;
+									maxVal = valueScales.maxVal;
+								}
+								const normed = chunk.data.map((i)=>(i-minVal)/(maxVal-minVal))
+								chunkTypeArray = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254))
+								chunk.data = chunkTypeArray
+								typedArray.set(chunkTypeArray,accum)
+								this.cache.set(variable,chunk)
+								accum += chunk.data.length;
+								setStrides(chunk.stride)
+								setProgress(Math.round(iter/chunkCount*100))
+								iter ++;
+							}
+							else{
+								typedArray.set(chunk.data,accum)
+								this.cache.set(cacheName,chunk)
+								accum += chunk.data.length;
+								setStrides(chunk.stride)
+								setProgress(Math.round(iter/chunkCount*100))
+								iter ++;
+							}
 						}
 					}
 				}
