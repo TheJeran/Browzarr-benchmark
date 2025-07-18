@@ -1,0 +1,42 @@
+.panel-container{
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    right: 20px;
+    width: 100px;
+    height: 50vh;
+    top: 25vh;;
+    z-index: 2;
+    background-color: beige;
+    border-radius: 50px;
+    user-select: none;
+}
+
+.panel-item{
+    position: relative;
+    width: 90px;
+    height: 90px;
+    border-radius: 45px;
+    background-color: aqua;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.panel-item-options{
+    position: absolute;
+    right: calc(100% + 10px);
+    width: 100px;
+    background-color: rgb(182, 182, 45);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50px;
+    transform-origin: 125% 37%;
+    transition: 0.25s;
+    align-self: center;
+    z-index: 0;
+}
