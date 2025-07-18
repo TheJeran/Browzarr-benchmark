@@ -6,6 +6,7 @@ import { useZarrStore, useGlobalStore } from '@/utils/GlobalStates';
 interface Array {
     data: Float32Array | Float64Array | Int32Array | Uint32Array;
     shape: number[];
+    valueScales:{minVal:number, maxVal:number}
 }
 
 
@@ -71,8 +72,9 @@ export function ArrayTo3D(array: Array){
 
 export function ArrayToTexture(array: Array){
     const shape = array.shape;
+    const prevScales = array.valueScales;
     const [texture,scales] = shape.length == 3 ? ArrayTo3D(array) : ArrayTo2D(array);
-    return [texture, scales];
+    return [texture, prevScales ? prevScales : scales];
 }
 
 export function DefaultCubeTexture() {
@@ -87,6 +89,7 @@ export function DefaultCubeTexture() {
     const array: Array = {
         data,
         shape,
+        valueScales:{minVal:0, maxVal:1}
     }
     const [texture, _scaling] = ArrayTo3D(array)
     return texture

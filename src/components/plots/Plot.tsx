@@ -151,10 +151,11 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       setShowLoading(true);
       setShow(false)
       ZarrDS.GetArray(variable, slice).then((result) => {
-        // result now contains: { data: TypedArray, shape: number[], dtype: string }
+        console.log(result)
         const [texture, scaling] = ArrayToTexture({
           data: result.data,
-          shape: result.shape
+          shape: result.shape,
+          valueScales: result.valueScales
         })
         if (texture instanceof THREE.DataTexture || texture instanceof THREE.Data3DTexture) {
           setTexture(texture)

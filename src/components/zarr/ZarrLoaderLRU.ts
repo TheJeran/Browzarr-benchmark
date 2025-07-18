@@ -119,9 +119,11 @@ export class ZarrDataset{
 						this.cache.set(variable,cacheObj)
 					}
 					else{
+						typedArray = chunk.data;
 						cacheObj.data = chunk.data; 
 						cacheObj.compress = false;
 						cacheObj.valueScales = null;
+						console.log(cacheObj)
 						this.cache.set(variable,cacheObj)
 					}
 					
