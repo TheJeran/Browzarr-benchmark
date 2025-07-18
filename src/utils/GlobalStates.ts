@@ -55,7 +55,6 @@ type StoreState = {
   setDimUnits: (dimUnits: string[]) => void;
   setDimCoords: (dimCoords?: Record<string, DimCoords>) => void;
   updateDimCoords: (newDims: Record<string, DimCoords>) => void;
-
   setPlotDim: (plotDim: number) => void;
   setFlipY: (flipY:boolean) => void;
   setInitStore: (initStore:string ) => void;
