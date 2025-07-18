@@ -174,6 +174,7 @@ const Navbar = React.memo(function Navbar(){
                       <DropdownMenuItem onSelect={()=> {setPlotType("volume"); setTimeSeries({}); setDimCoords({}); setAnimate(false)} }>Volume</DropdownMenuItem>
                       <DropdownMenuItem onSelect={()=> {setPlotType("point-cloud"); setTimeSeries({}); setDimCoords({}); setAnimate(false)} }>Point Cloud</DropdownMenuItem>
                       <DropdownMenuItem onSelect={()=> {setPlotType("sphere"); setTimeSeries({}); setDimCoords({}); setAnimate(false)} }>Sphere</DropdownMenuItem>
+                      <DropdownMenuItem onSelect={()=> {setPlotType("flat"); setTimeSeries({}); setDimCoords({}); setAnimate(false)} }>Flat</DropdownMenuItem>
                     </DropdownMenuSubContent>
                   </DropdownMenuPortal>
                 </DropdownMenuSub>
@@ -228,6 +229,7 @@ const Navbar = React.memo(function Navbar(){
       
       {!isFlat && plotOn && <PlotTweaker/>}
       {plotOn && !isFlat && <PlotLineButton />}
+      
       </div>
       <ThemeSwitch />
       <AboutButton />

@@ -172,12 +172,11 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         }
         if (result.shape.length == 2){
           setIsFlat(true)
-          setDataArray(result.data)
-
         }
         else{
           setIsFlat(false)
         }
+        setDataArray(result.data)
         const shapeRatio = result.shape[1] / result.shape[2] * 2;
         setShape(new THREE.Vector3(2, shapeRatio, 2));
         setShowLoading(false)
@@ -231,8 +230,8 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
     >
       {show && <Colorbar units={metadata?.units} valueScales={valueScales}/>}
       <Nav />
-      {isFlat && <AnalysisInfo loc={loc} show={showInfo} info={[...coords.current,val.current]}/> }
-      {!isFlat && <>
+      {(isFlat || plotType == "flat") && <AnalysisInfo loc={loc} show={showInfo} info={[...coords.current,val.current]}/> }
+      {!isFlat && plotType != "flat" && <>
       <Canvas camera={{ position: isFlat ? [0,0,5] : [-4.5, 3, 4.5], fov: 50 }}
         frameloop="demand"
       >
@@ -249,11 +248,11 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       </Canvas>
       </>}
 
-        {isFlat && <>
+        {(isFlat || plotType == "flat") && <>
         <Canvas camera={{ position: [0,0,5], zoom: 1000 }}
         orthographic frameloop="demand"
         >
-          <FlatMap texture={texture as THREE.DataTexture} infoSetters={infoSetters} />
+          <FlatMap texture={texture as THREE.DataTexture | THREE.Data3DTexture} infoSetters={infoSetters} />
           <Orbiter isFlat={true}/>
         </Canvas>
         </>}
