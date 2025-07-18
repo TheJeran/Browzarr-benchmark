@@ -25,6 +25,8 @@ import LocalZarr from "./LocalZarr";
 import MainPanel from "./MainPanel";
 import PlotType from "./PlotType";
 import Variables from "./Variables";
+import Colormaps from "./Colormaps";
+import AdjustPlot from "./AdjustPlot";
 export {
   Navbar,
   Footer,
@@ -53,5 +55,7 @@ export {
   LocalZarr,
   MainPanel,
   PlotType,
-  Variables
+  Variables,
+  Colormaps,
+  AdjustPlot
 };

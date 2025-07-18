@@ -18,11 +18,14 @@
     position: relative;
     width: 90px;
     height: 90px;
-    border-radius: 45px;
+    border-radius: 50%;
     background-color: aqua;
     cursor: pointer;
     margin-top: 10px;
     margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .panel-item-options{
@@ -38,5 +41,23 @@
     transform-origin: 125% 37%;
     transition: 0.25s;
     align-self: center;
-    z-index: 0;
+    z-index: 1;
+    height: fit-content;
+    max-height: 400px;
+    overflow: auto;
+    box-sizing: content-box;
+}
+.panel-item-options::-webkit-scrollbar{
+    display:none}
+
+.variable-item{
+    padding: 3px 0px;
+    cursor: pointer;
+}
+
+.variable-item:hover{
+    background-color: aliceblue;
+    border-radius: 3px;
+    transform: scale(120%);
+    transition: 0.1s;
 }

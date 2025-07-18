@@ -13,12 +13,11 @@ const Variables = () => {
 
   return (
     <div style={{position:'relative'}}>
-        <div className='panel-item' onClick={e=>setShowOptions(x=>!x)} />
-        <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) ' : 'scale(0%) '}}>
+        <div className='panel-item' onClick={e=>setShowOptions(x=>!x)} > Variables </div>
+        <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) ' : 'scale(0%) ', width:'auto', padding:'30px 10px', justifyContent:'space-around'}}>
             {variables.map((val)=>(
-                <div onClick={e=>setVariable(val)}>{val}</div>
+                <div className='variable-item' onClick={e=>{setVariable(val); setShowOptions(false)}}>{val}</div>
             ))}
-                
         </div>
     </div>
   )
