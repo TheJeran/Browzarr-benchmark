@@ -166,25 +166,6 @@ const Navbar = React.memo(function Navbar(){
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              {plotOn && <>
-              <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>Plot Type</DropdownMenuSubTrigger>
-                  <DropdownMenuPortal>
-                    <DropdownMenuSubContent>
-                      <DropdownMenuItem onSelect={()=> {setPlotType("volume"); setTimeSeries({}); setDimCoords({}); setAnimate(false)} }>Volume</DropdownMenuItem>
-                      <DropdownMenuItem onSelect={()=> {setPlotType("point-cloud"); setTimeSeries({}); setDimCoords({}); setAnimate(false)} }>Point Cloud</DropdownMenuItem>
-                      <DropdownMenuItem onSelect={()=> {setPlotType("sphere"); setTimeSeries({}); setDimCoords({}); setAnimate(false)} }>Sphere</DropdownMenuItem>
-                      <DropdownMenuItem onSelect={()=> {setPlotType("flat"); setTimeSeries({}); setDimCoords({}); setAnimate(false)} }>Flat</DropdownMenuItem>
-                    </DropdownMenuSubContent>
-                  </DropdownMenuPortal>
-                </DropdownMenuSub>
-              <DropdownMenuSeparator />
-              <DropdownMenuSub>
-                  <ColorMaps cmap={cmap} setCmap={setCmap}/>
-                  <Button className="w-[100%] h-[20px] cursor-[pointer]" variant="destructive" onClick={()=>setFlipCmap(x=>!x)}>Flip Colormap</Button>
-                </DropdownMenuSub>
-              <DropdownMenuSeparator />
-              </>}
               <DropdownMenuItem> 
                 <a href="https://github.com/EarthyScience/Browzarr/" target="_blank" rel="noopener noreferrer">
                   GitHub
@@ -210,7 +191,7 @@ const Navbar = React.memo(function Navbar(){
           </form>
         }
         {showLocalInput && <LocalZarr /> }
-        {plotOn && 
+        {/* {plotOn && 
         <Select value={variable} onValueChange={e=>{setVariable(e); setAnimate(false)}}>
           <SelectTrigger className="w-full max-w-[50vw] md:w-[180px] md:max-w-none md:static md:transform-none absolute left-0 top-10 z-10">
             <SelectValue defaultValue={variable} placeholder="Select a variable" />
@@ -223,11 +204,11 @@ const Navbar = React.memo(function Navbar(){
               ))}
             </SelectGroup>
           </SelectContent>
-        </Select>}
+        </Select>} */}
         
         {plotOn && <Button onClick={()=>setResetCamera(!resetCamera)}>Reset Camera</Button>}
       
-      {!isFlat && plotOn && <PlotTweaker/>}
+      {/* {!isFlat && plotOn && <PlotTweaker/>} */}
       {plotOn && !isFlat && <PlotLineButton />}
       
       </div>

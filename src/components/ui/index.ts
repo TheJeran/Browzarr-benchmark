@@ -22,6 +22,11 @@ import { ContextTweaker } from "./ContextTweaker";
 import Colorbar from "./Colorbar";
 import ShowPlot from "./ShowPlot";
 import LocalZarr from "./LocalZarr";
+import MainPanel from "./MainPanel";
+import PlotType from "./PlotType";
+import Variables from "./Variables";
+import Colormaps from "./Colormaps";
+import AdjustPlot from "./AdjustPlot";
 export {
   Navbar,
   Footer,
@@ -47,5 +52,10 @@ export {
   ContextTweaker,
   Colorbar,
   ShowPlot,
-  LocalZarr
+  LocalZarr,
+  MainPanel,
+  PlotType,
+  Variables,
+  Colormaps,
+  AdjustPlot
 };

@@ -57,8 +57,9 @@ void main() {
         gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
     }
 
+    vec2 scaledZBounds = vec2(flatBounds.z,  flatBounds.w) * vec2(timeScale);
     bool xCheck = scaledPos.x < flatBounds.x || scaledPos.x > flatBounds.y;
-    bool zCheck = scaledPos.z < flatBounds.z || scaledPos.z > flatBounds.w;
+    bool zCheck = scaledPos.z < scaledZBounds.x || scaledPos.z > scaledZBounds.y;
     bool yCheck = scaledPos.y < vertBounds.x || scaledPos.y> vertBounds.y;
 
     if (xCheck || zCheck || yCheck){ //Hide points that are clipped
