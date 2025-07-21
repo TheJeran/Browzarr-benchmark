@@ -204,7 +204,6 @@ const VariableScroller = () => {
                 );
             })}
        </div>
-       {meta && <MetaDataInfo meta={meta} />}
     </div>
   );
 };

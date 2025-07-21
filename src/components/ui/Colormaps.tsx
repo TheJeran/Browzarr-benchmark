@@ -22,16 +22,19 @@ const Colormaps = () => {
   return (
     <div style={{position:'relative'}}>
         <div className='panel-item' onClick={e=>setShowOptions(x=>!x)} > Colormap </div>
-        <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) ' : 'scale(0%) ', width:'auto', padding:'30px 10px', justifyContent:'space-around'}}>
+        <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) ' : 'scale(0%) ', width:'auto', padding:'30px 10px', justifyContent:'space-around', overflow:'visible'}}>
+            <div className='scroller' style={{width:'auto', padding:'10px 10px', justifyContent:'space-around', overflow:'auto'}}>
             {colormaps.map((val)=>(
-                <div className='variable-item' onClick={e=>{setCmap(val); setShowOptions(false)}}>{val}</div>
+                    <img className={`cmap ${flipCmap ? 'flipped' : ''}`} src={`./colormap_icons/${val}.webp`} alt={val} onClick={e=>{setCmap(val); setShowOptions(false)}} />
             ))}
-        </div>
-        <MdOutlineSwapVert style={{position:'absolute', left:'-150px', bottom:'50px', height:'50px', 
-            width:'50px', cursor:'pointer', transform: showOptions ? 'scale(100%) ' : 'scale(0%) ', 
-            transition:'.25s', transitionDelay:showOptions ? '.25s' :'0s'}} 
+            </div>
+            <MdOutlineSwapVert className='flipper' style={{position:'absolute', right:'95%', bottom:'90%', height:'50px', 
+            width:'50px', cursor:'pointer', transform: `${flipCmap ? 'rotate(180deg)' : 'rotate(0deg)'}`,
+            transition:'.25s'}} 
             onClick={e=>setFlipCmap(x=>!x)}
         />
+        </div>
+        
     </div>
   )
 }

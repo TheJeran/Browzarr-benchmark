@@ -42,17 +42,32 @@
     transition: 0.25s;
     align-self: center;
     z-index: 1;
-    height: fit-content;
     max-height: 400px;
     overflow: auto;
-    box-sizing: content-box;
 }
+
 .panel-item-options::-webkit-scrollbar{
+    display: none;}
+
+.variable-scroller{
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    width: fit-content;
+}
+
+.scroller::-webkit-scrollbar{
+    display:none}
+
+.variable-scroller::-webkit-scrollbar{
     display:none}
 
 .variable-item{
-    padding: 3px 0px;
+    padding: 1px 0px;
     cursor: pointer;
+    width: 100px;
 }
 
 .variable-item:hover{
@@ -60,4 +75,98 @@
     border-radius: 3px;
     transform: scale(120%);
     transition: 0.1s;
+}
+
+.cmap{
+    padding: 1px 0px;
+    cursor: pointer;
+    max-width: 200px;
+    height: 50px;
+    border-radius: 10px;
+}
+
+.cmap:hover{
+    transform: scale(1.05, 1.4);
+    transition: 0.1s;
+}
+
+.flipped{
+    transform: scaleX(-1);
+}
+
+.flipped:hover{
+    transform: scale(-1.05, 1.4);
+    transition: 0.1s;
+}
+
+.flipper:hover{
+    filter: drop-shadow(0px 0px 4px black);
+    transition: 0.1s;
+}
+
+.meta-options{
+    position: absolute;
+    right: 110%;
+    top: 0%;
+    background-color: bisque;
+}
+
+.meta-container{
+    text-align: Center;
+    position: absolute;
+    width: 200px;
+    right: 0%;
+    top: 0%;
+    z-index: 1;
+    font-size: 16px;
+    padding: 10px;
+    background-color: rgba(160, 160, 160, 0.11);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.144);
+}
+
+.meta-container button{
+    margin-top: 10px;
+    justify-content: center;
+    background-color: var(--accent-2);
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.342);
+    align-self: center;
+    width: 98%;
+}
+
+
+@media (max-width: 1024px) {
+  .meta-container{
+    top: 12%;
+    font-size: 16px;
+    min-width: 350px;
+    max-width: 450px;
+  }
+}
+
+@media (max-width: 570px) {
+  .meta-container{
+    top: 12%;
+    font-size: 16px;
+    width: 85%;
+  }
+  .scroll-item {
+    font-size: 32px;
+    margin: 3px;
+  }
+}
+
+@media (max-width: 480px) {
+  .meta-container{
+    top: 12%;
+    font-size: 14px;
+    width: 85%;
+  }
+  .scroll-item {
+    font-size: 24px;
+    margin: 3px;
+  }
 }

@@ -1,8 +1,10 @@
 import React from 'react'
 import './css/MainPanel.css'
-import {PlotType, Variables, Colormaps, AdjustPlot} from './index'
+import {PlotType, Variables, Colormaps, AdjustPlot, PlotLineButton} from './index'
 
 const MainPanel = () => {
+
+  
   return (
     <div className='panel-container'>
       <PlotType />
