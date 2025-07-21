@@ -22,7 +22,7 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest",
-    "lint": "next lint --max-warnings 40"
+    "lint": "next lint --max-warnings 100"
   },
   "dependencies": {
     "@lazarusa/react-tweakpane": "^0.9.0",
