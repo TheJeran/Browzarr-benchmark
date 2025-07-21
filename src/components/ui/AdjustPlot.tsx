@@ -1,10 +1,11 @@
 "use client";
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import './css/MainPanel.css'
 import { useShallow } from 'zustand/shallow';
 import Slider from 'rc-slider';
 import { Button } from './button';
+import { LuSettings } from "react-icons/lu";
 
 function DeNorm(val : number, min : number, max : number){
     const range = max-min;
@@ -39,7 +40,6 @@ const MinMaxSlider = React.memo(function MinMaxSlider({range, setRange, valueSca
             trueMin = Math.round(DeNorm(range[0], minVal, maxVal)*100)/100
             trueMax = Math.round(DeNorm(range[1], minVal, maxVal)*100)/100
         }
-
     return(
         <div className='w-full flex justify-between flex-col'>
             <Slider
@@ -129,7 +129,6 @@ const VolumeOptions = ()=>{
               min={50}
               max={1000}
               step={50}
-              defaultValue={200} 
               value={quality}
           onChange={e => setQuality(parseInt(e.target.value))}
           />
@@ -191,7 +190,7 @@ const PointOptions = () =>{
   )
 }
 
-const AdjustPlot = () => {
+const AdjustPlot = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React.Dispatch<React.SetStateAction<string>>}) => {
     const [showOptions, setShowOptions] = useState<boolean>(false)
     const {isFlat, plotOn} = useGlobalStore(
         useShallow(state=>({
@@ -202,10 +201,15 @@ const AdjustPlot = () => {
         plotType: state.plotType,
   })))
     
-
+ useEffect(()=>{
+      if (currentOpen != 'settings'){
+        setShowOptions(false)
+      }
+  },[currentOpen])
+  
   return (
-    <div style={{position:'relative'}}>
-        <div className='panel-item' onClick={e=>setShowOptions(x=>!x)} > Options </div>
+    <div style={{position:'relative' }}>
+        <div className='panel-item' style={{cursor: plotOn ? 'pointer' : 'auto'}} onClick={e=>{if (plotOn) {setShowOptions(x=>!x); setOpen("settings")}}} > <LuSettings style={{width:'80%', height:'80%'}} color={plotOn ? 'black' : 'white'}/> </div>
         <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) ' : 'scale(0%) ', width:'auto', padding:'30px 10px', justifyContent:'space-between'}}>
           {plotType == 'volume' && <VolumeOptions />}
           {plotType == 'point-cloud' && <PointOptions/>}

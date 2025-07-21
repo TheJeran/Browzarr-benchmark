@@ -232,7 +232,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       <Nav />
       {(isFlat || plotType == "flat") && <AnalysisInfo loc={loc} show={showInfo} info={[...coords.current,val.current]}/> }
       {!isFlat && plotType != "flat" && <>
-      <Canvas camera={{ position: isFlat ? [0,0,5] : [-4.5, 3, 4.5], fov: 50 }}
+      <Canvas id='main-canvas' camera={{ position: isFlat ? [0,0,5] : [-4.5, 3, 4.5], fov: 50 }}
         frameloop="demand"
       >
         {plotType == "volume" && show && <>
@@ -249,7 +249,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       </>}
 
         {(isFlat || plotType == "flat") && <>
-        <Canvas camera={{ position: [0,0,5], zoom: 1000 }}
+        <Canvas id='main-canvas' camera={{ position: [0,0,5], zoom: 1000 }}
         orthographic frameloop="demand"
         >
           <FlatMap texture={texture as THREE.DataTexture | THREE.Data3DTexture} infoSetters={infoSetters} />

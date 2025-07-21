@@ -50,9 +50,11 @@ const MetaDataInfo = ({meta, setters} : {meta : any, setters: ViewSetters}) =>{
 
     },[currentSize])
 
+    
+
     return(
         <div className='meta-container max-w-sm md:max-w-md'
-          style={{ background: 'var(--background)',border: '1px solid var(--border)', borderRadius: '8px', padding: '10px', marginBottom: '10px' }}>
+          style={{ background: 'var(--background)',border: '1px solid var(--border)', padding: '10px', marginBottom: '10px' }}>
             <div className='meta-info'>
                 <b>Long Name</b> <br/>
                 {`${meta.long_name}`}<br/>
@@ -108,7 +110,7 @@ const MetaDataInfo = ({meta, setters} : {meta : any, setters: ViewSetters}) =>{
 }
 
 
-const Variables = () => {
+const Variables = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React.Dispatch<React.SetStateAction<string>>}) => {
     const [showOptions, setShowOptions] = useState<boolean>(false)
     const [showMeta, setShowMeta] = useState<boolean>(false)
     const {variables, zMeta, setVariable} = useGlobalStore(useShallow(state => ({
@@ -128,14 +130,20 @@ const Variables = () => {
         }
       },[selectedIndex, variables])
 
+      useEffect(()=>{
+              if (currentOpen != 'variables'){
+                  setShowOptions(false)
+              }
+        },[currentOpen])
+
   return (
     <div style={{position:'relative'}}>
-        <div className='panel-item' onClick={e=>{setShowOptions(x=>!x); setShowMeta(false)}} > Variables </div>
+        <div className='panel-item' onClick={e=>{setShowOptions(x=>!x); setShowMeta(false); setOpen("variables")}} > Variables </div>
         <div style={{position:'relative'}}>
-            <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) ' : 'scale(0%) ', width:'auto', padding:'30px 10px', justifyContent:'space-around', overflow:'visible'}}>
-                <div className='variable-scroller'>
+            <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) ' : 'scale(0%) ', maxHeight:'500px', width:'fit-content', padding:'30px 10px', justifyContent:'space-around', overflow:'visible'}}>
+                <div className='variable-scroller' >
                     {variables.map((val, idx)=>(
-                        <div className='variable-item' onClick={e=>{setSelectedIndex(idx); setShowMeta(true)}}>{val}</div>
+                        <div key={idx} className='variable-item ' style={{width:'auto'}} onClick={e=>{setSelectedIndex(idx); setShowMeta(true)}}>{val}</div>
                     ))}
                 </div>
                 <div className='meta-options' style={{visibility: showMeta ? 'visible' : 'hidden'}}>

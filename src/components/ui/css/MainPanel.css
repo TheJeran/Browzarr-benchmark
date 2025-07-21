@@ -2,7 +2,7 @@
     position: fixed;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
     right: 20px;
     width: 100px;
@@ -26,23 +26,24 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
+
 
 .panel-item-options{
     position: absolute;
     right: calc(100% + 10px);
-    width: 100px;
+    width: 110px;
     background-color: rgb(182, 182, 45);
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
     border-radius: 50px;
     transform-origin: 125% 37%;
     transition: 0.25s;
     align-self: center;
     z-index: 1;
-    max-height: 400px;
     overflow: auto;
 }
 
@@ -50,12 +51,26 @@
     display: none;}
 
 .variable-scroller{
-    overflow: auto;
+    overflow-y: scroll;
+    overflow-x: visible;
     display: flex;
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
     width: fit-content;
+    padding: 0px 20px;
+}
+
+.plot-type{
+    cursor: pointer;
+    margin: 20px 10px;
+    width: 90px;
+    height: 90px;
+}
+
+.plot-type:hover{
+    transform: scale(1.1);
+    filter: drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.342));
 }
 
 .scroller::-webkit-scrollbar{
@@ -112,22 +127,21 @@
 }
 
 .meta-container{
-    text-align: Center;
+    text-align: center;
     position: absolute;
     width: 200px;
     right: 0%;
     top: 0%;
     z-index: 1;
     font-size: 16px;
+    border-radius: 50px;
     padding: 10px;
-    background-color: rgba(160, 160, 160, 0.11);
     display: flex;
     flex-direction: column;
-    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.144);
 }
 
 .meta-container button{
-    margin-top: 10px;
+    margin: 10px 20px 20px;
     justify-content: center;
     background-color: var(--accent-2);
     border-radius: 6px;
