@@ -43,9 +43,8 @@ const MetaDataInfo = ({meta} : {meta : any}) =>{
     },[currentSize])
 
     return(
-        <div className='meta-container max-w-sm md:max-w-md'
-          style={{ background: 'var(--background)',border: '1px solid var(--border)', borderRadius: '8px', padding: '10px', marginBottom: '10px' }}>
-            <div className='meta-info'>
+        <div className='meta-container max-w-sm md:max-w-md'>
+            <div>
                 <b>Long Name:</b> {`${meta.long_name}`}<br/>
                     <br/>
                     <b>Shape:</b> {`[${formatArray(meta.shape)}]`}<br/>
