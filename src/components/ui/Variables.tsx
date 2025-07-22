@@ -138,9 +138,9 @@ const Variables = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React
 
   return (
     <div style={{position:'relative'}}>
-        <div className='panel-item' onClick={e=>{setShowOptions(x=>!x); setShowMeta(false); setOpen("variables")}} > Variables </div>
+        <div className='panel-item'style={{backgroundColor:'var(--foreground)'}}  onClick={e=>{setShowOptions(x=>!x); setShowMeta(false); setOpen("variables")}} > Variables </div>
         <div style={{position:'relative'}}>
-            <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) ' : 'scale(0%) ', maxHeight:'500px', width:'fit-content', padding:'30px 10px', justifyContent:'space-around', overflow:'visible'}}>
+            <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) translateY(-50%)' : 'scale(0%) ', maxHeight:'500px', width:'fit-content', padding:'30px 10px', justifyContent:'space-around', overflow:'visible'}}>
                 <div className='variable-scroller' >
                     {variables.map((val, idx)=>(
                         <div key={idx} className='variable-item ' style={{width:'auto'}} onClick={e=>{setSelectedIndex(idx); setShowMeta(true)}}>{val}</div>

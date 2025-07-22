@@ -144,67 +144,6 @@ const Navbar = React.memo(function Navbar(){
         <a href="https://github.com/EarthyScience/Browzarr/" target="_blank" rel="noopener noreferrer">
           <Image src={logo} alt="browzarr" />
         </a>
-        <div className="nav-dropdown">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">Settings</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="start">
-              <DropdownMenuLabel>Datasets</DropdownMenuLabel>
-              <DropdownMenuGroup>
-                <DropdownMenuItem onSelect={e=>{setInitStore(ZARR_STORES["ESDC"]); setVariable("Default"); setShowStoreInput(false); setShowLocalInput(false)}}>
-                  ESDC
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={e=>{setInitStore(ZARR_STORES["SEASFIRE"]); setVariable("Default"); setShowStoreInput(false); setShowLocalInput(false)}}>
-                  Seasfire
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={e=>{setInitStore(""); setShowStoreInput(true);setShowLocalInput(false)}}>
-                  Personal
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={e=>{setShowLocalInput(true);setShowStoreInput(false)}}>
-                  Local
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem> 
-                <a href="https://github.com/EarthyScience/Browzarr/" target="_blank" rel="noopener noreferrer">
-                  GitHub
-                </a></DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        {showStoreInput && 
-          <form
-            className="flex max-w-sm items-center gap-2 mr-[10px]"
-            action=""
-            onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
-              e.preventDefault();
-              const input = (e.currentTarget.elements[0] as HTMLInputElement);
-              setInitStore(input.value);
-              setVariable("Default");
-            }}
-          >
-            <Input placeholder="Remote Store URL" /> 
-            <Button type="submit" variant="outline">
-              Fetch
-            </Button>
-          </form>
-        }
-        {showLocalInput && <LocalZarr /> }
-        {/* {plotOn && 
-        <Select value={variable} onValueChange={e=>{setVariable(e); setAnimate(false)}}>
-          <SelectTrigger className="w-full max-w-[50vw] md:w-[180px] md:max-w-none md:static md:transform-none absolute left-0 top-10 z-10">
-            <SelectValue defaultValue={variable} placeholder="Select a variable" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>Variables</SelectLabel>
-              {variables.map((val,idx)=>(
-                <SelectItem value={val} key={idx} >{val}</SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>} */}
         
         {plotOn && <Button onClick={()=>setResetCamera(!resetCamera)}>Reset Camera</Button>}
       

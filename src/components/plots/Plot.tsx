@@ -59,7 +59,7 @@ const Orbiter = ({isFlat} : {isFlat  : boolean}) =>{
   return (
     <>
       {isFlat && <OrbitControls ref={orbitRef} enableRotate={false} enablePan={true} maxDistance={50} minZoom={50} maxZoom={3000}/>}
-      {!isFlat && <OrbitControls ref={orbitRef} minPolarAngle={0} maxPolarAngle={Math.PI / 2} enablePan={true} maxDistance={50}/>}
+      {!isFlat && <OrbitControls ref={orbitRef}  enableRotate={true}  enablePan={true} maxDistance={50}/>}
     </>
   );
 }

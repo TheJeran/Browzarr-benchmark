@@ -47,7 +47,7 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
 
   const materials = useMemo(()=>{
         const materialObj: { [key: string]: THREE.ShaderMaterial } = {};
-        Object.keys(timeSeries).map((val, idx)=>{ 
+        Object.keys(timeSeries).reverse().map((val, idx)=>{ 
         const [r,g,b] = evaluate_cmap(idx/10,"Paired");
         materialObj[val] = 
         new THREE.ShaderMaterial({

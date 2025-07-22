@@ -33,17 +33,18 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
       dimArrays: state.dimArrays,
       isFlat: state.isFlat
     })))
-    const {cScale, cOffset, resetAnim, animate} = usePlotStore(useShallow(state => ({
+    const {cScale, cOffset, animProg} = usePlotStore(useShallow(state => ({
       cOffset: state.cOffset,
       cScale: state.cScale,
       resetAnim: state.resetAnim,
-      animate: state.animate
+      animate: state.animate,
+      animProg: state.animProg
     })))
     const shapeRatio = useMemo(()=> shape.x/shape.z, [shape])
     const geometry = useMemo(()=>new THREE.PlaneGeometry(2,shapeRatio),[shapeRatio])
     const infoRef = useRef<boolean>(false)
     const lastUV = useRef<THREE.Vector2>(new THREE.Vector2(0,0))
-    const [animateProg, setAnimateProg] = useState<number>(0);
+
 
     const shaderMaterial = useMemo(()=>new THREE.ShaderMaterial({
             glslVersion: THREE.GLSL3,
@@ -52,12 +53,12 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
               cOffset: {value: cOffset},
               data : {value: texture},
               cmap : { value : colormap},
-              animateProg: {value:animateProg}
+              animateProg: {value:animProg}
             },
             vertexShader: vertShader,
             fragmentShader: isFlat ? fragShader : flatFrag3D,
             side: THREE.DoubleSide,
-        }),[cScale, cOffset, texture, colormap, animateProg])
+        }),[cScale, cOffset, texture, colormap, animProg])
 
     useEffect(()=>{
         geometry.dispose()
@@ -76,24 +77,14 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
         const xIdx = Math.round(x*xSize-.5)
         const yIdx = Math.round(y*ySize-.5)
         let dataIdx = xSize * yIdx + xIdx;
-        dataIdx += isFlat ? 0 : Math.round(dimArrays[0].length * animateProg) * xSize*ySize
+        dataIdx += isFlat ? 0 : Math.round(dimArrays[0].length * animProg) * xSize*ySize
         
         const dataVal = dataArray ? dataArray[dataIdx] : 0;
         val.current = isFlat ? Rescale(dataVal, valueScales) : dataVal;
         coords.current = isFlat ? [dimArrays[0][yIdx], dimArrays[1][xIdx]] : [dimArrays[1][yIdx], dimArrays[2][xIdx]]
       }
-    }, [dataArray, shape, dimArrays, animateProg]);
+    }, [dataArray, shape, dimArrays, animProg]);
 
-    useFrame(()=>{
-            if (animate){
-                const newProg = animateProg + 0.001
-                setAnimateProg(newProg % 1.)
-            }
-        })
-    
-    useEffect(()=>{
-        setAnimateProg(0)
-    },[resetAnim])
   return (
     <>
     <mesh 

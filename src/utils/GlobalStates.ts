@@ -154,6 +154,7 @@ type PlotState ={
   lineResolution: number;
   animate: boolean;
   resetAnim: boolean;
+  animProg: number;
   cOffset: number;
   cScale: number;
   useFragOpt: boolean;
@@ -181,6 +182,7 @@ type PlotState ={
   setLineResolution: (lineResolution: number) => void;
   setAnimate: (animate: boolean) => void;
   setResetAnim: (resetAnim: boolean) => void;
+  setAnimProg: (animProg: number) => void; 
   setCOffset: (cOffset: number) => void;
   setCScale: (cScale: number) => void;
   setUseFragOpt: (useFragOpt: boolean) => void;
@@ -211,6 +213,7 @@ export const usePlotStore = create<PlotState>((set) => ({
   lineResolution: 3,
   animate: false,
   resetAnim: false,
+  animProg: 0,
   cOffset: 0,
   cScale: 1,
   useFragOpt: false,
@@ -238,6 +241,7 @@ export const usePlotStore = create<PlotState>((set) => ({
   setLineResolution: (lineResolution) => set({ lineResolution }),
   setAnimate: (animate) => set({ animate }),
   setResetAnim: (resetAnim) => set({ resetAnim }),
+  setAnimProg: (animProg) => set({ animProg }),
   setCOffset: (cOffset) => set({ cOffset }),
   setCScale: (cScale) => set({ cScale }),
   setUseFragOpt: (useFragOpt) => set({ useFragOpt }),
