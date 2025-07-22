@@ -23,8 +23,8 @@
 
 .panel-item{
     position: relative;
-    width: 48px;
-    height: 48px;
+    width: 54px;
+    height: 54px;
     padding: 2px;
     border-radius: 50%;
     color: var(--background);
@@ -44,7 +44,7 @@
 
 .panel-item-options {
     position: absolute;
-    top: 0;
+    top: 50%;
     right: calc(100% + 10px);
     width: 60px;
     height: 50vh;
@@ -54,7 +54,6 @@
     justify-content: space-around;
     align-items: center;
     transform-origin: 125% 37%;
-    transform: translateY(-50%);
     transition: 0.25s;
     padding: 0.4rem 0.4rem;
     background: rgba(40, 40, 50, 0.1);
@@ -90,8 +89,8 @@
 .plot-type{
     cursor: pointer;
     padding: 2px;
-    width: 100%;
-    height: 100%;
+    width: 50px;
+    height: 50px;
     border-radius: 1.55rem;
 }
 
@@ -126,6 +125,7 @@
     max-width: 200px;
     height: 24px;
     border-radius: 6px;
+    transition: 0.25s;
 }
 
 .cmap:hover{

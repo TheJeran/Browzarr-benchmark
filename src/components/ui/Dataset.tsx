@@ -22,8 +22,6 @@ const Dataset = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React.D
         setVariable: state.setVariable
     })))
 
-    const [currentStore, setCurrentStore] = useState<string>("Default")
-
     useEffect(()=>{
             if (currentOpen != 'datasets'){
                 setShowOptions(false)
@@ -32,11 +30,11 @@ const Dataset = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React.D
 
   return (
     <div style={{position:'relative'}}>
-        <div className='panel-item' onClick={e=>{setShowOptions(x=>!x); setOpen('datasets')}} > <CgDatabase style={{height:'80px', color:'var(--foreground)'}}/> </div>
+        <div className='panel-item' onClick={e=>{setShowOptions(x=>!x); setOpen('datasets')}} > <CgDatabase size={100} style={{color:'var(--foreground)'}}/> </div>
         <div style={{position:'relative'}}>
             <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) translateY(-50%)' : 'scale(0%) ', textAlign:'right', height:'auto', width:'fit-content', padding:'30px 10px', justifyContent:'space-around', overflow:'visible'}}>
-                <div className='variable-item' onClick={e=>{setShowLocalInput(false); setShowStoreInput(false); setInitStore(ZARR_STORES['ESDC'])}}>ESDC</div>
-                <div className='variable-item' onClick={e=>{setShowLocalInput(false); setShowStoreInput(false); setInitStore(ZARR_STORES['SEASFIRE'])}}>Seasfire</div>
+                <div className='variable-item' onClick={e=>{setShowLocalInput(false); setShowStoreInput(false); setVariable("Default"); setInitStore(ZARR_STORES['ESDC'])}}>ESDC</div>
+                <div className='variable-item' onClick={e=>{setShowLocalInput(false); setShowStoreInput(false); setVariable("Default"); setInitStore(ZARR_STORES['SEASFIRE'])}}>Seasfire</div>
                 <div style={{position:'relative'}}>
                     <div className='variable-item' onClick={e=>{setShowLocalInput(false); setShowStoreInput(x=>!x)}}>Personal</div>
                     <div className='store-input' style={{position:'absolute'}}>
