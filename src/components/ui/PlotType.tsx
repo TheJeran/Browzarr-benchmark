@@ -52,7 +52,9 @@ const PlotType = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React.
         }}
       >
         {plotTypes.map((val) => (
-          <div className='plot-type'
+          <div
+            key={val}
+            className='plot-type'
             onClick={e => {
               setShowOptions(false);
               setPlotType(val);
