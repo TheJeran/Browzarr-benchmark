@@ -25,23 +25,26 @@ const PlotType = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React.
     <div style={{position:'relative'}}>
       <div
         className='panel-item'
+        style={{backgroundColor:''}}
         onClick={e => {
           setShowOptions(x => !x);
           setOpen('plot-type');
         }}
       >
         <Image
-          src={`/plottypes/${plotType}.svg`}
+          className='w-[80%]'
+          src={`./plottypes/${plotType}.svg`}
           alt=""
           height={48}
           width={48}
           style={{objectFit: 'contain'}}
         />
+
       </div>
       <div
         className='panel-item-options'
         style={{
-          transform: showOptions ? 'scale(100%)' : 'scale(0%)',
+          transform: showOptions ? 'scale(100%) translateY(-50%)' : 'scale(0%)',
         }}
       >
         {plotTypes.map((val) => (
@@ -50,8 +53,8 @@ const PlotType = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React.
             className='plot-type'
             src={`./plottypes/${val}.svg`}
             alt={val}
-            width={90}
-            height={90}
+            width={50}
+            height={50}
             style={{cursor: 'pointer'}}
             onClick={e => {
               setShowOptions(false);

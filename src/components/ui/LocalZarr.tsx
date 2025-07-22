@@ -4,11 +4,9 @@ import * as zarr from 'zarrita'
 import { useZarrStore, useGlobalStore } from '@/utils/GlobalStates';
 import { Input } from './input';
 
-const LocalZarr = () => {
+const LocalZarr = ({setShowLocal}:{setShowLocal: React.Dispatch<React.SetStateAction<boolean>>}) => {
   const setCurrentStore = useZarrStore(state => state.setCurrentStore)
   const setVariable = useGlobalStore(state => state.setVariable)
-  const [baseFile, setbaseFile] = useState<string | null>(null)
-
 
   const handleFileSelect = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -52,7 +50,7 @@ const LocalZarr = () => {
       const gs = zarr.open(store, {kind: 'group'});
       gs.then(e=>{setCurrentStore(e)})
       setVariable("Default")
-
+      setShowLocal(false)
     } catch (error) {
       if (error instanceof Error) {
         console.log(`Error opening Zarr store: ${error.message}`);
@@ -65,7 +63,8 @@ const LocalZarr = () => {
   return (
     <div>
         <Input type="file" id="filepicker"
-        style={{width:'200px'}}
+        className='hover:drop-shadow-md hover:scale-[110%]'
+        style={{width:'200px', cursor:'pointer'}}
         // @ts-expect-error `webkitdirectory` is non-standard attribute. TS doesn't know about it. It's used for cross-browser compatibility.
         directory=''
         webkitdirectory='true'

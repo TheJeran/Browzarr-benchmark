@@ -209,7 +209,7 @@ const AdjustPlot = ({currentOpen, setOpen} : {currentOpen: string, setOpen: Reac
   
   return (
     <div style={{position:'relative' }}>
-        <div className='panel-item' style={{cursor: plotOn ? 'pointer' : 'auto'}} onClick={e=>{if (plotOn) {setShowOptions(x=>!x); setOpen("settings")}}} > <LuSettings style={{width:'80%', height:'80%'}} color={plotOn ? 'black' : 'white'}/> </div>
+        <div className='panel-item' style={{cursor: plotOn ? 'pointer' : 'auto', transform: plotOn ? '' : 'scale(1)'}} onClick={e=>{if (plotOn) {setShowOptions(x=>!x); setOpen("settings")}}} > <LuSettings style={{width:'100%', height:'100%'}} color={plotOn ? 'black' : '#gggggg44'}/> </div>
         <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) ' : 'scale(0%) ', width:'auto', padding:'30px 10px', justifyContent:'space-between'}}>
           {plotType == 'volume' && <VolumeOptions />}
           {plotType == 'point-cloud' && <PointOptions/>}
