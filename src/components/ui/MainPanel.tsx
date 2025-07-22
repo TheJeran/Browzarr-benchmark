@@ -2,7 +2,7 @@
 
 import React, {useRef, useEffect, useState} from 'react'
 import './css/MainPanel.css'
-import {PlotType, Variables, Colormaps, AdjustPlot, Dataset} from './index'
+import {PlotType, Variables, Colormaps, AdjustPlot, Dataset, PlayButton} from './index'
 
 const MainPanel = () => {
 
@@ -29,6 +29,7 @@ const MainPanel = () => {
       <Colormaps currentOpen={currentOpen} setOpen={setCurrentOpen} />
       <AdjustPlot currentOpen={currentOpen} setOpen={setCurrentOpen} />
       <Dataset currentOpen={currentOpen} setOpen={setCurrentOpen} />
+      <PlayButton />
     </div>
   )
 }

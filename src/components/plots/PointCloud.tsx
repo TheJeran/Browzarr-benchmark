@@ -122,15 +122,14 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
 export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrDataset} )=>{
     const {texture, colormap } = textures;
     const flipY = useGlobalStore(state=>state.flipY)
-    const {scalePoints, scaleIntensity, pointSize, cScale, cOffset, valueRange, animate, resetAnim, selectTS, timeScale, xRange, yRange, zRange,} = usePlotStore(useShallow(state => ({
+    const {scalePoints, scaleIntensity, pointSize, cScale, cOffset, valueRange, animProg, selectTS, timeScale, xRange, yRange, zRange,} = usePlotStore(useShallow(state => ({
       scalePoints: state.scalePoints,
       scaleIntensity: state.scaleIntensity,
       pointSize: state.pointSize,
       cScale: state.cScale, 
       cOffset:state.cOffset,
       valueRange: state.valueRange,
-      animate: state.animate,
-      resetAnim: state.resetAnim,
+      animProg: state.animProg,
       selectTS: state.selectTS,
       timeScale: state.timeScale,
       xRange: state.xRange,
@@ -204,7 +203,7 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
         showTransect: { value: selectTS},
         dimWidth: {value: dimWidth},
         timeScale: {value: timeScale},
-        animateProg: {value: animateProg},
+        animateProg: {value: animProg},
         depthRatio: {value: depthRatio},
         flatBounds:{value: new THREE.Vector4(xRange[0]*aspectRatio, xRange[1]*aspectRatio, zRange[0]*depthRatio, zRange[1]*depthRatio)},
         vertBounds:{value: new THREE.Vector2(yRange[0], yRange[1])},
@@ -216,19 +215,9 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       blending:THREE.NormalBlending,
       side:THREE.DoubleSide,
     })
-    ),[pointSize, colormap, cOffset, cScale, valueRange, scalePoints, scaleIntensity, pointIDs, stride, selectTS, animateProg, timeScale, depthRatio, aspectRatio, xRange, yRange, zRange]);
+    ),[pointSize, colormap, cOffset, cScale, valueRange, scalePoints, scaleIntensity, pointIDs, stride, selectTS, animProg, timeScale, depthRatio, aspectRatio, xRange, yRange, zRange]);
 
-    // Animation Funcs
-    useFrame(()=>{
-          if (animate){
-            const newProg = animateProg + 0.001
-            setAnimateProg(newProg % 1.)
-          }
-        })
     
-    useEffect(()=>{
-      setAnimateProg(0)
-    },[resetAnim])
 
     return (
       <>

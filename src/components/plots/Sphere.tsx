@@ -37,8 +37,9 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
         dimUnits:state.dimUnits
     })))
 
-    const {animate, cOffset, cScale, resetAnim, selectTS} = usePlotStore(useShallow(state=> ({
+    const {animate, animProg, cOffset, cScale, resetAnim, selectTS} = usePlotStore(useShallow(state=> ({
         animate: state.animate,
+        animProg: state.animProg,
         cOffset: state.cOffset,
         cScale: state.cScale,
         resetAnim: state.resetAnim,
@@ -59,7 +60,7 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
       setBounds(prev=> [bounds, ...prev].slice(0,10))
     }
 
-    const [animateProg, setAnimateProg] = useState<number>(0);
+  
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(1, 9), []);
     const shaderMaterial = useMemo(()=>{
         const shader = new THREE.ShaderMaterial({
@@ -71,25 +72,15 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
                 cmap:{value: colormap},
                 cOffset:{value: cOffset},
                 cScale: {value: cScale},
-                animateProg: {value: animateProg}
+                animateProg: {value: animProg}
             },
             vertexShader,
             fragmentShader: sphereFrag,
             blending: THREE.NormalBlending,
         })
         return shader
-    },[texture, animateProg, colormap, cOffset, cScale, animate, bounds, selectTS])
+    },[texture, animProg, colormap, cOffset, cScale, animate, bounds, selectTS])
 
-    useFrame(()=>{
-        if (animate){
-            const newProg = animateProg + 0.001
-            setAnimateProg(newProg % 1.)
-        }
-    })
-
-    useEffect(()=>{
-        setAnimateProg(0)
-    },[resetAnim])
 
     function HandleTimeSeries(event: THREE.Intersection){
         const point = event.point.normalize();

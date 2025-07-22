@@ -123,7 +123,7 @@ const VolumeOptions = ()=>{
   return(
     <div className='flex-column items-center w-50 text-center'>
       <b>Set Quality</b>
-      <div className='w-full flex justify-between'>
+      <div className='w-full flex justify-between text-xs'>
           Worse
           <input type="range"
               min={50}
@@ -209,8 +209,8 @@ const AdjustPlot = ({currentOpen, setOpen} : {currentOpen: string, setOpen: Reac
   
   return (
     <div style={{position:'relative' }}>
-        <div className='panel-item' style={{cursor: plotOn ? 'pointer' : 'auto', transform: plotOn ? '' : 'scale(1)'}} onClick={e=>{if (plotOn) {setShowOptions(x=>!x); setOpen("settings")}}} > <LuSettings style={{width:'100%', height:'100%'}} color={plotOn ? 'black' : '#gggggg44'}/> </div>
-        <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) ' : 'scale(0%) ', width:'auto', padding:'30px 10px', justifyContent:'space-between'}}>
+        <div className='panel-item' style={{cursor: plotOn ? 'pointer' : 'auto', transform: plotOn ? '' : 'scale(1)'}} onClick={e=>{if (plotOn) {setShowOptions(x=>!x); setOpen("settings")}}} > <LuSettings style={{width:'100%', height:'100%'}} color={plotOn ? 'black' : '#88888844'}/> </div>
+        <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) translateY(-50%)' : 'scale(0%) ', width:'auto', height:'fit-content', padding:'30px 10px', justifyContent:'space-between'}}>
           {plotType == 'volume' && <VolumeOptions />}
           {plotType == 'point-cloud' && <PointOptions/>}
           {(plotType == 'volume' || plotType == 'point-cloud') && <DimSlicer/>}

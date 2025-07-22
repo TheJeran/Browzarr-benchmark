@@ -111,6 +111,8 @@ function PointCoords(){
       document.removeEventListener('mouseup', handleUp);
     };
   }, [moving]);
+
+
   return(
     <>
     <div className='coord-container'
@@ -124,7 +126,7 @@ function PointCoords(){
     >
     { //Only show coords when coords exist
       Object.keys(coords).length > 0 && 
-      Object.keys(coords).map((val,idx)=>(
+      Object.keys(coords).reverse().map((val,idx)=>(
         <div className='plot-coords'
         key={val}   
         style={{

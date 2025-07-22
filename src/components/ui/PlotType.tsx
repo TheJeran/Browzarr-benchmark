@@ -45,6 +45,7 @@ const PlotType = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React.
         className='panel-item-options'
         style={{
           transform: showOptions ? 'scale(100%) translateY(-50%)' : 'scale(0%)',
+          maxHeight:'400px'
         }}
       >
         {plotTypes.map((val) => (
