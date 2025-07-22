@@ -24,7 +24,7 @@ const PlotType = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React.
         <div className='panel-item' onClick={e=>{setShowOptions(x=>!x); setOpen('plot-type')}} > <img src={`/plottypes/${plotType}.svg`} alt="" height={'60%'} width={'60%'}/> </div>
         <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) ' : 'scale(0%) ', overflow:'hidden', height:'600px', paddingTop:'40px'}}>
             {plotTypes.map((val)=>(
-                <img key={val} className='plot-type' src={`/plottypes/${val}.svg`} onClick={e=>{setShowOptions(false); setPlotType(val)}}/>
+                <img key={val} alt={val} className='plot-type' src={`/plottypes/${val}.svg`} onClick={e=>{setShowOptions(false); setPlotType(val)}}/>
             ))}
         </div>
     </div>
