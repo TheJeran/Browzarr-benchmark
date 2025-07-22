@@ -91,7 +91,7 @@ const PlayButton = () => {
   return (
     <div>
       <PiPlayPauseFill className='panel-item' color={cond ? 'black' : '#88888844'} 
-        onClick={e=>{cond && setShowOptions(x=>!x)}}
+        onClick={e=>{if (cond){setShowOptions(x=>!x)}}}
         style={{transform: cond ? '' : 'scale(1)', cursor: cond ? 'pointer' : 'auto'}}
     />
       {showOptions && <PlayInterFace />}
