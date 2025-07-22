@@ -28,7 +28,7 @@ const Colormaps = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React
     
   return (
     <div style={{position:'relative'}}>
-        <div className='panel-item' onClick={e=>{setShowOptions(x=>!x); setOpen('colormaps')}} style={{backgroundImage:`url(/colormap_icons/${cmap}.webp)`, backgroundSize: '100%', transform: flipCmap ? 'scaleX(-1)' : ''}}/>  
+        <div className='panel-item' onClick={e=>{setShowOptions(x=>!x); setOpen('colormaps')}} style={{backgroundImage:`url(./colormap_icons/${cmap}.webp)`, backgroundSize: '100%', transform: flipCmap ? 'scaleX(-1)' : ''}}/>  
         <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) ' : 'scale(0%) ', width:'auto', padding:'30px 10px', maxHeight:'600px', justifyContent:'space-around', overflow:'visible'}}>
             <div className='scroller' style={{width:'auto', padding:'10px 10px', justifyContent:'space-around', overflow:'auto'}}>
             {colormaps.map((val)=>(
