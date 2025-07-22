@@ -48,7 +48,7 @@ const PlotType = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React.
           <Image
             key={val}
             className='plot-type'
-            src={`/plottypes/${val}.svg`}
+            src={`./plottypes/${val}.svg`}
             alt={val}
             width={90}
             height={90}
