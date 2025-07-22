@@ -214,7 +214,6 @@ const AdjustPlot = ({currentOpen, setOpen} : {currentOpen: string, setOpen: Reac
           {plotType == 'volume' && <VolumeOptions />}
           {plotType == 'point-cloud' && <PointOptions/>}
           {(plotType == 'volume' || plotType == 'point-cloud') && <DimSlicer/>}
-          {!isFlat && <AnimateOptions />}
         </div>
     </div>
   )
