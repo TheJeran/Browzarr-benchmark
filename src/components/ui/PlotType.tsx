@@ -8,64 +8,68 @@ import { PiSphereThin } from "react-icons/pi";
 import { CgMenuGridO } from "react-icons/cg";
 import { PiCubeLight } from "react-icons/pi";
 import { MdOutlineSquare } from "react-icons/md";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
 
 import Image from 'next/image';
 
 const plotTypes = ['volume', 'point-cloud', 'sphere', 'flat']
 const plotIcons = {
-  'volume': <PiCubeLight size={50} style={{color:'var(--foreground)'}}/>,
-  'point-cloud': <CgMenuGridO size={50} style={{color:'var(--foreground)'}}/>,
-  'sphere':<PiSphereThin size={50} style={{color:'var(--foreground)'}}/>,
-  'flat':<MdOutlineSquare size={50} style={{color:'var(--foreground)'}}/>
+  'volume': <PiCubeLight size={48} />,
+  'point-cloud': <CgMenuGridO size={48} />,
+  'sphere':<PiSphereThin size={48} />,
+  'flat':<MdOutlineSquare size={48} />
 }
 
-const PlotType = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React.Dispatch<React.SetStateAction<string>>}) => {
-    const [showOptions, setShowOptions] = useState<boolean>(false)
-    const {plotType, setPlotType} = usePlotStore(useShallow(state => ({
-      plotType: state.plotType,
-      setPlotType: state.setPlotType
-    })))
+const PlotType = ({currentOpen, setOpen}: {currentOpen: string, setOpen: React.Dispatch<React.SetStateAction<string>>}) => {
+  const { plotType, setPlotType } = usePlotStore(useShallow(state => ({
+    plotType: state.plotType,
+    setPlotType: state.setPlotType
+  })))
 
-    useEffect(()=>{
-      if (currentOpen != 'plot-type'){
-        setShowOptions(false)
-      }
-    },[currentOpen])
+  // Responsive popover side
+  const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
+  useEffect(() => {
+    const handleResize = () => {
+      setPopoverSide(window.innerWidth < 768 ? "top" : "left");
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
-    <div style={{position:'relative'}}>
-      <div
-        className='panel-item'
-        style={{backgroundColor:''}}
-        onClick={e => {
-          setShowOptions(x => !x);
-          setOpen('plot-type');
-        }}
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          onClick={() => setOpen('plot-type')}
+          tabIndex={0}
+          aria-label="Select plot type"
+        >
+          {plotIcons[plotType as keyof typeof plotIcons]}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        side={popoverSide}
+        className="flex flex-col items-center min-w-[48px] max-w-[72px] w-[56px] p-2"
       >
-        {plotIcons[plotType as keyof typeof plotIcons]}
-      </div>
-      <div
-        className='panel-item-options'
-        style={{
-          transform: showOptions ? 'scale(100%) translateY(-50%)' : 'scale(0%)',
-          maxHeight:'400px'
-        }}
-      >
-        {plotTypes.map((val) => (
-          <div
+        {plotTypes.map(val => (
+          <Button
             key={val}
-            className='plot-type'
-            onClick={e => {
-              setShowOptions(false);
+            variant={plotType === val ? "default" : "ghost"}
+            className="mb-2 w-12 h-12 flex items-center justify-center"
+            onClick={() => {
               setPlotType(val);
+              setOpen('default');
             }}
-            style={{cursor: 'pointer', height:'60px', width:'60px'}}
+            aria-label={`Select ${val}`}
           >
-             {plotIcons[val as keyof typeof plotIcons]}
-          </div>
+            {plotIcons[val as keyof typeof plotIcons]}
+          </Button>
         ))}
-      </div>
-    </div>
+      </PopoverContent>
+    </Popover>
   )
 }
 

@@ -1,24 +1,27 @@
 .panel-container{
-    position: fixed;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
-    right: 20px;
-    width: 60px;
-    height: 50vh;
-    min-height: 250px;
-    top: 25vh;;
-    z-index: 2;
-    padding: 0.4rem 0.4rem;
-    background: rgba(40, 40, 50, 0.1);
-    border: 0.5px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 2px 2px 0 rgba(217, 213, 216, 0.22);
-    backdrop-filter: blur(22px) saturate(180%);
-    -webkit-backdrop-filter: blur(22px) saturate(180%);
-    font-size: 1.85rem;
-    border-radius: 1.55rem;
-    user-select: none;
+   /* Position and layout */
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  
+  /* Desktop positioning and sizing (default) */
+  width: 60px;
+  height: 50vh;
+  min-height: 250px;
+  right: 1.25rem;
+  top: 25vh;
+  transform: none;
+  
+  /* Styling */
+  z-index: 10;
+  padding: 0.5rem;
+  /* border-radius: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(24px);
+  background-color: rgba(50, 48, 40, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2); */
 }
 
 .panel-item{
@@ -27,10 +30,7 @@
     height: 54px;
     padding: 2px;
     border-radius: 50%;
-    color: var(--background);
     cursor: pointer;
-    /* margin-top: 10px; */
-    /* margin-bottom: 10px; */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -75,7 +75,7 @@
 .panel-item-options::-webkit-scrollbar{
     display: none;}
 
-.variable-scroller{
+/* .variable-scroller{
     overflow-y: scroll;
     overflow-x: visible;
     display: flex;
@@ -86,26 +86,13 @@
     padding: 0px 20px;
 }
 
-.plot-type{
-    cursor: pointer;
-    padding: 2px;
-    width: 50px;
-    height: 50px;
-    border-radius: 1.55rem;
-}
-
-.plot-type:hover{
-    transform: scale(1.1);
-    filter: drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.342));
-}
-
 .scroller::-webkit-scrollbar{
     display:none}
 
 .variable-scroller::-webkit-scrollbar{
-    display:none}
+    display:none} */
 
-.variable-item{
+/* .variable-item{
     padding: 1px 0px;
     cursor: pointer;
     width: 100px;
@@ -117,7 +104,7 @@
     border-radius: 3px;
     transform: scale(95%);
     transition: 0.1s;
-}
+} */
 
 .cmap{
     padding: 2px 0px;
@@ -155,22 +142,11 @@
 }
 
 .meta-container {
-    text-align: center;
+    text-align: left;
     position: absolute;
-    width: 200px;
-    right: 0%;
+    width: 250px;
+    right: 110%;
     top: 0%;
-    z-index: 1;
-    font-size: 16px;
-    border-radius: 10px;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    /* background: rgba(40, 40, 50, 0.1);  */
-    box-shadow: 0 2px 2px 0 rgba(217, 213, 216, 0.22);
-    backdrop-filter: blur(22px) saturate(180%);
-    -webkit-backdrop-filter: blur(22px) saturate(180%);
-    border: 0.5px solid rgba(255, 255, 255, 0.18);
 }
 
 .store-input{
@@ -203,17 +179,20 @@
 
 @media (max-width: 768px) {
   .panel-container {
+    /* Layout changes */
     flex-direction: row;
-    width: 95vw;
-    max-width: 600px;
+    align-items: center;
+    justify-content: center;
+    
+    /* Positioning changes */
     left: 50%;
-    right: auto;
-    top: auto;
     bottom: 0.5rem;
-    transform: translateX(-50%);
+    width: 95vw;
     height: auto;
     min-height: 0;
-    border-radius: 12px;
+    right: auto;
+    top: auto;
+    transform: translateX(-50%);
   }
 
   .panel-item-options {
@@ -271,24 +250,17 @@
   .meta-container {
     position: fixed;
     bottom: 4.5rem;
-    right: calc(-164px + 0rem);
+    right: calc(50px + 0rem);
     left: auto;
     top: auto;
     
     width: auto;
-    max-width: 42vw;
     min-width: 60px;
 
     font-size: 14px;
     padding: 0.6rem;
     border-radius: 1rem;
     z-index: 10;
-
-    background: rgba(40, 40, 50, 0.1);
-    box-shadow: 0 2px 2px 0 rgba(217, 213, 216, 0.22);
-    backdrop-filter: blur(22px) saturate(180%);
-    -webkit-backdrop-filter: blur(22px) saturate(180%);
-    border: 0.5px solid rgba(255, 255, 255, 0.18);
     overflow-y: auto;
     text-align: left;
   }
