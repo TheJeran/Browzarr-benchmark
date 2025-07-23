@@ -57,7 +57,7 @@ const PlotType = ({currentOpen, setOpen}: {currentOpen: string, setOpen: React.D
       </PopoverTrigger>
       <PopoverContent
         side={popoverSide}
-        className="flex flex-col items-center min-w-[48px] max-w-[72px] w-[56px] p-2"
+        className="flex flex-col items-center min-w-[48px] max-w-[72px] w-[56px] p-2 mb-1"
       >
         {plotTypes.map(val => (
           <Button

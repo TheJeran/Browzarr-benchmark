@@ -6,6 +6,7 @@ import { useShallow } from 'zustand/shallow';
 import Slider from 'rc-slider';
 import { Button } from './button';
 import { LuSettings } from "react-icons/lu";
+import { Card } from "@/components/ui/card"
 
 function DeNorm(val : number, min : number, max : number){
     const range = max-min;
@@ -208,13 +209,29 @@ const AdjustPlot = ({currentOpen, setOpen} : {currentOpen: string, setOpen: Reac
   },[currentOpen])
   
   return (
-    <div style={{position:'relative' }}>
+    <div style={{position:'relative'}}>
         <div className='panel-item' style={{cursor: plotOn ? 'pointer' : 'auto', transform: plotOn ? '' : 'scale(1)'}} onClick={e=>{if (plotOn) {setShowOptions(x=>!x); setOpen("settings")}}} > <LuSettings className='panel-item'/> </div>
-        <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) translateY(-50%)' : 'scale(0%) ', width:'auto', height:'fit-content', padding:'30px 10px', justifyContent:'space-between'}}>
+        <Card
+          className={`panel-settings ${
+            window.innerWidth <= 768
+              ? 'left-0 top-[-250px] m-[12px] overflow-y-scroll overflow-x-hidden'
+              : 'left-[-230px] top-1/2'
+          }`}
+          style={{
+            transform:
+              showOptions && window.innerWidth <= 768
+                ? 'scale(1) translateY(-40%) translateX(-50%)'
+                : showOptions
+                ? 'scale(1) translateY(-50%)'
+                : 'scale(0)',
+            height: 'fit-content',
+          }}
+        >
+          
           {plotType == 'volume' && <VolumeOptions />}
           {plotType == 'point-cloud' && <PointOptions/>}
           {(plotType == 'volume' || plotType == 'point-cloud') && <DimSlicer/>}
-        </div>
+        </Card>
     </div>
   )
 }

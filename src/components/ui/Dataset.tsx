@@ -5,7 +5,8 @@ import { useGlobalStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { Input } from './input';
 import { Button } from './button';
-import { CgDatabase } from "react-icons/cg";
+// import { CgDatabase } from "react-icons/cg";
+import { TbDatabasePlus } from "react-icons/tb";
 import LocalZarr from './LocalZarr';
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
@@ -60,13 +61,13 @@ const Dataset = ({
                 }
             }}
             >
-            <CgDatabase className='panel-item' />
+            <TbDatabasePlus className='panel-item' />
         </div>
         
       </PopoverTrigger>
       <PopoverContent
         side={popoverSide}
-        className="flex flex-col items-start max-w-[220px] p-3 gap-3 w-auto"
+        className="flex flex-col items-start max-w-[220px] p-3 gap-3 w-auto mb-1"
       >
         <Button
           variant="ghost"
