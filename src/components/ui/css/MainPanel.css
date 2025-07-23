@@ -35,11 +35,11 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    transition: 0.2s;
+    transition: transform 0.15s ease-out;
 }
 
 .panel-item:hover{
-    transform: scale(1.2);
+    transform: scale(0.9);
 }
 
 .panel-item-options {
@@ -74,37 +74,6 @@
 
 .panel-item-options::-webkit-scrollbar{
     display: none;}
-
-/* .variable-scroller{
-    overflow-y: scroll;
-    overflow-x: visible;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
-    width: fit-content;
-    padding: 0px 20px;
-}
-
-.scroller::-webkit-scrollbar{
-    display:none}
-
-.variable-scroller::-webkit-scrollbar{
-    display:none} */
-
-/* .variable-item{
-    padding: 1px 0px;
-    cursor: pointer;
-    width: 100px;
-    font-size: 24px;
-}
-
-.variable-item:hover{
-    background-color: var(--accent-2);
-    border-radius: 3px;
-    transform: scale(95%);
-    transition: 0.1s;
-} */
 
 .cmap{
     padding: 2px 0px;
@@ -227,17 +196,6 @@
   }
 
   /* Additional adjustments for mobile items */
-  .variable-item {
-    font-size: 16px;
-    width: 50px;
-    text-align: left;
-    padding-left: 4px;
-  }
-  .variable-scroller {
-    width: 100%; 
-    padding: 0px 0px;
-    align-items: stretch;
-  }
 
   .panel-item-options b {
     font-size: 0.8rem; /* Smaller bold text */
@@ -273,4 +231,7 @@
   .cmap{
     max-width: 40vw;
   }
+  .play-interface {
+        bottom: calc(10% + 64px);
+    }
 }

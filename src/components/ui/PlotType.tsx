@@ -11,14 +11,12 @@ import { MdOutlineSquare } from "react-icons/md";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 
-import Image from 'next/image';
-
 const plotTypes = ['volume', 'point-cloud', 'sphere', 'flat']
 const plotIcons = {
-  'volume': <PiCubeLight size={48} />,
-  'point-cloud': <CgMenuGridO size={48} />,
-  'sphere':<PiSphereThin size={48} />,
-  'flat':<MdOutlineSquare size={48} />
+  'volume': <PiCubeLight className='panel-item'/>,
+  'point-cloud': <CgMenuGridO className='panel-item'/>,
+  'sphere':<PiSphereThin className='panel-item'/>,
+  'flat':<MdOutlineSquare className='panel-item'/>
 }
 
 const PlotType = ({currentOpen, setOpen}: {currentOpen: string, setOpen: React.Dispatch<React.SetStateAction<string>>}) => {
@@ -41,14 +39,21 @@ const PlotType = ({currentOpen, setOpen}: {currentOpen: string, setOpen: React.D
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          onClick={() => setOpen('plot-type')}
+        <div
+          role="button"
+          className='panel-item'
           tabIndex={0}
           aria-label="Select plot type"
+          onClick={() => setOpen('plot-type')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              setOpen('plot-type');
+            }
+          }}
         >
           {plotIcons[plotType as keyof typeof plotIcons]}
-        </Button>
+        </div>
+
       </PopoverTrigger>
       <PopoverContent
         side={popoverSide}
@@ -58,8 +63,8 @@ const PlotType = ({currentOpen, setOpen}: {currentOpen: string, setOpen: React.D
           <Button
             key={val}
             variant={plotType === val ? "default" : "ghost"}
-            className="mb-2 w-12 h-12 flex items-center justify-center"
-            onClick={() => {
+            className="mb-2 w-12 h-12 flex items-center justify-center transform transition-transform duration-100 ease-out hover:scale-90"
+              onClick={() => {
               setPlotType(val);
               setOpen('default');
             }}
