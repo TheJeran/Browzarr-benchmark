@@ -60,7 +60,7 @@ const PlayInterFace = () =>{
             <div>
                 {parseLoc(dimArrays[0][0], dimUnits[0])}
                 <input type="range" 
-                    className='w-[400px]'
+                    className='w-[300px]'
                     value={animProg*timeLength}
                     min={0}
                     max={timeLength}

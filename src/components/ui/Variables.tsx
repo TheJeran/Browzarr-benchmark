@@ -56,18 +56,7 @@ const Variables = ({
       </div>
 
       {showOptions && (
-        <div
-          className="absolute p-2 bg-popover border border-border rounded-md shadow-md z-10 w-fit"
-          style={{
-            left: "-225px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            display: "flex",
-            gap: "20px",
-            overflow: "visible",
-          }}
-        >
-
+        <div className="panel-popup-left">
           <ScrollArea className="max-h-[50vh] w-[200px] pr-2">
             {variables.map((val, idx) => (
               <React.Fragment key={idx}>
