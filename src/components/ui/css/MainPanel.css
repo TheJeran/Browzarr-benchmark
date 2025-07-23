@@ -8,33 +8,28 @@
   
   /* Desktop positioning and sizing (default) */
   width: 60px;
-  height: 50vh;
-  min-height: 250px;
+  /* height: 50vh; */
+  max-height: 500px;
+  scroll-behavior: smooth; 
   right: 1.25rem;
   top: 25vh;
   transform: none;
   
   /* Styling */
   z-index: 10;
-  padding: 0.5rem;
-  /* border-radius: 1rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(24px);
-  background-color: rgba(50, 48, 40, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2); */
+  padding: 0.25rem;
 }
 
 .panel-item{
     position: relative;
-    width: 54px;
-    height: 54px;
-    padding: 2px;
+    width: 48px;
+    height: 48px;
+    padding: 0.1rem;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
     transition: transform 0.15s ease-out;
 }
 
