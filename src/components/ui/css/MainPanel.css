@@ -119,17 +119,6 @@
     right: calc(100% + 10px);
 }
 
-.meta-container button{
-    margin: 10px 20px 20px;
-    justify-content: center;
-    background-color: var(--accent-2);
-    border-radius: 6px;
-    cursor: pointer;
-    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.342);
-    align-self: center;
-    width: 98%;
-}
-
 .play-interface{
     position: fixed;
     left: 50%;
@@ -173,7 +162,7 @@
 
   display: flex;
   overflow: visible;
-  background-color: rgba(40, 40, 50, 0.1);
+  background-color: rgba(23, 23, 23, 0.5);
   backdrop-filter: blur(22px) saturate(180%);
 }
 
@@ -254,11 +243,11 @@
     text-align: left;
   }
 
-  .meta-container button {
+  /* .meta-container button {
     margin: 8px 10px 10px;
     font-size: 12px;
     padding: 4px 8px;
-  }
+  } */
   .cmap{
     max-width: 40vw;
   }

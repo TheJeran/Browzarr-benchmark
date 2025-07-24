@@ -3,8 +3,8 @@ import { useGlobalStore, useZarrStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
 import Slider from 'rc-slider'
 import { Card } from "@/components/ui/card"
-import { Button } from "./button"
-
+// import { Button } from "./button"
+import { Button } from "@/components/ui/button"
 const formatArray = (value: string | number[]): string => {
   if (typeof value === 'string') return value
   return Array.isArray(value) ? value.join(', ') : String(value)
@@ -66,6 +66,7 @@ const MetaDataInfo = ({ meta, setters }: { meta: any, setters: ViewSetters }) =>
         ))}
         {is3D && (
           <>
+          
             {totalSize > 1e8 && (
               <>
                 <div className="flex justify-center">
@@ -89,19 +90,19 @@ const MetaDataInfo = ({ meta, setters }: { meta: any, setters: ViewSetters }) =>
             )}
             <b>Total Size: </b>{formatBytes(currentSize)}<br />
             {currentSize < 1e8 && (
-              <span className="bg-green-200 rounded px-2 py-1">Selected data will fit in memory</span>
+              <span className="bg-green-500 rounded px-2 py-1">Selected data will fit in memory</span>
             )}
             {currentSize > 1e8 && currentSize < 2e8 && (
-              <span className="bg-yellow-200 rounded px-2 py-1">Data may not fit in memory</span>
+              <span className="bg-yellow-500 rounded px-2 py-1">Data may not fit in memory</span>
             )}
             {currentSize > 2e8 && (
-              <span className="bg-red-200 rounded px-2 py-1">Data will not fit in memory</span>
+              <span className="bg-red-400 rounded px-2 py-1">Data will not fit in memory</span>
             )}
           </>
         )}
       </div>
       <Button
-        variant={"link"}
+        variant={"destructive"}
         onClick={() => {
           setVariable(meta.name)
           setShowMeta(false)

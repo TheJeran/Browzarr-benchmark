@@ -16,6 +16,8 @@ import { GetColorMapTexture } from "@/components/textures";
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Input } from "./input";
+import { MdFlipCameraIos } from "react-icons/md";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -145,8 +147,17 @@ const Navbar = React.memo(function Navbar(){
           <Image src={logo} alt="browzarr" />
         </a>
         
-        {plotOn && <Button onClick={()=>setResetCamera(!resetCamera)}>Reset Camera</Button>}
-      
+      {plotOn && <div
+          role="button"
+          tabIndex={0}
+          aria-label="Reset camera view"
+          title="Reset camera view"
+          onClick={()=>setResetCamera(!resetCamera)}
+          className="w-[32px] h-[32px] cursor-pointer flex items-center justify-center transition-transform hover:shadow-white/40 transition-shadow hover:scale-90 hover:shadow-lg"
+        >
+          <MdFlipCameraIos className="w-full h-full" />
+        </div>
+}
       {/* {!isFlat && plotOn && <PlotTweaker/>} */}
       {plotOn && !isFlat && <PlotLineButton />}
       

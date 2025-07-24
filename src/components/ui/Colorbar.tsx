@@ -113,7 +113,7 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
         if (ctx){
             colors.forEach((color, index) => {
             ctx.fillStyle = color;
-            ctx.fillRect(index*2, 0, 2, 30); // Each color is 1px wide and 50px tall
+            ctx.fillRect(index*2, 0, 2, 24); // Each color is 1px wide and 50px tall
             });
         }     
     }
@@ -134,7 +134,7 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
         >{vals[idx].toFixed(2)}
         </p>
         ))}
-        <canvas  ref={canvasRef} width={512} height={30} onMouseDown={handleMouseDown}/>
+        <canvas  ref={canvasRef} width={512} height={24} onMouseDown={handleMouseDown}/>
     <p style={{
         position:'absolute',
         top:'-25px',
