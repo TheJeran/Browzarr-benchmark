@@ -63,10 +63,11 @@
 
 .colormaps{
     height: 50vh;
-    width: 250px;
+    width: 234px;
     display:grid;
     gap:3px;
     overflow: scroll;
+    overflow-x: hidden;
 }
 
 .colormaps::-webkit-scrollbar{
@@ -108,10 +109,15 @@
     position: fixed;
     left: 50%;
     bottom: 10%;
+    width: 500px;
     transform: translateX(-50%);
     display: flex;
     flex-direction: column;
     align-items: center;
+    background-color: var(--modal-shadow);
+    backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
     z-index: 0;
 }
 
@@ -139,17 +145,8 @@
 }
 
 .panel-settings {
-  position: absolute;
-  padding: 0.5rem; /* Tailwind's p-2 */
-  /* background-color: var(--popover); */
-  border: 1px solid var(--border);
-  border-radius: 0.375rem; /* Tailwind's rounded-md */
-  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
-  z-index: 2;
   width: fit-content;
-
-  display: flex;
-  overflow: visible;
+  height: 50vh;
   background-color: var(--modal-shadow);
   backdrop-filter: blur(22px) saturate(180%);
 }
@@ -200,7 +197,15 @@
   }
   
   .cmap{
-    max-width: 40vw;
+    max-width: 100%;
+    height: 24px;
+  }
+  .colormaps {
+    width: 48vw;
+    max-width: 220px;
+    gap: 4px;
+    display: flex;
+    flex-wrap: wrap;
   }
   .play-interface {
         bottom: calc(10% + 64px);

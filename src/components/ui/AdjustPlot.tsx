@@ -6,7 +6,8 @@ import { useShallow } from 'zustand/shallow';
 import Slider from 'rc-slider';
 import { Button } from './button';
 import { LuSettings } from "react-icons/lu";
-import { Card } from "@/components/ui/card"
+// import { Card } from "@/components/ui/card"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 
 function DeNorm(val : number, min : number, max : number){
     const range = max-min;
@@ -218,34 +219,34 @@ const AdjustPlot = () => {
 
   const enableCond = (plotOn && plotType != 'sphere' && plotType != 'flat')
   return (
-    <div style={{position:'relative'}}>
-          <LuSettings 
+   <div className="relative">
+      <Popover>
+        <PopoverTrigger>
+          <LuSettings
             color={enableCond ? 'var(--text-paragraph)' : 'var(--text-disabled)'}
-            style={{cursor: enableCond ? 'pointer' : 'auto', transform: enableCond ? '' : 'scale(1)'}}
-            onClick={e=>{if (enableCond) {setShowOptions(x=>!x)}}} 
-            className='panel-item'/> 
-        <Card
+            style={{
+              cursor: enableCond ? 'pointer' : 'auto',
+              transform: enableCond ? '' : 'scale(1)'
+            }}
+            className="panel-item"
+          />
+        </PopoverTrigger>
+        <PopoverContent
+          side={isMobile ? 'top' : 'left'}
           className={`panel-settings ${
-            isMobile
-              ? 'left-0 top-[-250px] m-[12px] overflow-y-scroll overflow-x-hidden'
-              : 'left-[-242px] top-1/2'
+            isMobile 
+              ? 'overflow-y-scroll overflow-x-hidden w-[calc(100vw-24px)]' 
+              : 'w-[242px]'
           }`}
-          style={{
-            transform:
-              showOptions && isMobile
-                ? 'scale(1) translateY(-40%) translateX(-50%)'
-                : showOptions
-                ? 'scale(1) translateY(-50%)'
-                : 'scale(0)',
-            height: 'fit-content',
-          }}
+          style={{ height: 'fit-content' }}
         >
           <div className="px-2 py-2">
-            {plotType == 'volume' && <VolumeOptions />}
-            {plotType == 'point-cloud' && <PointOptions/>}
-            {(plotType == 'volume' || plotType == 'point-cloud') && <DimSlicer/>}
+            {plotType === 'volume' && <VolumeOptions />}
+            {plotType === 'point-cloud' && <PointOptions />}
+            {(plotType === 'volume' || plotType === 'point-cloud') && <DimSlicer />}
           </div>
-        </Card>
+        </PopoverContent>
+      </Popover>
     </div>
   )
 }

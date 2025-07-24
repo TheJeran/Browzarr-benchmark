@@ -32,6 +32,14 @@ const Variables = () => {
     }
   }, [selectedIndex, variables]);
 
+  useEffect(() => {
+        const handleResize = () => {
+          setPopoverSide(window.innerWidth < 768 ? "top" : "left");
+        };
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+      }, []);
 
   return (
         <Popover>
@@ -41,12 +49,11 @@ const Variables = () => {
         <PopoverContent
           side={popoverSide}
           className="colormaps"
-          style={{gap:'0px', placeItems:'left'}}
         >
             {variables.map((val, idx) => (
               <React.Fragment key={idx}>
                 <div
-                  className="variable-item cursor-pointer px-2 py-1 text-sm hover:bg-muted rounded"
+                  className="cursor-pointer px-2 py-1 text-sm hover:bg-muted rounded"
                   onClick={() => {
                     setSelectedIndex(idx);
                     setShowMeta(true);
