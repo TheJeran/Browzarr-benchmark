@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
 import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU';
 import { useShallow } from 'zustand/shallow'
-import { vertexShader, sphereFrag } from '../textures/shaders'
+import { vertexShader, sphereFrag, flatSphereFrag } from '../textures/shaders'
 import { useFrame } from '@react-three/fiber'
 import { parseUVCoords } from '@/utils/HelperFuncs';
 
@@ -20,9 +20,10 @@ function XYZtoUV(xyz : THREE.Vector3, width: number, height : number){
 }
 
 export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE.DataTexture | null, ZarrDS: ZarrDataset}) => {
-    const {colormap, flipY} = useGlobalStore(useShallow(state=> ({
+    const {colormap, flipY, isFlat} = useGlobalStore(useShallow(state=> ({
         colormap: state.colormap,
-        flipY: state.flipY
+        flipY: state.flipY,
+        isFlat: state.isFlat
     })))
     const {setPlotDim,updateDimCoords, updateTimeSeries} = useGlobalStore(useShallow(state=>({
       setPlotDim:state.setPlotDim, 
@@ -37,12 +38,11 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
         dimUnits:state.dimUnits
     })))
 
-    const {animate, animProg, cOffset, cScale, resetAnim, selectTS} = usePlotStore(useShallow(state=> ({
+    const {animate, animProg, cOffset, cScale, selectTS} = usePlotStore(useShallow(state=> ({
         animate: state.animate,
         animProg: state.animProg,
         cOffset: state.cOffset,
         cScale: state.cScale,
-        resetAnim: state.resetAnim,
         selectTS: state.selectTS
     })))
 
@@ -60,7 +60,6 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
       setBounds(prev=> [bounds, ...prev].slice(0,10))
     }
 
-  
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(1, 9), []);
     const shaderMaterial = useMemo(()=>{
         const shader = new THREE.ShaderMaterial({
@@ -75,7 +74,7 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
                 animateProg: {value: animProg}
             },
             vertexShader,
-            fragmentShader: sphereFrag,
+            fragmentShader: isFlat ? flatSphereFrag : sphereFrag,
             blending: THREE.NormalBlending,
         })
         return shader

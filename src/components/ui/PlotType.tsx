@@ -19,7 +19,7 @@ const plotIcons = {
   'flat':<MdOutlineSquare className='panel-item'/>
 }
 
-const PlotType = ({currentOpen, setOpen}: {currentOpen: string, setOpen: React.Dispatch<React.SetStateAction<string>>}) => {
+const PlotType = () => {
   const { plotType, setPlotType } = usePlotStore(useShallow(state => ({
     plotType: state.plotType,
     setPlotType: state.setPlotType
@@ -27,6 +27,7 @@ const PlotType = ({currentOpen, setOpen}: {currentOpen: string, setOpen: React.D
 
   // Responsive popover side
   const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
+  
   useEffect(() => {
     const handleResize = () => {
       setPopoverSide(window.innerWidth < 768 ? "top" : "left");
@@ -45,12 +46,6 @@ const PlotType = ({currentOpen, setOpen}: {currentOpen: string, setOpen: React.D
           style={{transform: 'scale(1)'}}
           tabIndex={0}
           aria-label="Select plot type"
-          onClick={() => setOpen('plot-type')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              setOpen('plot-type');
-            }
-          }}
         >
           {plotIcons[plotType as keyof typeof plotIcons]}
         </div>
@@ -67,7 +62,6 @@ const PlotType = ({currentOpen, setOpen}: {currentOpen: string, setOpen: React.D
             className="mb-2 w-12 h-12 flex items-center cursor-pointer justify-center transform transition-transform duration-100 ease-out hover:scale-90"
               onClick={() => {
               setPlotType(val);
-              setOpen('default');
             }}
             aria-label={`Select ${val}`}
           >

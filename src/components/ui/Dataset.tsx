@@ -15,17 +15,10 @@ const ZARR_STORES = {
   SEASFIRE: 'https://s3.bgc-jena.mpg.de:9000/misc/seasfire_rechunked.zarr',
 };
 
-const Dataset = ({
-  currentOpen,
-  setOpen
-}: {
-  currentOpen: string;
-  setOpen: React.Dispatch<React.SetStateAction<string>>;
-}) => {
+const Dataset = () => {
   const [showStoreInput, setShowStoreInput] = useState(false);
   const [showLocalInput, setShowLocalInput] = useState(false);
   const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
-  const [cond, setCond] = useState(false);
   const [activeOption, setActiveOption] = useState<string>('ESDC')
   
   const { setInitStore, setVariable } = useGlobalStore(
@@ -51,16 +44,6 @@ const Dataset = ({
             role="button"
             tabIndex={0}
             aria-label="Select dataset"
-            onClick={() => {
-                if (cond) {
-                setOpen('datasets');
-                }
-            }}
-            onKeyDown={(e) => {
-                if ((e.key === 'Enter' || e.key === ' ') && cond) {
-                setOpen('datasets');
-                }
-            }}
             >
             <TbDatabasePlus className='panel-item' />
         </div>
@@ -79,7 +62,6 @@ const Dataset = ({
             setVariable("Default");
             setActiveOption('ESDC')
             setInitStore(ZARR_STORES.ESDC);
-            setOpen("default");
           }}
         >
           ESDC
@@ -93,7 +75,6 @@ const Dataset = ({
             setVariable("Default");
             setActiveOption('seasfire')
             setInitStore(ZARR_STORES.SEASFIRE);
-            setOpen("default");
           }}
         >
           Seasfire
@@ -118,7 +99,6 @@ const Dataset = ({
                 const input = e.currentTarget.elements[0] as HTMLInputElement;
                 setInitStore(input.value);
                 setVariable("Default");
-                setOpen("default");
               }}
             >
               <Input className="w-[100px]" placeholder="Store URL" />

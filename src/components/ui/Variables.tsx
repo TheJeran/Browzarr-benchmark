@@ -7,15 +7,11 @@ import { useShallow } from "zustand/shallow";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import MetaDataInfo from "./MetaDataInfo";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 
-const Variables = ({
-  currentOpen,
-  setOpen,
-}: {
-  currentOpen: string;
-  setOpen: React.Dispatch<React.SetStateAction<string>>;
-}) => {
-  const [showOptions, setShowOptions] = useState(false);
+const Variables = () => {
+  const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
+
   const [showMeta, setShowMeta] = useState(false);
   const { variables, zMeta, setVariable } = useGlobalStore(
     useShallow((state) => ({
@@ -36,28 +32,17 @@ const Variables = ({
     }
   }, [selectedIndex, variables]);
 
-  useEffect(() => {
-    if (currentOpen !== "variables") {
-      setShowOptions(false);
-      setShowMeta(false);
-    }
-  }, [currentOpen]);
 
   return (
-    <div className="relative">
-      <div
-        onClick={() => {
-          setShowOptions((x) => !x);
-          setShowMeta(false);
-          setOpen("variables");
-        }}
-      >
-        <TbVariable className="panel-item"/>
-      </div>
-
-      {showOptions && (
-        <div className="panel-popup-left">
-          <ScrollArea className="max-h-[50vh] w-[200px] pr-2">
+        <Popover>
+        <PopoverTrigger>
+          <TbVariable className="panel-item"/>
+        </PopoverTrigger>
+        <PopoverContent
+          side={popoverSide}
+          className="colormaps"
+          style={{gap:'0px', placeItems:'left'}}
+        >
             {variables.map((val, idx) => (
               <React.Fragment key={idx}>
                 <div
@@ -69,22 +54,21 @@ const Variables = ({
                 >
                   {val}
                 </div>
-                <Separator className="my-1" />
+                {/* The below expression is to not have a seperator under last item */}
+                {idx != variables.length-1 && <Separator className="my-1" />} 
               </React.Fragment>
             ))}
-          </ScrollArea>
-
           {showMeta && meta && (
             <div className="meta-options w-[300px]">
               <MetaDataInfo
                 meta={meta}
-                setters={{ setShowMeta, setShowOptions }}
+                setShowMeta={ setShowMeta }
               />
             </div>
           )}
-        </div>
-      )}
-    </div>
+        </PopoverContent>
+      </Popover>
+
   );
 };
 

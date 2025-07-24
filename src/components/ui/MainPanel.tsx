@@ -25,11 +25,11 @@ const MainPanel = () => {
 
   return (
     <Card className="panel-container">
-      <PlotType currentOpen={currentOpen} setOpen={setCurrentOpen} />
-      <Variables currentOpen={currentOpen} setOpen={setCurrentOpen} />
-      <Colormaps currentOpen={currentOpen} setOpen={setCurrentOpen} />
-      <AdjustPlot currentOpen={currentOpen} setOpen={setCurrentOpen} />
-      <Dataset currentOpen={currentOpen} setOpen={setCurrentOpen} />
+      <PlotType />
+      <Variables />
+      <Colormaps />
+      <AdjustPlot  />
+      <Dataset  />
       <PlayButton />
   </Card>
   )

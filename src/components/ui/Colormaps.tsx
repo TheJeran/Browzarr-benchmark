@@ -10,8 +10,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import Image from 'next/image';
 
-const Colormaps = ({ currentOpen, setOpen }: { currentOpen: string; setOpen: React.Dispatch<React.SetStateAction<string>> }) => {
-  const [showOptions, setShowOptions] = useState(false);
+const Colormaps = () => {
+
   const [cmap, setCmap] = useState<string>("Spectral");
   const [flipCmap, setFlipCmap] = useState<boolean>(false);
   const [hoveredCmap, setHoveredCmap] = useState<string | null>(null);
@@ -21,6 +21,7 @@ const Colormaps = ({ currentOpen, setOpen }: { currentOpen: string; setOpen: Rea
       colormap: state.colormap,
     }))
   );
+  const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
 
   useEffect(() => {
     setColormap(
@@ -29,21 +30,18 @@ const Colormaps = ({ currentOpen, setOpen }: { currentOpen: string; setOpen: Rea
   }, [cmap, flipCmap, hoveredCmap]);
 
   useEffect(() => {
-    if (currentOpen !== "colormaps") {
-      setShowOptions(false);
-    }
-  }, [currentOpen]);
+      const handleResize = () => {
+        setPopoverSide(window.innerWidth < 768 ? "top" : "left");
+      };
+      handleResize();
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
   return (
     <div className="relative">
       <Popover>
       <PopoverTrigger>
-      <div
-        onClick={() => {
-          setShowOptions((x) => !x);
-          setOpen("colormaps");
-        }}
-      >
         <div
           className="panel-item"
           style={{
@@ -52,10 +50,9 @@ const Colormaps = ({ currentOpen, setOpen }: { currentOpen: string; setOpen: Rea
             transform: flipCmap ? "scaleX(-1)" : "",
           }}
         />
-      </div>
       </PopoverTrigger>
       <PopoverContent
-        side={"left"}
+        side={popoverSide}
         className="colormaps"
       >
             {colormaps.map((val) => (
@@ -71,7 +68,6 @@ const Colormaps = ({ currentOpen, setOpen }: { currentOpen: string; setOpen: Rea
                 onClick={() => {
                   setCmap(val);
                   setHoveredCmap(null);
-                  setShowOptions(false);
                 }}
               />
             ))}

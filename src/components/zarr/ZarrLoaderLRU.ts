@@ -29,7 +29,6 @@ export async function GetStore(storePath: string): Promise<zarr.Group<zarr.Fetch
 		if (error instanceof TypeError) {
 			setCors(true)
 			throw new ZarrError(`CORS check failed for ${storePath}. The server may not allow cross-origin requests from this site.`, error);
-			
 		}
 	}
 
