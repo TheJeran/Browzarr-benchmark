@@ -6,6 +6,7 @@ import { useShallow } from 'zustand/shallow';
 import Slider from 'rc-slider';
 import { Button } from './button';
 import { LuSettings } from "react-icons/lu";
+import { Card } from "@/components/ui/card"
 
 function DeNorm(val : number, min : number, max : number){
     const range = max-min;
@@ -192,6 +193,8 @@ const PointOptions = () =>{
 
 const AdjustPlot = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React.Dispatch<React.SetStateAction<string>>}) => {
     const [showOptions, setShowOptions] = useState<boolean>(false)
+    const [isMobile, setIsMobile] = useState(false);
+
     const {isFlat, plotOn} = useGlobalStore(
         useShallow(state=>({
           isFlat: state.isFlat,
@@ -206,15 +209,44 @@ const AdjustPlot = ({currentOpen, setOpen} : {currentOpen: string, setOpen: Reac
         setShowOptions(false)
       }
   },[currentOpen])
+
+  useEffect(() => {
+    const checkWindowSize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkWindowSize(); // Initial check
+    window.addEventListener("resize", checkWindowSize);
+
+    return () => window.removeEventListener("resize", checkWindowSize);
+  }, []);
+
   
   return (
-    <div style={{position:'relative' }}>
-        <div className='panel-item' style={{cursor: plotOn ? 'pointer' : 'auto', transform: plotOn ? '' : 'scale(1)'}} onClick={e=>{if (plotOn) {setShowOptions(x=>!x); setOpen("settings")}}} > <LuSettings style={{width:'100%', height:'100%'}} color={plotOn ? 'black' : '#88888844'}/> </div>
-        <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) translateY(-50%)' : 'scale(0%) ', width:'auto', height:'fit-content', padding:'30px 10px', justifyContent:'space-between'}}>
-          {plotType == 'volume' && <VolumeOptions />}
-          {plotType == 'point-cloud' && <PointOptions/>}
-          {(plotType == 'volume' || plotType == 'point-cloud') && <DimSlicer/>}
-        </div>
+    <div style={{position:'relative'}}>
+        <div className='panel-item' style={{cursor: plotOn ? 'pointer' : 'auto', transform: plotOn ? '' : 'scale(1)'}} onClick={e=>{if (plotOn) {setShowOptions(x=>!x); setOpen("settings")}}} > <LuSettings className='panel-item'/> </div>
+        <Card
+          className={`panel-settings ${
+            isMobile
+              ? 'left-0 top-[-250px] m-[12px] overflow-y-scroll overflow-x-hidden'
+              : 'left-[-242px] top-1/2'
+          }`}
+          style={{
+            transform:
+              showOptions && isMobile
+                ? 'scale(1) translateY(-40%) translateX(-50%)'
+                : showOptions
+                ? 'scale(1) translateY(-50%)'
+                : 'scale(0)',
+            height: 'fit-content',
+          }}
+        >
+          <div className="px-2 py-2">
+            {plotType == 'volume' && <VolumeOptions />}
+            {plotType == 'point-cloud' && <PointOptions/>}
+            {(plotType == 'volume' || plotType == 'point-cloud') && <DimSlicer/>}
+          </div>
+        </Card>
     </div>
   )
 }
