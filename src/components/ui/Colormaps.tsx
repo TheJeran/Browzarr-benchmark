@@ -75,7 +75,21 @@ const Colormaps = ({ currentOpen, setOpen }: { currentOpen: string; setOpen: Rea
                 }}
               />
             ))}
-  
+        <MdOutlineSwapVert
+            className="flipper"
+            style={{
+              position: "absolute",
+              top:"-2rem",
+              right: "80%",
+              bottom: "90%",
+              height: "50px",
+              width: "50px",
+              cursor: "pointer",
+              transform: `${flipCmap ? "rotate(270deg)" : "rotate(90deg)"}`,
+              transition: ".25s",
+            }}
+            onClick={() => setFlipCmap((x) => !x)}
+        />
       </PopoverContent>
       
       </Popover>
