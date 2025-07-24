@@ -6,6 +6,7 @@ import './css/MainPanel.css'
 import { PiPlayPauseFill } from "react-icons/pi";
 import { FaPlay, FaPause } from "react-icons/fa6";
 import { parseLoc } from '@/utils/HelperFuncs';
+import { RxEyeOpen, RxEyeClosed } from "react-icons/rx";
 
 const PlayInterFace = () =>{
     
@@ -49,35 +50,37 @@ const PlayInterFace = () =>{
             intervalRef.current = null;
         }
         }
+        return ()=>{
+             if (intervalRef.current){
+                clearInterval(intervalRef.current);
+             }
+        }
         
     }, [animate, animSpeed]);
 
-
     return (
-
-        <div className='play-interface'>
-            {parseLoc(dimArrays[0][Math.min(Math.round(animProg*timeLength),timeLength-1)], dimUnits[0])}
-            <div>
-                {parseLoc(dimArrays[0][0], dimUnits[0])}
-                <input type="range" 
-                    className='w-[300px]'
-                    value={animProg*timeLength}
-                    min={0}
-                    max={timeLength}
-                    step={1}
-                    onChange={e=>setAnimProg(parseInt(e.target.value)/timeLength)}
-                />
-                {parseLoc(dimArrays[0][timeLength-1], dimUnits[0])}
+        <div>
+            <div className='play-interface'>
+                {parseLoc(dimArrays[0][Math.min(Math.round(animProg*timeLength),timeLength-1)], dimUnits[0])}
+                <div>
+                    {parseLoc(dimArrays[0][0], dimUnits[0])}
+                    <input type="range" 
+                        className='w-[300px]'
+                        value={animProg*timeLength}
+                        min={0}
+                        max={timeLength}
+                        step={1}
+                        onChange={e=>setAnimProg(parseInt(e.target.value)/timeLength)}
+                    />
+                    {parseLoc(dimArrays[0][timeLength-1], dimUnits[0])}
+                </div>
+                <div className='flex items-center justify-between w-100'>
+                    <div className='cursor-pointer hover:scale-[115%]' onClick={e=>setAnimSpeed(x=>x*1.25)}> <b>Slower</b></div>
+                {animate ? <FaPause className='cursor-pointer hover:scale-[115%]' onClick={e=>setAnimate(false)}/> : <FaPlay className='cursor-pointer hover:scale-[115%]' onClick={e=>setAnimate(true)}/>}
+                    <div className='cursor-pointer hover:scale-[115%]' onClick={e=>setAnimSpeed(x=>x*0.8)}><b>Faster</b></div>
+                </div>
             </div>
-            <div className='flex items-center justify-between w-100'>
-                <div className='cursor-pointer hover:scale-[115%]' onClick={e=>setAnimSpeed(x=>x*1.25)}> <b>Slower</b></div>
-            {animate ? <FaPause className='cursor-pointer hover:scale-[115%]' onClick={e=>setAnimate(false)}/> : <FaPlay className='cursor-pointer hover:scale-[115%]' onClick={e=>setAnimate(true)}/>}
-                <div className='cursor-pointer hover:scale-[115%]' onClick={e=>setAnimSpeed(x=>x*0.8)}><b>Faster</b></div>
-            </div>
-            
-            
         </div>
-
     )
 }
 

@@ -39,8 +39,6 @@ export async function GetStore(storePath: string): Promise<zarr.Group<zarr.Fetch
         const gs = await d_store.then(store => zarr.open(store, {kind: 'group'}));
         return gs;
     } catch (error) {
-		console.log("Hello?")
-		console.log(error)
 		setZarrFetch(true)
         throw new ZarrError(`Failed to initialize store at ${storePath}`, error);
 		
