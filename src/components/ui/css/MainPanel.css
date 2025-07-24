@@ -53,11 +53,20 @@
 
 .cmap:hover{
     transform: scale(1.05, 1.4);
+    max-width: 210px;
     transition: 0.1s;
 }
 
 .flipped{
     transform: scaleX(-1);
+}
+
+.colormaps{
+    height: 50vh;
+    align-items: center;
+    align-content: center;
+    width: 400px;
+
 }
 
 .flipped:hover{
@@ -113,8 +122,7 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* shadow-md approximation */
   z-index: 10;
   width: fit-content;
-
-  left: -225px;
+  right: calc(100% + 8px);
   top: 50%;
   transform: translateY(-50%);
   display: flex;

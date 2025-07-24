@@ -50,9 +50,9 @@ const Colormaps = ({ currentOpen, setOpen }: { currentOpen: string; setOpen: Rea
         />
       </div>
 
-      {showOptions && (
+      {showOptions && 
         <div className="panel-popup-left">
-          <ScrollArea className="max-h-[50vh] w-[200px] pr-2">
+          <ScrollArea className="flex-col justify-center items-center h-[50vh] w-[400px]">
             {colormaps.map((val) => (
               <img
                 key={val}
@@ -85,7 +85,7 @@ const Colormaps = ({ currentOpen, setOpen }: { currentOpen: string; setOpen: Rea
             onClick={() => setFlipCmap((x) => !x)}
           />
         </div>
-      )}
+      }
     </div>
   );
 };

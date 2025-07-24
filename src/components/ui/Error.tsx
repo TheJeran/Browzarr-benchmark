@@ -47,7 +47,7 @@ const Error = () => {
                 <div>
                     This dataset is hosted on a different website and your browser is blocking it for security reasons. 
                     It&apos;s called a &quot;CORS&quot; issue (Cross-Origin Resource Sharing). 
-                    The server you're trying to access hasn't given permission for browsers to fetch data from other websites like this one. <br/><br/>
+                    The server you&apos;re trying to access hasn&apos;t given permission for browsers to fetch data from other websites like this one. <br/><br/>
                     If you access it through code outside a browser (i.e., in Python), it works fine - because those environments 
                     don&apos;t follow browser security rules. <br/><br/>
                     To fix this, the dataset&apos;s hosting server needs to allow access by adding headers that tell your browser &quot;this is safe.&quot; 

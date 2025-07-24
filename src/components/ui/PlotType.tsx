@@ -42,6 +42,7 @@ const PlotType = ({currentOpen, setOpen}: {currentOpen: string, setOpen: React.D
         <div
           role="button"
           className='panel-item'
+          style={{transform: 'scale(1)'}}
           tabIndex={0}
           aria-label="Select plot type"
           onClick={() => setOpen('plot-type')}
