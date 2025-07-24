@@ -103,10 +103,10 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       setDataArray: state.setDataArray
     })))
     const {ZarrDS,canvasWidth} = values;
-    const {plotType, resetCamera} = usePlotStore(useShallow(state => ({
+    const {plotType} = usePlotStore(useShallow(state => ({
       plotType: state.plotType,
-      resetCamera: state.resetCamera
     })))
+
     const slice = useZarrStore(state=> state.slice)
 
     const coords = useRef<number[]>([0,0])
@@ -150,7 +150,8 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
     if (variable != "Default") {
       setShowLoading(true);
       setShow(false)
-      ZarrDS.GetArray(variable, slice).then((result) => {
+      try{
+        ZarrDS.GetArray(variable, slice).then((result) => {
         // result now contains: { data: TypedArray, shape: number[], dtype: string }
         const [texture, scaling] = ArrayToTexture({
           data: result.data,
@@ -183,6 +184,10 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         setShow(true)
         setPlotOn(true)
       })
+      }catch{
+        setShowLoading(false);
+        return;
+      }
       //Get Metadata
       ZarrDS.GetAttributes(variable).then((result)=>{
         setMetadata(result);
