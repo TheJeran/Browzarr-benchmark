@@ -25,7 +25,7 @@ const LocalZarr = ({setShowLocal}:{setShowLocal: React.Dispatch<React.SetStateAc
       // We need to remove the base directory from the path for zarrita
       const relativePath = file.webkitRelativePath.substring(baseDir.length + 1);
       if (relativePath) {
-        store.set('/' + relativePath, file.arrayBuffer()); //Zarrita looks for a leading slash before variables. Need to add it back
+        store.set('/' + relativePath, file.arrayBuffer()); // Zarrita looks for a leading slash before variables. Need to add it back
       }
     }
 
@@ -40,7 +40,7 @@ const LocalZarr = ({setShowLocal}:{setShowLocal: React.Dispatch<React.SetStateAc
       // Open the Zarr store using the custom store
       const store = await zarr.tryWithConsolidated(customStore);
       if (!('contents' in store)){
-        //Metadata is missing. We will need to parse variables here. 
+        // Metadata is missing. We will need to parse variables here. 
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
           const relativePath = file.webkitRelativePath.substring(baseDir.length + 1);

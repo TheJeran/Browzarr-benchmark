@@ -2,11 +2,10 @@
 import * as THREE from 'three'
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { pointFrag, pointVert } from '@/components/textures/shaders'
-import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
+import { useErrorStore, useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 import { parseUVCoords, getUnitAxis } from '@/utils/HelperFuncs';
-import { useFrame } from '@react-three/fiber';
 
 interface PCProps {
   texture: THREE.Data3DTexture | THREE.DataTexture | null,
@@ -137,7 +136,7 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       zRange: state.zRange
     })))
 
-    const [animateProg, setAnimateProg] = useState<number>(0)
+    const setOom = useErrorStore(state => state.setOom)
 
     const [pointIDs, setPointIDs] = useState<number[]>(new Array(10).fill(-1))
     const [stride, setStride] = useState<number>(1)
@@ -159,7 +158,14 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
     const aspectRatio = useMemo(()=>width/height,[width,height]);
     const depthRatio = useMemo(()=>depth/height,[depth,height]);
     const { positions, values } = useMemo(() => {
-      const positions = new Float32Array(depth*height*width*3);
+      let positions;
+      try{
+        positions = new Float32Array(depth*height*width*3);
+      }catch{
+        setOom(true) //Set out of memeory error
+        return {positions: [], values: []};
+      }
+      
       const values = new Uint8Array(depth*height*width);
       //Generate grid points based on texture shape
       for (let z = 0; z < depth; z++) {

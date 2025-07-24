@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import QuickLRU from 'quick-lru';
 import { parseUVCoords } from "@/utils/HelperFuncs";
 import { GetSize } from "./GetMetadata";
-import { useGlobalStore, useZarrStore } from "@/utils/GlobalStates";
+import { useGlobalStore, useZarrStore, useErrorStore } from "@/utils/GlobalStates";
 
 export const ZARR_STORES = {
     ESDC: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr',
@@ -19,7 +19,20 @@ export class ZarrError extends Error {
         this.name = 'ZarrError';
     }
 }
+
 export async function GetStore(storePath: string): Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>{
+	const setZarrFetch = useErrorStore.getState().setZarrFetch
+	const setCors = useErrorStore.getState().setCors
+	try {
+		await fetch(storePath, { method: 'HEAD', mode: 'cors' });
+		} catch (error) {
+		if (error instanceof TypeError) {
+			setCors(true)
+			throw new ZarrError(`CORS check failed for ${storePath}. The server may not allow cross-origin requests from this site.`, error);
+			
+		}
+	}
+
     try {
         const d_store = zarr.tryWithConsolidated(
             new zarr.FetchStore(storePath)
@@ -27,7 +40,9 @@ export async function GetStore(storePath: string): Promise<zarr.Group<zarr.Fetch
         const gs = await d_store.then(store => zarr.open(store, {kind: 'group'}));
         return gs;
     } catch (error) {
+		setZarrFetch(true)
         throw new ZarrError(`Failed to initialize store at ${storePath}`, error);
+		
     }
 }
 

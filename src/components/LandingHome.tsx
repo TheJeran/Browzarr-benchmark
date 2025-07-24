@@ -8,7 +8,7 @@ import VariableScroller from './ui/VariableScroller';
 import { useEffect, useMemo } from 'react';
 import { Analysis, PlotArea, Plot } from '@/components/plots';
 import { MiddleSlider, MainPanel } from '@/components/ui';
-import { Metadata, ShowAnalysis, Loading, Navbar, ShowPlot } from '@/components/ui';
+import { Metadata, ShowAnalysis, Loading, Navbar, ShowPlot, Error } from '@/components/ui';
 import { useGlobalStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow, shallow } from 'zustand/shallow';
 import useCSSVariable from '@/components/ui/useCSSVariable';
@@ -91,7 +91,8 @@ export function LandingHome() {
   
   return (
     <>
-    <MainPanel/>
+    <MainPanel/> 
+    <Error />
     {!plotOn && <Navbar />}
     {canvasWidth < 15 && variable != "Default" && <ShowAnalysis onClick={()=>setCanvasWidth(windowWidth*.5)} />}
     {canvasWidth > windowWidth-15 && variable != "Default" && 

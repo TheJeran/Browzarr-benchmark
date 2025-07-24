@@ -88,10 +88,13 @@ const PlayButton = () => {
     })))
     const [showOptions, setShowOptions] = useState<boolean>(false)
     const cond = useMemo(()=>!isFlat && plotOn, [isFlat,plotOn])
+    const enableCond = (!isFlat && plotOn)
   return (
     <div>
       <PiPlayPauseFill className='panel-item' 
+        color={enableCond ? 'var(--text-paragraph)' : 'var(--text-disabled)'}
         onClick={e=>{if (cond){setShowOptions(x=>!x)}}}
+        style={{transform: enableCond ? '' : 'scale(1)',  cursor: enableCond ? 'pointer' : 'auto'}}
     />
       {showOptions && <PlayInterFace />}
     </div>
