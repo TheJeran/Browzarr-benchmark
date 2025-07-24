@@ -60,7 +60,7 @@ const PlayInterFace = () =>{
             <div>
                 {parseLoc(dimArrays[0][0], dimUnits[0])}
                 <input type="range" 
-                    className='w-[400px]'
+                    className='w-[300px]'
                     value={animProg*timeLength}
                     min={0}
                     max={timeLength}
@@ -90,9 +90,8 @@ const PlayButton = () => {
     const cond = useMemo(()=>!isFlat && plotOn, [isFlat,plotOn])
   return (
     <div>
-      <PiPlayPauseFill className='panel-item' color={cond ? 'black' : '#88888844'} 
+      <PiPlayPauseFill className='panel-item' 
         onClick={e=>{if (cond){setShowOptions(x=>!x)}}}
-        style={{transform: cond ? '' : 'scale(1)', cursor: cond ? 'pointer' : 'auto'}}
     />
       {showOptions && <PlayInterFace />}
     </div>

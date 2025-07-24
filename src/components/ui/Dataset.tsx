@@ -1,74 +1,145 @@
 "use client";
 
+import React, { useEffect, useState } from 'react';
 import { useGlobalStore } from '@/utils/GlobalStates';
-import React, {useEffect, useState} from 'react'
 import { useShallow } from 'zustand/shallow';
 import { Input } from './input';
 import { Button } from './button';
-import { CgDatabase } from "react-icons/cg";
+// import { CgDatabase } from "react-icons/cg";
+import { TbDatabasePlus } from "react-icons/tb";
 import LocalZarr from './LocalZarr';
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 const ZARR_STORES = {
-    ESDC: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr',
-    SEASFIRE: 'https://s3.bgc-jena.mpg.de:9000/misc/seasfire_rechunked.zarr',
-}
+  ESDC: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr',
+  SEASFIRE: 'https://s3.bgc-jena.mpg.de:9000/misc/seasfire_rechunked.zarr',
+};
 
-const Dataset = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React.Dispatch<React.SetStateAction<string>>}) => {
-    const [showOptions, setShowOptions] = useState<boolean>(false)
-    const [showStoreInput, setShowStoreInput] = useState<boolean>(false)
-    const [showLocalInput, setShowLocalInput] = useState<boolean>(false)
-    const {setInitStore, setVariable} = useGlobalStore(useShallow(state => ({
-        setInitStore: state.setInitStore,
-        setVariable: state.setVariable
-    })))
+const Dataset = ({
+  currentOpen,
+  setOpen
+}: {
+  currentOpen: string;
+  setOpen: React.Dispatch<React.SetStateAction<string>>;
+}) => {
+  const [showStoreInput, setShowStoreInput] = useState(false);
+  const [showLocalInput, setShowLocalInput] = useState(false);
+  const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
+  const [cond, setCond] = useState(false);
+  
+  const { setInitStore, setVariable } = useGlobalStore(
+    useShallow((state) => ({
+      setInitStore: state.setInitStore,
+      setVariable: state.setVariable,
+    }))
+  );
 
-    useEffect(()=>{
-            if (currentOpen != 'datasets'){
-                setShowOptions(false)
-            }
-        },[currentOpen])
+  useEffect(() => {
+    const handleResize = () => {
+      setPopoverSide(window.innerWidth < 768 ? "top" : "left");
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
-    <div style={{position:'relative'}}>
-        <div className='panel-item' onClick={e=>{setShowOptions(x=>!x); setOpen('datasets')}} > <CgDatabase size={100} style={{color:'var(--foreground)'}}/> </div>
-        <div style={{position:'relative'}}>
-            <div className='panel-item-options' style={{transform: showOptions ? 'scale(100%) translateY(-50%)' : 'scale(0%) ', textAlign:'right', height:'auto', width:'fit-content', padding:'30px 10px', justifyContent:'space-around', overflow:'visible'}}>
-                <div className='variable-item' onClick={e=>{setShowLocalInput(false); setShowStoreInput(false); setVariable("Default"); setInitStore(ZARR_STORES['ESDC'])}}>ESDC</div>
-                <div className='variable-item' onClick={e=>{setShowLocalInput(false); setShowStoreInput(false); setVariable("Default"); setInitStore(ZARR_STORES['SEASFIRE'])}}>Seasfire</div>
-                <div style={{position:'relative'}}>
-                    <div className='variable-item' onClick={e=>{setShowLocalInput(false); setShowStoreInput(x=>!x)}}>Personal</div>
-                    <div className='store-input' style={{position:'absolute'}}>
-                        {showStoreInput && 
-                        <form
-                            className="flex max-w-sm items-center gap-2 mr-[10px]"
-                            action=""
-                            onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
-                            e.preventDefault();
-                            const input = (e.currentTarget.elements[0] as HTMLInputElement);
-                            setInitStore(input.value);
-                            setVariable("Default");
-                            }}
-                        >
-                            <Input className='w-[200px]' placeholder="Remote Store URL" /> 
-                            <Button className='cursor-pointer' type="submit" variant="outline">
-                            Fetch
-                            </Button>
-                        </form>
-                        }
-                    </div>
-                </div>
-                <div style={{position:'relative'}}>
-                    <div className='variable-item' onClick={e=>{setShowLocalInput(x=>!x); setShowStoreInput(false)}}>Local</div>
-                    <div className='store-input' style={{position:'absolute'}}>
-                        {showLocalInput && <LocalZarr setShowLocal={setShowLocalInput}/>}
-                    </div>
-                </div>
-            </div>
-
+    <Popover>
+      <PopoverTrigger asChild>
+        <div
+            role="button"
+            tabIndex={0}
+            aria-label="Select dataset"
+            onClick={() => {
+                if (cond) {
+                setOpen('datasets');
+                }
+            }}
+            onKeyDown={(e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && cond) {
+                setOpen('datasets');
+                }
+            }}
+            >
+            <TbDatabasePlus className='panel-item' />
         </div>
-      
-    </div>
-  )
-}
+        
+      </PopoverTrigger>
+      <PopoverContent
+        side={popoverSide}
+        className="flex flex-col items-start max-w-[220px] p-3 gap-3 w-auto mb-1"
+      >
+        <Button
+          variant="ghost"
+          onClick={() => {
+            setShowStoreInput(false);
+            setShowLocalInput(false);
+            setVariable("Default");
+            setInitStore(ZARR_STORES.ESDC);
+            setOpen("default");
+          }}
+        >
+          ESDC
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            setShowStoreInput(false);
+            setShowLocalInput(false);
+            setVariable("Default");
+            setInitStore(ZARR_STORES.SEASFIRE);
+            setOpen("default");
+          }}
+        >
+          Seasfire
+        </Button>
+        <div>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setShowLocalInput(false);
+              setShowStoreInput((prev) => !prev);
+            }}
+          >
+            Remote
+          </Button>
+          {showStoreInput && (
+            <form
+              className="mt-2 flex items-center gap-2"
+              onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
+                e.preventDefault();
+                const input = e.currentTarget.elements[0] as HTMLInputElement;
+                setInitStore(input.value);
+                setVariable("Default");
+                setOpen("default");
+              }}
+            >
+              <Input className="w-[100px]" placeholder="Store URL" />
+              <Button type="submit" variant="outline">
+                Fetch
+              </Button>
+            </form>
+          )}
+        </div>
+        <div>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setShowLocalInput((prev) => !prev);
+              setShowStoreInput(false);
+            }}
+          >
+            Local
+          </Button>
+          {showLocalInput && (
+            <div className="mt-2">
+              <LocalZarr setShowLocal={setShowLocalInput} />
+            </div>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
-export default Dataset
+export default Dataset;
