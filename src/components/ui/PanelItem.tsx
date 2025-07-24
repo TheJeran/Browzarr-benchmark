@@ -1,10 +1,14 @@
 "use client"
 
-import { Popover, PopoverTrigger, PopoverContent } from "radix-ui"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
+import { ReactNode } from "react"
 
-import { Button } from "radix-ui"
-
-export function PanelItem({ children, options }) {
+export function PanelItem({ children, options }: { children: ReactNode; options: ReactNode }) {
   return (
     <Popover>
       <PopoverTrigger asChild>

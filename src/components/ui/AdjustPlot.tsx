@@ -229,7 +229,7 @@ const AdjustPlot = ({currentOpen, setOpen} : {currentOpen: string, setOpen: Reac
           className={`panel-settings ${
             isMobile
               ? 'left-0 top-[-250px] m-[12px] overflow-y-scroll overflow-x-hidden'
-              : 'left-[-230px] top-1/2'
+              : 'left-[-242px] top-1/2'
           }`}
           style={{
             transform:
@@ -241,10 +241,11 @@ const AdjustPlot = ({currentOpen, setOpen} : {currentOpen: string, setOpen: Reac
             height: 'fit-content',
           }}
         >
-          
-          {plotType == 'volume' && <VolumeOptions />}
-          {plotType == 'point-cloud' && <PointOptions/>}
-          {(plotType == 'volume' || plotType == 'point-cloud') && <DimSlicer/>}
+          <div className="px-2 py-2">
+            {plotType == 'volume' && <VolumeOptions />}
+            {plotType == 'point-cloud' && <PointOptions/>}
+            {(plotType == 'volume' || plotType == 'point-cloud') && <DimSlicer/>}
+          </div>
         </Card>
     </div>
   )
