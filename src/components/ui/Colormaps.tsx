@@ -7,6 +7,8 @@ import { colormaps } from '@/components/textures';
 import { useShallow } from 'zustand/shallow';
 import { MdOutlineSwapVert } from "react-icons/md";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import Image from 'next/image';
 
 const Colormaps = ({ currentOpen, setOpen }: { currentOpen: string; setOpen: React.Dispatch<React.SetStateAction<string>> }) => {
   const [showOptions, setShowOptions] = useState(false);
@@ -34,6 +36,8 @@ const Colormaps = ({ currentOpen, setOpen }: { currentOpen: string; setOpen: Rea
 
   return (
     <div className="relative">
+      <Popover>
+      <PopoverTrigger>
       <div
         onClick={() => {
           setShowOptions((x) => !x);
@@ -49,16 +53,19 @@ const Colormaps = ({ currentOpen, setOpen }: { currentOpen: string; setOpen: Rea
           }}
         />
       </div>
-
-      {showOptions && 
-        <div className="panel-popup-left">
-          <ScrollArea className="flex-col justify-center items-center h-[50vh] w-[400px]">
+      </PopoverTrigger>
+      <PopoverContent
+        side={"left"}
+        className="colormaps"
+      >
             {colormaps.map((val) => (
-              <img
+              <Image
                 key={val}
                 className={`cmap ${flipCmap ? "flipped" : ""}`}
                 src={`./colormap_icons/${val}.webp`}
                 alt={val}
+                height={100}
+                width={256}
                 onMouseEnter={() => setHoveredCmap(val)}
                 onMouseLeave={() => setHoveredCmap(null)}
                 onClick={() => {
@@ -68,8 +75,7 @@ const Colormaps = ({ currentOpen, setOpen }: { currentOpen: string; setOpen: Rea
                 }}
               />
             ))}
-          </ScrollArea>
-          <MdOutlineSwapVert
+        <MdOutlineSwapVert
             className="flipper"
             style={{
               position: "absolute",
@@ -83,9 +89,10 @@ const Colormaps = ({ currentOpen, setOpen }: { currentOpen: string; setOpen: Rea
               transition: ".25s",
             }}
             onClick={() => setFlipCmap((x) => !x)}
-          />
-        </div>
-      }
+        />
+      </PopoverContent>
+      
+      </Popover>
     </div>
   );
 };
