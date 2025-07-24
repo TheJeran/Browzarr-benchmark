@@ -300,3 +300,24 @@ export const useZarrStore = create<ZarrState>((set) => ({
   setCompress: (compress) => set({ compress }),
   setCurrentStore: (currentStore) => set({ currentStore })
 }))
+
+type ErrorState = {
+  zarrFetch: boolean;
+  cors: boolean;
+  oom: boolean;
+
+  setZarrFetch: (zarrFetch: boolean) => void; 
+  setCors: (cors: boolean) => void; 
+  setOom: (oom: boolean) => void; 
+}
+
+export const useErrorStore = create<ErrorState>((set) =>({
+  zarrFetch: false,
+  cors: false,
+  oom: false,
+
+  setZarrFetch: (zarrFetch) => set({ zarrFetch }),
+  setCors: (cors) => set({ cors }),
+  setOom: (oom) => set({ oom })
+
+}))

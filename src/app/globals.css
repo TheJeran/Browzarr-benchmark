@@ -52,7 +52,7 @@
 }
 /* Light Theme */
 [data-theme='light'] {
-  --background: #ededed;
+  --background: rgb(237, 237, 237);
   --foreground: hsla(0, 0%, 9%, 1);
   --background-plot: hsla(0, 5%, 85%, 0.8);
   --text-plot: hsla(0, 0%, 0%, 0.9);

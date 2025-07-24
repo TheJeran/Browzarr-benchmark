@@ -29,6 +29,7 @@ import Colormaps from "./Colormaps";
 import AdjustPlot from "./AdjustPlot";
 import Dataset from "./Dataset";
 import PlayButton from "./PlayButton";
+import Error from "./Error";
 export {
   Navbar,
   Footer,
@@ -61,5 +62,6 @@ export {
   Colormaps,
   AdjustPlot,
   Dataset,
-  PlayButton
+  PlayButton,
+  Error
 };
