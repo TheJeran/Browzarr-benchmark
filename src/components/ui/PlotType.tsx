@@ -63,7 +63,7 @@ const PlotType = ({currentOpen, setOpen}: {currentOpen: string, setOpen: React.D
           <Button
             key={val}
             variant={plotType === val ? "default" : "ghost"}
-            className="mb-2 w-12 h-12 flex items-center justify-center transform transition-transform duration-100 ease-out hover:scale-90"
+            className="mb-2 w-12 h-12 flex items-center cursor-pointer justify-center transform transition-transform duration-100 ease-out hover:scale-90"
               onClick={() => {
               setPlotType(val);
               setOpen('default');

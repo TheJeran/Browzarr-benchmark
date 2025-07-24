@@ -221,14 +221,14 @@ const AdjustPlot = ({currentOpen, setOpen} : {currentOpen: string, setOpen: Reac
     return () => window.removeEventListener("resize", checkWindowSize);
   }, []);
 
-  
+  const enableCond = (plotOn && plotType != 'sphere' && plotType != 'flat')
   return (
     <div style={{position:'relative'}}>
-        <div className='panel-item' style={{cursor: plotOn ? 'pointer' : 'auto', transform: plotOn ? '' : 'scale(1)'}} 
-          onClick={e=>{if (plotOn) {setShowOptions(x=>!x); setOpen("settings")}}} 
-        > 
-          <LuSettings className='panel-item'/> 
-        </div>
+          <LuSettings 
+            color={enableCond ? 'var(--text-paragraph)' : 'var(--text-disabled)'}
+            style={{cursor: enableCond ? 'pointer' : 'auto', transform: enableCond ? '' : 'scale(1)'}}
+            onClick={e=>{if (enableCond) {setShowOptions(x=>!x); setOpen("settings")}}} 
+            className='panel-item'/> 
         <Card
           className={`panel-settings ${
             isMobile

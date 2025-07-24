@@ -26,6 +26,7 @@ const Dataset = ({
   const [showLocalInput, setShowLocalInput] = useState(false);
   const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
   const [cond, setCond] = useState(false);
+  const [activeOption, setActiveOption] = useState<string>('ESDC')
   
   const { setInitStore, setVariable } = useGlobalStore(
     useShallow((state) => ({
@@ -70,11 +71,13 @@ const Dataset = ({
         className="flex flex-col items-start max-w-[220px] p-3 gap-3 w-auto mb-1"
       >
         <Button
-          variant="ghost"
+          variant={activeOption === 'ESDC' ? "default" : "ghost"}
+          className='cursor-pointer'
           onClick={() => {
             setShowStoreInput(false);
             setShowLocalInput(false);
             setVariable("Default");
+            setActiveOption('ESDC')
             setInitStore(ZARR_STORES.ESDC);
             setOpen("default");
           }}
@@ -82,11 +85,13 @@ const Dataset = ({
           ESDC
         </Button>
         <Button
-          variant="ghost"
+          variant={activeOption === 'seasfire' ? "default" : "ghost"}
+          className='cursor-pointer'
           onClick={() => {
             setShowStoreInput(false);
             setShowLocalInput(false);
             setVariable("Default");
+            setActiveOption('seasfire')
             setInitStore(ZARR_STORES.SEASFIRE);
             setOpen("default");
           }}
@@ -95,9 +100,11 @@ const Dataset = ({
         </Button>
         <div>
           <Button
-            variant="ghost"
+            variant={activeOption === 'remote' ? "default" : "ghost"}
+            className='cursor-pointer'
             onClick={() => {
               setShowLocalInput(false);
+              setActiveOption('remote')
               setShowStoreInput((prev) => !prev);
             }}
           >
@@ -123,10 +130,12 @@ const Dataset = ({
         </div>
         <div>
           <Button
-            variant="ghost"
+            variant={activeOption === 'local' ? "default" : "ghost"}
+            className='cursor-pointer'
             onClick={() => {
               setShowLocalInput((prev) => !prev);
               setShowStoreInput(false);
+              setActiveOption('local')
             }}
           >
             Local
