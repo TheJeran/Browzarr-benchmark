@@ -193,6 +193,8 @@ const PointOptions = () =>{
 
 const AdjustPlot = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React.Dispatch<React.SetStateAction<string>>}) => {
     const [showOptions, setShowOptions] = useState<boolean>(false)
+    const [isMobile, setIsMobile] = useState(false);
+
     const {isFlat, plotOn} = useGlobalStore(
         useShallow(state=>({
           isFlat: state.isFlat,
@@ -207,19 +209,31 @@ const AdjustPlot = ({currentOpen, setOpen} : {currentOpen: string, setOpen: Reac
         setShowOptions(false)
       }
   },[currentOpen])
+
+  useEffect(() => {
+    const checkWindowSize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkWindowSize(); // Initial check
+    window.addEventListener("resize", checkWindowSize);
+
+    return () => window.removeEventListener("resize", checkWindowSize);
+  }, []);
+
   
   return (
     <div style={{position:'relative'}}>
         <div className='panel-item' style={{cursor: plotOn ? 'pointer' : 'auto', transform: plotOn ? '' : 'scale(1)'}} onClick={e=>{if (plotOn) {setShowOptions(x=>!x); setOpen("settings")}}} > <LuSettings className='panel-item'/> </div>
         <Card
           className={`panel-settings ${
-            window.innerWidth <= 768
+            isMobile
               ? 'left-0 top-[-250px] m-[12px] overflow-y-scroll overflow-x-hidden'
               : 'left-[-230px] top-1/2'
           }`}
           style={{
             transform:
-              showOptions && window.innerWidth <= 768
+              showOptions && isMobile
                 ? 'scale(1) translateY(-40%) translateX(-50%)'
                 : showOptions
                 ? 'scale(1) translateY(-50%)'
