@@ -29,7 +29,6 @@ export async function GetStore(storePath: string): Promise<zarr.Group<zarr.Fetch
 		if (error instanceof TypeError) {
 			setCors(true)
 			throw new ZarrError(`CORS check failed for ${storePath}. The server may not allow cross-origin requests from this site.`, error);
-			
 		}
 	}
 
@@ -40,6 +39,8 @@ export async function GetStore(storePath: string): Promise<zarr.Group<zarr.Fetch
         const gs = await d_store.then(store => zarr.open(store, {kind: 'group'}));
         return gs;
     } catch (error) {
+		console.log("Hello?")
+		console.log(error)
 		setZarrFetch(true)
         throw new ZarrError(`Failed to initialize store at ${storePath}`, error);
 		

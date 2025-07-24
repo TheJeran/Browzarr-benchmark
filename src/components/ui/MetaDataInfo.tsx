@@ -18,19 +18,15 @@ const formatBytes = (bytes: number): string => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
 }
 
-interface ViewSetters {
-  setShowMeta: React.Dispatch<React.SetStateAction<boolean>>
-  setShowOptions: React.Dispatch<React.SetStateAction<boolean>>
-}
 
-const MetaDataInfo = ({ meta, setters }: { meta: any, setters: ViewSetters }) => {
-  const { setShowMeta, setShowOptions } = setters
+
+const MetaDataInfo = ({ meta, setShowMeta }: { meta: any, setShowMeta: React.Dispatch<React.SetStateAction<boolean>> }) => {
   const setVariable = useGlobalStore(useShallow(state => state.setVariable))
   const { slice, setSlice } = useZarrStore(useShallow(state => ({
     slice: state.slice,
     setSlice: state.setSlice,
   })))
-  const [warn, setWarn] = useState<boolean>(false)
+
 
   const totalSize = useMemo(() => meta.totalSize ? meta.totalSize : 0, [meta])
   const length = useMemo(() => meta.shape ? meta.shape[0] : 0, [meta])
@@ -47,23 +43,15 @@ const MetaDataInfo = ({ meta, setters }: { meta: any, setters: ViewSetters }) =>
     return Math.ceil(timeSteps / chunkTimeStride) * timeChunkSize
   }, [meta, slice])
 
-  useEffect(() => {
-    setWarn(currentSize > 1e8)
-  }, [currentSize])
-
   return (
     <Card className="meta-container max-w-sm md:max-w-md p-4 mb-4 border border-muted">
       <div className="meta-info">
-        {Object.entries(meta).map(([key, value]) => (
-          <div key={key} className="mb-2 break-words">
-            <b>{key.replace(/_/g, " ")}:</b>{" "}
-            {Array.isArray(value)
-              ? `[${formatArray(value)}]`
-              : typeof value === "object" && value !== null
-                ? JSON.stringify(value)
-                : String(value)}
-          </div>
-        ))}
+         <b>Long Name</b> <br/>
+                {`${meta.long_name}`}<br/>
+                    <br/>
+                    <b>Shape</b><br/> 
+                    {`[${formatArray(meta.shape)}]`}<br/>
+                    <br/>
         {is3D && (
           <>
           
@@ -82,8 +70,8 @@ const MetaDataInfo = ({ meta, setters }: { meta: any, setters: ViewSetters }) =>
                     onChange={(values) => setSlice(values as [number, number | null])}
                   />
                   <div className="flex justify-between text-xs mt-4">
-                    <span>Min: <br /> {slice[0] ? slice[0] : 0}</span>
-                    <span>Max: <br /> {slice[1] ? slice[1] : length}</span>
+                    <span>Min: <br /> <input className='w-[50px]' type="number" value={slice[0]} onChange={e=>setSlice([parseInt(e.target.value), slice[1]])}/></span>
+                    <span>Max: <br /> <input className='w-[50px] text-right' type="number" value={slice[1] ? slice[1] : 1} onChange={e=>setSlice([slice[0] , parseInt(e.target.value)])}/></span>
                   </div>
                 </div>
               </>
@@ -103,10 +91,10 @@ const MetaDataInfo = ({ meta, setters }: { meta: any, setters: ViewSetters }) =>
       </div>
       <Button
         variant={"destructive"}
+        className="cursor-pointer hover:scale-[1.05]"
         onClick={() => {
           setVariable(meta.name)
           setShowMeta(false)
-          setShowOptions(false)
         }}
       >
         Plot

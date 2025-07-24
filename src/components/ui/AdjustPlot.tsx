@@ -191,7 +191,7 @@ const PointOptions = () =>{
   )
 }
 
-const AdjustPlot = ({currentOpen, setOpen} : {currentOpen: string, setOpen: React.Dispatch<React.SetStateAction<string>>}) => {
+const AdjustPlot = () => {
     const [showOptions, setShowOptions] = useState<boolean>(false)
     const [isMobile, setIsMobile] = useState(false);
 
@@ -204,11 +204,6 @@ const AdjustPlot = ({currentOpen, setOpen} : {currentOpen: string, setOpen: Reac
         plotType: state.plotType,
   })))
     
- useEffect(()=>{
-      if (currentOpen != 'settings'){
-        setShowOptions(false)
-      }
-  },[currentOpen])
 
   useEffect(() => {
     const checkWindowSize = () => {
@@ -227,7 +222,7 @@ const AdjustPlot = ({currentOpen, setOpen} : {currentOpen: string, setOpen: Reac
           <LuSettings 
             color={enableCond ? 'var(--text-paragraph)' : 'var(--text-disabled)'}
             style={{cursor: enableCond ? 'pointer' : 'auto', transform: enableCond ? '' : 'scale(1)'}}
-            onClick={e=>{if (enableCond) {setShowOptions(x=>!x); setOpen("settings")}}} 
+            onClick={e=>{if (enableCond) {setShowOptions(x=>!x)}}} 
             className='panel-item'/> 
         <Card
           className={`panel-settings ${
