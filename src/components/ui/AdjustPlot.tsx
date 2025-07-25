@@ -6,7 +6,6 @@ import { useShallow } from 'zustand/shallow';
 import Slider from 'rc-slider';
 import { Button } from './button';
 import { LuSettings } from "react-icons/lu";
-// import { Card } from "@/components/ui/card"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 
 function DeNorm(val : number, min : number, max : number){
@@ -74,9 +73,7 @@ const DimSlicer = () =>{
           setZRange: state.setZRange,
       })))
 
-      const [xScales, setXScales] = useState<{minVal: number, maxVal: number}>({minVal: 0, maxVal: 0})
-      const [yScales, setYScales] = useState<{minVal: number, maxVal: number}>({minVal: 0, maxVal: 0})
-      const [zScales, setZScales] = useState<{minVal: number, maxVal: number}>({minVal: 0, maxVal: 0})
+      const defaultScales = {minVal: 0, maxVal: 0} //This is fed into MinMax as it is required but overwritten if an array is present
   
       const {valueScales, dimArrays} = useGlobalStore(useShallow(state => ({valueScales : state.valueScales, dimArrays : state.dimArrays, isFlat: state.isFlat})))
 
@@ -88,28 +85,9 @@ const DimSlicer = () =>{
       </div>
       <div className='flex-column text-center'>
         <b>Spatial Cropping</b>
-        <MinMaxSlider range={xRange} setRange={setXRange} valueScales={xScales} array={dimArrays[2]}/>
-        <MinMaxSlider range={yRange} setRange={setYRange} valueScales={yScales} array={dimArrays[1]}/>
-        <MinMaxSlider range={zRange} setRange={setZRange} valueScales={zScales} array={dimArrays[0]}/>
-      </div>
-    </div>
-  )
-}
-
-const AnimateOptions = ()=>{
-  const {animate, resetAnim, setAnimate, setResetAnim} = usePlotStore(useShallow(state=> ({
-        animate: state.animate,
-        resetAnim: state.resetAnim,
-        setAnimate: state.setAnimate,
-        setResetAnim: state.setResetAnim
-  })))
-
-  return (
-    <div className='flex-column items-center w-50 text-center'>
-      <b>Animate Time</b>
-      <div className='pt-[10px]' style={{display:'flex', justifyContent:'space-around'}}>
-          <Button className='cursor-pointer' style={{background:animate ? 'red' : ''}} variant="outline" onClick={()=>setAnimate(!animate)}>{animate ? "Pause" : "Start"}</Button>
-          <Button className='cursor-pointer' variant="outline" onClick={()=>setResetAnim(!resetAnim)}>Reset</Button>
+        <MinMaxSlider range={xRange} setRange={setXRange} valueScales={defaultScales} array={dimArrays[2]}/>
+        <MinMaxSlider range={yRange} setRange={setYRange} valueScales={defaultScales} array={dimArrays[1]}/>
+        <MinMaxSlider range={zRange} setRange={setZRange} valueScales={defaultScales} array={dimArrays[0]}/>
       </div>
     </div>
   )
@@ -193,17 +171,16 @@ const PointOptions = () =>{
 }
 
 const AdjustPlot = () => {
-    const [showOptions, setShowOptions] = useState<boolean>(false)
     const [isMobile, setIsMobile] = useState(false);
 
-    const {isFlat, plotOn} = useGlobalStore(
+    const {plotOn} = useGlobalStore(
         useShallow(state=>({
-          isFlat: state.isFlat,
           plotOn: state.plotOn,
         })))
-    const {plotType} = usePlotStore(useShallow(state=> ({
-        plotType: state.plotType,
-  })))
+    const {plotType} = usePlotStore(
+        useShallow(state=> ({
+          plotType: state.plotType,
+        })))
     
 
   useEffect(() => {
@@ -221,7 +198,9 @@ const AdjustPlot = () => {
   return (
    <div className="relative">
       <Popover>
-        <PopoverTrigger>
+        <PopoverTrigger
+          disabled={!enableCond}
+        >
           <LuSettings
             color={enableCond ? 'var(--text-paragraph)' : 'var(--text-disabled)'}
             style={{
