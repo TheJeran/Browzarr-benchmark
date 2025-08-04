@@ -24,13 +24,13 @@ async function ZarrParser(files: any, store: any){
             vars.push('/' + relativePath)
         }
     }
-    for (let variable of vars){
+    for (const variable of vars){
         const decoded = await store.get(variable)
         metadata[variable.slice(1)] = json_decode_object(decoded)
     }
     const v2_meta = {metadata, zarr_consolidated_format: 1}
     const known_meta: { [key: string]: any } = {};
-    for (let [key, value] of Object.entries(v2_meta.metadata)) {
+    for (const [key, value] of Object.entries(v2_meta.metadata)) {
         known_meta[`/${key}`] = value;
     }
     return {
@@ -51,7 +51,7 @@ async function ZarrParser(files: any, store: any){
         getRange: store.getRange?.bind(store),
         contents() {
             const contents = [];
-            for (let [key, value] of Object.entries(known_meta)) {
+            for (const [key, value] of Object.entries(known_meta)) {
                 const parts = key.split("/");
                 const filename = parts.pop();
                 const path = (parts.join("/") || "/");
