@@ -29,7 +29,7 @@ async function ZarrParser(files: any, store: any){
         metadata[variable.slice(1)] = json_decode_object(decoded)
     }
     const v2_meta = {metadata, zarr_consolidated_format: 1}
-    let known_meta: { [key: string]: any } = {};
+    const known_meta: { [key: string]: any } = {};
     for (let [key, value] of Object.entries(v2_meta.metadata)) {
         known_meta[`/${key}`] = value;
     }
@@ -38,9 +38,9 @@ async function ZarrParser(files: any, store: any){
             if (known_meta[key]) {
             return json_encode_object(known_meta[key]);
             }
-            let maybe_bytes = await store.get(key, opts);
+            const maybe_bytes = await store.get(key, opts);
             if (is_meta_key(key) && maybe_bytes) {
-            let meta = json_decode_object(maybe_bytes);
+            const meta = json_decode_object(maybe_bytes);
             known_meta[key] = meta;
             }
             return maybe_bytes;
@@ -50,11 +50,11 @@ async function ZarrParser(files: any, store: any){
         // but unlikely to be useful enough to justify the effort.
         getRange: store.getRange?.bind(store),
         contents() {
-            let contents = [];
+            const contents = [];
             for (let [key, value] of Object.entries(known_meta)) {
-                let parts = key.split("/");
-                let filename = parts.pop();
-                let path = (parts.join("/") || "/");
+                const parts = key.split("/");
+                const filename = parts.pop();
+                const path = (parts.join("/") || "/");
                 if (filename === ".zarray")
                     contents.push({ path, kind: "array" });
                 if (filename === ".zgroup")
