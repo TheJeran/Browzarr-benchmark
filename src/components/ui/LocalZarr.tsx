@@ -3,6 +3,7 @@ import React, {useState, useEffect, ChangeEvent} from 'react'
 import * as zarr from 'zarrita'
 import { useZarrStore, useGlobalStore } from '@/utils/GlobalStates';
 import { Input } from './input';
+import ZarrParser from '../zarr/ZarrParser';
 
 const LocalZarr = ({setShowLocal}:{setShowLocal: React.Dispatch<React.SetStateAction<boolean>>}) => {
   const setCurrentStore = useZarrStore(state => state.setCurrentStore)
@@ -38,14 +39,10 @@ const LocalZarr = ({setShowLocal}:{setShowLocal: React.Dispatch<React.SetStateAc
     };
     try {
       // Open the Zarr store using the custom store
-      const store = await zarr.tryWithConsolidated(customStore);
+      let store = await zarr.tryWithConsolidated(customStore);
       if (!('contents' in store)){
         // Metadata is missing. We will need to parse variables here. 
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
-          const relativePath = file.webkitRelativePath.substring(baseDir.length + 1);
-          console.log(relativePath)
-        }
+        store = await ZarrParser(files, customStore)
       }
       const gs = zarr.open(store, {kind: 'group'});
       gs.then(e=>{setCurrentStore(e)})
@@ -59,7 +56,7 @@ const LocalZarr = ({setShowLocal}:{setShowLocal: React.Dispatch<React.SetStateAc
       }
     }
   };
-  
+
   return (
     <div>
         <Input type="file" id="filepicker"
