@@ -75,7 +75,8 @@ interface PlotParameters{
 
 const Plot = ({values,setShowLoading}:PlotParameters) => {
     const {
-      setShape, 
+      setShape,
+      setDataShape, 
       setFlipY, 
       setValueScales, 
       setMetadata, 
@@ -85,6 +86,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       setPlotOn} = useGlobalStore(
         useShallow(state => ({  //UseShallow for object returns
           setShape:state.setShape,
+          setDataShape: state.setDataShape,
           setFlipY:state.setFlipY,
           setValueScales:state.setValueScales,
           setMetadata: state.setMetadata,
@@ -180,6 +182,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
         setDataArray(result.data)
         const shapeRatio = result.shape[1] / result.shape[2] * 2;
         setShape(new THREE.Vector3(2, shapeRatio, 2));
+        setDataShape(result.shape)
         setShowLoading(false)
         setShow(true)
         setPlotOn(true)

@@ -13,6 +13,7 @@ import { useGlobalStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow, shallow } from 'zustand/shallow';
 import useCSSVariable from '@/components/ui/useCSSVariable';
 import { GetTitleDescription } from '@/components/zarr/GetMetadata';
+import AnalysisWG from './plots/AnalysisWG';
 
 export function LandingHome() {
 
@@ -93,6 +94,7 @@ export function LandingHome() {
     <>
     <MainPanel/> 
     <Error />
+    <AnalysisWG />
     {!plotOn && <Navbar />}
     {canvasWidth < 15 && variable != "Default" && <ShowAnalysis onClick={()=>setCanvasWidth(windowWidth*.5)} />}
     {canvasWidth > windowWidth-15 && variable != "Default" && 
