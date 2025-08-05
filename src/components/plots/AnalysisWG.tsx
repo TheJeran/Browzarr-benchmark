@@ -28,7 +28,7 @@ const AnalysisWG = () => {
 
         // Match drawing scale to CSS size
         
-        DataReduction(dataArray, {strides, shape:dataShape}, reduceDim).then(e=>{
+        DataReduction(dataArray as ArrayBufferView, {strides, shape:dataShape}, reduceDim).then(e=>{
             const [minVal, maxVal] = ArrayMinMax(e as Float32Array)
             const normed = e.map(e => (e-minVal)/(maxVal-minVal))
             const imgArrayFloat = normed?.map(e=> e*255)

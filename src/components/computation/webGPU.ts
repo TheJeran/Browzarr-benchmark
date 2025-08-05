@@ -20,7 +20,7 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
 
     let workGroups = thisShape.map(e => Math.ceil(e/16)) //We assume the workgroups are 16 threads. We see how many of those 16 thread workgroups are needed for each dimension
     workGroups = workGroups.map(e => Math.pow(2, Math.ceil(Math.log2(e)))) //Round those up to nearest power of 2
-    console.log(workGroups.map(e=>e*16))
+
     const shader =  `
             struct Params {
                 zStride: u32,

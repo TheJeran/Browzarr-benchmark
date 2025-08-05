@@ -27,7 +27,7 @@ type StoreState = {
   showLoading: boolean;
   metadata: Record<string, any> | null;
   zMeta: object[];
-  dataArray: Array<any> | null;
+  dataArray: ArrayBufferView;
   dimArrays: number[][];
   dimNames: string[];
   dimUnits: string[];
@@ -51,7 +51,7 @@ type StoreState = {
   setShowLoading: (showLoading: boolean) => void;
   setMetadata: (metadata: object | null) => void;
   setZMeta: (zMeta: object[]) => void;
-  setDataArray: (dataArray: Array<any> | null) => void;
+  setDataArray: (dataArray: ArrayBufferView) => void;
   setDimArrays: (dimArrays: number[][]) => void;
   setDimNames: (dimNames: string[]) => void;
   setDimUnits: (dimUnits: string[]) => void;
@@ -78,7 +78,7 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   showLoading: false,
   metadata: null,
   zMeta: [{}],
-  dataArray: null,
+  dataArray: new Uint8Array(1),
   dimArrays: [[0], [0], [0]],
   dimNames: ["Default"],
   dimUnits: ["Default"],
