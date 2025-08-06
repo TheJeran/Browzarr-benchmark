@@ -56,6 +56,7 @@ void main() {
 
         squaredDiffSum += pow(diff,2.); // Assuming data in red channel
     }
+    
     float stdev = sqrt(squaredDiffSum / float(axisSize));
 
     gl_FragColor = vec4(stdev, 0.0, 0.0, 1.0); // Output mean in red channel

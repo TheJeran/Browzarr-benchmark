@@ -16,7 +16,7 @@ const AnalysisWG = () => {
     })))
     const [compute, setCompute] = useState<boolean>(false)
     const [output, setOutput] = useState<number[]>([0,0,0])
-    let reduceDim = 2
+    let reduceDim = 0
     const thisShape = dataShape.filter((e, idx ) => idx != reduceDim)
     // DataReduction(dataArray, {strides, shape:dataShape}, 0)
     useEffect(()=>{
@@ -28,7 +28,7 @@ const AnalysisWG = () => {
 
         // Match drawing scale to CSS size
         
-        DataReduction(dataArray as ArrayBufferView, {strides, shape:dataShape}, reduceDim).then(e=>{
+        DataReduction(dataArray as ArrayBufferView, {strides, shape:dataShape}, reduceDim, 'stdev').then(e=>{
             const [minVal, maxVal] = ArrayMinMax(e as Float32Array)
             const normed = e.map(e => (e-minVal)/(maxVal-minVal))
             const imgArrayFloat = normed?.map(e=> e*255)
@@ -66,10 +66,11 @@ const AnalysisWG = () => {
         <canvas 
         style={{
             position: 'fixed',
-            width: '2000px',
+            width: '1200px',
             height:'auto',
             top:'100px',
-            left:'50px'
+            left:'50px',
+            transform:'scaleY(-1)'
         }}
 
             width={reduceDim != 2 ? thisShape[1] : thisShape[0]} height={reduceDim != 2 ? thisShape[0] : thisShape[1]}

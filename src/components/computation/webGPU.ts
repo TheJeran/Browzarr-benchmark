@@ -2,8 +2,16 @@ import {
   makeShaderDataDefinitions,
   makeStructuredView,
 } from 'webgpu-utils';
+import { MeanReduction, MinReduction, MaxReduction, StDevReduction } from './Shaders';
 
-export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number){
+const operations = {
+    mean: MeanReduction,
+    min: MinReduction,
+    max: MaxReduction,
+    stdev: StDevReduction
+}
+
+export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, operation: string){
     const adapter = await navigator.gpu?.requestAdapter();
     const device = await adapter?.requestDevice();
     if (!device) {
@@ -21,69 +29,13 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
     let workGroups = thisShape.map(e => Math.ceil(e/16)) //We assume the workgroups are 16 threads. We see how many of those 16 thread workgroups are needed for each dimension
     workGroups = workGroups.map(e => Math.pow(2, Math.ceil(Math.log2(e)))) //Round those up to nearest power of 2
 
-    const shader =  `
-            struct Params {
-                zStride: u32,
-                yStride: u32,
-                xStride: u32,
-                xSize: u32,
-                ySize: u32,
-                reduceDim: u32,
-                dimLength: u32,
-            };
-            @group(0) @binding(0) var<storage, read> inputData: array<f32>;
-            @group(0) @binding(1) var<storage, read_write> outputData: array<f32>;
-            @group(0) @binding(2) var<uniform> params: Params;
+    if (reduceDim != 2){ // Since the first value actually represents vertical or 'Y' we need to swap those values except if we reduce along the last dim. Then first value is x
+        const tempGroups = workGroups;
+        workGroups[0] = tempGroups[1]
+        workGroups[1] = tempGroups[0]
+    }
 
-            @compute @workgroup_size(16, 16, 1)
-            fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
-                let zStride = params.zStride;
-                let yStride = params.yStride;
-                let xStride = params.xStride;
-                let xSize = params.xSize;
-                let ySize = params.ySize;
-                let reduceDim = params.reduceDim;
-                let dimLength = params.dimLength;
-                                
-                let outX = global_id.x;
-                let outY = global_id.y;
-                
-                if (outX >= xSize || outY >= ySize) {
-                    return;
-                }
-                
-                var sum: f32 = 0.0;
-                var count: u32 = 0u;
-                
-                // Iterate along the dimension we're averaging
-                if (reduceDim == 0u) { // Average along Z
-                    let cCoord = outX * xStride + outY * yStride;
-                    for (var z: u32 = 0u; z < dimLength; z++) {
-                        let inputIndex = cCoord + (z * zStride);
-                        sum += inputData[inputIndex];
-                        count++;
-                    }
-                } else if (reduceDim == 1u) { // Average along Y
-                    let cCoord = outX * xStride + outY * zStride;
-                    for (var y: u32 = 0u; y < dimLength; y++) {
-                        let inputIndex = cCoord + (y * yStride);
-                        sum += inputData[inputIndex];
-                        count++;
-                    }
-                } else { // Average along X
-                    let cCoord = outX * zStride + outY * yStride;
-                    for (var x: u32 = 0u; x < dimLength; x++) {
-                        let inputIndex = cCoord + (x * xStride);
-                        sum += inputData[inputIndex];
-                        count++;
-                    }
-                }
-                
-                let outputIndex = outY * xSize + outX;
-                outputData[outputIndex] = sum / f32(count);
-            }
-        `
-
+    const shader = operations[operation as keyof typeof operations]
 
     const module = device.createShaderModule({
         label: 'reduction compute module',
@@ -105,7 +57,7 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
         yStride,
         xStride,
         xSize: reduceDim != 2 ? thisShape[1] : thisShape[0],
-        ySize: reduceDim != 2 ? thisShape[1] : thisShape[0],
+        ySize: reduceDim != 2 ? thisShape[0] : thisShape[1],
         reduceDim,
         dimLength
     });
