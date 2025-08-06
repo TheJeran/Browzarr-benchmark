@@ -1,12 +1,11 @@
 "use client";
 
 import React, {useEffect, useState} from 'react'
-import { GetColorMapTexture } from '../textures';
+import { GetColorMapTexture } from '@/components/textures';
 import { useGlobalStore } from '@/utils/GlobalStates';
 import { colormaps } from '@/components/textures';
 import { useShallow } from 'zustand/shallow';
 import { MdOutlineSwapVert } from "react-icons/md";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import Image from 'next/image';
 

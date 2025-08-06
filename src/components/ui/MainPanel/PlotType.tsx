@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react'
-import './css/MainPanel.css'
+import '../css/MainPanel.css'
 import { usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { PiSphereThin } from "react-icons/pi";

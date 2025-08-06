@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useGlobalStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
-import { Input } from './input';
-import { Button } from './button';
+import { Input } from '../input';
+import { Button } from '../button';
 // import { CgDatabase } from "react-icons/cg";
 import { TbDatabasePlus } from "react-icons/tb";
 import LocalZarr from './LocalZarr';

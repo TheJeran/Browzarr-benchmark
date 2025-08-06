@@ -2,8 +2,8 @@
 import React, {useState, useEffect, ChangeEvent} from 'react'
 import * as zarr from 'zarrita'
 import { useZarrStore, useGlobalStore } from '@/utils/GlobalStates';
-import { Input } from './input';
-import ZarrParser from '../zarr/ZarrParser';
+import { Input } from '../input';
+import ZarrParser from '@/components/zarr/ZarrParser';
 
 const LocalZarr = ({setShowLocal}:{setShowLocal: React.Dispatch<React.SetStateAction<boolean>>}) => {
   const setCurrentStore = useZarrStore(state => state.setCurrentStore)

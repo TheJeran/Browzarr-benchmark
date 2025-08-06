@@ -1,26 +1,25 @@
 'use client';
 
-import './css/Scalers.css'
+import '../css/Scalers.css'
 import { useEffect, useState, useRef } from 'react';
 
-const XScaler = ({scale,setScale}:{scale:number,setScale:React.Dispatch<React.SetStateAction<number>>}) => {
+const YScaler = ({scale,setScale}:{scale:number,setScale:React.Dispatch<React.SetStateAction<number>>}) => {
 
     const [isResizing, setIsResizing] = useState<boolean>(false);
     const initialPosition = useRef<number | null>(null)
-
     // Start resizing on mousedown
     const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
         e.preventDefault(); // Prevent text selection
         setIsResizing(true);
-        initialPosition.current = e.clientX // Record starting height
+        initialPosition.current = e.clientY // Record starting height
     };
     
     // Adjust height on mousemove
     const handleMouseMove = (e: MouseEvent) => {
     if (isResizing) {
         e.preventDefault();
-        const sizeDelta = initialPosition.current ? (initialPosition.current - e.clientX)/1000 : 0
-        setScale(Math.min(Math.max(scale+sizeDelta,0.1),2))
+        const sizeDelta = initialPosition.current ? (initialPosition.current - e.clientY)/100 : 0
+        setScale(Math.min(Math.max(scale+sizeDelta,0.1),10))
     }
     };
 
@@ -42,12 +41,14 @@ const XScaler = ({scale,setScale}:{scale:number,setScale:React.Dispatch<React.Se
     }, [isResizing]);
 
   return (
-    <div className='xScaler'
+    <div className='yScaler'
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
-    />
-
+    
+    >
+      
+    </div>
   )
 }
 
-export default XScaler
+export default YScaler

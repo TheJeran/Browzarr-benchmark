@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button } from "@/components/ui/button"
-import './css/PlotLineOptions.css'
+import '../css/PlotLineOptions.css'
 import {
   DropdownMenu,
   DropdownMenuContent,

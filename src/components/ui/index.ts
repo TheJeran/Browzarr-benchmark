@@ -6,29 +6,22 @@ import AboutModal from "./AboutModal";
 import Overlays from "./Overlays";
 import  Metadata from "./MetaData";
 import ResizeBar from "./ResizeBar";
-import YScaler from "./YScaler";
-import XScaler from "./XScaler";
-import { MiddleSlider } from "./MiddleSlider";
+import YScaler from "./LinePlotArea/YScaler";
+import XScaler from "./LinePlotArea/XScaler";
 import ThemeSwitch from "./ThemeSwitch";
-import { createPaneContainer } from "./paneContainer";
-import ShowAnalysis from "./ShowAnalysis";
 import { Loading } from "./Loading";
 import useCSSVariable from "./useCSSVariable";
 import ShowLinePlot from "./ShowLinePlot";
-import {PlotTweaker} from "./PlotTweaker";
-import AnalysisOptions from "./AnalysisOptions";
 import PlotLineButton from "./PlotLineButton";
-import { ContextTweaker } from "./ContextTweaker";
 import Colorbar from "./Colorbar";
-import ShowPlot from "./ShowPlot";
-import LocalZarr from "./LocalZarr";
-import MainPanel from "./MainPanel";
-import PlotType from "./PlotType";
-import Variables from "./Variables";
-import Colormaps from "./Colormaps";
-import AdjustPlot from "./AdjustPlot";
-import Dataset from "./Dataset";
-import PlayButton from "./PlayButton";
+import LocalZarr from "./MainPanel/LocalZarr";
+import MainPanel from "./MainPanel/MainPanel";
+import PlotType from "./MainPanel/PlotType";
+import Variables from "./MainPanel/Variables";
+import Colormaps from "./MainPanel/Colormaps";
+import AdjustPlot from "./MainPanel/AdjustPlot";
+import Dataset from "./MainPanel/Dataset";
+import PlayButton from "./MainPanel/PlayButton";
 import Error from "./Error";
 export {
   Navbar,
@@ -43,18 +36,11 @@ export {
   XScaler,
   // AnalysisWindow,
   ThemeSwitch,
-  createPaneContainer,
-  MiddleSlider,
-  ShowAnalysis,
   Loading,
   useCSSVariable,
   ShowLinePlot,
-  PlotTweaker,
-  AnalysisOptions,
   PlotLineButton,
-  ContextTweaker,
   Colorbar,
-  ShowPlot,
   LocalZarr,
   MainPanel,
   PlotType,

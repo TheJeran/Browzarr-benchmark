@@ -2,7 +2,7 @@
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
 import React, {useEffect, useMemo, useState, useRef} from 'react'
 import { useShallow } from 'zustand/shallow'
-import './css/MainPanel.css'
+import '../css/MainPanel.css'
 import { PiPlayPauseFill } from "react-icons/pi";
 import { FaPlay, FaPause } from "react-icons/fa6";
 import { parseLoc } from '@/utils/HelperFuncs';
