@@ -252,12 +252,14 @@ export const usePlotStore = create<PlotState>((set) => ({
 
 
 type AnalysisState = {
+  analysisMode: boolean;
   axis: number;
   operation: string;
   execute: boolean;
   variable1: string;
   variable2: string;
 
+  setAnalysisMode: (analysisMode: boolean) => void;
   setAxis: (axis: number) => void;
   setOperation: (operation: string) => void;
   setExecute: (execute: boolean) => void;
@@ -266,13 +268,14 @@ type AnalysisState = {
 }
 
 export const useAnalysisStore = create<AnalysisState>((set) => ({
+  analysisMode: false,
   axis: 0,
   operation: "Mean", 
   execute: false,
   variable1: "Default",
   variable2: "Default",
 
-
+  setAnalysisMode: (analysisMode) => set({ analysisMode }),
   setAxis: (axis) => set({ axis }),
   setOperation: (operation) => set({ operation }),
   setExecute: (execute) => set({ execute }),

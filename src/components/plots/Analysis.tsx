@@ -8,7 +8,7 @@ import { ArrayMinMax, getVariablesOptions } from '@/utils/HelperFuncs'
 import AnalysisInfo from './AnalysisInfo'
 import ComputeModule from '@/components/computation/ComputeModule'
 import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU'
-import { AnalysisOptions, Colorbar } from '@/components/ui'
+import { Colorbar } from '@/components/ui'
 import { OrbitControls } from '@react-three/drei'
 import { useAnalysisStore, useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
 import './Plots.css'
@@ -157,7 +157,7 @@ export function Analysis({ values }: {
       stateVars,
       valueScales
   }),[stateVars,valueScales])
-  const Options = useMemo(()=> AnalysisOptions,[])
+
   return (
     <div className='analysis-canvas'
       style={{
@@ -169,7 +169,6 @@ export function Analysis({ values }: {
           units={units} 
           valueScales={array2 ? {maxVal: 1, minVal: 0} : {maxVal: valScales1[0], minVal: valScales1[1]}}
       />}
-        <Options />
         <AnalysisInfo loc={loc} show={showInfo} info={[...coords.current, val]} />
         <Canvas camera={{ position: [0, 0, 50], zoom:400 }} orthographic>
           {/* <Perf position='bottom-left'/> */}
