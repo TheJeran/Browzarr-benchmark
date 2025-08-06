@@ -260,31 +260,43 @@ type AnalysisState = {
   axis: number;
   operation: string;
   execute: boolean;
-  variable1: string;
+  useTwo: boolean;
   variable2: string;
+  kernelSize: number;
+  kernelDepth: number;
+  kernelOperation: string;
 
   setAnalysisMode: (analysisMode: boolean) => void;
   setAxis: (axis: number) => void;
   setOperation: (operation: string) => void;
   setExecute: (execute: boolean) => void;
-  setVariable1: (variable1: string) => void;
+  setUseTwo: (useTwo: boolean) => void;
   setVariable2: (variable2: string) => void;
+  setKernelSize: (kernelSize: number) => void;
+  setKernelDepth: (kernelDepth: number) => void;
+  setKernelOperation: (kernelOperation: string) => void;
 }
 
 export const useAnalysisStore = create<AnalysisState>((set) => ({
   analysisMode: false,
   axis: 0,
-  operation: "Mean", 
+  operation: "Default", 
   execute: false,
-  variable1: "Default",
+  useTwo: false,
   variable2: "Default",
+  kernelSize: 3,
+  kernelDepth: 3,
+  kernelOperation: 'Default',
 
   setAnalysisMode: (analysisMode) => set({ analysisMode }),
   setAxis: (axis) => set({ axis }),
   setOperation: (operation) => set({ operation }),
   setExecute: (execute) => set({ execute }),
-  setVariable1: (variable1) => set({ variable1 }),
+  setUseTwo: (useTwo) => set({ useTwo}),
   setVariable2: (variable2) => set({ variable2 }),  
+  setKernelSize: (kernelSize) => set({ kernelSize}),
+  setKernelDepth: (kernelDepth) => set({ kernelDepth }),
+  setKernelOperation: (kernelOperation) => set({ kernelOperation})
 }));
 
 
@@ -307,6 +319,7 @@ export const useZarrStore = create<ZarrState>((set) => ({
   setCompress: (compress) => set({ compress }),
   setCurrentStore: (currentStore) => set({ currentStore })
 }))
+
 
 type ErrorState = {
   zarrFetch: boolean;

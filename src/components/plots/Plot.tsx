@@ -117,23 +117,6 @@ const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
     const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
     const [show, setShow] = useState<boolean>(true) //Prevents rendering of 3D objects until data is fully loaded in
 
-    // Listen for theme changes
-    useEffect(() => {
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.attributeName === 'data-theme') {
-                    // setCurrentBg('var(--background)')
-                }
-            })
-        })
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['data-theme']
-        })
-
-        return () => observer.disconnect()
-    }, [])
-
   //DATA LOADING
   useEffect(() => {
     if (variable != "Default") {

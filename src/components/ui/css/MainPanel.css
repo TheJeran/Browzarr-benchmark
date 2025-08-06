@@ -151,6 +151,21 @@
   backdrop-filter: blur(22px) saturate(180%);
 }
 
+.analysis-info{
+  position: absolute;
+  top: -50px;
+  right: calc(100% + 2px);
+  display: grid;
+  gap: 5px;
+}
+
+.analysis-info th{
+  max-width: 50px;
+}
+
+.analysis-info th, .analysis-info td{
+  padding: 4px 0px;
+}
 
 @media (max-width: 768px) {
   .panel-container {
