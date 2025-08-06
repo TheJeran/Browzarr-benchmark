@@ -2,9 +2,8 @@
 import React, { useMemo } from "react";
 import { LuChevronsUpDown } from "react-icons/lu";
 import { IoIosCheckmark } from "react-icons/io";
-import { ZARR_STORES } from "../zarr/ZarrLoaderLRU";
 import Image from "next/image";
-import { AboutButton, PlotTweaker, PlotLineButton, LocalZarr } from "@/components/ui";
+import { AboutButton, PlotLineButton, LocalZarr } from "@/components/ui";
 import ThemeSwitch  from "@/components/ui/ThemeSwitch";
 import logo from "@/app/logo.png"
 import './css/Navbar.css'
@@ -15,23 +14,7 @@ import { useEffect, useState } from "react";
 import { GetColorMapTexture } from "@/components/textures";
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { Input } from "./input";
 import { MdFlipCameraIos } from "react-icons/md";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 
 import {
   Command,
@@ -47,16 +30,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
 const ColorMaps = ({cmap, setCmap} : {cmap : string, setCmap : React.Dispatch<React.SetStateAction<string>>}) => {
   const [open, setOpen] = useState(false)
@@ -139,7 +112,6 @@ const Navbar = React.memo(function Navbar(){
     setColormap(GetColorMapTexture(colormap, cmap === "Default" ? "Spectral" : cmap, 1, "#000000", 0, flipCmap));
   },[cmap, flipCmap])
   
-  const Tweak = useMemo(()=><PlotTweaker/> ,[])
   return (
     <nav className="navbar">
       <div className="navbar-left">

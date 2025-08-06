@@ -1,10 +1,10 @@
 "use client";
 import React, {useState, useEffect} from 'react'
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
-import './css/MainPanel.css'
+import '../css/MainPanel.css'
 import { useShallow } from 'zustand/shallow';
 import Slider from 'rc-slider';
-import { Button } from './button';
+import { Button } from '../button';
 import { LuSettings } from "react-icons/lu";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 

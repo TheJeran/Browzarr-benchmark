@@ -6,7 +6,7 @@ import { ResizeBar, YScaler, XScaler, ShowLinePlot } from '@/components/ui'
 import './LinePlot.css'
 import { useGlobalStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
-import PlotLineOptions from '@/components/ui/PlotLineOptions'
+import PlotLineOptions from '@/components/ui/LinePlotArea/PlotLineOptions'
 import { evaluate_cmap } from 'js-colormaps-es';
 import { IoCloseCircleSharp } from "react-icons/io5";
 import { DimCoords } from '@/utils/GlobalStates'

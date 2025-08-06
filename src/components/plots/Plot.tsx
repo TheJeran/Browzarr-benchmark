@@ -65,15 +65,12 @@ const Orbiter = ({isFlat} : {isFlat  : boolean}) =>{
 }
 
 interface PlotParameters{
-    values:{
-        ZarrDS: ZarrDataset;
-        canvasWidth:number
-    }
+    ZarrDS: ZarrDataset;
     setShowLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 
-const Plot = ({values,setShowLoading}:PlotParameters) => {
+const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
     const {
       setShape,
       setDataShape, 
@@ -104,7 +101,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
       setIsFlat: state.setIsFlat, 
       setDataArray: state.setDataArray
     })))
-    const {ZarrDS,canvasWidth} = values;
+
     const {plotType} = usePlotStore(useShallow(state => ({
       plotType: state.plotType,
     })))
@@ -119,16 +116,6 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
 
     const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
     const [show, setShow] = useState<boolean>(true) //Prevents rendering of 3D objects until data is fully loaded in
-    
-    const [windowWidth, setWindowWidth] = useState<number>(0); //Use for rescaling
-    
-
-    useEffect(() => {
-        setWindowWidth(window.innerWidth);
-        const handleResize = () => setWindowWidth(window.innerWidth);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     // Listen for theme changes
     useEffect(() => {
@@ -232,9 +219,7 @@ const Plot = ({values,setShowLoading}:PlotParameters) => {
   const Nav = useMemo(()=>Navbar,[])
   return (
     <div className='main-canvas'
-      style={{
-        width: windowWidth - canvasWidth         
-      }}
+      style={{width:'100vw'}}
     >
       {show && <Colorbar units={metadata?.units} valueScales={valueScales}/>}
       <Nav />
