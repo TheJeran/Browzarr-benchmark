@@ -10,6 +10,7 @@ import { useShallow } from 'zustand/shallow';
 import { Navbar, Colorbar } from '../ui';
 import AnalysisInfo from './AnalysisInfo';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
+import AnalysisWG from './AnalysisWG';
 
 
 const Orbiter = ({isFlat} : {isFlat  : boolean}) =>{
@@ -198,12 +199,13 @@ const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
     coords,
     val
   }),[])
-
+  
   const Nav = useMemo(()=>Navbar,[])
   return (
     <div className='main-canvas'
       style={{width:'100vw'}}
     >
+      <AnalysisWG setTexture={setTexture} />
       {show && <Colorbar units={metadata?.units} valueScales={valueScales}/>}
       <Nav />
       {(isFlat || plotType == "flat") && <AnalysisInfo loc={loc} show={showInfo} info={[...coords.current,val.current]}/> }

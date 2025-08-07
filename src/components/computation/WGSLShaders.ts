@@ -22,8 +22,8 @@ const MeanReduction = `
         let reduceDim = params.reduceDim;
         let dimLength = params.dimLength;
                         
-        let outX = global_id.x;
-        let outY = global_id.y;
+        let outX = global_id.y;
+        let outY = global_id.x;
         
         if (outX >= xSize || outY >= ySize) {
             return;
@@ -45,7 +45,7 @@ const MeanReduction = `
                 sum += inputData[inputIndex];
             }
         } else { // Average along X
-            let cCoord = outX * zStride + outY * yStride;
+            let cCoord = outX * yStride + outY * zStride;
             for (var x: u32 = 0u; x < dimLength; x++) {
                 let inputIndex = cCoord + (x * xStride);
                 sum += inputData[inputIndex];
@@ -81,8 +81,8 @@ const MinReduction = `
         let reduceDim = params.reduceDim;
         let dimLength = params.dimLength;
                         
-        let outX = global_id.x;
-        let outY = global_id.y;
+        let outX = global_id.y;
+        let outY = global_id.x;
         
         if (outX >= xSize || outY >= ySize) {
             return;
@@ -110,7 +110,7 @@ const MinReduction = `
                 }
             }
         } else { // Average along X
-            let cCoord = outX * zStride + outY * yStride;
+            let cCoord = outX * yStride + outY * zStride;
             for (var x: u32 = 0u; x < dimLength; x++) {
                 let inputIndex = cCoord + (x * xStride);
                 let newMin = inputData[inputIndex];
@@ -149,8 +149,8 @@ const MaxReduction = `
         let reduceDim = params.reduceDim;
         let dimLength = params.dimLength;
                         
-        let outX = global_id.x;
-        let outY = global_id.y;
+        let outX = global_id.y;
+        let outY = global_id.x;
         
         if (outX >= xSize || outY >= ySize) {
             return;
@@ -178,7 +178,7 @@ const MaxReduction = `
                 }
             }
         } else { // Average along X
-            let cCoord = outX * zStride + outY * yStride;
+            let cCoord = outX * yStride + outY * zStride;
             for (var x: u32 = 0u; x < dimLength; x++) {
                 let inputIndex = cCoord + (x * xStride);
                 let newMax = inputData[inputIndex];
@@ -217,8 +217,8 @@ const StDevReduction = `
         let reduceDim = params.reduceDim;
         let dimLength = params.dimLength;
                         
-        let outX = global_id.x;
-        let outY = global_id.y;
+        let outX = global_id.y;
+        let outY = global_id.x;
         
         if (outX >= xSize || outY >= ySize) {
             return;
@@ -239,7 +239,7 @@ const StDevReduction = `
                 sum += inputData[inputIndex];
             }
         } else { // Average along X
-            let cCoord = outX * zStride + outY * yStride;
+            let cCoord = outX * yStride + outY * zStride;
             for (var x: u32 = 0u; x < dimLength; x++) {
                 let inputIndex = cCoord + (x * xStride);
                 sum += inputData[inputIndex];
@@ -266,7 +266,7 @@ const StDevReduction = `
                 squaredDiffSum += diff*diff;
             }
         } else { // Average along X
-            let cCoord = outX * zStride + outY * yStride;
+            let cCoord = outX * yStride + outY * zStride;
             for (var x: u32 = 0u; x < dimLength; x++) {
                 let inputIndex = cCoord + (x * xStride);
                 let diff: f32 = mean - inputData[inputIndex];

@@ -1,83 +1,83 @@
 "use client";
 import { ArrayMinMax } from '@/utils/HelperFuncs';
-
+import * as THREE from 'three'
 import React, { useEffect, useState, useRef } from 'react'
 import { DataReduction } from '../computation/webGPU'
-import { useGlobalStore } from '@/utils/GlobalStates';
+import { useGlobalStore, useAnalysisStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 
-const AnalysisWG = () => {
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-    const {dataArray, strides, dataShape} = useGlobalStore(useShallow(state=>({
+const AnalysisWG = ({setTexture} : {setTexture : React.Dispatch<React.SetStateAction<THREE.Data3DTexture | THREE.DataTexture | null>>}) => {
+    
+    const {dataArray, strides, dataShape, valueScales, setIsFlat, setDataArray, setValueScales} = useGlobalStore(useShallow(state=>({
         dataArray : state.dataArray,
         strides: state.strides,
-        dataShape: state.dataShape
+        dataShape: state.dataShape,
+        valueScales: state.valueScales,
+        setIsFlat: state.setIsFlat,
+        setDataArray: state.setDataArray,
+        setValueScales: state.setValueScales
     })))
-    const [compute, setCompute] = useState<boolean>(false)
-    const [output, setOutput] = useState<number[]>([0,0,0])
-    let reduceDim = 0
-    const thisShape = dataShape.filter((e, idx ) => idx != reduceDim)
-    // DataReduction(dataArray, {strides, shape:dataShape}, 0)
+
+    const setPlotType = usePlotStore(state => state.setPlotType)
+    const {axis, execute, operation, useTwo, variable2, 
+        valueScalesOrig, kernelSize, kernelDepth, kernelOperation, setValueScalesOrig, setAnalysisArray} = useAnalysisStore(useShallow(state => ({
+        axis: state.axis,
+        execute: state.execute,
+        operation: state.operation,
+        useTwo: state.useTwo,
+        variable2: state.variable2,
+        valueScalesOrig: state.valueScalesOrig,
+        kernelSize: state.kernelSize,
+        kernelDepth: state.kernelDepth,
+        kernelOperation: state.kernelOperation,
+        setValueScalesOrig: state.setValueScalesOrig,
+        setAnalysisArray: state.setAnalysisArray,
+    })))
+
+    const variable2Array = useRef<ArrayBufferView>(new Float32Array(1))
+
     useEffect(()=>{
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        // Match drawing scale to CSS size
-        
-        DataReduction(dataArray as ArrayBufferView, {strides, shape:dataShape}, reduceDim, 'stdev').then(e=>{
-            const [minVal, maxVal] = ArrayMinMax(e as Float32Array)
-            const normed = e.map(e => (e-minVal)/(maxVal-minVal))
-            const imgArrayFloat = normed?.map(e=> e*255)
-            const imgArray = new Uint8Array(imgArrayFloat)
-            const imgDataArray = new Uint8ClampedArray(imgArray.length * 4);
-            for (let i = 0; i < imgArray.length; i++) {
-                const idx = i * 4;
-                imgDataArray[idx] = imgArray[i];     // R
-                imgDataArray[idx + 1] = imgArray[i]; // G
-                imgDataArray[idx + 2] = imgArray[i]; // B
-                imgDataArray[idx + 3] = 255;  // A
+        if (!useTwo){
+            if (operation != 'Convolution'){
+                const thisShape = dataShape.filter((e, idx) => idx != axis)
+                DataReduction(dataArray, {shape:dataShape, strides}, axis, operation).then(newArray=>{
+                    if (!newArray){return;}
+                    let minVal, maxVal;
+                    if (operation == 'StDev'){
+                        [minVal,maxVal] = ArrayMinMax(newArray )
+                        if (!valueScalesOrig){
+                            setValueScalesOrig(valueScales)
+                        }
+                        setValueScales({minVal,maxVal})
+                    }else{
+                        if (!valueScalesOrig){
+                            minVal = valueScales.minVal;
+                            maxVal = valueScales.maxVal
+                        }
+                        else{
+                            minVal = valueScalesOrig.minVal;
+                            maxVal = valueScalesOrig.maxVal
+                            setValueScales(valueScalesOrig)
+                            setValueScalesOrig(null)
+                        }
+                    }
+                    let normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
+                    const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254)); 
+                    const newText = new THREE.DataTexture(textureData, thisShape[1], thisShape[0], THREE.RedFormat, THREE.UnsignedByteType)
+                    newText.needsUpdate = true;
+                    setAnalysisArray(newArray)
+                    setTexture(newText)
+                    setIsFlat(true)
+                    setPlotType('flat')
+                })
+                
             }
-            const imgData = reduceDim != 2 ? new ImageData(imgDataArray, thisShape[1], thisShape[0]) : new ImageData(imgDataArray, thisShape[0], thisShape[1])
-            console.log(imgData)
-            ctx.putImageData(imgData, 0, 0);
-        })
-        
+            
+        }
+    },[execute])
 
-    },[compute])
-
-  return (
-    <div>
-      <button 
-        style={{
-            position:'fixed',
-            left:'40%',
-            top:'40%',
-            background:'grey',
-            width:'100px',
-            height:'60px',
-            zIndex:5
-        }}
-        onClick={e=>setCompute(x=> !x)}
-        >Check WebGPU</button>
-        <canvas 
-        style={{
-            position: 'fixed',
-            width: '1200px',
-            height:'auto',
-            top:'100px',
-            left:'50px',
-            transform:'scaleY(-1)'
-        }}
-
-            width={reduceDim != 2 ? thisShape[1] : thisShape[0]} height={reduceDim != 2 ? thisShape[0] : thisShape[1]}
-            ref={canvasRef} 
-            ></canvas>
-    </div>
-  )
+  return null
+    
 }
 
 export default AnalysisWG

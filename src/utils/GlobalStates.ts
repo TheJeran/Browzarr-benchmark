@@ -27,7 +27,7 @@ type StoreState = {
   showLoading: boolean;
   metadata: Record<string, any> | null;
   zMeta: object[];
-  dataArray: ArrayBufferView;
+  dataArray: Uint8Array | Float32Array;
   dimArrays: number[][];
   dimNames: string[];
   dimUnits: string[];
@@ -51,7 +51,7 @@ type StoreState = {
   setShowLoading: (showLoading: boolean) => void;
   setMetadata: (metadata: object | null) => void;
   setZMeta: (zMeta: object[]) => void;
-  setDataArray: (dataArray: ArrayBufferView) => void;
+  setDataArray: (dataArray: Uint8Array | Float32Array) => void;
   setDimArrays: (dimArrays: number[][]) => void;
   setDimNames: (dimNames: string[]) => void;
   setDimUnits: (dimUnits: string[]) => void;
@@ -262,9 +262,11 @@ type AnalysisState = {
   execute: boolean;
   useTwo: boolean;
   variable2: string;
+  valueScalesOrig: {minVal: number, maxVal:number} | null
   kernelSize: number;
   kernelDepth: number;
   kernelOperation: string;
+  analysisArray: Uint8Array | Float32Array;
 
   setAnalysisMode: (analysisMode: boolean) => void;
   setAxis: (axis: number) => void;
@@ -272,9 +274,11 @@ type AnalysisState = {
   setExecute: (execute: boolean) => void;
   setUseTwo: (useTwo: boolean) => void;
   setVariable2: (variable2: string) => void;
+  setValueScalesOrig: (valueScalesOrig: {minVal: number, maxVal:number} | null) => void;
   setKernelSize: (kernelSize: number) => void;
   setKernelDepth: (kernelDepth: number) => void;
   setKernelOperation: (kernelOperation: string) => void;
+  setAnalysisArray: (analysisArray: Uint8Array | Float32Array) => void;
 }
 
 export const useAnalysisStore = create<AnalysisState>((set) => ({
@@ -284,21 +288,24 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
   execute: false,
   useTwo: false,
   variable2: "Default",
+  valueScalesOrig: null,
   kernelSize: 3,
   kernelDepth: 3,
   kernelOperation: 'Default',
+  analysisArray: new Uint8Array(1),
 
   setAnalysisMode: (analysisMode) => set({ analysisMode }),
   setAxis: (axis) => set({ axis }),
   setOperation: (operation) => set({ operation }),
   setExecute: (execute) => set({ execute }),
   setUseTwo: (useTwo) => set({ useTwo}),
-  setVariable2: (variable2) => set({ variable2 }),  
+  setVariable2: (variable2) => set({ variable2 }), 
+  setValueScalesOrig: (valueScalesOrig) => set({ valueScalesOrig }),
   setKernelSize: (kernelSize) => set({ kernelSize}),
   setKernelDepth: (kernelDepth) => set({ kernelDepth }),
-  setKernelOperation: (kernelOperation) => set({ kernelOperation})
+  setKernelOperation: (kernelOperation) => set({ kernelOperation}),
+  setAnalysisArray: (analysisArray) => set({ analysisArray })
 }));
-
 
 type ZarrState = {
   slice: [number  , number | null],

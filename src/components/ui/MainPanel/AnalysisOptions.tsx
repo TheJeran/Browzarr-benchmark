@@ -20,12 +20,13 @@ const operations = ['Mean', 'Min', 'Max', 'StDev', 'Convolution']
 const kernelOperations = ['Mean', 'Min', 'Max', 'StDev' ]
 
 const AnalysisOptions = () => {
-    const {execute, operation, useTwo, kernelSize, kernelDepth, setExecute, setAxis, setOperation, setUseTwo, setVariable2, setKernelSize, setKernelDepth} = useAnalysisStore(useShallow(state => ({
+    const {execute, operation, useTwo, kernelSize, kernelDepth, axis, setExecute, setAxis, setOperation, setUseTwo, setVariable2, setKernelSize, setKernelDepth, setAnalysisMode} = useAnalysisStore(useShallow(state => ({
         execute: state.execute,
         operation: state.operation,
         useTwo: state.useTwo,
         kernelSize: state.kernelSize,
         kernelDepth: state.kernelDepth,
+        axis: state.axis,
 
         setExecute: state.setExecute,
         setAxis: state.setAxis,
@@ -33,11 +34,12 @@ const AnalysisOptions = () => {
         setUseTwo: state.setUseTwo,
         setVariable2: state.setVariable2,
         setKernelSize: state.setKernelSize,
-        setKernelDepth: state.setKernelDepth
+        setKernelDepth: state.setKernelDepth,
+        setAnalysisMode: state.setAnalysisMode
     })))
-    const {variables, setIsFlat} = useGlobalStore(useShallow(state => ({
+    const {variables, dimNames} = useGlobalStore(useShallow(state => ({
         variables: state.variables,
-        setIsFlat: state.setIsFlat
+        dimNames: state.dimNames
     })))
 
   return (
@@ -90,10 +92,10 @@ const AnalysisOptions = () => {
                     <td>
                         <Select onValueChange={e=>setAxis(parseInt(e))}>
                             <SelectTrigger style={{width:'175px', marginLeft:'10px'}}>
-                                <SelectValue placeholder='Select...' />
+                                <SelectValue placeholder={dimNames[axis]} />
                             </SelectTrigger>
                             <SelectContent>
-                                {['Z', 'Y', 'X'].map((e, idx)=>(
+                                {dimNames.map((e, idx)=>(
                                     <SelectItem key={idx} value={String(idx)}>{e}</SelectItem>
                                 ))}
                             </SelectContent>
@@ -159,7 +161,7 @@ const AnalysisOptions = () => {
                 </>}
                 </tbody>
             </table>
-            <Button onClick={e=>setExecute(!execute)}>Execute</Button>
+            <Button onClick={e=>{setExecute(!execute); setAnalysisMode(true)}}>Execute</Button>
 
         </PopoverContent>
     </Popover>

@@ -13,7 +13,6 @@ import { useGlobalStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow, shallow } from 'zustand/shallow';
 import useCSSVariable from '@/components/ui/useCSSVariable';
 import { GetTitleDescription } from '@/components/zarr/GetMetadata';
-import AnalysisWG from './plots/AnalysisWG';
 
 export function LandingHome() {
 
@@ -74,7 +73,6 @@ export function LandingHome() {
     <>
     <MainPanel/> 
     <Error />
-    <AnalysisWG />
     {!plotOn && <Navbar />}
     <Loading showLoading={showLoading} />
     {variable === "Default" && <VariableScroller />}

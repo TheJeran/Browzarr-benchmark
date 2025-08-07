@@ -2,13 +2,14 @@ import {
   makeShaderDataDefinitions,
   makeStructuredView,
 } from 'webgpu-utils';
-import { MeanReduction, MinReduction, MaxReduction, StDevReduction } from './Shaders';
+
+import { MeanReduction, MinReduction, MaxReduction, StDevReduction } from './WGSLShaders';
 
 const operations = {
-    mean: MeanReduction,
-    min: MinReduction,
-    max: MaxReduction,
-    stdev: StDevReduction
+    Mean: MeanReduction,
+    Min: MinReduction,
+    Max: MaxReduction,
+    StDev: StDevReduction
 }
 
 export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, operation: string){
@@ -25,18 +26,9 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
     const thisShape = shape.filter((e, idx) => idx != reduceDim)
     const dimLength = shape[reduceDim]
     const outputSize = thisShape[0] * thisShape[1];
-
     let workGroups = thisShape.map(e => Math.ceil(e/16)) //We assume the workgroups are 16 threads. We see how many of those 16 thread workgroups are needed for each dimension
     workGroups = workGroups.map(e => Math.pow(2, Math.ceil(Math.log2(e)))) //Round those up to nearest power of 2
-
-    if (reduceDim != 2){ // Since the first value actually represents vertical or 'Y' we need to swap those values except if we reduce along the last dim. Then first value is x
-        const tempGroups = workGroups;
-        workGroups[0] = tempGroups[1]
-        workGroups[1] = tempGroups[0]
-    }
-
     const shader = operations[operation as keyof typeof operations]
-
     const module = device.createShaderModule({
         label: 'reduction compute module',
         code:shader,
@@ -49,19 +41,20 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
         module,
         },
     });
-    console.log(thisShape)
+    
     const defs = makeShaderDataDefinitions(shader);
     const myUniformValues = makeStructuredView(defs.uniforms.params);
+    console.log(`xSize: ${thisShape[1]}`)
     myUniformValues.set({
         zStride,
         yStride,
         xStride,
-        xSize: reduceDim != 2 ? thisShape[1] : thisShape[0],
-        ySize: reduceDim != 2 ? thisShape[0] : thisShape[1],
+        xSize:  thisShape[1], 
+        ySize: thisShape[0],
         reduceDim,
         dimLength
     });
-
+    
     // Create buffers
     const inputBuffer = device.createBuffer({
         label: 'Input Buffer',

@@ -27,7 +27,7 @@ const AnalysisInfo = ({loc, show, info, } : {loc: number[], show: boolean, info:
     },[dimUnits, axis])
 
   return (
-    <div className='analysis-info'
+    <div className='analysis-overlay'
         style={{
             left:`${loc[0]+10}px`,
             top:`${loc[1]+10}px`,
