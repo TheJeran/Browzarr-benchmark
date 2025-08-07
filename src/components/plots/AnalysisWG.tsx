@@ -2,7 +2,7 @@
 import { ArrayMinMax } from '@/utils/HelperFuncs';
 import * as THREE from 'three'
 import React, { useEffect, useState, useRef } from 'react'
-import { DataReduction } from '../computation/webGPU'
+import { DataReduction, Convolve } from '../computation/webGPU'
 import { useGlobalStore, useAnalysisStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 
@@ -69,8 +69,40 @@ const AnalysisWG = ({setTexture} : {setTexture : React.Dispatch<React.SetStateAc
                     setTexture(newText)
                     setIsFlat(true)
                     setPlotType('flat')
+                }) 
+            }
+            else{
+                Convolve(dataArray, {shape:dataShape, strides}, 'Mean', {kernelDepth, kernelSize}).then(newArray=>{
+                    if (!newArray){return;}
+                    let minVal, maxVal;
+                    if (kernelOperation == 'StDev'){
+                        [minVal,maxVal] = ArrayMinMax(newArray )
+                        if (!valueScalesOrig){
+                            setValueScalesOrig(valueScales)
+                        }
+                        setValueScales({minVal,maxVal})
+                    }else{
+                        if (!valueScalesOrig){
+                            minVal = valueScales.minVal;
+                            maxVal = valueScales.maxVal
+                        }
+                        else{
+                            minVal = valueScalesOrig.minVal;
+                            maxVal = valueScalesOrig.maxVal
+                            setValueScales(valueScalesOrig)
+                            setValueScalesOrig(null)
+                        }
+                    }
+                    let normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
+                    const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254)); 
+                    const newText = new THREE.Data3DTexture(textureData, dataShape[2], dataShape[1], dataShape[0])
+                    newText.format = THREE.RedFormat;
+                    newText.minFilter = THREE.NearestFilter;
+                    newText.magFilter = THREE.NearestFilter;
+                    newText.needsUpdate = true;
+                    setAnalysisArray(newArray)
+                    setTexture(newText)
                 })
-                
             }
             
         }

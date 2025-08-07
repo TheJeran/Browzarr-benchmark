@@ -20,7 +20,7 @@ const operations = ['Mean', 'Min', 'Max', 'StDev', 'Convolution']
 const kernelOperations = ['Mean', 'Min', 'Max', 'StDev' ]
 
 const AnalysisOptions = () => {
-    const {execute, operation, useTwo, kernelSize, kernelDepth, axis, setExecute, setAxis, setOperation, setUseTwo, setVariable2, setKernelSize, setKernelDepth, setAnalysisMode} = useAnalysisStore(useShallow(state => ({
+    const {execute, operation, useTwo, kernelSize, kernelDepth, axis, setExecute, setAxis, setOperation, setUseTwo, setVariable2, setKernelSize, setKernelDepth, setKernelOperation, setAnalysisMode} = useAnalysisStore(useShallow(state => ({
         execute: state.execute,
         operation: state.operation,
         useTwo: state.useTwo,
@@ -35,6 +35,7 @@ const AnalysisOptions = () => {
         setVariable2: state.setVariable2,
         setKernelSize: state.setKernelSize,
         setKernelDepth: state.setKernelDepth,
+        setKernelOperation: state.setKernelOperation,
         setAnalysisMode: state.setAnalysisMode
     })))
     const {variables, dimNames} = useGlobalStore(useShallow(state => ({
@@ -106,7 +107,7 @@ const AnalysisOptions = () => {
                 <tr>
                     <th>Kernel Op.</th>
                     <td>
-                        <Select onValueChange={e=>setOperation(e)}>
+                        <Select onValueChange={e=>setKernelOperation(e)}>
                             <SelectTrigger style={{width:'175px', marginLeft:'10px'}}>
                                 <SelectValue placeholder='Select...' />
                             </SelectTrigger>

@@ -1,4 +1,4 @@
-const MeanReduction = `
+const MeanReduction = /* wgsl */`
     struct Params {
         zStride: u32,
         yStride: u32,
@@ -57,7 +57,7 @@ const MeanReduction = `
     }
 `
 
-const MinReduction = `
+const MinReduction = /* wgsl */`
     struct Params {
         zStride: u32,
         yStride: u32,
@@ -125,7 +125,7 @@ const MinReduction = `
     }
 `
 
-const MaxReduction = `
+const MaxReduction = /* wgsl */`
     struct Params {
         zStride: u32,
         yStride: u32,
@@ -193,7 +193,7 @@ const MaxReduction = `
     }
 `
 
-const StDevReduction = `
+const StDevReduction = /* wgsl */`
     struct Params {
         zStride: u32,
         yStride: u32,
@@ -280,10 +280,76 @@ const StDevReduction = `
     }
 `
 
+const MeanConvolution = /* wgsl */`
+    struct Params {
+        zStride: u32,
+        yStride: u32,
+        xStride: u32,
+        xSize: u32,
+        ySize: u32,
+        zSize: u32,
+        kernelSize: u32,
+        kernelDepth: u32
+    };
+    @group(0) @binding(0) var<storage, read> inputData: array<f32>;
+    @group(0) @binding(1) var<storage, read_write> outputData: array<f32>;
+    @group(0) @binding(2) var<uniform> params: Params;
+
+    @compute @workgroup_size(4, 4, 4)
+    fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
+        let zStride = params.zStride;
+        let yStride = params.yStride;
+        let xStride = params.xStride; 
+        let xSize = params.xSize;
+        let ySize = params.ySize;
+        let zSize = params.zSize; 
+        let kernelSize = params.kernelSize;
+        let kernelDepth = params.kernelDepth;
+
+        let outX = global_id.x; 
+        let outY = global_id.y;
+        let outZ = global_id.z; 
+        
+        if (outX >= xSize || outY >= ySize || outZ >= zSize) {
+            return;
+        }
+        
+        let globalIdx: u32 = outX * xStride + outY * yStride + outZ * zStride; 
+        let sizeOffset: u32 = u32(floor(f32(kernelSize)/2.0));
+        let depthOffset: u32 = u32(floor(f32(kernelDepth)/2.0));
+
+        var sum: f32 = 0.0;
+        var count: u32 = 0u;
+        for (var x: u32 = 0u; x < kernelSize; x++) {
+            for (var y: u32 = 0u; y < kernelSize; y++) {
+                for (var z: u32 = 0u; z < kernelDepth; z++){
+                    let xSteps = i32(x) - i32(sizeOffset);
+                    let ySteps = i32(y) - i32(sizeOffset);
+                    let zSteps = i32(z) - i32(depthOffset);
+                    if (i32(outX) + xSteps < 0 || u32(i32(outX) + xSteps) >= xSize || i32(outY) + ySteps < 0 || u32(i32(outY) + ySteps) >= ySize || 
+                        i32(outZ) + zSteps < 0 || u32(i32(outZ) + zSteps) >= zSize){ // We skip if steps go out of boundary
+                        continue;
+                    }
+                    let xOffset = xSteps * i32(xStride);
+                    let yOffset = ySteps * i32(yStride);
+                    let zOffset = zSteps * i32(zStride);
+                    let newIdx = i32(globalIdx) + xOffset + yOffset + zOffset;
+
+                    sum += inputData[u32(newIdx)];
+                    count ++;
+                }
+            }
+        }
+        
+        outputData[globalIdx] = sum / f32(count);
+    }
+`
+
 
 export {
     MeanReduction,
     MinReduction,
     MaxReduction,
-    StDevReduction
+    StDevReduction,
+    MeanConvolution
 }
