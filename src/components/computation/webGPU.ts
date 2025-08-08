@@ -137,7 +137,7 @@ export async function Convolve(inputArray : ArrayBufferView, dimInfo : {shape: n
     const {strides, shape} = dimInfo;
     const outputSize = shape[0] * shape[1] * shape[2];
     const [zStride, yStride, xStride] = strides;
-
+    console.log(`strides: ${strides}`)
     let workGroups = shape.map(e => Math.ceil(e/4)); //We assume the workgroups are 4 threads. We see how many of those 4 thread workgroups are needed for each dimension
     workGroups = workGroups.map(e => Math.pow(2, Math.ceil(Math.log2(e)))); //Round those up to nearest power of 2
 
@@ -160,12 +160,12 @@ export async function Convolve(inputArray : ArrayBufferView, dimInfo : {shape: n
     console.log(`shape:${shape}`)
     console.log(`workGroups:${workGroups.map(e=>e*4)}`)
     myUniformValues.set({
-        zStride: xStride,
-        yStride,
         xStride: zStride,
+        yStride,
+        zStride: xStride,
         xSize: shape[2], 
         ySize: shape[1],
-        zSize: shape[1],
+        zSize: shape[0],
         kernelDepth,
         kernelSize
     });
