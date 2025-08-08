@@ -33,7 +33,7 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
     const dimLength = shape[reduceDim]
     const outputSize = thisShape[0] * thisShape[1];
     const workGroups = thisShape.map(e => Math.ceil(e/16)) //We assume the workgroups are 16 threads. We see how many of those 16 thread workgroups are needed for each dimension
-    
+
     const shader = operations[operation as keyof typeof operations]
     const computeModule = device.createShaderModule({
         label: 'reduction compute module',
