@@ -72,7 +72,7 @@ const AnalysisWG = ({setTexture} : {setTexture : React.Dispatch<React.SetStateAc
                 }) 
             }
             else{
-                Convolve(dataArray, {shape:dataShape, strides}, 'Mean', {kernelDepth, kernelSize}).then(newArray=>{
+                Convolve(dataArray, {shape:dataShape, strides}, kernelOperation, {kernelDepth, kernelSize}).then(newArray=>{
                     if (!newArray){return;}
                     let minVal, maxVal;
                     if (kernelOperation == 'StDev'){

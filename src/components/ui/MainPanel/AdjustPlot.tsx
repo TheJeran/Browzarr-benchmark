@@ -41,6 +41,7 @@ const MinMaxSlider = React.memo(function MinMaxSlider({range, setRange, valueSca
             trueMin = Math.round(DeNorm(range[0], minVal, maxVal)*100)/100
             trueMax = Math.round(DeNorm(range[1], minVal, maxVal)*100)/100
         }
+
     return(
         <div className='w-full flex justify-between flex-col'>
             <Slider
@@ -51,6 +52,7 @@ const MinMaxSlider = React.memo(function MinMaxSlider({range, setRange, valueSca
                 step={0.01}
                 onChange={(values) => setRange(values as number[])}
             />
+
         {/* Min/Max labels */}
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginTop: 18 }}>
                 <span>Min: {trueMin}</span>
@@ -202,7 +204,7 @@ const AdjustPlot = () => {
           disabled={!enableCond}
         >
           <LuSettings
-            color={enableCond ? 'var(--text-paragraph)' : 'var(--text-disabled)'}
+            color={enableCond ? '' : 'var(--text-disabled)'}
             style={{
               cursor: enableCond ? 'pointer' : 'auto',
               transform: enableCond ? '' : 'scale(1)'

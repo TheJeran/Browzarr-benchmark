@@ -3,7 +3,7 @@ import {
   makeStructuredView,
 } from 'webgpu-utils';
 
-import { MeanReduction, MinReduction, MaxReduction, StDevReduction, MeanConvolution } from './WGSLShaders';
+import { MeanReduction, MinReduction, MaxReduction, StDevReduction, MeanConvolution, MinConvolution, MaxConvolution, StDevConvolution } from './WGSLShaders';
 
 const operations = {
     Mean: MeanReduction,
@@ -13,7 +13,10 @@ const operations = {
 }
 
 const kernelOperations = {
-    Mean: MeanConvolution
+    Mean: MeanConvolution,
+    Min: MinConvolution,
+    Max: MaxConvolution,
+    StDev: StDevConvolution
 }
 
 export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, operation: string){
@@ -29,8 +32,8 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
     const thisShape = shape.filter((e, idx) => idx != reduceDim)
     const dimLength = shape[reduceDim]
     const outputSize = thisShape[0] * thisShape[1];
-    let workGroups = thisShape.map(e => Math.ceil(e/16)) //We assume the workgroups are 16 threads. We see how many of those 16 thread workgroups are needed for each dimension
-    workGroups = workGroups.map(e => Math.pow(2, Math.ceil(Math.log2(e)))) //Round those up to nearest power of 2
+    const workGroups = thisShape.map(e => Math.ceil(e/16)) //We assume the workgroups are 16 threads. We see how many of those 16 thread workgroups are needed for each dimension
+    console.log(`workGroups: ${workGroups}`)
     const shader = operations[operation as keyof typeof operations]
     const module = device.createShaderModule({
         label: 'reduction compute module',
@@ -103,7 +106,7 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
 
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bindGroup);
-    pass.dispatchWorkgroups(workGroups[0], workGroups[1], workGroups[2]);
+    pass.dispatchWorkgroups(workGroups[0], workGroups[1]);
     pass.end();
 
     encoder.copyBufferToBuffer(
@@ -128,7 +131,12 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
 
 export async function Convolve(inputArray : ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, operation: string, kernel: {kernelSize: number, kernelDepth: number}){
     const adapter = await navigator.gpu?.requestAdapter();
-    const device = await adapter?.requestDevice();
+    const maxSize = 2047483644;
+    const device = await adapter?.requestDevice({requiredLimits: {
+    maxBufferSize: maxSize,
+    maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
+  }}
+);
     if (!device) {
         Error('need a browser that supports WebGPU');
         return;
@@ -138,8 +146,7 @@ export async function Convolve(inputArray : ArrayBufferView, dimInfo : {shape: n
     const outputSize = shape[0] * shape[1] * shape[2];
     const [zStride, yStride, xStride] = strides;
     console.log(`strides: ${strides}`)
-    let workGroups = shape.map(e => Math.ceil(e/4)); //We assume the workgroups are 4 threads. We see how many of those 4 thread workgroups are needed for each dimension
-    workGroups = workGroups.map(e => Math.pow(2, Math.ceil(Math.log2(e)))); //Round those up to nearest power of 2
+    const workGroups = shape.map(e => Math.ceil(e/4)); //We assume the workgroups are 4 threads per dimension. We see how many of those 4 thread workgroups are needed for each dimension
 
     const shader = kernelOperations[operation as keyof typeof kernelOperations]
     const module = device.createShaderModule({
@@ -160,12 +167,13 @@ export async function Convolve(inputArray : ArrayBufferView, dimInfo : {shape: n
     console.log(`shape:${shape}`)
     console.log(`workGroups:${workGroups.map(e=>e*4)}`)
     myUniformValues.set({
-        xStride: zStride,
+        xStride,
         yStride,
-        zStride: xStride,
+        zStride,
         xSize: shape[2], 
         ySize: shape[1],
         zSize: shape[0],
+        workGroups:[workGroups[2], workGroups[1], workGroups[0]],
         kernelDepth,
         kernelSize
     });
@@ -184,6 +192,7 @@ export async function Convolve(inputArray : ArrayBufferView, dimInfo : {shape: n
     });
 
     const uniformBuffer = device.createBuffer({
+        label: 'Uniform Buffer',
         size: myUniformValues.arrayBuffer.byteLength,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
@@ -216,8 +225,9 @@ export async function Convolve(inputArray : ArrayBufferView, dimInfo : {shape: n
 
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bindGroup);
-    pass.dispatchWorkgroups(workGroups[0], workGroups[1], workGroups[2]);
+    pass.dispatchWorkgroups(workGroups[2], workGroups[1], workGroups[0]);
     pass.end();
+    console.log(`workGroups: ${workGroups}`)
 
     encoder.copyBufferToBuffer(
     outputBuffer, 0,

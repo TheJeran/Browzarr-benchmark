@@ -20,12 +20,16 @@ const operations = ['Mean', 'Min', 'Max', 'StDev', 'Convolution']
 const kernelOperations = ['Mean', 'Min', 'Max', 'StDev' ]
 
 const AnalysisOptions = () => {
-    const {execute, operation, useTwo, kernelSize, kernelDepth, axis, setExecute, setAxis, setOperation, setUseTwo, setVariable2, setKernelSize, setKernelDepth, setKernelOperation, setAnalysisMode} = useAnalysisStore(useShallow(state => ({
+    const plotOn = useGlobalStore(state => state.plotOn)
+    const {execute, operation, useTwo, kernelSize, kernelDepth, kernelOperation, axis, 
+            setExecute, setAxis, setOperation, setUseTwo, setVariable2, setKernelSize, 
+            setKernelDepth, setKernelOperation, setAnalysisMode} = useAnalysisStore(useShallow(state => ({
         execute: state.execute,
         operation: state.operation,
         useTwo: state.useTwo,
         kernelSize: state.kernelSize,
         kernelDepth: state.kernelDepth,
+        kernelOperation: state.kernelOperation,
         axis: state.axis,
 
         setExecute: state.setExecute,
@@ -45,8 +49,15 @@ const AnalysisOptions = () => {
 
   return (
     <Popover >
-        <PopoverTrigger style={{position:'absolute', bottom:'100%'}}>
-            <PiFileMagnifyingGlass className='panel-item'/>
+        <PopoverTrigger disabled={!plotOn} style={{position:'absolute', bottom:'100%'}}>
+            <PiFileMagnifyingGlass 
+                color={plotOn ? '' : 'var(--text-disabled)'}
+                style={{
+                cursor: plotOn ? 'pointer' : 'auto',
+                transform: plotOn ? '' : 'scale(1)'
+                }}
+                
+                className='panel-item'/>
         </PopoverTrigger>
         <PopoverContent
             side='left'
@@ -109,7 +120,7 @@ const AnalysisOptions = () => {
                     <td>
                         <Select onValueChange={e=>setKernelOperation(e)}>
                             <SelectTrigger style={{width:'175px', marginLeft:'10px'}}>
-                                <SelectValue placeholder='Select...' />
+                                <SelectValue placeholder={kernelOperation == 'Default' ? 'Select...' : kernelOperation} />
                             </SelectTrigger>
                             <SelectContent>
                                 {kernelOperations.map((e, idx)=>(
@@ -130,24 +141,24 @@ const AnalysisOptions = () => {
                             </tr>
                             <tr>
                                 <td style={{textAlign: 'center'}}>
-                                    <Select onValueChange={e=>console.log(e)}>
+                                    <Select onValueChange={e=>setKernelSize(parseInt(e))}>
                                         <SelectTrigger style={{width:'69px', marginLeft:'10px'}}>
                                             <SelectValue placeholder={kernelSize} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {[3, 5, 7].map((e, idx)=>(
+                                            {[1, 3, 5, 7].map((e, idx)=>(
                                                 <SelectItem key={idx} value={String(e)}>{e}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
                                 </td>
                                 <td style={{textAlign: 'center'}}>
-                                    <Select onValueChange={e=>console.log(e)}>
+                                    <Select onValueChange={e=>setKernelDepth(parseInt(e))}>
                                         <SelectTrigger style={{width:'69px', marginLeft:'10px'}}>
                                             <SelectValue placeholder={kernelDepth} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {[3, 5, 7].map((e, idx)=>(
+                                            {[1, 3, 5, 7].map((e, idx)=>(
                                                 <SelectItem key={idx} value={String(e)}>{e}</SelectItem>
                                             ))}
                                         </SelectContent>
@@ -162,7 +173,9 @@ const AnalysisOptions = () => {
                 </>}
                 </tbody>
             </table>
-            <Button onClick={e=>{setExecute(!execute); setAnalysisMode(true)}}>Execute</Button>
+            <Button 
+                disabled={operation == 'Default' || (operation == 'Convolution' && kernelOperation == 'Default')}
+                onClick={e=>{setExecute(!execute); setAnalysisMode(true)}}>Execute</Button>
 
         </PopoverContent>
     </Popover>
