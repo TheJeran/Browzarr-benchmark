@@ -19,7 +19,7 @@ const kernelOperations = {
     StDev: StDevConvolution
 }
 
-export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, operation: string){
+export async function DataReduction(inputArray : Uint8Array | Float32Array, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, operation: string){
     const adapter = await navigator.gpu?.requestAdapter();
     const device = await adapter?.requestDevice();
     if (!device) {
@@ -129,9 +129,9 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
 
 }
 
-export async function Convolve(inputArray : ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, operation: string, kernel: {kernelSize: number, kernelDepth: number}){
+export async function Convolve(inputArray :  Uint8Array | Float32Array, dimInfo : {shape: number[], strides: number[]}, operation: string, kernel: {kernelSize: number, kernelDepth: number}){
     const adapter = await navigator.gpu?.requestAdapter();
-    const maxSize = 2047483644;
+    const maxSize = 2047483644; //Will probably remove this eventually
     const device = await adapter?.requestDevice({requiredLimits: {
     maxBufferSize: maxSize,
     maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
