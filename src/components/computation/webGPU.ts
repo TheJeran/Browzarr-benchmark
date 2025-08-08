@@ -19,7 +19,7 @@ const kernelOperations = {
     StDev: StDevConvolution
 }
 
-export async function DataReduction(inputArray : Uint8Array | Float32Array, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, operation: string){
+export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, operation: string){
     const adapter = await navigator.gpu?.requestAdapter();
     const device = await adapter?.requestDevice();
     if (!device) {
@@ -85,8 +85,8 @@ export async function DataReduction(inputArray : Uint8Array | Float32Array, dimI
     });
 
     // Write Buffers to GPU
-    device.queue.writeBuffer(inputBuffer, 0, inputArray);
-    device.queue.writeBuffer(uniformBuffer, 0, myUniformValues.arrayBuffer);
+    device.queue.writeBuffer(inputBuffer, 0, inputArray as GPUAllowSharedBufferSource);
+    device.queue.writeBuffer(uniformBuffer, 0, myUniformValues.arrayBuffer as GPUAllowSharedBufferSource);
 
     const bindGroup = device.createBindGroup({
         layout: pipeline.getBindGroupLayout(0),
@@ -129,7 +129,7 @@ export async function DataReduction(inputArray : Uint8Array | Float32Array, dimI
 
 }
 
-export async function Convolve(inputArray :  Uint8Array | Float32Array, dimInfo : {shape: number[], strides: number[]}, operation: string, kernel: {kernelSize: number, kernelDepth: number}){
+export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, operation: string, kernel: {kernelSize: number, kernelDepth: number}){
     const adapter = await navigator.gpu?.requestAdapter();
     const maxSize = 2047483644; //Will probably remove this eventually
     const device = await adapter?.requestDevice({requiredLimits: {
@@ -204,8 +204,8 @@ export async function Convolve(inputArray :  Uint8Array | Float32Array, dimInfo 
     });
 
     // Write Buffers to GPU
-    device.queue.writeBuffer(inputBuffer, 0, inputArray);
-    device.queue.writeBuffer(uniformBuffer, 0, myUniformValues.arrayBuffer);
+    device.queue.writeBuffer(inputBuffer, 0, inputArray as GPUAllowSharedBufferSource);
+    device.queue.writeBuffer(uniformBuffer, 0, myUniformValues.arrayBuffer as GPUAllowSharedBufferSource);
 
     const bindGroup = device.createBindGroup({
         layout: pipeline.getBindGroupLayout(0),
