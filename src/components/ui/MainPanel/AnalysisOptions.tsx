@@ -31,7 +31,7 @@ const webGPUError = <div className='m-0 p-5 font-sans flex-column justify-center
             <ul className="suggestion-list">
                 <li>Switch to a Chrome-based browser (Chrome, Edge, Brave)</li>
                 <li>Use Safari on macOS (version 14.1 or later)</li>
-                <li>Enable WebGPU in your browser's experimental features</li>
+                <li>Enable WebGPU in your browser&apos;s experimental features</li>
                 <li>Update your browser to the latest version</li>
             </ul>
         </div>
