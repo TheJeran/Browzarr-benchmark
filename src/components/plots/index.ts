@@ -4,7 +4,6 @@ export {PointCloud} from './PointCloud'
 export {PlotArea} from './plotarea/LinePlot'
 export {FixedTicks} from './plotarea/FixedTicks'
 export {Plot} from './Plot'
-export {Analysis} from './Analysis';
 export {ThickLine} from './plotarea/ThickLine'
 export {PlotPoints} from './plotarea/PlotPoints'
 export {FlatMap} from './FlatMap'

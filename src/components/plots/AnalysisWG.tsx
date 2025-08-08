@@ -61,7 +61,7 @@ const AnalysisWG = ({setTexture} : {setTexture : React.Dispatch<React.SetStateAc
                             setValueScalesOrig(null)
                         }
                     }
-                    let normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
+                    const normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
                     const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254)); 
                     const newText = new THREE.DataTexture(textureData, thisShape[1], thisShape[0], THREE.RedFormat, THREE.UnsignedByteType)
                     newText.needsUpdate = true;
@@ -93,7 +93,7 @@ const AnalysisWG = ({setTexture} : {setTexture : React.Dispatch<React.SetStateAc
                             setValueScalesOrig(null)
                         }
                     }
-                    let normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
+                    const normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
                     const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254)); 
                     const newText = new THREE.Data3DTexture(textureData, dataShape[2], dataShape[1], dataShape[0])
                     newText.format = THREE.RedFormat;

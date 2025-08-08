@@ -35,7 +35,7 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
     const workGroups = thisShape.map(e => Math.ceil(e/16)) //We assume the workgroups are 16 threads. We see how many of those 16 thread workgroups are needed for each dimension
     console.log(`workGroups: ${workGroups}`)
     const shader = operations[operation as keyof typeof operations]
-    const module = device.createShaderModule({
+    const computeModule = device.createShaderModule({
         label: 'reduction compute module',
         code:shader,
     });
@@ -44,7 +44,7 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
         label: 'reduction compute pipeline',
         layout: 'auto',
         compute: {
-        module,
+        module: computeModule,
         },
     });
     
@@ -149,7 +149,7 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
     const workGroups = shape.map(e => Math.ceil(e/4)); //We assume the workgroups are 4 threads per dimension. We see how many of those 4 thread workgroups are needed for each dimension
 
     const shader = kernelOperations[operation as keyof typeof kernelOperations]
-    const module = device.createShaderModule({
+    const computeModule = device.createShaderModule({
         label: 'convolution compute module',
         code:shader,
     });
@@ -158,7 +158,7 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
         label: 'convolution compute pipeline',
         layout: 'auto',
         compute: {
-        module,
+        module: computeModule,
         },
     });
     
