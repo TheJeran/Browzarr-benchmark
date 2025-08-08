@@ -324,11 +324,20 @@ const MeanConvolution = /* wgsl */`
         let xy_radius: i32 = i32(kernelSize/2u);
         let z_radius: i32 = i32(kernelDepth/2u);
 
+        var xyOffset: i32 = 0; //These offsets are for kernelsizes of 1. I didn't wanna rewrite everything else for that case
+        var zOffset: i32 = 0;
+        if (xy_radius == 0){
+            xyOffset = -1;
+        }
+        if (z_radius == 0){
+            zOffset = -1;
+        }
+
         var sum: f32 = 0.0;
         var count: u32 = 0u;
-        for (var kx: i32 = -xy_radius; kx < xy_radius; kx++) {
-            for (var ky: i32 = -xy_radius; ky < xy_radius; ky++) {
-                for (var kz: i32 = -z_radius; kz < z_radius; kz++){
+        for (var kx: i32 = -xy_radius + xyOffset; kx < xy_radius; kx++) {
+            for (var ky: i32 = -xy_radius + xyOffset; ky < xy_radius; ky++) {
+                for (var kz: i32 = -z_radius + zOffset; kz < z_radius; kz++){
                     let in_coord = vec3<i32>(global_id) + vec3<i32>(kx, ky, kz);
 
                     if (in_coord.x >= 0 && in_coord.x < i32(xSize) &&
@@ -393,12 +402,21 @@ const MinConvolution = /* wgsl */`
 
         let xy_radius: i32 = i32(kernelSize/2u);
         let z_radius: i32 = i32(kernelDepth/2u);
+        var xyOffset: i32 = 0; //These offsets are for kernelsizes of 1. I didn't wanna rewrite everything else for that case
+        var zOffset: i32 = 0;
+        if (xy_radius == 0){
+            xyOffset = -1;
+        }
+        if (z_radius == 0){
+            zOffset = -1;
+        }
+
 
         var minVal: f32 = 1e12;
         var count: u32 = 0u;
-        for (var kx: i32 = -xy_radius; kx < xy_radius; kx++) {
-            for (var ky: i32 = -xy_radius; ky < xy_radius; ky++) {
-                for (var kz: i32 = -z_radius; kz < z_radius; kz++){
+        for (var kx: i32 = -xy_radius + xyOffset; kx < xy_radius; kx++) {
+            for (var ky: i32 = -xy_radius + xyOffset; ky < xy_radius; ky++) {
+                for (var kz: i32 = -z_radius + zOffset; kz < z_radius; kz++){
                     let in_coord = vec3<i32>(global_id) + vec3<i32>(kx, ky, kz);
 
                     if (in_coord.x >= 0 && in_coord.x < i32(xSize) &&
@@ -464,12 +482,20 @@ const MaxConvolution = /* wgsl */`
 
         let xy_radius: i32 = i32(kernelSize/2u);
         let z_radius: i32 = i32(kernelDepth/2u);
+        var xyOffset: i32 = 0; //These offsets are for kernelsizes of 1. I didn't wanna rewrite everything else for that case
+        var zOffset: i32 = 0;
+        if (xy_radius == 0){
+            xyOffset = -1;
+        }
+        if (z_radius == 0){
+            zOffset = -1;
+        }
 
         var maxVal: f32 = -1e12;
         var count: u32 = 0u;
-        for (var kx: i32 = -xy_radius; kx < xy_radius; kx++) {
-            for (var ky: i32 = -xy_radius; ky < xy_radius; ky++) {
-                for (var kz: i32 = -z_radius; kz < z_radius; kz++){
+        for (var kx: i32 = -xy_radius + xyOffset; kx < xy_radius; kx++) {
+            for (var ky: i32 = -xy_radius + xyOffset; ky < xy_radius; ky++) {
+                for (var kz: i32 = -z_radius + zOffset; kz < z_radius; kz++){
                     let in_coord = vec3<i32>(global_id) + vec3<i32>(kx, ky, kz);
 
                     if (in_coord.x >= 0 && in_coord.x < i32(xSize) &&
@@ -535,12 +561,20 @@ const StDevConvolution = /* wgsl */`
 
         let xy_radius: i32 = i32(kernelSize/2u);
         let z_radius: i32 = i32(kernelDepth/2u);
+        var xyOffset: i32 = 0; //These offsets are for kernelsizes of 1. I didn't wanna rewrite everything else for that case
+        var zOffset: i32 = 0;
+        if (xy_radius == 0){
+            xyOffset = -1;
+        }
+        if (z_radius == 0){
+            zOffset = -1;
+        }
 
         var sum: f32 = 0.0;
         var count: u32 = 0u;
-        for (var kx: i32 = -xy_radius; kx < xy_radius; kx++) {
-            for (var ky: i32 = -xy_radius; ky < xy_radius; ky++) {
-                for (var kz: i32 = -z_radius; kz < z_radius; kz++){
+        for (var kx: i32 = -xy_radius + xyOffset; kx < xy_radius; kx++) {
+            for (var ky: i32 = -xy_radius + xyOffset; ky < xy_radius; ky++) {
+                for (var kz: i32 = -z_radius + zOffset; kz < z_radius; kz++){
                     let in_coord = vec3<i32>(global_id) + vec3<i32>(kx, ky, kz);
 
                     if (in_coord.x >= 0 && in_coord.x < i32(xSize) &&
@@ -562,9 +596,9 @@ const StDevConvolution = /* wgsl */`
 
         var squaredDiffSum: f32 = 0.0;
 
-        for (var kx: i32 = -xy_radius; kx < xy_radius; kx++) {
-            for (var ky: i32 = -xy_radius; ky < xy_radius; ky++) {
-                for (var kz: i32 = -z_radius; kz < z_radius; kz++){
+        for (var kx: i32 = -xy_radius + xyOffset; kx < xy_radius; kx++) {
+            for (var ky: i32 = -xy_radius + xyOffset; ky < xy_radius; ky++) {
+                for (var kz: i32 = -z_radius + zOffset; kz < z_radius; kz++){
                     let in_coord = vec3<i32>(global_id) + vec3<i32>(kx, ky, kz);
 
                     if (in_coord.x >= 0 && in_coord.x < i32(xSize) &&
@@ -587,7 +621,9 @@ const StDevConvolution = /* wgsl */`
         outputData[globalIdx] = stDev;
     }
 `
+const Correlation2D = /* wgsl */`
 
+`
 export {
     MeanReduction,
     MinReduction,
@@ -596,5 +632,6 @@ export {
     MeanConvolution,
     MinConvolution,
     MaxConvolution,
-    StDevConvolution
+    StDevConvolution,
+    Correlation2D
 }

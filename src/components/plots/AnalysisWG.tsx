@@ -106,6 +106,9 @@ const AnalysisWG = ({setTexture} : {setTexture : React.Dispatch<React.SetStateAc
             }
             
         }
+    else{
+        
+    }
     },[execute])
 
   return null
