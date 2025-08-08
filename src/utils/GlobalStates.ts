@@ -18,6 +18,7 @@ interface Coord {
   }
 
 type StoreState = {
+  dataShape: number[];
   shape: THREE.Vector3;
   valueScales: { maxVal: number; minVal: number };
   colormap: THREE.DataTexture;
@@ -26,7 +27,7 @@ type StoreState = {
   showLoading: boolean;
   metadata: Record<string, any> | null;
   zMeta: object[];
-  dataArray: Array<any> | null;
+  dataArray: Uint8Array | Float32Array;
   dimArrays: number[][];
   dimNames: string[];
   dimUnits: string[];
@@ -40,6 +41,7 @@ type StoreState = {
   isFlat: boolean;
   progress: number,
 
+  setDataShape: (dataShape: number[]) => void;
   setShape: (shape: THREE.Vector3) => void;
   setValueScales: (valueScales: { maxVal: number; minVal: number }) => void;
   setColormap: (colormap: THREE.DataTexture) => void;
@@ -49,7 +51,7 @@ type StoreState = {
   setShowLoading: (showLoading: boolean) => void;
   setMetadata: (metadata: object | null) => void;
   setZMeta: (zMeta: object[]) => void;
-  setDataArray: (dataArray: Array<any> | null) => void;
+  setDataArray: (dataArray: Uint8Array | Float32Array) => void;
   setDimArrays: (dimArrays: number[][]) => void;
   setDimNames: (dimNames: string[]) => void;
   setDimUnits: (dimUnits: string[]) => void;
@@ -67,6 +69,7 @@ type StoreState = {
 };
 
 export const useGlobalStore = create<StoreState>((set, get) => ({
+  dataShape: [1, 1, 1],
   shape: new THREE.Vector3(2, 2, 2),
   valueScales: { maxVal: 1, minVal: -1 },
   colormap: GetColorMapTexture(),
@@ -75,7 +78,7 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   showLoading: false,
   metadata: null,
   zMeta: [{}],
-  dataArray: null,
+  dataArray: new Uint8Array(1),
   dimArrays: [[0], [0], [0]],
   dimNames: ["Default"],
   dimUnits: ["Default"],
@@ -89,6 +92,7 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   isFlat:false,
   progress: 0,
 
+  setDataShape: (dataShape) => set({ dataShape}),
   setShape: (shape) => set({ shape }),
   setValueScales: (valueScales) => set({ valueScales }),
   setColormap: (colormap) => set({ colormap }),
@@ -256,33 +260,52 @@ type AnalysisState = {
   axis: number;
   operation: string;
   execute: boolean;
-  variable1: string;
+  useTwo: boolean;
   variable2: string;
+  valueScalesOrig: {minVal: number, maxVal:number} | null
+  kernelSize: number;
+  kernelDepth: number;
+  kernelOperation: string;
+  analysisArray: Uint8Array | Float32Array;
 
   setAnalysisMode: (analysisMode: boolean) => void;
   setAxis: (axis: number) => void;
   setOperation: (operation: string) => void;
   setExecute: (execute: boolean) => void;
-  setVariable1: (variable1: string) => void;
+  setUseTwo: (useTwo: boolean) => void;
   setVariable2: (variable2: string) => void;
+  setValueScalesOrig: (valueScalesOrig: {minVal: number, maxVal:number} | null) => void;
+  setKernelSize: (kernelSize: number) => void;
+  setKernelDepth: (kernelDepth: number) => void;
+  setKernelOperation: (kernelOperation: string) => void;
+  setAnalysisArray: (analysisArray: Uint8Array | Float32Array) => void;
 }
 
 export const useAnalysisStore = create<AnalysisState>((set) => ({
   analysisMode: false,
   axis: 0,
-  operation: "Mean", 
+  operation: "Default", 
   execute: false,
-  variable1: "Default",
+  useTwo: false,
   variable2: "Default",
+  valueScalesOrig: null,
+  kernelSize: 3,
+  kernelDepth: 3,
+  kernelOperation: 'Default',
+  analysisArray: new Uint8Array(1),
 
   setAnalysisMode: (analysisMode) => set({ analysisMode }),
   setAxis: (axis) => set({ axis }),
   setOperation: (operation) => set({ operation }),
   setExecute: (execute) => set({ execute }),
-  setVariable1: (variable1) => set({ variable1 }),
-  setVariable2: (variable2) => set({ variable2 }),  
+  setUseTwo: (useTwo) => set({ useTwo}),
+  setVariable2: (variable2) => set({ variable2 }), 
+  setValueScalesOrig: (valueScalesOrig) => set({ valueScalesOrig }),
+  setKernelSize: (kernelSize) => set({ kernelSize}),
+  setKernelDepth: (kernelDepth) => set({ kernelDepth }),
+  setKernelOperation: (kernelOperation) => set({ kernelOperation}),
+  setAnalysisArray: (analysisArray) => set({ analysisArray })
 }));
-
 
 type ZarrState = {
   slice: [number  , number | null],
@@ -303,6 +326,7 @@ export const useZarrStore = create<ZarrState>((set) => ({
   setCompress: (compress) => set({ compress }),
   setCurrentStore: (currentStore) => set({ currentStore })
 }))
+
 
 type ErrorState = {
   zarrFetch: boolean;

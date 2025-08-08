@@ -95,7 +95,7 @@ const PlayButton = () => {
   return (
     <div>
       <PiPlayPauseFill className='panel-item' 
-        color={enableCond ? 'var(--text-paragraph)' : 'var(--text-disabled)'}
+        color={enableCond ? '' : 'var(--text-disabled)'}
         onClick={e=>{if (cond){setShowOptions(x=>!x)}}}
         style={{transform: enableCond ? '' : 'scale(1)',  cursor: enableCond ? 'pointer' : 'auto'}}
     />

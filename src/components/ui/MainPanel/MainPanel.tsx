@@ -1,8 +1,8 @@
 "use client";
-
+import 'rc-slider/assets/index.css'
 import React from 'react'
 import '../css/MainPanel.css'
-import {PlotType, Variables, Colormaps, AdjustPlot, Dataset, PlayButton} from '../index'
+import {PlotType, Variables, Colormaps, AdjustPlot, Dataset, PlayButton, AnalysisOptions} from '../index'
 import { PiFileMagnifyingGlass } from "react-icons/pi";
 import { Card } from "@/components/ui/card"
 import { useAnalysisStore } from '@/utils/GlobalStates';
@@ -16,14 +16,8 @@ const MainPanel = () => {
 
   return (
     <div className="panel-container">
-      < PiFileMagnifyingGlass size={50} 
-        className='panel-item'
-        style={{
-        position:'absolute',
-        bottom:'100%'
-        }}
-        onClick={e=> setAnalysisMode(!analysisMode)}
-      />
+      <AnalysisOptions />
+      
     <Card className="panel-container">
       <PlotType />
       <Variables />

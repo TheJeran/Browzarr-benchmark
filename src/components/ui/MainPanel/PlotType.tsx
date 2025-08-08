@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import '../css/MainPanel.css'
-import { usePlotStore } from '@/utils/GlobalStates';
+import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { PiSphereThin } from "react-icons/pi";
 import { CgMenuGridO } from "react-icons/cg";
@@ -24,7 +24,7 @@ const PlotType = () => {
     plotType: state.plotType,
     setPlotType: state.setPlotType
   })))
-
+  const isFlat = useGlobalStore(state => state.isFlat)
   // Responsive popover side
   const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
   
@@ -55,8 +55,12 @@ const PlotType = () => {
         side={popoverSide}
         className="flex flex-col items-center min-w-[48px] max-w-[72px] w-[56px] p-2 mb-1"
       >
-        {plotTypes.map(val => (
-          <Button
+        {plotTypes.map((val, idx) => {    
+          if (idx < 2 && isFlat){ //Hide options not available when flat data
+            return null
+          }      
+          else{
+            return <Button
             key={val}
             variant={plotType === val ? "default" : "ghost"}
             className="mb-2 w-12 h-12 flex items-center cursor-pointer justify-center transform transition-transform duration-100 ease-out hover:scale-90"
@@ -67,7 +71,9 @@ const PlotType = () => {
           >
             {plotIcons[val as keyof typeof plotIcons]}
           </Button>
-        ))}
+          }
+          }
+        )}
       </PopoverContent>
     </Popover>
   )

@@ -10,6 +10,7 @@ import { useShallow } from 'zustand/shallow';
 import { Navbar, Colorbar } from '../ui';
 import AnalysisInfo from './AnalysisInfo';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
+import AnalysisWG from './AnalysisWG';
 
 
 const Orbiter = ({isFlat} : {isFlat  : boolean}) =>{
@@ -72,7 +73,8 @@ interface PlotParameters{
 
 const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
     const {
-      setShape, 
+      setShape,
+      setDataShape, 
       setFlipY, 
       setValueScales, 
       setMetadata, 
@@ -82,6 +84,7 @@ const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
       setPlotOn} = useGlobalStore(
         useShallow(state => ({  //UseShallow for object returns
           setShape:state.setShape,
+          setDataShape: state.setDataShape,
           setFlipY:state.setFlipY,
           setValueScales:state.setValueScales,
           setMetadata: state.setMetadata,
@@ -114,23 +117,6 @@ const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
 
     const [texture, setTexture] = useState<THREE.DataTexture | THREE.Data3DTexture | null>(null)
     const [show, setShow] = useState<boolean>(true) //Prevents rendering of 3D objects until data is fully loaded in
-
-    // Listen for theme changes
-    useEffect(() => {
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.attributeName === 'data-theme') {
-                    // setCurrentBg('var(--background)')
-                }
-            })
-        })
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['data-theme']
-        })
-
-        return () => observer.disconnect()
-    }, [])
 
   //DATA LOADING
   useEffect(() => {
@@ -167,6 +153,7 @@ const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
         setDataArray(result.data)
         const shapeRatio = result.shape[1] / result.shape[2] * 2;
         setShape(new THREE.Vector3(2, shapeRatio, 2));
+        setDataShape(result.shape)
         setShowLoading(false)
         setShow(true)
         setPlotOn(true)
@@ -212,12 +199,13 @@ const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
     coords,
     val
   }),[])
-
+  
   const Nav = useMemo(()=>Navbar,[])
   return (
     <div className='main-canvas'
       style={{width:'100vw'}}
     >
+      <AnalysisWG setTexture={setTexture} />
       {show && <Colorbar units={metadata?.units} valueScales={valueScales}/>}
       <Nav />
       {(isFlat || plotType == "flat") && <AnalysisInfo loc={loc} show={showInfo} info={[...coords.current,val.current]}/> }

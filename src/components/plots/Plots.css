@@ -46,7 +46,7 @@
     cursor: pointer;
 }
 
-.analysis-info{
+.analysis-overlay{
     position: fixed;
     max-width: 200px;
     z-index: 1;

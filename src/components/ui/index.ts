@@ -23,6 +23,8 @@ import AdjustPlot from "./MainPanel/AdjustPlot";
 import Dataset from "./MainPanel/Dataset";
 import PlayButton from "./MainPanel/PlayButton";
 import Error from "./Error";
+import AnalysisOptions from "./MainPanel/AnalysisOptions";
+
 export {
   Navbar,
   Footer,
@@ -49,5 +51,6 @@ export {
   AdjustPlot,
   Dataset,
   PlayButton,
-  Error
+  Error,
+  AnalysisOptions
 };
