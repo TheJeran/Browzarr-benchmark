@@ -33,7 +33,7 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
     const dimLength = shape[reduceDim]
     const outputSize = thisShape[0] * thisShape[1];
     const workGroups = thisShape.map(e => Math.ceil(e/16)) //We assume the workgroups are 16 threads. We see how many of those 16 thread workgroups are needed for each dimension
-    console.log(`workGroups: ${workGroups}`)
+    
     const shader = operations[operation as keyof typeof operations]
     const computeModule = device.createShaderModule({
         label: 'reduction compute module',
@@ -145,7 +145,6 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
     const {strides, shape} = dimInfo;
     const outputSize = shape[0] * shape[1] * shape[2];
     const [zStride, yStride, xStride] = strides;
-    console.log(`strides: ${strides}`)
     const workGroups = shape.map(e => Math.ceil(e/4)); //We assume the workgroups are 4 threads per dimension. We see how many of those 4 thread workgroups are needed for each dimension
 
     const shader = kernelOperations[operation as keyof typeof kernelOperations]
@@ -161,11 +160,8 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
         module: computeModule,
         },
     });
-    
     const defs = makeShaderDataDefinitions(shader);
     const myUniformValues = makeStructuredView(defs.uniforms.params);
-    console.log(`shape:${shape}`)
-    console.log(`workGroups:${workGroups.map(e=>e*4)}`)
     myUniformValues.set({
         xStride,
         yStride,
@@ -227,7 +223,6 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
     pass.setBindGroup(0, bindGroup);
     pass.dispatchWorkgroups(workGroups[2], workGroups[1], workGroups[0]);
     pass.end();
-    console.log(`workGroups: ${workGroups}`)
 
     encoder.copyBufferToBuffer(
     outputBuffer, 0,

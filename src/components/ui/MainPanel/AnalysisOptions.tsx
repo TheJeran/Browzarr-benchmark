@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAnalysisStore, useGlobalStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
 import '../css/MainPanel.css'
@@ -18,6 +18,24 @@ import {
 
 const operations = ['Mean', 'Min', 'Max', 'StDev', 'Convolution']
 const kernelOperations = ['Mean', 'Min', 'Max', 'StDev' ]
+
+const webGPUError = <div className='m-0 p-5 font-sans flex-column justify-center items-center'>
+        <span className='text-5xl mb-4 block self-center'>⚠️</span>
+        <h1 className="text-2xl font-bold mb-4">WebGPU Not Available</h1>
+        <p className="text-base leading-relaxed mb-1 opacity-95">
+            WebGPU is not supported or enabled in your current browser. This feature is required for GPU-accelerated computing.
+        </p>
+        
+        <div className="bg-white bg-opacity-15 rounded-xl border border-white border-opacity-20">
+            <h3 className='m-0 mb-4 text-lg font-semibold'>Try These Solutions:</h3>
+            <ul className="suggestion-list">
+                <li>Switch to a Chrome-based browser (Chrome, Edge, Brave)</li>
+                <li>Use Safari on macOS (version 14.1 or later)</li>
+                <li>Enable WebGPU in your browser's experimental features</li>
+                <li>Update your browser to the latest version</li>
+            </ul>
+        </div>
+    </div>
 
 const AnalysisOptions = () => {
     const plotOn = useGlobalStore(state => state.plotOn)
@@ -47,6 +65,27 @@ const AnalysisOptions = () => {
         dimNames: state.dimNames
     })))
 
+    const [showError, setShowError] = useState<boolean>(false);
+    
+    useEffect(()=>{
+        const checkWebGPU = async () => {
+      if (!navigator.gpu) {
+        setShowError(true);
+        return;
+      }
+
+      try {
+        const adapter = await navigator.gpu.requestAdapter();
+        setShowError(false);
+      } catch {
+        setShowError(true);
+      }
+    };
+
+    checkWebGPU();
+
+    },[plotOn])
+
   return (
     <Popover >
         <PopoverTrigger disabled={!plotOn} style={{position:'absolute', bottom:'100%'}}>
@@ -63,6 +102,7 @@ const AnalysisOptions = () => {
             side='left'
             className='analysis-info'
         >
+            { showError ? webGPUError : <>
             <Button onClick={e=>setUseTwo(!useTwo)}>{useTwo ? 'Use One \n Variable' : 'Use Two Variables'}</Button>
 
             <table style={{textAlign:'right'}} >
@@ -176,7 +216,7 @@ const AnalysisOptions = () => {
             <Button 
                 disabled={operation == 'Default' || (operation == 'Convolution' && kernelOperation == 'Default')}
                 onClick={e=>{setExecute(!execute); setAnalysisMode(true)}}>Execute</Button>
-
+            </>}
         </PopoverContent>
     </Popover>
     
