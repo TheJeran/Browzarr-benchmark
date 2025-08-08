@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-const operations = ['Mean', 'Min', 'Max', 'StDev', 'Convolution']
+const operations = ['Mean', 'Min', 'Max', 'StDev']
 const kernelOperations = ['Mean', 'Min', 'Max', 'StDev' ]
 
 const webGPUError = <div className='m-0 p-5 font-sans flex-column justify-center items-center'>
@@ -103,7 +103,9 @@ const AnalysisOptions = () => {
             className='analysis-info'
         >
             { showError ? webGPUError : <>
-            <Button onClick={e=>setUseTwo(!useTwo)}>{useTwo ? 'Use One \n Variable' : 'Use Two Variables'}</Button>
+            <Button 
+                className='cursor-pointer active:scale-[0.95]'
+                onClick={e=>{setUseTwo(!useTwo); setOperation('Default')}}>{useTwo ? 'Use One \n Variable' : 'Use Two Variables'}</Button>
 
             <table style={{textAlign:'right'}} >
                 <tbody>
@@ -124,22 +126,46 @@ const AnalysisOptions = () => {
                         </Select>}
                     </td>
                 </tr>
-                <tr>
+                 <tr>
                     <th>Operation</th>
-                    <td>
+                    {!useTwo && <td>
                         <Select onValueChange={e=>setOperation(e)}>
                             <SelectTrigger style={{width:'175px', marginLeft:'10px'}}>
                                 <SelectValue placeholder={operation == 'Default' ? 'Select...' : operation }/>
                             </SelectTrigger>
                             <SelectContent>
-                                {operations.map((e, idx)=>(
-                                    <SelectItem key={idx} value={e}>{e}</SelectItem>
-                                ))}
+                                <SelectGroup >
+                                    <SelectLabel>Dimension Reduction</SelectLabel>
+                                    {operations.map((e, idx)=>(
+                                        <SelectItem key={idx} value={e}>{e}</SelectItem>
+                                    ))}
+                                </SelectGroup>
+                                <SelectGroup >
+                                    <SelectLabel>Three Dimensional</SelectLabel>
+                                    <SelectItem value='Convolution'>Convolution</SelectItem>
+                                </SelectGroup>
                             </SelectContent>
                         </Select>
-                    </td>
+                    </td>}
+                    {useTwo && <td>
+                        <Select onValueChange={e=>setOperation(e)}>
+                            <SelectTrigger style={{width:'175px', marginLeft:'10px'}}>
+                                <SelectValue placeholder={operation == 'Default' ? 'Select...' : operation }/>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup >
+                                    <SelectLabel>Dimension Reduction</SelectLabel>
+                                    <SelectItem value='Correlation2D'>Correlation</SelectItem>
+                                </SelectGroup>
+                                <SelectGroup >
+                                    <SelectLabel>Three Dimensional</SelectLabel>
+                                    <SelectItem value='Correlation3D'>Correlation</SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </td>}
                 </tr>
-                {operation != 'Convolution' && <tr>
+                {(operation != 'Convolution' && operation != 'Correlation3D' && operation != 'Default') && <tr>
                     <th> Axis </th>
                     <td>
                         <Select onValueChange={e=>setAxis(parseInt(e))}>
@@ -154,8 +180,8 @@ const AnalysisOptions = () => {
                         </Select>
                     </td>
                 </tr>}
-                {operation == "Convolution" &&<>
-                <tr>
+                {(operation == "Convolution" || operation == "Correlation3D") &&<>
+                {operation == "Convolution" && <tr>
                     <th>Kernel Op.</th>
                     <td>
                         <Select onValueChange={e=>setKernelOperation(e)}>
@@ -169,7 +195,7 @@ const AnalysisOptions = () => {
                             </SelectContent>
                         </Select>
                     </td>
-                </tr>
+                </tr>}
                 <tr>
                     <th>Kernel Size</th>
                     <td>
@@ -214,6 +240,7 @@ const AnalysisOptions = () => {
                 </tbody>
             </table>
             <Button 
+                className='cursor-pointer active:scale-[0.95]'
                 disabled={operation == 'Default' || (operation == 'Convolution' && kernelOperation == 'Default')}
                 onClick={e=>{setExecute(!execute); setAnalysisMode(true)}}>Execute</Button>
             </>}

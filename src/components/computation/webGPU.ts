@@ -3,7 +3,7 @@ import {
   makeStructuredView,
 } from 'webgpu-utils';
 
-import { MeanReduction, MinReduction, MaxReduction, StDevReduction, MeanConvolution, MinConvolution, MaxConvolution, StDevConvolution } from './WGSLShaders';
+import { MeanReduction, MinReduction, MaxReduction, StDevReduction, MeanConvolution, MinConvolution, MaxConvolution, StDevConvolution, Correlation2D } from './WGSLShaders';
 
 const operations = {
     Mean: MeanReduction,
@@ -241,4 +241,127 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
     // Clean up
     readBuffer.unmap();
     return results;
+}
+
+export async function Correlate2D(firstArray: ArrayBufferView, secondArray: ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number,){
+    const adapter = await navigator.gpu?.requestAdapter();
+    const maxSize = 2047483644; //Will probably remove this eventually
+    const device = await adapter?.requestDevice({requiredLimits: {
+        maxBufferSize: maxSize,
+        maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
+        }}
+    );
+    if (!device) {
+        Error('need a browser that supports WebGPU');
+        return;
+    }
+    const {strides, shape} = dimInfo;
+    const [zStride, yStride, xStride] = strides;
+
+    const thisShape = shape.filter((e, idx) => idx != reduceDim)
+    const dimLength = shape[reduceDim]
+    const outputSize = thisShape[0] * thisShape[1];
+    const workGroups = thisShape.map(e => Math.ceil(e/16)) //We assume the workgroups are 16 threads each dimension. We see how many of those 16 thread workgroups are needed for each dimension
+
+    const shader = Correlation2D
+    const computeModule = device.createShaderModule({
+        label: 'Correlation2D compute module',
+        code:shader,
+    });
+
+    const pipeline = device.createComputePipeline({
+        label: 'Correlation2D compute pipeline',
+        layout: 'auto',
+        compute: {
+        module: computeModule,
+        },
+    });
+    
+    const defs = makeShaderDataDefinitions(shader);
+    const myUniformValues = makeStructuredView(defs.uniforms.params);
+    myUniformValues.set({
+        zStride,
+        yStride,
+        xStride,
+        xSize:  thisShape[1], 
+        ySize: thisShape[0],
+        reduceDim,
+        dimLength
+    });
+
+    // Create buffers
+    const firstInputBuffer = device.createBuffer({
+        label: 'First Input Buffer',
+        size: firstArray.byteLength, 
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    });
+
+    const secondInputBuffer = device.createBuffer({
+        label: 'Second Input Buffer',
+        size: secondArray.byteLength, 
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    });
+
+    const outputBuffer = device.createBuffer({
+        label: 'Output Buffer',
+        size: outputSize * 4,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
+    });
+
+    const uniformBuffer = device.createBuffer({
+        size: myUniformValues.arrayBuffer.byteLength,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+
+    const readBuffer = device.createBuffer({
+        label:'Output Buffer',
+        size: outputSize * 4,
+        usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+    });
+
+    // Write Buffers to GPU
+    device.queue.writeBuffer(firstInputBuffer, 0, firstArray as GPUAllowSharedBufferSource);
+    device.queue.writeBuffer(secondInputBuffer, 0, secondArray as GPUAllowSharedBufferSource);
+    device.queue.writeBuffer(uniformBuffer, 0, myUniformValues.arrayBuffer as GPUAllowSharedBufferSource);
+
+    const bindGroup = device.createBindGroup({
+        layout: pipeline.getBindGroupLayout(0),
+        entries: [
+            { binding: 0, resource: { buffer: firstInputBuffer } },
+            { binding: 1, resource: { buffer: secondInputBuffer } },
+            { binding: 2, resource: { buffer: outputBuffer } },
+            { binding: 3, resource: { buffer: uniformBuffer } },
+        ],
+    });
+
+    const encoder = device.createCommandEncoder({
+        label: 'Correlation2D encoder',
+    });
+    const pass = encoder.beginComputePass({
+        label: 'Correlation2D compute pass',
+    });
+
+    pass.setPipeline(pipeline);
+    pass.setBindGroup(0, bindGroup);
+    pass.dispatchWorkgroups(workGroups[0], workGroups[1]);
+    pass.end();
+
+    encoder.copyBufferToBuffer(
+    outputBuffer, 0,
+    readBuffer, 0,
+    outputSize * 4
+    );
+
+    // Submit work to GPU
+    device.queue.submit([encoder.finish()]);
+
+    // Map staging buffer to read results
+    await readBuffer.mapAsync(GPUMapMode.READ);
+    const resultArrayBuffer = readBuffer.getMappedRange();
+    const results = new Float32Array(resultArrayBuffer.slice());
+
+    // Clean up
+    readBuffer.unmap();
+    return results;
+
 }

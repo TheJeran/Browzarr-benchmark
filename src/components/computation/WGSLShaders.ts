@@ -621,7 +621,9 @@ const StDevConvolution = /* wgsl */`
         outputData[globalIdx] = stDev;
     }
 `
+const Correlation2D = /* wgsl */`
 
+`
 export {
     MeanReduction,
     MinReduction,
@@ -630,5 +632,6 @@ export {
     MeanConvolution,
     MinConvolution,
     MaxConvolution,
-    StDevConvolution
+    StDevConvolution,
+    Correlation2D
 }
