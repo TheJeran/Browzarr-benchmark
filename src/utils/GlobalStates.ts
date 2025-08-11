@@ -165,6 +165,9 @@ type PlotState ={
   resetCamera: boolean;
   useCustomColor: boolean;
   useCustomPointColor: boolean;
+  transparency: number;
+  nanTransparency: number;
+  nanColor: string;
 
   setQuality: (quality: number) => void;
   setTimeScale: (timeScale : number) =>void;
@@ -193,6 +196,9 @@ type PlotState ={
   setResetCamera: (resetCamera: boolean) => void;
   setUseCustomColor: (useCustomColor: boolean) => void;
   setUseCustomPointColor: (useCustomPointColor: boolean) => void;
+  setTransparency: (transparency: number) => void;
+  setNanTransparency: (nanTraparency: number) => void;
+  setNanColor: (nanColor: string) => void;
 }
 
 export const usePlotStore = create<PlotState>((set) => ({
@@ -224,6 +230,9 @@ export const usePlotStore = create<PlotState>((set) => ({
   resetCamera: false,
   useCustomColor: false,
   useCustomPointColor: false,
+  transparency: 0,
+  nanTransparency: 1,
+  nanColor: "#000000",
 
   setQuality: (quality) => set({ quality }),
   setTimeScale: (timeScale) => set({ timeScale }),
@@ -251,7 +260,10 @@ export const usePlotStore = create<PlotState>((set) => ({
   setUseFragOpt: (useFragOpt) => set({ useFragOpt }),
   setResetCamera: (resetCamera) => set({ resetCamera }),
   setUseCustomColor: (useCustomColor) => set({ useCustomColor }),
-  setUseCustomPointColor: (useCustomPointColor) => set({ useCustomPointColor})
+  setUseCustomPointColor: (useCustomPointColor) => set({ useCustomPointColor}),
+  setTransparency: (transparency) => set({ transparency}),
+  setNanTransparency: (nanTransparency) => set({ nanTransparency }),
+  setNanColor: (nanColor) => set({ nanColor })
 }))
 
 
