@@ -18,6 +18,9 @@ uniform float steps;
 uniform vec4 flatBounds;
 uniform vec2 vertBounds;
 uniform float animateProg;
+uniform float transparency;
+uniform float nanAlpha;
+uniform vec3 nanColor;
 
 vec2 hitBox(vec3 orig, vec3 dir) {
     vec3 box_min = vec3(-(scale * 0.5));
@@ -79,7 +82,7 @@ void main() {
         texCoord.z = mod(texCoord.z + animateProg, 1.0001);
         float d = sample1(texCoord);
 
-        bool cond = (d > threshold.x) && (d < threshold.y);
+        bool cond = nanAlpha == 0. ? (d > threshold.x) && (d < threshold.y) : (d > threshold.x) && (d < threshold.y+.01); //We skip over nans if the transparency is enabled
         
         if (cond) {
             // Hit something interesting - switch to fine stepping
@@ -90,13 +93,18 @@ void main() {
                 t -= coarseDelta;
                 continue;
             }
-            float sampLoc = d == 1. ? d : (d - 0.5)*cScale + 0.5;
-            sampLoc = d == 1. ? d : min(sampLoc+cOffset,0.99);
-            vec4 col = texture(cmap, vec2(sampLoc, 0.5));
-            float alpha = float(col.a > 0.);
-
-            accumColor.rgb += (1.0 - alphaAcc) * alpha * col.rgb;
-            alphaAcc += alpha * (1.0 - alphaAcc);
+            if (d == 1.){
+                accumColor.rgb += (1.0 - alphaAcc) * pow(nanAlpha, 5.) * nanColor.rgb;
+                alphaAcc += pow(nanAlpha, 5.);
+            }
+            else{
+                float sampLoc = (d - 0.5)*cScale + 0.5;
+                sampLoc = min(sampLoc+cOffset,0.99);
+                vec4 col = texture(cmap, vec2(sampLoc, 0.5));
+                float alpha = pow(max(sampLoc, 0.001), transparency);
+                accumColor.rgb += (1.0 - alphaAcc) * alpha * col.rgb;
+                alphaAcc += alpha * (1.0 - alphaAcc);
+            }      
 
             if (alphaAcc >= 1.0) break;
             

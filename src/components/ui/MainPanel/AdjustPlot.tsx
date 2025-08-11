@@ -96,15 +96,21 @@ const DimSlicer = () =>{
 }
 
 const VolumeOptions = ()=>{
-  const { useFragOpt, quality, setQuality, setUseFragOpt} = usePlotStore(useShallow(state => ({
+  const { useFragOpt, quality, transparency, nanTransparency, nanColor, setQuality, setUseFragOpt, setTransparency, setNanTransparency, setNanColor} = usePlotStore(useShallow(state => ({
           useFragOpt: state.useFragOpt,
           quality: state.quality,
+          transparency: state.transparency,
+          nanTransparency: state.nanTransparency,
+          nanColor: state.nanColor,
           setQuality: state.setQuality,
-          setUseFragOpt: state.setUseFragOpt
+          setUseFragOpt: state.setUseFragOpt,
+          setTransparency: state.setTransparency,
+          setNanTransparency: state.setNanTransparency,
+          setNanColor: state.setNanColor
       })))
   return(
-    <div className='flex-column items-center w-50 text-center'>
-      <b>Set Quality</b>
+    <div className='grid gap-y-[5px] items-center w-50 text-center'>
+      <b>Quality</b>
       <div className='w-full flex justify-between text-xs'>
           Worse
           <input type="range"
@@ -117,6 +123,29 @@ const VolumeOptions = ()=>{
           Better
       </div>
       <Button variant="destructive" className="w-[100%] h-[20px] cursor-[pointer]" onClick={() => setUseFragOpt(!useFragOpt)}>{useFragOpt ? "Revert to Normal" : "Use Optimized Shader"}</Button>
+      <b>Transparency</b>
+
+      <input type="range"
+              min={0}
+              max={10}
+              step={.2}
+              value={transparency}
+          onChange={e => setTransparency(parseFloat(e.target.value))}
+          />
+      <b>NaN Transparency</b>
+      <input type="range"
+              min={0}
+              max={1}
+              step={.05}
+              value={nanTransparency}
+          onChange={e => setNanTransparency(parseFloat(e.target.value))}
+          />
+        <b>NaN Color</b>
+      <input type="color"
+      className='w-[100%] cursor-pointer'
+              value={nanColor}
+          onChange={e => setNanColor(e.target.value)}
+          />
     </div>
   )
 }
@@ -198,7 +227,6 @@ const AdjustPlot = () => {
 
   const enableCond = (plotOn && plotType != 'sphere' && plotType != 'flat')
   return (
-   <div className="relative">
       <Popover>
         <PopoverTrigger
           disabled={!enableCond}
@@ -214,7 +242,7 @@ const AdjustPlot = () => {
         </PopoverTrigger>
         <PopoverContent
           side={isMobile ? 'top' : 'left'}
-          className={`panel-settings ${
+          className={`${
             isMobile 
               ? 'overflow-y-scroll overflow-x-hidden w-[calc(100vw-24px)]' 
               : 'w-[242px]'
@@ -228,7 +256,6 @@ const AdjustPlot = () => {
           </div>
         </PopoverContent>
       </Popover>
-    </div>
   )
 }
 
