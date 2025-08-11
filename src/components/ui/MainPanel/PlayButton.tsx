@@ -79,6 +79,9 @@ const PlayInterFace = () =>{
                 {animate ? <FaPause className='cursor-pointer hover:scale-[115%]' onClick={e=>setAnimate(false)}/> : <FaPlay className='cursor-pointer hover:scale-[115%]' onClick={e=>setAnimate(true)}/>}
                     <div className='cursor-pointer hover:scale-[115%]' onClick={e=>setAnimSpeed(x=>x*0.8)}><b>Faster</b></div>
                 </div>
+                <div style={{textAlign:'right'}}>
+                    <b>{Math.round(10/(animSpeed/timeLength))}</b> FPS
+                </div>
             </div>
         </div>
     )
