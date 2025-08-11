@@ -205,7 +205,7 @@ const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
     <div className='main-canvas'
       style={{width:'100vw'}}
     >
-      <AnalysisWG setTexture={setTexture} />
+      <AnalysisWG setTexture={setTexture} ZarrDS={ZarrDS}/>
       {show && <Colorbar units={metadata?.units} valueScales={valueScales}/>}
       <Nav />
       {(isFlat || plotType == "flat") && <AnalysisInfo loc={loc} show={showInfo} info={[...coords.current,val.current]}/> }

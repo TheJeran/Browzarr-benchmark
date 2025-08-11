@@ -39,7 +39,7 @@ const webGPUError = <div className='m-0 p-5 font-sans flex-column justify-center
 
 const AnalysisOptions = () => {
     const plotOn = useGlobalStore(state => state.plotOn)
-    const {execute, operation, useTwo, kernelSize, kernelDepth, kernelOperation, axis, 
+    const {execute, operation, useTwo, kernelSize, kernelDepth, kernelOperation, axis, variable2,
             setExecute, setAxis, setOperation, setUseTwo, setVariable2, setKernelSize, 
             setKernelDepth, setKernelOperation, setAnalysisMode} = useAnalysisStore(useShallow(state => ({
         execute: state.execute,
@@ -49,6 +49,7 @@ const AnalysisOptions = () => {
         kernelDepth: state.kernelDepth,
         kernelOperation: state.kernelOperation,
         axis: state.axis,
+        variable2: state.variable2,
 
         setExecute: state.setExecute,
         setAxis: state.setAxis,
@@ -85,10 +86,9 @@ const AnalysisOptions = () => {
     checkWebGPU();
 
     },[plotOn])
-
   return (
     <Popover >
-        <PopoverTrigger disabled={!plotOn} style={{position:'absolute', bottom:'100%'}}>
+        <PopoverTrigger disabled={!plotOn} >
             <PiFileMagnifyingGlass 
                 color={plotOn ? '' : 'var(--text-disabled)'}
                 style={{
@@ -241,13 +241,11 @@ const AnalysisOptions = () => {
             </table>
             <Button 
                 className='cursor-pointer active:scale-[0.95]'
-                disabled={operation == 'Default' || (operation == 'Convolution' && kernelOperation == 'Default')}
+                disabled={operation == 'Default' || (operation == 'Convolution' && kernelOperation == 'Default') || (useTwo && variable2 == "Default")}
                 onClick={e=>{setExecute(!execute); setAnalysisMode(true)}}>Execute</Button>
             </>}
         </PopoverContent>
-    </Popover>
-    
-      
+    </Popover>  
   )
 }
 

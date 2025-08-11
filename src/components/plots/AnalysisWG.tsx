@@ -2,11 +2,13 @@
 import { ArrayMinMax } from '@/utils/HelperFuncs';
 import * as THREE from 'three'
 import React, { useEffect, useState, useRef } from 'react'
-import { DataReduction, Convolve } from '../computation/webGPU'
-import { useGlobalStore, useAnalysisStore, usePlotStore } from '@/utils/GlobalStates';
+import { DataReduction, Convolve, Correlate2D, Correlate3D } from '../computation/webGPU'
+import { useGlobalStore, useAnalysisStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
+import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 
-const AnalysisWG = ({setTexture} : {setTexture : React.Dispatch<React.SetStateAction<THREE.Data3DTexture | THREE.DataTexture | null>>}) => {
+
+const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.SetStateAction<THREE.Data3DTexture | THREE.DataTexture | null>>, ZarrDS: ZarrDataset}) => {
     
     const {dataArray, strides, dataShape, valueScales, setIsFlat, setDataArray, setValueScales} = useGlobalStore(useShallow(state=>({
         dataArray : state.dataArray,
@@ -34,6 +36,7 @@ const AnalysisWG = ({setTexture} : {setTexture : React.Dispatch<React.SetStateAc
         setAnalysisArray: state.setAnalysisArray,
     })))
 
+    const zarrSlice = useZarrStore(state => state.slice)
     const variable2Array = useRef<ArrayBufferView>(new Float32Array(1))
 
     useEffect(()=>{
@@ -102,13 +105,56 @@ const AnalysisWG = ({setTexture} : {setTexture : React.Dispatch<React.SetStateAc
                     newText.needsUpdate = true;
                     setAnalysisArray(newArray)
                     setTexture(newText)
+                    setIsFlat(false)
+                    setPlotType('volume')
                 })
             }
             
         }
-    else{
-        
-    }
+        else{
+            async function MultiVariable(){
+                variable2Array.current = await ZarrDS.GetArray(variable2, zarrSlice)
+                if (operation == 'Correlation2D'){ //This will need to change when new operatiosn added
+                    const thisShape = dataShape.filter((e, idx) => idx != axis)
+                    //@ts-expect-error It won't be undefined here as correlate2D only outputs undefined if webGPU disabled. However, impossible to call if webGPU disabled
+                    const newArray: Float32Array = await Correlate2D(dataArray, variable2Array.current.data, {shape:dataShape, strides}, axis)
+                    if (!valueScalesOrig){
+                            setValueScalesOrig(valueScales)
+                    }
+                    const [minVal, maxVal] = [-1, 1]
+                    setValueScales({minVal,maxVal}) //Set to 0-1 for correlation
+                    const normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
+                    const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254)); 
+                    const newText = new THREE.DataTexture(textureData, thisShape[1], thisShape[0], THREE.RedFormat, THREE.UnsignedByteType)
+                    newText.needsUpdate = true;
+                    setAnalysisArray(newArray)
+                    setTexture(newText)
+                    setIsFlat(true)
+                    setPlotType('flat')
+                }
+                else{ //This will need to change when new operatiosn added
+                    //@ts-expect-error It won't be undefined here as correlate2D only outputs undefined if webGPU disabled. However, impossible to call if webGPU disabled
+                    const newArray: Float32Array = await Correlate3D(dataArray, variable2Array.current.data, {shape:dataShape, strides}, {kernelDepth, kernelSize})
+                    if (!valueScalesOrig){
+                            setValueScalesOrig(valueScales)
+                    }
+                    const [minVal, maxVal] = [-1, 1]
+                    setValueScales({minVal,maxVal})
+                    const normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
+                    const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254)); 
+                    const newText = new THREE.Data3DTexture(textureData, dataShape[2], dataShape[1], dataShape[0])
+                    newText.format = THREE.RedFormat;
+                    newText.minFilter = THREE.NearestFilter;
+                    newText.magFilter = THREE.NearestFilter;
+                    newText.needsUpdate = true;
+                    setAnalysisArray(newArray)
+                    setTexture(newText)
+                    setIsFlat(false)
+                    setPlotType('volume')
+                }
+            }
+            MultiVariable();
+        }
     },[execute])
 
   return null
