@@ -15,10 +15,8 @@ const MainPanel = () => {
   })))
 
   return (
-    <div className="panel-container">
-      <AnalysisOptions />
-      
     <Card className="panel-container">
+      <AnalysisOptions />
       <PlotType />
       <Variables />
       <Colormaps />
@@ -26,7 +24,7 @@ const MainPanel = () => {
       <Dataset  />
       <PlayButton />
     </Card>
-  </div>
+
   )
 }
 
