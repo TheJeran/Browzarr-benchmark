@@ -6,6 +6,7 @@ import sphereFrag from './sphereFrag.glsl';
 import fragOpt from './fragmentOpt.glsl';
 import instanceVert from './instanceVert.glsl';
 import flatSphereFrag from './flatSphereFrag.glsl'
+
 export {
     pointFrag,
     pointVert,
