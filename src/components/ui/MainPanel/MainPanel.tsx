@@ -16,13 +16,13 @@ const MainPanel = () => {
 
   return (
     <Card className="panel-container">
-      <AnalysisOptions />
-      <PlotType />
+      <Dataset  />
       <Variables />
+      <PlotType />
       <Colormaps />
       <AdjustPlot  />
-      <Dataset  />
       <PlayButton />
+      <AnalysisOptions />
     </Card>
 
   )
