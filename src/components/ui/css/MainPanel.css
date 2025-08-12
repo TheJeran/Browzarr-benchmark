@@ -17,6 +17,7 @@
   user-select: none;
   /* Styling */
   z-index: 2;
+  gap: 1rem;
   padding: 0.25rem;
 }
 
@@ -145,7 +146,7 @@
 }
 
 .analysis-info{
-  position: absolute;
+  /* position: absolute; */
   top: -50px;
   right: calc(100% + 2px);
   display: grid;
@@ -187,6 +188,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    gap: 1rem;
     
     /* Positioning changes */
     left: 50%;
@@ -230,11 +232,17 @@
     height: 24px;
   }
   .colormaps {
-    width: 48vw;
-    max-width: 220px;
+    max-width: 80vw;
+    margin-bottom: 4px;
     gap: 4px;
     display: flex;
     flex-wrap: wrap;
+  }
+  .analysis-info {
+    max-width: 80vw;
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
   }
   .play-interface {
         bottom: calc(10% + 64px);
