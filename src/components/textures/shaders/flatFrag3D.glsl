@@ -1,3 +1,5 @@
+//This is for Flat Textures but with 3D textures to sample from i,e; animation
+
 uniform sampler3D data;
 uniform sampler2D cmap;
 

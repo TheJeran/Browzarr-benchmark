@@ -1,7 +1,7 @@
 import { OrbitControls } from '@react-three/drei';
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
-import { PointCloud, UVCube, DataCube, FlatMap, Sphere } from '@/components/plots';
+import { PointCloud, UVCube, DataCube, FlatMap, Sphere, CountryBorders } from '@/components/plots';
 import { Canvas, invalidate } from '@react-three/fiber';
 import { ArrayToTexture } from '@/components/textures';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
@@ -213,6 +213,7 @@ const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
       <Canvas id='main-canvas' camera={{ position: isFlat ? [0,0,5] : [-4.5, 3, 4.5], fov: 50 }}
         frameloop="demand"
       >
+        <CountryBorders/>
         {plotType == "volume" && show && <>
           <DataCube volTexture={texture}/>
           <UVCube ZarrDS={ZarrDS} />
@@ -230,6 +231,7 @@ const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
         <Canvas id='main-canvas' camera={{ position: [0,0,5], zoom: 1000 }}
         orthographic frameloop="demand"
         >
+          <CountryBorders/>
           <FlatMap texture={texture as THREE.DataTexture | THREE.Data3DTexture} infoSetters={infoSetters} />
           <Orbiter isFlat={true}/>
         </Canvas>

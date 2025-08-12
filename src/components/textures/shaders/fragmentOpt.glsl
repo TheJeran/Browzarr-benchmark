@@ -1,4 +1,5 @@
-// by Jeran Poehls
+// This is an optimized version of the original Volumetric shader
+
 precision highp float;
 precision highp sampler3D;
 

@@ -21,13 +21,13 @@ export class ZarrError extends Error {
 }
 
 export async function GetStore(storePath: string): Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>{
-	const setZarrFetch = useErrorStore.getState().setZarrFetch
-	const setCors = useErrorStore.getState().setCors
+	// const setZarrFetch = useErrorStore.getState().setZarrFetch
+	// const setCors = useErrorStore.getState().setCors
 	try {
 		await fetch(storePath, { method: 'HEAD', mode: 'cors' });
 		} catch (error) {
 		if (error instanceof TypeError) {
-			setCors(true)
+			// setCors(true)
 			throw new ZarrError(`CORS check failed for ${storePath}. The server may not allow cross-origin requests from this site.`, error);
 		}
 	}
@@ -39,7 +39,7 @@ export async function GetStore(storePath: string): Promise<zarr.Group<zarr.Fetch
         const gs = await d_store.then(store => zarr.open(store, {kind: 'group'}));
         return gs;
     } catch (error) {
-		setZarrFetch(true)
+		// setZarrFetch(true)
         throw new ZarrError(`Failed to initialize store at ${storePath}`, error);
 		
     }

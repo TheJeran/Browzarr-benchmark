@@ -11,8 +11,8 @@ import { MainPanel } from '@/components/ui';
 import { Metadata, Loading, Navbar, Error } from '@/components/ui';
 import { useGlobalStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow, shallow } from 'zustand/shallow';
-import useCSSVariable from '@/components/ui/useCSSVariable';
 import { GetTitleDescription } from '@/components/zarr/GetMetadata';
+
 
 export function LandingHome() {
 
@@ -72,6 +72,7 @@ export function LandingHome() {
   return (
     <>
     <MainPanel/> 
+
     <Error />
     {!plotOn && <Navbar />}
     <Loading showLoading={showLoading} />

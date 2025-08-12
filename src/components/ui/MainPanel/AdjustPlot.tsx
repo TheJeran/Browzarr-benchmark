@@ -201,6 +201,31 @@ const PointOptions = () =>{
   )
 }
 
+const GlobalOptions = () =>{
+  const {showBorders, borderColor, setShowBorders, setBorderColor} = usePlotStore(useShallow(state => ({
+    showBorders: state.showBorders,
+    borderColor: state.borderColor,
+    setShowBorders: state.setShowBorders,
+    setBorderColor: state.setBorderColor
+  })))
+
+  return (
+    <div className='grid gap-y-[5px] items-center w-50 text-center'>
+      <Button variant="destructive" className="w-[100%] h-[20px] cursor-[pointer]" onClick={() => setShowBorders(!showBorders)}>{showBorders ? "Hide Borders" : "Show Borders" }</Button>
+      {showBorders && <div>
+      <b>Border Color</b>
+      <input type="color"
+          className='w-[100%] cursor-pointer'
+              value={borderColor}
+          onChange={e => setBorderColor(e.target.value)}
+          />
+      </div>}
+      
+    </div>
+  )
+}
+
+
 const AdjustPlot = () => {
     const [isMobile, setIsMobile] = useState(false);
 
@@ -225,7 +250,7 @@ const AdjustPlot = () => {
     return () => window.removeEventListener("resize", checkWindowSize);
   }, []);
 
-  const enableCond = (plotOn && plotType != 'sphere' && plotType != 'flat')
+  const enableCond = (plotOn)
   return (
       <Popover>
         <PopoverTrigger
@@ -253,6 +278,7 @@ const AdjustPlot = () => {
             {plotType === 'volume' && <VolumeOptions />}
             {plotType === 'point-cloud' && <PointOptions />}
             {(plotType === 'volume' || plotType === 'point-cloud') && <DimSlicer />}
+            <GlobalOptions />
           </div>
         </PopoverContent>
       </Popover>
