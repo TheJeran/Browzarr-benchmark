@@ -154,7 +154,7 @@ const AnalysisOptions = () => {
                     {useTwo && (
                       <Select onValueChange={setVariable2}>
                         <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
-                          <SelectValue placeholder="Select..." />
+                          <SelectValue placeholder={variable2 == 'Default' ? "Select..." : variable2} />
                         </SelectTrigger>
                         <SelectContent>
                           {variables.map((variable, idx) => (
