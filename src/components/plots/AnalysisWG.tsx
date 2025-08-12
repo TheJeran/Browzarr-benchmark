@@ -10,13 +10,14 @@ import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 
 const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.SetStateAction<THREE.Data3DTexture | THREE.DataTexture | null>>, ZarrDS: ZarrDataset}) => {
     
-    const {dataArray, strides, dataShape, valueScales, setIsFlat, setDataArray, setValueScales} = useGlobalStore(useShallow(state=>({
+    const {dataArray, strides, dataShape, valueScales, setIsFlat, setDownloading, setShowLoading, setValueScales} = useGlobalStore(useShallow(state=>({
         dataArray : state.dataArray,
         strides: state.strides,
         dataShape: state.dataShape,
         valueScales: state.valueScales,
         setIsFlat: state.setIsFlat,
-        setDataArray: state.setDataArray,
+        setDownloading: state.setDownloading,
+        setShowLoading: state.setShowLoading,
         setValueScales: state.setValueScales
     })))
 
@@ -38,13 +39,17 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
 
     const zarrSlice = useZarrStore(state => state.slice)
     const variable2Array = useRef<ArrayBufferView>(new Float32Array(1))
-
-    useEffect(()=>{
+    useEffect(()=>{ 
+        if (dataArray.length <= 1){
+            return;
+        }
+        setShowLoading(true)
         if (!useTwo){
             if (operation != 'Convolution'){
                 const thisShape = dataShape.filter((e, idx) => idx != axis)
                 DataReduction(dataArray, {shape:dataShape, strides}, axis, operation).then(newArray=>{
                     if (!newArray){return;}
+
                     let minVal, maxVal;
                     if (operation == 'StDev'){
                         [minVal,maxVal] = ArrayMinMax(newArray )
@@ -72,7 +77,9 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
                     setTexture(newText)
                     setIsFlat(true)
                     setPlotType('flat')
-                }) 
+                }).then(e=>
+                    setShowLoading(false)
+                ) 
             }
             else{
                 Convolve(dataArray, {shape:dataShape, strides}, kernelOperation, {kernelDepth, kernelSize}).then(newArray=>{
@@ -108,12 +115,17 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
                     setIsFlat(false)
                     setPlotType('volume')
                 })
+                .then(e=>
+                    setShowLoading(false)
+                ) 
             }
             
         }
         else{
             async function MultiVariable(){
+                setDownloading(true)
                 variable2Array.current = await ZarrDS.GetArray(variable2, zarrSlice)
+                setDownloading(false)
                 if (operation == 'Correlation2D'){ //This will need to change when new operatiosn added
                     const thisShape = dataShape.filter((e, idx) => idx != axis)
                     //@ts-expect-error It won't be undefined here as correlate2D only outputs undefined if webGPU disabled. However, impossible to call if webGPU disabled
@@ -153,7 +165,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
                     setPlotType('volume')
                 }
             }
-            MultiVariable();
+            MultiVariable().then(e=>setShowLoading(false));
         }
     },[execute])
 

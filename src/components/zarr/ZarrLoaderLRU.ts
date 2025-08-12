@@ -67,9 +67,10 @@ export class ZarrDataset{
 
 	async GetArray(variable: string, slice: [number, number | null]){
 
-		const setProgress = useGlobalStore.getState().setProgress
-		const setStrides = useGlobalStore.getState().setStrides
-		const compress = useZarrStore.getState().compress
+		const setProgress = useGlobalStore.getState().setProgress;
+		const setStrides = useGlobalStore.getState().setStrides;
+		const setDownloading = useGlobalStore.getState().setDownloading;
+		const compress = useZarrStore.getState().compress;
 
 		//Check if cached
 		this.variable = variable;
@@ -87,6 +88,7 @@ export class ZarrDataset{
 			let shape;
 			this.chunkIDs = []
 			if (totalSize < 1e8){ //Check if total is less than 100MB
+				setDownloading(true)
 				chunk = await zarr.get(outVar)
 				shape = chunk.shape
 				setStrides(chunk.stride) //Need strides for the point cloud
@@ -96,8 +98,10 @@ export class ZarrDataset{
 					typedArray = new Float32Array(chunk.data)
 					this.cache.set(variable,chunk)
 				}
+				setDownloading(false)
 			}
 			else { 
+				setDownloading(true)
 				setProgress(0)
 				const startIdx = Math.floor(slice[0]/chunkShape[0])
 				const endIdx = slice[1] ? Math.ceil(slice[1]/chunkShape[0]) : Math.ceil(outVar.shape[0]/chunkShape[0])
@@ -134,6 +138,7 @@ export class ZarrDataset{
 						}
 					}
 				}
+				setDownloading(false)
 			}
 
 			return {

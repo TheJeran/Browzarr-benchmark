@@ -40,6 +40,7 @@ type StoreState = {
   plotOn: boolean;
   isFlat: boolean;
   progress: number,
+  downloading: boolean;
 
   setDataShape: (dataShape: number[]) => void;
   setShape: (shape: THREE.Vector3) => void;
@@ -65,7 +66,7 @@ type StoreState = {
   setPlotOn: (plotOn: boolean) => void;
   setIsFlat: (isFlat: boolean) => void;
   setProgress: (progress: number) => void;
-
+  setDownloading: (downloading: boolean) => void;
 };
 
 export const useGlobalStore = create<StoreState>((set, get) => ({
@@ -91,6 +92,8 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   plotOn: false,
   isFlat:false,
   progress: 0,
+  downloading: false,
+
 
   setDataShape: (dataShape) => set({ dataShape}),
   setShape: (shape) => set({ shape }),
@@ -134,7 +137,9 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   setVariables: (variables) => set({variables}),
   setPlotOn: (plotOn) => set({ plotOn }),
   setIsFlat: (isFlat) => set({ isFlat}),
-  setProgress: (progress) => set({ progress })
+  setProgress: (progress) => set({ progress }),
+  setDownloading: (downloading) => set({ downloading })
+
 }));
 
 type PlotState ={
@@ -331,20 +336,24 @@ type ZarrState = {
   slice: [number  , number | null],
   compress: boolean,
   currentStore: any;
+  reFetch: boolean;
 
   setSlice: (slice: [number , number | null]) => void;
   setCompress: (compress: boolean) => void;
   setCurrentStore: (currentStore: any) => void;
+  setReFetch: (reFetch: boolean) => void;
 }
 
 export const useZarrStore = create<ZarrState>((set) => ({
   slice: [0, null],
   compress: false,
   currentStore: GetStore(ESDC),
+  reFetch: false,
 
   setSlice: (slice) => set({ slice }),
   setCompress: (compress) => set({ compress }),
-  setCurrentStore: (currentStore) => set({ currentStore })
+  setCurrentStore: (currentStore) => set({ currentStore }),
+  setReFetch: (reFetch) => set({ reFetch })
 }))
 
 

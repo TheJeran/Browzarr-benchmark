@@ -64,14 +64,10 @@ const Orbiter = ({isFlat} : {isFlat  : boolean}) =>{
     </>
   );
 }
-
-interface PlotParameters{
-    ZarrDS: ZarrDataset;
-    setShowLoading: React.Dispatch<React.SetStateAction<boolean>>;
-}
+  
 
 
-const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
+const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
     const {
       setShape,
       setDataShape, 
@@ -81,7 +77,8 @@ const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
       setDimArrays, 
       setDimNames, 
       setDimUnits,
-      setPlotOn} = useGlobalStore(
+      setPlotOn,
+      setShowLoading} = useGlobalStore(
         useShallow(state => ({  //UseShallow for object returns
           setShape:state.setShape,
           setDataShape: state.setDataShape,
@@ -91,7 +88,9 @@ const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
           setDimArrays:state.setDimArrays, 
           setDimNames:state.setDimNames,
           setDimUnits:state.setDimUnits,
-          setPlotOn: state.setPlotOn}
+          setPlotOn: state.setPlotOn,
+          setShowLoading: state.setShowLoading  
+        }
         )))
     const {colormap, variable, isFlat, metadata, valueScales, setIsFlat, setDataArray} = useGlobalStore(useShallow(state=>({
       colormap: state.colormap, 
@@ -107,7 +106,10 @@ const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
       plotType: state.plotType,
     })))
 
-    const slice = useZarrStore(state=> state.slice)
+    const {slice, reFetch} = useZarrStore(useShallow(state=> ({
+      slice: state.slice,
+      reFetch: state.reFetch
+    })))
 
     const coords = useRef<number[]>([0,0])
     const val = useRef<number>(0)
@@ -191,7 +193,7 @@ const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
       else{
         setMetadata(null)
       }
-  }, [variable])
+  }, [variable, reFetch])
 
   const infoSetters = useMemo(()=>({
     setLoc,

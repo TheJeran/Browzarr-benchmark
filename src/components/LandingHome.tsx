@@ -54,17 +54,9 @@ export function LandingHome() {
       plotOn: state.plotOn
     }))
   );
-  const [showLoading, setShowLoading] = useState<boolean>(false);
-  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0);
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   useEffect(()=>{
     if (variable === "Default"){
-
       setPlotOn(false)
     }
   },[variable])
@@ -75,9 +67,9 @@ export function LandingHome() {
 
     <Error />
     {!plotOn && <Navbar />}
-    <Loading showLoading={showLoading} />
+    <Loading />
     {variable === "Default" && <VariableScroller />}
-    {variable != "Default" && <Plot ZarrDS={ZarrDS} setShowLoading={setShowLoading} />}
+    {variable != "Default" && <Plot ZarrDS={ZarrDS} />}
     {metadata && <Metadata data={metadata} /> }
     {Object.keys(timeSeries).length >= 1 && <PlotArea />}
     </>

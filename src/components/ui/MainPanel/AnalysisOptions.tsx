@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useAnalysisStore, useGlobalStore } from '@/utils/GlobalStates';
+import { useAnalysisStore, useGlobalStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import '../css/MainPanel.css';
 import { PiMathOperationsBold } from "react-icons/pi";
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Button } from '../button';
+import { CiUndo } from "react-icons/ci";
 import {
   Select,
   SelectContent,
@@ -41,7 +42,7 @@ const webGPUError = (
 );
 
 const AnalysisOptions = () => {
-  const plotOn = useGlobalStore(state => state.plotOn);
+  const {plotOn, variable} = useGlobalStore(useShallow(state => ({plotOn: state.plotOn, variable: state.variable})));
   
   const {
     execute,
@@ -52,6 +53,7 @@ const AnalysisOptions = () => {
     kernelOperation,
     axis,
     variable2,
+    analysisMode,
     setExecute,
     setAxis,
     setOperation,
@@ -70,6 +72,7 @@ const AnalysisOptions = () => {
     kernelOperation: state.kernelOperation,
     axis: state.axis,
     variable2: state.variable2,
+    analysisMode: state.analysisMode,
     setExecute: state.setExecute,
     setAxis: state.setAxis,
     setOperation: state.setOperation,
@@ -86,6 +89,10 @@ const AnalysisOptions = () => {
     dimNames: state.dimNames
   })));
   
+  const {reFetch, setReFetch} = useZarrStore(useShallow(state => ({
+    reFetch: state.reFetch,
+    setReFetch: state.setReFetch
+  })))
   const [showError, setShowError] = useState<boolean>(false);
   useEffect(() => {
     const checkWebGPU = async () => {
@@ -95,7 +102,7 @@ const AnalysisOptions = () => {
     }
 
     try {
-        const adapter = await navigator.gpu.requestAdapter();
+        const _adapter = await navigator.gpu.requestAdapter();
         setShowError(false);
     } catch {
         setShowError(true);
@@ -130,7 +137,7 @@ const AnalysisOptions = () => {
       
       <PopoverContent
         side={popoverSide}
-        className="analysis-info"
+        className="analysis-info select-none"
         >
         {showError ? (
           webGPUError
@@ -149,24 +156,55 @@ const AnalysisOptions = () => {
             <table style={{ textAlign: 'right' }}>
               <tbody>
                 <tr>
-                  <th>{useTwo && 'Second Variable'}</th>
+                  
+                  <th>Current Variable</th>
+                  <td className="text-center w-[100%] align-middle justify-center content-center">
+                    <button 
+                      className={`rounded-[6px] self-center w-[80%] mx-auto relative border border-gray-150 py-[5px] ${analysisMode ?'hover:scale-[0.95]' : ''} transition-[0.2s]`}
+                      style={{
+                        cursor: analysisMode ? 'pointer' : '',
+                        background: analysisMode ? '#b6d1ddff' : '#f8f8f8',
+                      }}
+                      disabled={!analysisMode}
+                      onClick={e=>{setReFetch(!reFetch);setAnalysisMode(false)}}
+                    >
+                      {analysisMode && <CiUndo 
+                        size={20}
+                        style={{
+                          position:'absolute',
+                          left:'0%',
+                          top:'10%'
+                        }}
+                      />}
+                      {variable}
+                    </button>
+
+                  </td>
+                </tr>
+                {useTwo && <>
+                <tr>
+                  <th>Second Variable</th>
                   <td>
-                    {useTwo && (
                       <Select onValueChange={setVariable2}>
                         <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
                           <SelectValue placeholder={variable2 == 'Default' ? "Select..." : variable2} />
                         </SelectTrigger>
                         <SelectContent>
-                          {variables.map((variable, idx) => (
-                            <SelectItem key={idx} value={variable}>
-                              {variable}
-                            </SelectItem>
-                          ))}
+                          {variables.map((iVar, idx) => { //Dont allow correlation of two variables
+                            if (iVar == variable){
+                              return null;
+                            }
+                            return (
+                            <SelectItem key={idx} value={iVar}>
+                              {iVar}
+                            </SelectItem>)
+                        })}
                         </SelectContent>
                       </Select>
-                    )}
                   </td>
                 </tr>
+                </>}
+                
 
                 <tr>
                   <th>Operation</th>
