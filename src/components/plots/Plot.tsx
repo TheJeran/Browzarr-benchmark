@@ -231,6 +231,7 @@ const Plot = ({ZarrDS,setShowLoading}:PlotParameters) => {
         <Canvas id='main-canvas' camera={{ position: [0,0,5], zoom: 1000 }}
         orthographic frameloop="demand"
         >
+          <CountryBorders/>
           <FlatMap texture={texture as THREE.DataTexture | THREE.Data3DTexture} infoSetters={infoSetters} />
           <Orbiter isFlat={true}/>
         </Canvas>

@@ -37,7 +37,7 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
           cScale: {value: cScale},
           threshold: {value: new THREE.Vector2(valueRange[0],valueRange[1])},
           scale: {value: shape},
-          flatBounds:{value: new THREE.Vector4(xRange[0],xRange[1],zRange[0],zRange[1])},
+          flatBounds:{value: new THREE.Vector4(-xRange[1],-xRange[0],zRange[0],zRange[1])},
           vertBounds:{value: new THREE.Vector2(yRange[0]/shape.x,yRange[1]/shape.x)},
           steps: { value: quality },
           animateProg: {value: animProg},

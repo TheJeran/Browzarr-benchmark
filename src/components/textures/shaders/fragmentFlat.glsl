@@ -1,4 +1,4 @@
- // by Jeran Poehls
+ // Basic Shader for colors on a plane used in FlatMap with 2D data
 precision highp float;
 precision highp sampler3D;
 

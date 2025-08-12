@@ -168,6 +168,8 @@ type PlotState ={
   transparency: number;
   nanTransparency: number;
   nanColor: string;
+  showBorders:boolean;
+  borderColor: string;
 
   setQuality: (quality: number) => void;
   setTimeScale: (timeScale : number) =>void;
@@ -199,6 +201,8 @@ type PlotState ={
   setTransparency: (transparency: number) => void;
   setNanTransparency: (nanTraparency: number) => void;
   setNanColor: (nanColor: string) => void;
+  setShowBorders: (showBorders: boolean) => void;
+  setBorderColor: (borderColor: string) => void;
 }
 
 export const usePlotStore = create<PlotState>((set) => ({
@@ -233,6 +237,8 @@ export const usePlotStore = create<PlotState>((set) => ({
   transparency: 0,
   nanTransparency: 1,
   nanColor: "#000000",
+  showBorders: false,
+  borderColor: "#000000",
 
   setQuality: (quality) => set({ quality }),
   setTimeScale: (timeScale) => set({ timeScale }),
@@ -263,7 +269,9 @@ export const usePlotStore = create<PlotState>((set) => ({
   setUseCustomPointColor: (useCustomPointColor) => set({ useCustomPointColor}),
   setTransparency: (transparency) => set({ transparency}),
   setNanTransparency: (nanTransparency) => set({ nanTransparency }),
-  setNanColor: (nanColor) => set({ nanColor })
+  setNanColor: (nanColor) => set({ nanColor }),
+  setShowBorders: (showBorders) => set({ showBorders }),
+  setBorderColor: (borderColor) => set({ borderColor }),
 }))
 
 
