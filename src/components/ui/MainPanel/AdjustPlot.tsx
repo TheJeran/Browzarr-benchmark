@@ -244,7 +244,7 @@ const AdjustPlot = () => {
           side={isMobile ? 'top' : 'left'}
           className={`${
             isMobile 
-              ? 'overflow-y-scroll overflow-x-hidden w-[calc(100vw-24px)]' 
+              ? 'overflow-y-scroll overflow-x-hidden w-[calc(100vw-24px)] mb-1' 
               : 'w-[242px]'
           }`}
           style={{ height: 'fit-content' }}
