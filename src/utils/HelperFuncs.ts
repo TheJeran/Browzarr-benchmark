@@ -44,7 +44,7 @@ export function parseTimeUnit(units: string | undefined): number {
     return unitToMilliseconds[effectiveUnit];
 }
   
-export function parseLoc(input:number, units: string | undefined) {
+export function parseLoc(input:number, units: string | undefined, verbose: boolean = false) {
     if (!units){
         return input
     }
@@ -52,6 +52,16 @@ export function parseLoc(input:number, units: string | undefined) {
       try{
         const scale = parseTimeUnit(units)
         const timeStamp = Number(input) * scale;
+        const date = new Date(timeStamp);
+        if (verbose) {
+          return date.toDateString(); // e.g., "Mon Aug 18 2025"
+        } else {
+          const day = date.getDate();
+          const month = date.getMonth() + 1; // Months are 0-indexed
+          const year = date.getFullYear();
+          return `${day}-${month}-${year}`; // e.g., "18-8-2025"
+        }
+
         return new Date(timeStamp).toDateString()
       }
       catch{
