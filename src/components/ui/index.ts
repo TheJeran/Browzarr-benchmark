@@ -24,7 +24,7 @@ import Dataset from "./MainPanel/Dataset";
 import PlayButton from "./MainPanel/PlayButton";
 import Error from "./Error";
 import AnalysisOptions from "./MainPanel/AnalysisOptions";
-
+import KernelVisualizer from "./KernelVisualizer";
 export {
   Navbar,
   Footer,
@@ -36,7 +36,6 @@ export {
   ResizeBar,
   YScaler,
   XScaler,
-  // AnalysisWindow,
   ThemeSwitch,
   Loading,
   useCSSVariable,
@@ -52,5 +51,6 @@ export {
   Dataset,
   PlayButton,
   Error,
-  AnalysisOptions
+  AnalysisOptions,
+  KernelVisualizer
 };
