@@ -6,8 +6,10 @@ import { useShallow } from 'zustand/shallow';
 import '../css/MainPanel.css';
 import { PiMathOperationsBold } from "react-icons/pi";
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Input } from '../input';
 import { Button } from '../button';
 import { CiUndo } from "react-icons/ci";
+import {KernelVisualizer} from "@/components/ui";
 import {
   Select,
   SelectContent,
@@ -122,6 +124,16 @@ const AnalysisOptions = () => {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
+    function HandleKernelNums(e: string){
+      const newVal = parseInt(e);
+      if (newVal % 2 == 0){
+        return Math.max(1, newVal - 1)
+      }
+      else{
+        return newVal
+      }
+    }
+
   return (
     <Popover>
       <PopoverTrigger disabled={!plotOn}>
@@ -205,7 +217,6 @@ const AnalysisOptions = () => {
                 </tr>
                 </>}
                 
-
                 <tr>
                   <th>Operation</th>
                   {!useTwo && (
@@ -306,48 +317,33 @@ const AnalysisOptions = () => {
                     )}
 
                     <tr>
-                      <th>Kernel Size</th>
+                      <th style={{padding:'0px 12px'}}>Kernel Size</th>
                       <td>
-                        <table>
+                        <table style={{ width: '100%', tableLayout: 'fixed' }}>
                           <tbody>
                             <tr>
-                              <td style={{ textAlign: 'center', width: '50px' }}>Size</td>
-                              <td style={{ textAlign: 'center', width: '50px' }}>Depth</td>
+                              <td style={{ textAlign: 'center' }}>Size</td>
+                              <td style={{ textAlign: 'center' }}>Depth</td>
                             </tr>
                             <tr>
-                              <td style={{ textAlign: 'center' }}>
-                                <Select onValueChange={e => setKernelSize(parseInt(e))}>
-                                  <SelectTrigger style={{ width: '69px', marginLeft: '10px' }}>
-                                    <SelectValue placeholder={kernelSize} />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {[1, 3, 5, 7].map((size, idx) => (
-                                      <SelectItem key={idx} value={String(size)}>
-                                        {size}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                              <td style={{ textAlign: 'center', padding:'0px 12px'}}>
+                                <Input type='number' min='1' step='2' value={String(kernelSize)} onChange={e=>setKernelSize(HandleKernelNums(e.target.value))}/>
                               </td>
-                              <td style={{ textAlign: 'center' }}>
-                                <Select onValueChange={e => setKernelDepth(parseInt(e))}>
-                                  <SelectTrigger style={{ width: '69px', marginLeft: '10px' }}>
-                                    <SelectValue placeholder={kernelDepth} />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {[1, 3, 5, 7].map((depth, idx) => (
-                                      <SelectItem key={idx} value={String(depth)}>
-                                        {depth}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                              <td style={{ textAlign: 'center', padding:'0px 12px' }}>
+                                <Input type='number' min='1' step='2' value={String(kernelDepth)} onChange={e=>setKernelDepth(HandleKernelNums(e.target.value))}/>
                               </td>
                             </tr>
                           </tbody>
                         </table>
                       </td>
                     </tr>
+                    <tr >
+                      <td/>
+                      <th >
+                            <KernelVisualizer size={Math.min(kernelSize,15)} depth={Math.min(kernelDepth, 15)} />
+                      </th>
+                    </tr>
+                    
                   </>
                 )}
               </tbody>
