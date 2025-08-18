@@ -65,7 +65,7 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
           (((xRange[0] + 1)/2) <= (idx*dimScale)/dimResolution &&
            ((xRange[1] + 1)/2) >= (idx*dimScale)/dimResolution)
            &&          
-          <group position={[-1 + idx*dimScale/(dimResolution/2), 0, 0]}>
+          <group key={`xGroup_${idx}`} position={[-1 + idx*dimScale/(dimResolution/2), 0, 0]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, flipX ? Math.PI : 0, 0]} />
             <Text 
               key={`textX_${idx}`}
@@ -97,7 +97,7 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
           (((zRange[0] + 1)/2) <= (idx*dimScale)/dimResolution  &&
           ((zRange[1] + 1)/2) >= (idx*dimScale)/dimResolution )
           && 
-          <group position={[0, 0, -1 + idx*dimScale/(dimResolution/2)]}>
+          <group key={`zGroup_${idx}`} position={[0, 0, -1 + idx*dimScale/(dimResolution/2)]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, flipY ? Math.PI/2 : -Math.PI/2 , 0]} />
             <Text 
               key={`textY_${idx}`}
@@ -131,7 +131,7 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
            (((yRange[0] + 1)/2) <= (idx*dimScale)/dimResolution &&
            ((yRange[1] + 1)/2) >= (idx*dimScale)/dimResolution)
            &&       
-          <group position={[0, -shape.y/2 + idx*dimScale/(dimResolution/2)*shapeRatio, 0]}>
+          <group key={`yGroup_${idx}`} position={[0, -shape.y/2 + idx*dimScale/(dimResolution/2)*shapeRatio, 0]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, flipY ? -Math.PI/2 :Math.PI/2 , 0]} />
             <Text 
               key={`text_${idx}`}
