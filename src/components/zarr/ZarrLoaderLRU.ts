@@ -71,32 +71,39 @@ export class ZarrDataset{
 		const setStrides = useGlobalStore.getState().setStrides;
 		const setDownloading = useGlobalStore.getState().setDownloading;
 		const compress = useZarrStore.getState().compress;
-
+		const is4D = useGlobalStore.getState().is4D;
+		const idx4D = useGlobalStore.getState().idx4D;
 		//Check if cached
 		this.variable = variable;
-		if (this.cache.has(variable)){
+		if (this.cache.has(is4D ? `${idx4D}_${variable}` : variable)){
 			return this.cache.get(variable)
 		}
 
 		const group = await this.groupStore;
 		const outVar = await zarr.open(group.resolve(variable), {kind:"array"})
-		const [totalSize, chunkSize, chunkShape] = GetSize(outVar);
+		let [totalSize, _chunkSize, chunkShape] = GetSize(outVar);
+		if (is4D){
+			totalSize /= chunkShape[0];
+			chunkShape = chunkShape.slice(1);
+		}
+		const hasTimeChunks = is4D ? outVar.shape[1]/chunkShape[0] > 1 : outVar.shape[0]/chunkShape[0] > 1
+		console.log(hasTimeChunks)
 		// Type check using zarr.Array.is
 		if (outVar.is("number") || outVar.is("bigint")) {
 			let chunk;
 			let typedArray;
 			let shape;
 			this.chunkIDs = []
-			if (totalSize < 1e8){ //Check if total is less than 100MB
+			if (totalSize < 1e8 || !hasTimeChunks){ //Check if total is less than 100MB or no chunks along time
 				setDownloading(true)
-				chunk = await zarr.get(outVar)
-				shape = chunk.shape
+				chunk = await zarr.get(outVar , is4D ? [idx4D, null , null, null] : [null, null, null]);
+				shape = is4D ? outVar.shape.slice(1) : outVar.shape;
 				setStrides(chunk.stride) //Need strides for the point cloud
 				if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
 							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
 				} else {
 					typedArray = new Float32Array(chunk.data)
-					this.cache.set(variable,chunk)
+					this.cache.set(is4D ? `${idx4D}_${variable}` : variable, chunk)
 				}
 				setDownloading(false)
 			}
@@ -104,16 +111,18 @@ export class ZarrDataset{
 				setDownloading(true)
 				setProgress(0)
 				const startIdx = Math.floor(slice[0]/chunkShape[0])
-				const endIdx = slice[1] ? Math.ceil(slice[1]/chunkShape[0]) : Math.ceil(outVar.shape[0]/chunkShape[0])
+				const endIdx = slice[1] ? Math.ceil(slice[1]/chunkShape[0]) : is4D ? Math.ceil(outVar.shape[1]/chunkShape[0]) : Math.ceil(outVar.shape[0]/chunkShape[0]) //If Slice[1] is null, use the end of the array
 				const chunkCount = endIdx-startIdx
-				const timeSize = outVar.shape[1]*outVar.shape[2]
-				const arraySize = (endIdx-startIdx+1)*chunkShape[0]*timeSize
-				shape = [(endIdx-startIdx)*chunkShape[0],outVar.shape[1],outVar.shape[2]]
+				const timeSize = is4D ? outVar.shape[2]*outVar.shape[3] : outVar.shape[1]*outVar.shape[2]
+				const arraySize = (endIdx-startIdx)*chunkShape[0]*timeSize
+				shape = is4D ? [(endIdx-startIdx)*chunkShape[0], outVar.shape[2],outVar.shape[3]]
+				: [(endIdx-startIdx)*chunkShape[0], outVar.shape[1],outVar.shape[2]]
+
 				typedArray = compress ? new Uint8Array(arraySize) : new Float32Array(arraySize);
 				let accum = 0;
 				let iter = 1;
 				for (let i= startIdx ; i < endIdx ; i++){
-					const cacheName = `${variable}_chunk_${i}`
+					const cacheName = is4D ? `${idx4D}_${variable}_chunk_${i}` : `${variable}_chunk_${i}`
 					this.chunkIDs.push(i) //identify which chunks to use when recombining cache for timeseries
 					if (this.cache.has(cacheName)){
 						//Add a check and throw error here if user set compress but the local files are not compressed
@@ -125,7 +134,8 @@ export class ZarrDataset{
 						iter ++;
 					}
 					else{
-						chunk = await zarr.get(outVar, [zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null])
+						
+						chunk = await zarr.get(outVar, is4D ? [idx4D , zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null] : [zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null])
 						if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
 							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
 						} else {

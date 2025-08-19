@@ -25,7 +25,6 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
     timeScale: state.timeScale,
     animProg: state.animProg
   })))
-
   const dimLengths = [dimArrays[0].length, dimArrays[1].length, dimArrays[2].length]
 
   const {shape, dataShape} = useGlobalStore(useShallow(state => ({
@@ -38,6 +37,7 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
   const depthRatio = useMemo(()=>dataShape[0]/dataShape[1]*timeScale/2,[dataShape, timeScale]);
 
   const shapeRatio = useMemo(()=>shape.y/shape.x, [shape])
+
   //@ts-expect-error The THREE people messed up their types in this component. It does take a string
   const lineMat = useMemo(()=>new LineMaterial({color: 'orange', linewidth: 5}),[])
   const dimResolution = 7;
