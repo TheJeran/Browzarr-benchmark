@@ -17,12 +17,13 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
     dimUnits: state.dimUnits
   })))
 
-  const {xRange, yRange, zRange, plotType, timeScale} = usePlotStore(useShallow(state => ({
+  const {xRange, yRange, zRange, plotType, timeScale, animProg} = usePlotStore(useShallow(state => ({
     xRange: state.xRange,
     yRange: state.yRange,
     zRange: state.zRange,
     plotType: state.plotType,
-    timeScale: state.timeScale
+    timeScale: state.timeScale,
+    animProg: state.animProg
   })))
 
   const dimLengths = [dimArrays[0].length, dimArrays[1].length, dimArrays[2].length]
@@ -32,11 +33,11 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
     dataShape: state.dataShape
   })))
 
-  const isPC = plotType == 'point-cloud'
+  const isPC = useMemo(()=>plotType == 'point-cloud',[plotType])
 
   const depthRatio = useMemo(()=>dataShape[0]/dataShape[1]*timeScale/2,[dataShape, timeScale]);
 
-  const shapeRatio = shape.y/shape.x
+  const shapeRatio = useMemo(()=>shape.y/shape.x, [shape])
   //@ts-expect-error The THREE people messed up their types in this component. It does take a string
   const lineMat = useMemo(()=>new LineMaterial({color: 'orange', linewidth: 5}),[])
   const dimResolution = 7;
@@ -47,11 +48,11 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
 
   const yLine = useMemo(() =>{
     const geom = new LineSegmentsGeometry().setPositions([0, yRange[0]*shapeRatio, 0, 0, yRange[1]*shapeRatio, 0]);
-    return new LineSegments2(geom, lineMat)},[yRange])
+    return new LineSegments2(geom, lineMat)},[yRange, shapeRatio])
 
   const zLine = useMemo(()=> {
     const geom = new LineSegmentsGeometry().setPositions([0, 0, isPC ? zRange[0]*depthRatio : zRange[0], 0, 0, isPC ? zRange[1]*depthRatio : zRange[1]]);
-    return new LineSegments2(geom, lineMat)},[zRange, depthRatio])
+    return new LineSegments2(geom, lineMat)},[zRange, depthRatio, isPC])
 
   const tickLine = useMemo(()=> {
     const geom = new LineSegmentsGeometry().setPositions([0, 0, 0, 0, 0, .05]);
@@ -115,7 +116,7 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
               material-depthTest={false}
               rotation={[-Math.PI/2, 0, flipY ? Math.PI/2 : -Math.PI/2]}
               position={[flipY ? 0.05 :-0.05, 0, 0]}
-            >{parseLoc(dimArrays[0][Math.floor((dimLengths[0]-1)*idx*valDelta)],dimUnits[0])}</Text>
+            >{parseLoc(dimArrays[0][(Math.floor((dimLengths[0]-1)*idx*valDelta)+Math.floor(dimLengths[0]*animProg))%dimLengths[0]],dimUnits[0])}</Text>
           </group>
         ))}
         <Text 
