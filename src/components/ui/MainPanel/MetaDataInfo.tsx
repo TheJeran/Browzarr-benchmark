@@ -69,7 +69,8 @@ const MetaDataInfo = ({ meta, setShowMeta }: { meta: any, setShowMeta: React.Dis
   })
 
   useEffect(()=>{
-    setSlice([0,null])
+    setSlice([0,null]);
+    setIdx4D(null)
   },[meta])
 
   return (
@@ -131,6 +132,7 @@ const MetaDataInfo = ({ meta, setShowMeta }: { meta: any, setShowMeta: React.Dis
       <Button
         variant="destructive"
         className="cursor-pointer hover:scale-[1.05]"
+        disabled={(is4D && idx4D == null)}
         onClick={() => {
           if (variable == meta.name){
             setReFetch(!reFetch)
