@@ -43,6 +43,11 @@ export function parseTimeUnit(units: string | undefined): number {
     }
     return unitToMilliseconds[effectiveUnit];
 }
+
+const months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+];
   
 export function parseLoc(input:number, units: string | undefined, verbose: boolean = false) {
     if (!units){
@@ -54,15 +59,13 @@ export function parseLoc(input:number, units: string | undefined, verbose: boole
         const timeStamp = Number(input) * scale;
         const date = new Date(timeStamp);
         if (verbose) {
-          return date.toDateString(); // e.g., "Mon Aug 18 2025"
+          return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`; // e.g., "18 Aug 2025"
         } else {
           const day = date.getDate();
           const month = date.getMonth() + 1; // Months are 0-indexed
           const year = date.getFullYear();
-          return `${day}-${month}-${year}`; // e.g., "18-8-2025"
+          return `${String(day).padStart(2, '0')}-${String(month).padStart(2, '0')}-${year}`; // e.g., "18-8-2025"
         }
-
-        return new Date(timeStamp).toDateString()
       }
       catch{
         return input;

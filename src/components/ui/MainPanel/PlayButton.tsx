@@ -6,15 +6,16 @@ import '../css/MainPanel.css'
 import { PiPlayPauseFill } from "react-icons/pi";
 import { FaPlay, FaPause } from "react-icons/fa6";
 import { parseLoc } from '@/utils/HelperFuncs';
-import { RxEyeOpen, RxEyeClosed } from "react-icons/rx";
 
-const PlayInterFace = () =>{
+
+const frameRates = [1, 2, 4, 6, 8, 12, 16, 24, 36, 48, 54, 60, 80, 120]
+
+const PlayInterFace = ({visible}:{visible : boolean}) =>{
     
-    const {animate, animProg, setAnimate, setResetAnim, setAnimProg} = usePlotStore(useShallow(state => ({
+    const {animate, animProg, setAnimate, setAnimProg} = usePlotStore(useShallow(state => ({
         animate: state.animate,
         animProg: state.animProg,
         setAnimate: state.setAnimate,
-        setResetAnim: state.setResetAnim,
         setAnimProg: state.setAnimProg
     })))
 
@@ -28,17 +29,18 @@ const PlayInterFace = () =>{
     
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const previousVal = useRef<number>(0)
-    const [animSpeed, setAnimSpeed] = useState<number>(5)
-    const previousSpeed = useRef<number>(5)
+    const [fps, setFPS] = useState<number>(5)
+    const previousFPS = useRef<number>(5)
+
 
     useEffect(() => {
         if (animate) {
-            if (previousSpeed.current != animSpeed && intervalRef.current){
+            if (previousFPS.current != fps && intervalRef.current){
                 clearInterval(intervalRef.current);
                 intervalRef.current = null;
             }
-        previousSpeed.current = animSpeed
-        const dt = animSpeed*100/timeLength;
+        previousFPS.current = fps
+        const dt = 1000/frameRates[fps];
         previousVal.current = Math.round(animProg*timeLength)
         intervalRef.current = setInterval(() => {
             previousVal.current += 1;
@@ -56,14 +58,14 @@ const PlayInterFace = () =>{
              }
         }
         
-    }, [animate, animSpeed]);
+    }, [animate, fps]);
 
     return (
-        <div>
+        <div style={{display: visible ? '' : 'none'}}>
             <div className='play-interface'>
-                {parseLoc(dimArrays[0][Math.min(Math.round(animProg*timeLength),timeLength-1)], dimUnits[0])}
+                {parseLoc(dimArrays[0][Math.min(Math.round(animProg*timeLength),timeLength-1)], dimUnits[0], true)}
                 <div>
-                    {parseLoc(dimArrays[0][0], dimUnits[0])}
+                    {parseLoc(dimArrays[0][0], dimUnits[0], true)}
                     <input type="range" 
                         className='w-[300px]'
                         value={animProg*timeLength}
@@ -72,15 +74,20 @@ const PlayInterFace = () =>{
                         step={1}
                         onChange={e=>setAnimProg(parseInt(e.target.value)/timeLength)}
                     />
-                    {parseLoc(dimArrays[0][timeLength-1], dimUnits[0])}
+                    {parseLoc(dimArrays[0][timeLength-1], dimUnits[0], true)}
                 </div>
                 <div className='flex items-center justify-between w-100'>
-                    <div className='cursor-pointer hover:scale-[115%]' onClick={e=>setAnimSpeed(x=>x*1.25)}> <b>Slower</b></div>
+                    <div 
+                        style={{visibility: fps > 0 ? 'visible' : 'hidden'}}
+                        className='cursor-pointer hover:scale-[115%]' 
+                        onClick={e=>setFPS(x=>Math.max(0, x-1))}> <b>Slower</b></div>
                 {animate ? <FaPause className='cursor-pointer hover:scale-[115%]' onClick={e=>setAnimate(false)}/> : <FaPlay className='cursor-pointer hover:scale-[115%]' onClick={e=>setAnimate(true)}/>}
-                    <div className='cursor-pointer hover:scale-[115%]' onClick={e=>setAnimSpeed(x=>x*0.8)}><b>Faster</b></div>
+                     <div className='cursor-pointer hover:scale-[115%]' 
+                        style={{visibility: fps < frameRates.length-1 ? 'visible' : 'hidden'}}
+                        onClick={e=>setFPS(x=>Math.min(frameRates.length-1, x+1))}><b>Faster</b></div>
                 </div>
                 <div style={{textAlign:'right'}}>
-                    <b>{Math.round(10/(animSpeed/timeLength))}</b> FPS
+                    <b>{frameRates[fps]}</b> FPS
                 </div>
             </div>
         </div>
@@ -102,7 +109,7 @@ const PlayButton = () => {
         onClick={e=>{if (cond){setShowOptions(x=>!x)}}}
         style={{transform: enableCond ? '' : 'scale(1)',  cursor: enableCond ? 'pointer' : 'auto'}}
     />
-      {showOptions && <PlayInterFace />}
+      <PlayInterFace visible={showOptions}/>
     </div>
   )
 }
