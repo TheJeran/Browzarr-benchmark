@@ -198,7 +198,7 @@ const CountryBorders = () => {
     },[])
 
     return(
-        <group visible={showBorders} position={spherize ? [0,0,0] : [0, 0, swapSides ? zRange[0] : zRange[1]]}>
+        <group visible={showBorders && plotType != 'point-cloud'} position={spherize ? [0,0,0] : [0, 0, swapSides ? zRange[0] : zRange[1]]}>
         {coastLines && <Borders features={coastLines} />}
         {borders && <Borders features={borders} />}
         </group>

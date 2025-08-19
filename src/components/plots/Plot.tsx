@@ -18,8 +18,14 @@ const Orbiter = ({isFlat} : {isFlat  : boolean}) =>{
       resetCamera: state.resetCamera
     })))
   const orbitRef = useRef<OrbitControlsImpl | null>(null)
+  const hasMounted = useRef(false);
+
   // Reset Camera Position and Target
   useEffect(()=>{
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return; // skip reset when changing between flat or not flat cameras
+    }
     if (orbitRef.current){
       const controls = orbitRef.current
       let frameId: number;
@@ -216,16 +222,21 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
         frameloop="demand"
       >
         <CountryBorders/>
-        {plotType == "volume" && show && <>
-          <DataCube volTexture={texture}/>
-          <UVCube ZarrDS={ZarrDS} />
-          <AxisLines />
-        </>}
-        {plotType == "point-cloud" && show &&<>
-          <PointCloud textures={{texture,colormap}} ZarrDS={ZarrDS}/>
-
-        </> }
-        {plotType == "sphere" && show && <Sphere texture={texture} ZarrDS={ZarrDS} /> }
+        <AxisLines />
+        {plotType == "volume" && show && 
+          <>
+            <DataCube volTexture={texture}/>
+            <UVCube ZarrDS={ZarrDS} />
+          </>
+        }
+        {plotType == "point-cloud" && show &&
+          <>
+            <PointCloud textures={{texture,colormap}} ZarrDS={ZarrDS}/>
+          </> 
+        }
+        {plotType == "sphere" && show && 
+          <Sphere texture={texture} ZarrDS={ZarrDS} /> 
+        }
         <Orbiter isFlat={false} />
       </Canvas>
       </>}
