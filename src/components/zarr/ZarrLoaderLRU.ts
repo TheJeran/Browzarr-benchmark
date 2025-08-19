@@ -83,11 +83,11 @@ export class ZarrDataset{
 		const outVar = await zarr.open(group.resolve(variable), {kind:"array"})
 		let [totalSize, _chunkSize, chunkShape] = GetSize(outVar);
 		if (is4D){
-			totalSize /= chunkShape[0];
+			totalSize /= outVar.shape[0];
 			chunkShape = chunkShape.slice(1);
+			_chunkSize /=  outVar.shape[0] //Don't need to use this but Lint is being a whiner
 		}
 		const hasTimeChunks = is4D ? outVar.shape[1]/chunkShape[0] > 1 : outVar.shape[0]/chunkShape[0] > 1
-		console.log(hasTimeChunks)
 		// Type check using zarr.Array.is
 		if (outVar.is("number") || outVar.is("bigint")) {
 			let chunk;
