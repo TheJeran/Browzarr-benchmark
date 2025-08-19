@@ -17,17 +17,25 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
     dimUnits: state.dimUnits
   })))
 
-  const {xRange, yRange, zRange} = usePlotStore(useShallow(state => ({
+  const {xRange, yRange, zRange, plotType, timeScale} = usePlotStore(useShallow(state => ({
     xRange: state.xRange,
     yRange: state.yRange,
-    zRange: state.zRange
+    zRange: state.zRange,
+    plotType: state.plotType,
+    timeScale: state.timeScale
   })))
 
   const dimLengths = [dimArrays[0].length, dimArrays[1].length, dimArrays[2].length]
 
-  const {shape} = useGlobalStore(useShallow(state => ({
-    shape: state.shape
+  const {shape, dataShape} = useGlobalStore(useShallow(state => ({
+    shape: state.shape,
+    dataShape: state.dataShape
   })))
+
+  const isPC = plotType == 'point-cloud'
+
+  const depthRatio = useMemo(()=>dataShape[0]/dataShape[1]*timeScale/2,[dataShape, timeScale]);
+
   const shapeRatio = shape.y/shape.x
   //@ts-expect-error The THREE people messed up their types in this component. It does take a string
   const lineMat = useMemo(()=>new LineMaterial({color: 'orange', linewidth: 5}),[])
@@ -42,8 +50,8 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
     return new LineSegments2(geom, lineMat)},[yRange])
 
   const zLine = useMemo(()=> {
-    const geom = new LineSegmentsGeometry().setPositions([0, 0, zRange[0], 0, 0, zRange[1]]);
-    return new LineSegments2(geom, lineMat)},[zRange])
+    const geom = new LineSegmentsGeometry().setPositions([0, 0, isPC ? zRange[0]*depthRatio : zRange[0], 0, 0, isPC ? zRange[1]*depthRatio : zRange[1]]);
+    return new LineSegments2(geom, lineMat)},[zRange, depthRatio])
 
   const tickLine = useMemo(()=> {
     const geom = new LineSegmentsGeometry().setPositions([0, 0, 0, 0, 0, .05]);
@@ -53,13 +61,12 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
   const dimScale = dimResolution/(dimResolution-1)
   const valDelta = 1/(dimResolution-1)
 
-
   return (
-    <>
+    <group visible={plotType != 'sphere'}>
     {/* Horizontal Group */}
     <group position={[0, shapeRatio*yRange[0], 0]}>
       {/* X Group */}
-      <group position={[0, 0, flipX ? zRange[0] : zRange[1]]}> 
+      <group position={[0, 0, flipX ? isPC ? zRange[0]*depthRatio : zRange[0] : isPC ? zRange[1] * depthRatio : zRange[1]]}> 
         <primitive key={'xLine'} object={xLine} />
         {Array(dimResolution).fill(null).map((_val,idx)=>(
           (((xRange[0] + 1)/2) <= (idx*dimScale)/dimResolution &&
@@ -97,7 +104,7 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
           (((zRange[0] + 1)/2) <= (idx*dimScale)/dimResolution  &&
           ((zRange[1] + 1)/2) >= (idx*dimScale)/dimResolution )
           && 
-          <group key={`zGroup_${idx}`} position={[0, 0, -1 + idx*dimScale/(dimResolution/2)]}>
+          <group key={`zGroup_${idx}`} position={[0, 0, isPC ? -depthRatio + idx*dimScale/(dimResolution/2)*depthRatio : -1 + idx*dimScale/(dimResolution/2)]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, flipY ? Math.PI/2 : -Math.PI/2 , 0]} />
             <Text 
               key={`textY_${idx}`}
@@ -125,7 +132,7 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
     </group>
         
     {/* Vertical Group */}
-    <group position={[flipY ? xRange[0] : xRange[1], 0, flipX ? zRange[0] : zRange[1]]}>
+    <group position={[flipY ? xRange[0] : xRange[1], 0, flipX ? isPC ? zRange[0]*depthRatio : zRange[0] : isPC ? zRange[1]*depthRatio : zRange[1]]}> 
       <primitive key={'yLine'} object={yLine} />
       {Array(dimResolution).fill(null).map((_val,idx)=>(
            (((yRange[0] + 1)/2) <= (idx*dimScale)/dimResolution &&
@@ -153,10 +160,10 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
           color={'black'}
           material-depthTest={false}
           rotation={[0, flipX ? Math.PI : 0, 0]}
-          position={[flipY ? -0.25 : 0.25, (yRange[0]+yRange[1])/2, 0]}
+          position={[flipY ? -0.25 : 0.25, (yRange[0]+yRange[1])/2*shapeRatio, 0]}
         >{dimNames[1]}</Text>
     </group>
-  </>
+  </group>
   )
 }
 

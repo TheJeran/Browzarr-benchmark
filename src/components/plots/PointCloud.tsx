@@ -174,9 +174,9 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
             const index = x + y * width + z * width * height;
             const value = (data as number[])[index] || 0;
               // Normalize coordinates acceptable range
-            const px = ((x / (width - 1)) - 0.5) * aspectRatio;
-            const py = (y / (height - 1)) - 0.5;
-            const pz = ((z / (depth - 1)) - 0.5) * depthRatio;
+            const px = ((x / (width - 1)) - 0.5) * aspectRatio /2; //The divide by two is So it's the same scale as the volume 
+            const py = ((y / (height - 1)) - 0.5)/2;
+            const pz = ((z / (depth - 1)) - 0.5) * depthRatio /2;
             const posIdx = index*3;
             positions[posIdx] = px * 2;
             positions[posIdx + 1] = py * 2;
@@ -211,8 +211,8 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
         timeScale: {value: timeScale},
         animateProg: {value: animProg},
         depthRatio: {value: depthRatio},
-        flatBounds:{value: new THREE.Vector4(xRange[0]*aspectRatio, xRange[1]*aspectRatio, zRange[0]*depthRatio, zRange[1]*depthRatio)},
-        vertBounds:{value: new THREE.Vector2(yRange[0], yRange[1])},
+        flatBounds:{value: new THREE.Vector4(xRange[0]*aspectRatio/2, xRange[1]*aspectRatio/2, zRange[0]*depthRatio/2, zRange[1]*depthRatio/2)},
+        vertBounds:{value: new THREE.Vector2(yRange[0]/2, yRange[1]/2)},
       },
       vertexShader:pointVert,
       fragmentShader:pointFrag,
