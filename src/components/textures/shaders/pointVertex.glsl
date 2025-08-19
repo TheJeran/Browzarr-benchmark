@@ -42,7 +42,6 @@ void main() {
 
     scaledPos.z *= timeScale;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(scaledPos, 1.0);
-    //If it is nan we just yeet it tf out of the screen space. LMAO I love this solution
     float pointScale = pointSize/gl_Position.w;
     pointScale = scalePoints ? pointScale*pow(vValue,scaleIntensity) : pointScale;
 

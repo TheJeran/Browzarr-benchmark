@@ -157,6 +157,7 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
     }, [texture]);
     const aspectRatio = useMemo(()=>width/height,[width,height]);
     const depthRatio = useMemo(()=>depth/height,[depth,height]);
+
     const { positions, values } = useMemo(() => {
       let positions;
       try{
@@ -165,7 +166,6 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
         setOom(true) //Set out of memeory error
         return {positions: [], values: []};
       }
-      
       const values = new Uint8Array(depth*height*width);
       //Generate grid points based on texture shape
       for (let z = 0; z < depth; z++) {
@@ -174,13 +174,13 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
             const index = x + y * width + z * width * height;
             const value = (data as number[])[index] || 0;
               // Normalize coordinates acceptable range
-            const px = ((x / (width - 1)) - 0.5) * aspectRatio /2; //The divide by two is So it's the same scale as the volume 
-            const py = ((y / (height - 1)) - 0.5)/2;
-            const pz = ((z / (depth - 1)) - 0.5) * depthRatio /2;
+            const px = ((x / (width - 1)) - 0.5) ; 
+            const py = ((y / (height - 1)) - 0.5)/aspectRatio;
+            const pz = ((z / (depth - 1)) - 0.5) * depthRatio ;
             const posIdx = index*3;
             positions[posIdx] = px * 2;
-            positions[posIdx + 1] = py * 2;
-            positions[posIdx + 2] = pz * 2;
+            positions[posIdx + 1] = py *2 ;
+            positions[posIdx + 2] = pz ;
             values[index] = value;
           }
         }
@@ -211,8 +211,8 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
         timeScale: {value: timeScale},
         animateProg: {value: animProg},
         depthRatio: {value: depthRatio},
-        flatBounds:{value: new THREE.Vector4(xRange[0]*aspectRatio/2, xRange[1]*aspectRatio/2, zRange[0]*depthRatio/2, zRange[1]*depthRatio/2)},
-        vertBounds:{value: new THREE.Vector2(yRange[0]/2, yRange[1]/2)},
+        flatBounds:{value: new THREE.Vector4(xRange[0], xRange[1], zRange[0]*depthRatio/2, zRange[1]*depthRatio/2)},
+        vertBounds:{value: new THREE.Vector2(yRange[0]/aspectRatio, yRange[1]/aspectRatio)},
       },
       vertexShader:pointVert,
       fragmentShader:pointFrag,
@@ -223,7 +223,6 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
     })
     ),[pointSize, colormap, cOffset, cScale, valueRange, scalePoints, scaleIntensity, pointIDs, stride, selectTS, animProg, timeScale, depthRatio, aspectRatio, xRange, yRange, zRange]);
 
-    
 
     return (
       <>

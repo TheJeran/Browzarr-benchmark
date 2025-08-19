@@ -18,7 +18,6 @@ const Variables = () => {
       zMeta: state.zMeta,
     }))
   );
-
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [meta, setMeta] = useState<any>(null);
 

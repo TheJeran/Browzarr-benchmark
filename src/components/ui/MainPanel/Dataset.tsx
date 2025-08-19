@@ -116,6 +116,7 @@ const Dataset = () => {
               setShowLocalInput((prev) => !prev);
               setShowStoreInput(false);
               setActiveOption('local')
+              setInitStore('local')
             }}
           >
             Local

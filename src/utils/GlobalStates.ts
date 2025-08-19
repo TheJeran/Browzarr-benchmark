@@ -1,8 +1,7 @@
 import { create } from "zustand";
 import * as THREE from 'three';
-import * as zarr from 'zarrita'
 import { GetColorMapTexture } from "@/components/textures";
-import { GetStore, ZARR_STORES } from "@/components/zarr/ZarrLoaderLRU";
+import { GetStore } from "@/components/zarr/ZarrLoaderLRU";
 
 const ESDC = 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr'
 
@@ -41,6 +40,8 @@ type StoreState = {
   isFlat: boolean;
   progress: number,
   downloading: boolean;
+  is4D: boolean;
+  idx4D: number | null;
 
   setDataShape: (dataShape: number[]) => void;
   setShape: (shape: THREE.Vector3) => void;
@@ -67,6 +68,8 @@ type StoreState = {
   setIsFlat: (isFlat: boolean) => void;
   setProgress: (progress: number) => void;
   setDownloading: (downloading: boolean) => void;
+  setIs4D: (is4D: boolean) => void;
+  setIdx4D: (idx4D: number | null) => void;
 };
 
 export const useGlobalStore = create<StoreState>((set, get) => ({
@@ -93,6 +96,9 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   isFlat:false,
   progress: 0,
   downloading: false,
+  is4D: false,
+  idx4D: null,
+
 
 
   setDataShape: (dataShape) => set({ dataShape}),
@@ -138,8 +144,9 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   setPlotOn: (plotOn) => set({ plotOn }),
   setIsFlat: (isFlat) => set({ isFlat}),
   setProgress: (progress) => set({ progress }),
-  setDownloading: (downloading) => set({ downloading })
-
+  setDownloading: (downloading) => set({ downloading }),
+  setIs4D: (is4D) => set({ is4D }),
+  setIdx4D: (idx4D) => set({ idx4D }),
 }));
 
 type PlotState ={

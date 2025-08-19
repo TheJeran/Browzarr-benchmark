@@ -29,7 +29,7 @@ export function LandingHome() {
 
   const ZarrDS = useMemo(() => new ZarrDataset(currentStore), [currentStore]) //Update Dataset if store changes
   const [titleDescription, setTitleDescription] = useState<{ title?: string; description?: string }>({});
-
+  
   useEffect(() => {
     let isMounted = true;
     GetTitleDescription(currentStore).then((result) => {

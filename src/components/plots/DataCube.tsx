@@ -27,7 +27,7 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
       nanTransparency: state.nanTransparency,
       nanColor: state.nanColor
     })))
-
+    const aspectRatio = shape.y/shape.x
     const shaderMaterial = useMemo(()=>new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3,
       uniforms: {
@@ -38,7 +38,7 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
           threshold: {value: new THREE.Vector2(valueRange[0],valueRange[1])},
           scale: {value: shape},
           flatBounds:{value: new THREE.Vector4(-xRange[1],-xRange[0],zRange[0],zRange[1])},
-          vertBounds:{value: new THREE.Vector2(yRange[0]/shape.x,yRange[1]/shape.x)},
+          vertBounds:{value: new THREE.Vector2(yRange[0]*aspectRatio,yRange[1]*aspectRatio)},
           steps: { value: quality },
           animateProg: {value: animProg},
           transparency: {value: transparency},
@@ -51,7 +51,7 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
       blending: THREE.NormalBlending,
       depthWrite: false,
       side: THREE.BackSide,
-    }),[volTexture, colormap, cOffset, cScale, valueRange, xRange, yRange, zRange, quality, animProg, useFragOpt, transparency, nanTransparency, nanColor]);
+    }),[volTexture, shape, colormap, cOffset, cScale, valueRange, xRange, yRange, zRange, quality, animProg, useFragOpt, transparency, nanTransparency, nanColor]);
         
   // Use geometry once, avoid recreating -- Using a sphere to avoid the weird angles you get with cube
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(2, 4), []);

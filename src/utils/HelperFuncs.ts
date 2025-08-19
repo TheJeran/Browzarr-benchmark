@@ -54,6 +54,9 @@ export function parseLoc(input:number, units: string | undefined, verbose: boole
         return input
     }
     if (typeof(input) == 'bigint'){
+      if (!units){
+        return Number(input)
+      }
       try{
         const scale = parseTimeUnit(units)
         const timeStamp = Number(input) * scale;

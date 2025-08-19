@@ -98,12 +98,13 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
           setShowLoading: state.setShowLoading  
         }
         )))
-    const {colormap, variable, isFlat, metadata, valueScales, setIsFlat, setDataArray} = useGlobalStore(useShallow(state=>({
+    const {colormap, variable, isFlat, metadata, valueScales, is4D, setIsFlat, setDataArray} = useGlobalStore(useShallow(state=>({
       colormap: state.colormap, 
       variable: state.variable, 
       isFlat: state.isFlat, 
       metadata: state.metadata, 
       valueScales: state.valueScales,
+      is4D: state.is4D,
       setIsFlat: state.setIsFlat, 
       setDataArray: state.setDataArray
     })))
@@ -173,7 +174,12 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
       //Get Metadata
       ZarrDS.GetAttributes(variable).then((result)=>{
         setMetadata(result);
-        const [dimArrs, dimMetas, dimNames] = ZarrDS.GetDimArrays()
+        let [dimArrs, dimMetas, dimNames] = ZarrDS.GetDimArrays()
+        if (is4D){
+          dimArrs = dimArrs.slice(1);
+          dimMetas = dimMetas.slice(1);
+          dimNames = dimNames.slice(1);
+        }
         setDimArrays(dimArrs)
         setDimNames(dimNames)
         if (dimArrs.length > 2){
