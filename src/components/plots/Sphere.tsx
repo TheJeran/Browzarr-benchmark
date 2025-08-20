@@ -4,7 +4,6 @@ import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
 import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU';
 import { useShallow } from 'zustand/shallow'
 import { vertexShader, sphereFrag, flatSphereFrag } from '../textures/shaders'
-import { useFrame } from '@react-three/fiber'
 import { parseUVCoords } from '@/utils/HelperFuncs';
 
 
@@ -23,8 +22,8 @@ function XYZtoRemap(xyz : THREE.Vector3, latBounds: number[], lonBounds : number
     const lon = Math.atan2(xyz.z,xyz.x)
     const lat = Math.asin(xyz.y);
     const u = (lon - deg2rad(lonBounds[0]))/(deg2rad(lonBounds[1])-deg2rad(lonBounds[0]))
-    const v = (lon - deg2rad(lonBounds[0]))/(deg2rad(lonBounds[1])-deg2rad(lonBounds[0]))
-    return new THREE.Vector2(u,v)
+    const v = (lat - deg2rad(latBounds[0]))/(deg2rad(latBounds[1])-deg2rad(latBounds[0]))
+    return new THREE.Vector2(1-u,v)
 }
 
 function deg2rad(deg: number){
@@ -66,8 +65,9 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
     const {height, width} = useMemo(()=>texture?.source.data, [texture])
 
     function addBounds(uv : THREE.Vector2){ //This adds the bounds in UV space of a selected square on the sphere. 
-      const widthID = Math.round(uv.x*width)+.5;
-      const heightID = flipY ? Math.round((1-uv.y)*height)-.5 : Math.round(uv.y*height)+.5 ;
+      const widthID = Math.floor(uv.x*(width))+.5;
+      console.log(uv.x*(width))
+      const heightID = Math.ceil(uv.y*height)-.5 ;
       const delX = 1/width;
       const delY = 1/height;
       const xBounds = [widthID/width-delX/2,widthID/width+delX/2]
@@ -84,6 +84,11 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
       return [newLonBounds, newLatBounds]
     },[latExtent, lonExtent, lonResolution, latResolution])
 
+    const [xScale, yScale] = useMemo(()=>{
+      const xScale = (lonBounds[1]-lonBounds[0])/360
+      const yScale = (latBounds[1]-latBounds[0])/180
+      return [xScale, yScale]
+    },[lonBounds, latBounds])
 
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(1, 9), []);
     
@@ -111,7 +116,10 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
 
     function HandleTimeSeries(event: THREE.Intersection){
         const point = event.point.normalize();
-        const uv = XYZtoUV(point, texture?.source.data.width, texture?.source.data.height);
+
+        //const uv = XYZtoUV(point, texture?.source.data.width, texture?.source.data.height);
+        const uv = XYZtoRemap(point, latBounds, lonBounds);
+
         const normal = new THREE.Vector3(0,0,1)
     
         if(ZarrDS){
