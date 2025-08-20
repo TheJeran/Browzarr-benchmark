@@ -6,8 +6,14 @@ import { useShallow } from 'zustand/shallow';
 import { useFrame } from '@react-three/fiber';
 import {vertexShader, bordersFrag} from '../textures/shaders'
 
-function Reproject([lon, lat] : [number, number]){
-    return [lon/180, lat/180, 0]
+function Reproject([lon, lat] : [number, number], lonBounds: [number, number], latBounds: [number, number]){
+    let newLon = (lon-lonBounds[0])/(lonBounds[1]-lonBounds[0]);
+    let newLat = (lat-latBounds[0])/(latBounds[1]-latBounds[0]);
+    newLon -= 0.5
+    newLon *= 2;
+    newLat -= 0.5;
+    newLat *= 2;
+    return [newLon, newLat/2, 0]
 }
 
 function Spherize([lon, lat] : [number, number]){
@@ -21,19 +27,32 @@ function Spherize([lon, lat] : [number, number]){
 }
 
 function Borders({features}:{features: any}){
-    const {xRange, yRange, plotType, borderColor} = usePlotStore(useShallow(state => ({
+    const {xRange, yRange, plotType, borderColor, lonExtent, latExtent, lonResolution, latResolution} = usePlotStore(useShallow(state => ({
         xRange: state.xRange,
         yRange: state.yRange,
         plotType: state.plotType,
-        borderColor: state.borderColor
+        borderColor: state.borderColor,
+        lonExtent: state.lonExtent,
+        latExtent: state.latExtent,
+        lonResolution: state.lonResolution,
+        latResolution: state.latResolution
     })))
-
     const {flipY, shape } = useGlobalStore(useShallow(state => ({
         flipY: state.flipY,
         shape: state.shape
     })))
-    const [spherize, setSpherize] = useState<boolean>(false)
 
+    const [lonBounds, latBounds] = useMemo(()=>{ //The bounds for the shader. It takes the middle point of the furthest coordinate and adds the distance to edge of pixel
+          const newLatStep = latResolution/2;
+          const newLonStep = lonResolution/2;
+          const newLonBounds = [Math.max(lonExtent[0]-newLonStep, -180), Math.min(lonExtent[1]+newLonStep, 180)]
+          let newLatBounds = [Math.max(latExtent[0]-newLatStep, -90), Math.min(latExtent[1]+newLatStep, 90)]
+          newLatBounds = flipY ? [newLatBounds[1], newLatBounds[0]] : newLatBounds
+          return [newLonBounds as [number, number], newLatBounds as [number, number]]
+        },[latExtent, lonExtent, lonResolution, latResolution])
+
+    
+    const [spherize, setSpherize] = useState<boolean>(false)
 
     useEffect(()=>{
         if (plotType === 'sphere'){
@@ -69,7 +88,7 @@ function Borders({features}:{features: any}){
         feature.geometry.coordinates.forEach(([lon, lat]: [number, number]) => {
             const [x, y, z] = spherize
             ? Spherize([ -lon, lat])
-            : Reproject([lon, lat]);
+            : Reproject([lon, lat],lonBounds,latBounds);
             points.push(new THREE.Vector3(x, y, z));
         });
         const positions = new Float32Array(points.length * 3);
@@ -95,7 +114,7 @@ function Borders({features}:{features: any}){
                 thisIdx ++;
             const [x, y, z] = spherize
                 ? Spherize([ -lon, lat])
-                : Reproject([lon, lat]);
+                : Reproject([lon, lat],lonBounds,latBounds);
                 islandPoints.push(new THREE.Vector3(x, y, z));
             });
             const positions = new Float32Array(islandPoints.length * 3);
@@ -121,7 +140,7 @@ function Borders({features}:{features: any}){
             ring.forEach(([lon, lat]) => {
                 const [x, y, z] = spherize
                 ? Spherize([ -lon, lat])
-                : Reproject([lon, lat]);
+                : Reproject([lon, lat],lonBounds,latBounds);
                 points.push(new THREE.Vector3(x, y, z));
             });
             });
@@ -138,7 +157,7 @@ function Borders({features}:{features: any}){
         }
         return lines;
     });
-    }, [features, spherize, flipY]);
+    }, [features, spherize, flipY, lonBounds, latBounds]);
 
     const lines = useMemo(() => {
         return lineGeometries.map((geom: THREE.BufferGeometry, idx: number) => {

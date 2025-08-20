@@ -203,11 +203,7 @@ const PointOptions = () =>{
 }
 
 
-const SphereOptions = () =>{
-  const {dimArrays, dimUnits} = useGlobalStore(useShallow(state => ({
-    dimArrays: state.dimArrays,
-    dimUnits: state.dimUnits
-  })))
+const SpatialExtent = () =>{
 
   const {lonExtent, latExtent, lonResolution, latResolution, 
         setLonExtent, setLatExtent, setLonResolution, setLatResolution} = usePlotStore(useShallow(state => ({
@@ -258,7 +254,7 @@ const SphereOptions = () =>{
     </div>
   )
 }
-
+const buttonCSS = "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive relative overflow-hidden"
 const GlobalOptions = () =>{
   const {showBorders, borderColor, setShowBorders, setBorderColor} = usePlotStore(useShallow(state => ({
     showBorders: state.showBorders,
@@ -278,7 +274,14 @@ const GlobalOptions = () =>{
           onChange={e => setBorderColor(e.target.value)}
           />
       </div>}
-      
+      <Popover>
+        <PopoverTrigger>
+          <div className={`${buttonCSS} w-[100%] h-[20px] cursor-[pointer] bg-linear-to-tr from-pink-500 to-yellow-500 text-white shadow-lg rounded-md` } >Adjust Extent</div>
+        </PopoverTrigger>
+        <PopoverContent>
+          <SpatialExtent/>
+        </PopoverContent>
+      </Popover>
     </div>
   )
 }
@@ -336,7 +339,6 @@ const AdjustPlot = () => {
             {plotType === 'volume' && <VolumeOptions />}
             {plotType === 'point-cloud' && <PointOptions />}
             {(plotType === 'volume' || plotType === 'point-cloud') && <DimSlicer />}
-            {plotType === 'sphere' && <SphereOptions />}
             <GlobalOptions />
           </div>
         </PopoverContent>

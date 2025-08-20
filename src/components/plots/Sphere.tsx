@@ -84,12 +84,6 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
       return [newLonBounds, newLatBounds]
     },[latExtent, lonExtent, lonResolution, latResolution])
 
-    const [xScale, yScale] = useMemo(()=>{
-      const xScale = (lonBounds[1]-lonBounds[0])/360
-      const yScale = (latBounds[1]-latBounds[0])/180
-      return [xScale, yScale]
-    },[lonBounds, latBounds])
-
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(1, 9), []);
     
     const shaderMaterial = useMemo(()=>{
