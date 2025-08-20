@@ -164,8 +164,12 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
         const shapeRatio = result.shape[1] / result.shape[2] * 2;
         setShape(new THREE.Vector3(2, shapeRatio, 2));
         setDataShape(result.shape)
+        setShowLoading(false)
+        setShow(true)
+        setPlotOn(true)
       })
       }catch{
+        console.log("Heh?")
         setShowLoading(false);
         return;
       }
@@ -198,9 +202,6 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
         }
         setDimUnits(tempDimUnits)
         ParseExtent(tempDimUnits, dimArrs)
-        setShowLoading(false)
-        setShow(true)
-        setPlotOn(true)
       })
 
     }

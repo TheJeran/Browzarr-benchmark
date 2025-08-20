@@ -149,6 +149,7 @@ export class ZarrDataset{
 					}
 				}
 				setDownloading(false)
+				setProgress(0)
 			}
 
 			return {

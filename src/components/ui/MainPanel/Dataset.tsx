@@ -59,7 +59,6 @@ const Dataset = () => {
           onClick={() => {
             setShowStoreInput(false);
             setShowLocalInput(false);
-            setVariable("Default");
             setActiveOption('ESDC')
             setInitStore(ZARR_STORES.ESDC);
           }}
@@ -72,7 +71,6 @@ const Dataset = () => {
           onClick={() => {
             setShowStoreInput(false);
             setShowLocalInput(false);
-            setVariable("Default");
             setActiveOption('seasfire')
             setInitStore(ZARR_STORES.SEASFIRE);
           }}
@@ -98,7 +96,6 @@ const Dataset = () => {
                 e.preventDefault();
                 const input = e.currentTarget.elements[0] as HTMLInputElement;
                 setInitStore(input.value);
-                setVariable("Default");
               }}
             >
               <Input className="w-[100px]" placeholder="Store URL" />

@@ -34,8 +34,9 @@ function clamp(val : number, min=0 , max=100){
 }
 
 const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: number, minVal:number}}) => {
-    const {colormap} = useGlobalStore(useShallow(state => ({
+    const {colormap, variable} = useGlobalStore(useShallow(state => ({
         colormap: state.colormap,
+        variable: state.variable
     })))
 
     const {cScale, cOffset, setCScale, setCOffset} = usePlotStore(useShallow(state => ({ 
@@ -157,6 +158,13 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
         <FaMinus className='cursor-pointer' onClick={()=>setTickCount(Math.max(tickCount-1, 2))}/>
         <FaPlus className='cursor-pointer' onClick={()=>setTickCount(Math.min(tickCount+1, 10))}/>
     </div>
+    <p style={{
+        position:'absolute',
+        top:'-24px',
+        left:'0%',
+    }}>
+        {variable}
+    </p>
     </div>
 
     </>
