@@ -19,6 +19,18 @@ function XYZtoUV(xyz : THREE.Vector3, width: number, height : number){
     return new THREE.Vector2(u,v)
 }
 
+function XYZtoRemap(xyz : THREE.Vector3, latBounds: number[], lonBounds : number[]){
+    const lon = Math.atan2(xyz.z,xyz.x)
+    const lat = Math.asin(xyz.y);
+    const u = (lon - deg2rad(lonBounds[0]))/(deg2rad(lonBounds[1])-deg2rad(lonBounds[0]))
+    const v = (lon - deg2rad(lonBounds[0]))/(deg2rad(lonBounds[1])-deg2rad(lonBounds[0]))
+    return new THREE.Vector2(u,v)
+}
+
+function deg2rad(deg: number){
+  return deg*Math.PI/180;
+}
+
 export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE.DataTexture | null, ZarrDS: ZarrDataset}) => {
     const {colormap, flipY, isFlat} = useGlobalStore(useShallow(state=> ({
         colormap: state.colormap,
@@ -38,18 +50,22 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
         dimUnits:state.dimUnits
     })))
 
-    const {animate, animProg, cOffset, cScale, selectTS} = usePlotStore(useShallow(state=> ({
+    const {animate, animProg, cOffset, cScale, selectTS, lonExtent, latExtent, lonResolution, latResolution} = usePlotStore(useShallow(state=> ({
         animate: state.animate,
         animProg: state.animProg,
         cOffset: state.cOffset,
         cScale: state.cScale,
-        selectTS: state.selectTS
+        selectTS: state.selectTS,
+        lonExtent: state.lonExtent,
+        latExtent: state.latExtent,
+        lonResolution: state.lonResolution,
+        latResolution: state.latResolution
     })))
 
     const [bounds, setBounds] = useState<THREE.Vector4[]>(new Array(10).fill(new THREE.Vector4(-1 , -1, -1, -1)))
     const {height, width} = useMemo(()=>texture?.source.data, [texture])
 
-    function addBounds(uv : THREE.Vector2){
+    function addBounds(uv : THREE.Vector2){ //This adds the bounds in UV space of a selected square on the sphere. 
       const widthID = Math.round(uv.x*width)+.5;
       const heightID = flipY ? Math.round((1-uv.y)*height)-.5 : Math.round(uv.y*height)+.5 ;
       const delX = 1/width;
@@ -60,7 +76,17 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
       setBounds(prev=> [bounds, ...prev].slice(0,10))
     }
 
+    const [lonBounds, latBounds] = useMemo(()=>{ //The bounds for the shader. It takes the middle point of the furthest coordinate and adds the distance to edge of pixel
+      const newLatStep = latResolution/2;
+      const newLonStep = lonResolution/2;
+      const newLonBounds = [Math.max(lonExtent[0]-newLonStep, -180), Math.min(lonExtent[1]+newLonStep, 180)]
+      const newLatBounds = [Math.max(latExtent[0]-newLatStep, -90), Math.min(latExtent[1]+newLatStep, 90)]
+      return [newLonBounds, newLatBounds]
+    },[latExtent, lonExtent, lonResolution, latResolution])
+
+
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(1, 9), []);
+    
     const shaderMaterial = useMemo(()=>{
         const shader = new THREE.ShaderMaterial({
             glslVersion: THREE.GLSL3,
@@ -71,14 +97,16 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
                 cmap:{value: colormap},
                 cOffset:{value: cOffset},
                 cScale: {value: cScale},
-                animateProg: {value: animProg}
+                animateProg: {value: animProg},
+                latBounds: {value: new THREE.Vector2(deg2rad(latBounds[0]), deg2rad(latBounds[1]))},
+                lonBounds: {value: new THREE.Vector2(deg2rad(lonBounds[0]), deg2rad(lonBounds[1]))}
             },
             vertexShader,
             fragmentShader: isFlat ? flatSphereFrag : sphereFrag,
             blending: THREE.NormalBlending,
         })
         return shader
-    },[texture, animProg, colormap, cOffset, cScale, animate, bounds, selectTS])
+    },[texture, animProg, colormap, cOffset, cScale, animate, bounds, selectTS, lonBounds, latBounds])
 
 
     function HandleTimeSeries(event: THREE.Intersection){
@@ -122,11 +150,9 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
         addBounds(uv);
       }
 
-
-
   return (
     <>
-    <mesh geometry={geometry} material={shaderMaterial} scale={[1, flipY ? -1 : 1, 1]} onClick={e=>selectTS && HandleTimeSeries(e)}/>
+    <mesh geometry={geometry} material={shaderMaterial} onClick={e=>selectTS && HandleTimeSeries(e)}/>
     
     </>
   )

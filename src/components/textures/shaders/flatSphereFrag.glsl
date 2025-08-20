@@ -13,6 +13,8 @@ uniform float cOffset;
 uniform float cScale;
 uniform float animateProg;
 uniform bool selectTS;
+uniform vec2 latBounds;
+uniform vec2 lonBounds;
 
 #define pi 3.141592653
 
@@ -20,12 +22,11 @@ vec2 giveUV(vec3 position){
     vec3 n = normalize(position);
     float latitude = asin(n.y);
     float longitude = atan(n.z, n.x);
-    vec2 uv = vec2(-longitude/(pi), latitude/(pi/2.0));
-    uv /= 2.;
-    uv += 0.5;
-    return uv;
-}
+    latitude = (latitude - latBounds.x)/(latBounds.y - latBounds.x);
+    longitude = (longitude - lonBounds.x)/(lonBounds.y - lonBounds.x);
 
+    return vec2(1.-longitude, latitude);
+}
 
 void main(){
     vec2 sampleCoord = giveUV(aPosition);

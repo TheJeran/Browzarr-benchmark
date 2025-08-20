@@ -1,6 +1,6 @@
 'use client';
 import * as THREE from 'three'
-import { useGlobalStore } from './GlobalStates';
+import { useGlobalStore, usePlotStore } from './GlobalStates';
 
 export function parseTimeUnit(units: string | undefined): number {
     if (units === "Default"){
@@ -101,7 +101,7 @@ export function parseUVCoords({normal,uv}:{normal:THREE.Vector3,uv:THREE.Vector2
   }
 }
 
-export function getUnitAxis(vec: THREE.Vector3) {
+export function getUnitAxis(vec: THREE.Vector3) { //Takes the normal of a cube interaction to figure out which axis to move along within the data for the timeseries
   if (Math.abs(vec.x) === 1) return 2;
   if (Math.abs(vec.y) === 1) return 1;
   if (Math.abs(vec.z) === 1) return 0;
@@ -142,3 +142,40 @@ export function linspace(start: number, stop: number, num: number): number[] {
     const step = (stop - start) / (num - 1);
     return Array.from({ length: num }, (_, i) => start + step * i);
   }
+
+export function ParseExtent(dimUnits: string[], dimArrays: number[][]){
+
+  const setLonExtent = usePlotStore.getState().setLonExtent;
+  const setLatExtent = usePlotStore.getState().setLatExtent;
+  const setLonResolution = usePlotStore.getState().setLonResolution;
+  const setLatResolution = usePlotStore.getState().setLatResolution;
+
+  const tempUnits = dimUnits.length > 2 ? dimUnits.slice(1) : dimUnits;
+  let tryParse = false;
+  for (const unit of tempUnits){
+    if (unit.match(/(degree|degrees|deg|°)/i)){
+      tryParse = true;
+      break;
+    }
+  }
+  if (tryParse){
+    const tempArrs = dimArrays.length > 2 ? dimArrays.slice(1) : dimArrays
+    const minLat = tempArrs[0][0]
+    const maxLat = tempArrs[0][tempArrs[0].length-1]
+    let minLon = tempArrs[1][0]
+    let maxLon = tempArrs[1][tempArrs[1].length-1]
+    minLon = minLon > 180 ? minLon - 360 : minLon
+    maxLon = maxLon > 180 ? maxLon - 360 : maxLon
+    setLonExtent([minLon, maxLon])
+    setLatExtent([minLat, maxLat])
+
+    const latRes = Math.abs(tempArrs[0][1] - tempArrs[0][0])
+    const lonRes = Math.abs(tempArrs[1][1] - tempArrs[1][0])
+    setLonResolution(lonRes)
+    setLatResolution(latRes)
+  }
+  else{
+    setLonExtent([-180,180])
+    setLatExtent([-90,90])
+  }
+}

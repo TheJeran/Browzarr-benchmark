@@ -96,7 +96,7 @@ export class ZarrDataset{
 			this.chunkIDs = []
 			if (totalSize < 1e8 || !hasTimeChunks){ //Check if total is less than 100MB or no chunks along time
 				setDownloading(true)
-				chunk = await zarr.get(outVar , is4D ? [idx4D, null , null, null] : [null, null, null]);
+				chunk = is4D ? await zarr.get(outVar, [idx4D, null , null, null]) :  await zarr.get(outVar) ;
 				shape = is4D ? outVar.shape.slice(1) : outVar.shape;
 				setStrides(chunk.stride) //Need strides for the point cloud
 				if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {

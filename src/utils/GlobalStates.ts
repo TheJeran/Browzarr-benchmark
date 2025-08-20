@@ -182,6 +182,10 @@ type PlotState ={
   nanColor: string;
   showBorders:boolean;
   borderColor: string;
+  lonExtent: [number, number];
+  latExtent: [number, number];
+  lonResolution: number;
+  latResolution: number;
 
   setQuality: (quality: number) => void;
   setTimeScale: (timeScale : number) =>void;
@@ -215,6 +219,10 @@ type PlotState ={
   setNanColor: (nanColor: string) => void;
   setShowBorders: (showBorders: boolean) => void;
   setBorderColor: (borderColor: string) => void;
+  setLonExtent: (lonExtent: [number, number]) => void;
+  setLatExtent: (latExtent: [number, number]) => void;
+  setLonResolution: (lonResolution: number) => void;
+  setLatResolution: (latResolution: number) => void;
 }
 
 export const usePlotStore = create<PlotState>((set) => ({
@@ -251,6 +259,10 @@ export const usePlotStore = create<PlotState>((set) => ({
   nanColor: "#000000",
   showBorders: false,
   borderColor: "#000000",
+  lonExtent: [-180, 180],
+  latExtent: [-90, 90],
+  lonResolution: 1,
+  latResolution: 1,
 
   setQuality: (quality) => set({ quality }),
   setTimeScale: (timeScale) => set({ timeScale }),
@@ -284,6 +296,10 @@ export const usePlotStore = create<PlotState>((set) => ({
   setNanColor: (nanColor) => set({ nanColor }),
   setShowBorders: (showBorders) => set({ showBorders }),
   setBorderColor: (borderColor) => set({ borderColor }),
+  setLonExtent: (lonExtent) => set({ lonExtent }),
+  setLatExtent: (latExtent) => set({ latExtent }),
+  setLonResolution: (lonResolution) => set({ lonResolution }),
+  setLatResolution: (latResolution) => set({ latResolution })
 }))
 
 
