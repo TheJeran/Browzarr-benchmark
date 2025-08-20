@@ -13,10 +13,10 @@ import { Button } from "@/components/ui/button"
 
 const plotTypes = ['volume', 'point-cloud', 'sphere', 'flat']
 const plotIcons = {
-  'volume': <PiCubeLight className='panel-item'/>,
-  'point-cloud': <CgMenuGridO className='panel-item'/>,
-  'sphere':<PiSphereThin className='panel-item'/>,
-  'flat':<MdOutlineSquare className='panel-item'/>
+  'volume': <PiCubeLight className="size-8"/>,
+  'point-cloud': <CgMenuGridO className="size-8"/>,
+  'sphere':<PiSphereThin className="size-8"/>,
+  'flat':<MdOutlineSquare className="size-8"/>
 }
 
 const PlotType = () => {
@@ -40,15 +40,15 @@ const PlotType = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <div
-          role="button"
-          className='panel-item'
-          style={{transform: 'scale(1)'}}
+        <Button
+          variant="ghost"
+          size="icon"
+          className='cursor-pointer hover:scale-90 transition-transform duration-100 ease-out'
           tabIndex={0}
           aria-label="Select plot type"
         >
           {plotIcons[plotType as keyof typeof plotIcons]}
-        </div>
+        </Button>
 
       </PopoverTrigger>
       <PopoverContent

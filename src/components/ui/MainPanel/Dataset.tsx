@@ -40,13 +40,15 @@ const Dataset = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <div
-            role="button"
+        <Button
             tabIndex={0}
+            variant="ghost"
+            size="icon"
+            className='cursor-pointer hover:scale-90 transition-transform duration-100 ease-out'
             aria-label="Select dataset"
             >
-            <TbDatabasePlus className='panel-item' />
-        </div>
+            <TbDatabasePlus className="size-8" />
+        </Button>
         
       </PopoverTrigger>
       <PopoverContent
