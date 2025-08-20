@@ -9,6 +9,8 @@ import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
 import { LineMaterial } from 'three-stdlib';
 import { useFrame } from '@react-three/fiber';
 import { parseLoc } from '@/utils/HelperFuncs';
+import { useCSSVariable } from '../ui';
+import * as THREE from 'three'
 
 const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
   const {dimArrays, dimNames, dimUnits} = useGlobalStore(useShallow(state => ({
@@ -32,35 +34,53 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
     dataShape: state.dataShape
   })))
 
+  const [xResolution, setXResolution] = useState<number>(7)
+  const [yResolution, setYResolution] = useState<number>(7)
+  const [zResolution, setZResolution] = useState<number>(7)
+
   const isPC = useMemo(()=>plotType == 'point-cloud',[plotType])
 
   const depthRatio = useMemo(()=>dataShape[0]/dataShape[1]*timeScale/2,[dataShape, timeScale]);
-
   const shapeRatio = useMemo(()=>shape.y/shape.x, [shape])
 
-  //@ts-expect-error The THREE people messed up their types in this component. It does take a string
-  const lineMat = useMemo(()=>new LineMaterial({color: 'orange', linewidth: 5}),[])
+  const secondaryColor = useCSSVariable('--text-plot') //replace with needed variable
+  const colorHex = useMemo(()=>{
+    if (!secondaryColor){return}
+    const noAlpha = `${secondaryColor.slice(0,-5)})` //This slice removes the alpha part of the string which kept causing a warning in console
+    const col = new THREE.Color(noAlpha) 
+    return col.getHex()
+  },[secondaryColor])
+
+  const lineMat = useMemo(()=>new LineMaterial({color: colorHex ? colorHex : 0, linewidth: 5}),[colorHex])
+
   const dimResolution = 7;
 
   const xLine = useMemo(()=> {
     const geom = new LineSegmentsGeometry().setPositions([xRange[0], 0, 0, xRange[1], 0, 0]);
-    return new LineSegments2(geom, lineMat)},[xRange])
+    return new LineSegments2(geom, lineMat)},[xRange, lineMat])
 
   const yLine = useMemo(() =>{
     const geom = new LineSegmentsGeometry().setPositions([0, yRange[0]*shapeRatio, 0, 0, yRange[1]*shapeRatio, 0]);
-    return new LineSegments2(geom, lineMat)},[yRange, shapeRatio])
+    return new LineSegments2(geom, lineMat)},[yRange, shapeRatio, lineMat])
 
   const zLine = useMemo(()=> {
     const geom = new LineSegmentsGeometry().setPositions([0, 0, isPC ? zRange[0]*depthRatio : zRange[0], 0, 0, isPC ? zRange[1]*depthRatio : zRange[1]]);
-    return new LineSegments2(geom, lineMat)},[zRange, depthRatio, isPC])
+    return new LineSegments2(geom, lineMat)},[zRange, depthRatio, isPC, lineMat])
 
   const tickLine = useMemo(()=> {
     const geom = new LineSegmentsGeometry().setPositions([0, 0, 0, 0, 0, .05]);
-    return new LineSegments2(geom, lineMat)},[])
+    return new LineSegments2(geom, lineMat)},[lineMat])
 
   
   const dimScale = dimResolution/(dimResolution-1)
   const valDelta = 1/(dimResolution-1)
+
+  const xDimScale = xResolution/(xResolution-1)
+  const xValDelta = 1/(xResolution-1)
+  const yDimScale = yResolution/(yResolution-1)
+  const yValDelta = 1/(yResolution-1)
+  const zDimScale = zResolution/(zResolution-1)
+  const zValDelta = 1/(zResolution-1)
 
   return (
     <group visible={plotType != 'sphere'}>
@@ -69,100 +89,191 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
       {/* X Group */}
       <group position={[0, 0, flipX ? isPC ? zRange[0]*depthRatio : zRange[0] : isPC ? zRange[1] * depthRatio : zRange[1]]}> 
         <primitive key={'xLine'} object={xLine} />
-        {Array(dimResolution).fill(null).map((_val,idx)=>(
-          (((xRange[0] + 1)/2) <= (idx*dimScale)/dimResolution &&
-           ((xRange[1] + 1)/2) >= (idx*dimScale)/dimResolution)
+        {Array(xResolution).fill(null).map((_val,idx)=>(
+          (((xRange[0] + 1)/2) <= (idx*xDimScale)/xResolution &&
+           ((xRange[1] + 1)/2) >= (idx*xDimScale)/xResolution)
            &&          
-          <group key={`xGroup_${idx}`} position={[-1 + idx*dimScale/(dimResolution/2), 0, 0]}>
+          <group key={`xGroup_${idx}`} position={[-1 + idx*xDimScale/(xResolution/2), 0, 0]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, flipX ? Math.PI : 0, 0]} />
             <Text 
               key={`textX_${idx}`}
-              anchorX={idx == 0 ? (flipX ? 'right' : 'left') : idx == dimResolution-1 ? (flipX ? 'left' : 'right') : 'center'}
+              anchorX={idx == 0 ? (flipX ? 'right' : 'left') : idx == xResolution-1 ? (flipX ? 'left' : 'right') : 'center'}
               anchorY={'top'} 
               fontSize={0.05} 
-              color={'black'}
+              color={colorHex}
               material-depthTest={false}
               rotation={[-Math.PI/2, 0, flipX ? Math.PI : 0]}
               position={[0, 0, flipX ? -0.05 :.05]}
-            >{parseLoc(dimArrays[2][Math.floor((dimLengths[2]-1)*idx*valDelta)],dimUnits[2])}</Text>
+            >{parseLoc(dimArrays[2][Math.floor((dimLengths[2]-1)*idx*xValDelta)],dimUnits[2])}</Text>
           </group>
         ))}
-        <Text 
-          key={'xTitle'}
-          anchorX={'center'}
-          anchorY={'top'} 
-          fontSize={0.1} 
-          color={'black'}
-          material-depthTest={false}
-          rotation={[-Math.PI/2, 0, flipX ? Math.PI : 0]}
-          position={[(xRange[0]+xRange[1])/2, 0, flipX ? -0.2 :.2]}
-        >{dimNames[2]}</Text>
+        <group rotation={[-Math.PI/2, 0, flipX ? Math.PI : 0]} position={[(xRange[0]+xRange[1])/2, 0, flipX ? -0.2 :.2]}>
+          <Text 
+            key={'xTitle'}
+            anchorX={'center'}
+            anchorY={'top'} 
+            fontSize={0.1} 
+            color={colorHex}
+            material-depthTest={false}
+          >{dimNames[2]}</Text>
+          {xResolution < 20 &&
+          <Text 
+            key={'xAdd'}
+            anchorX={'center'}
+            anchorY={'middle'} 
+            fontSize={0.2} 
+            color={colorHex}
+            material-depthTest={false}
+            position={[.2, -0.2, 0]}
+            onClick={e=>setXResolution(x=> Math.min(x+1,20))}
+            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+            onPointerLeave={e=>document.body.style.cursor = 'default'}
+          >
+            +
+          </Text>}
+          { xResolution > 1 &&
+          <Text 
+            key={'xSub'}
+            anchorX={'center'}
+            anchorY={'middle'} 
+            fontSize={0.2} 
+            color={colorHex}
+            material-depthTest={false}
+            position={[-.2, -0.2, 0]}
+            onClick={e=>setXResolution(x=> Math.max(x-1,1))}
+            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+            onPointerLeave={e=>document.body.style.cursor = 'default'}
+          >
+            -
+          </Text>}
+        </group>
       </group>
       {/* Z Group */}
       <group position={[flipY ? xRange[1]: xRange[0], 0, 0]}>
         <primitive key={'zLine'} object={zLine} />
-        {Array(dimResolution).fill(null).map((_val,idx)=>(
-          (((zRange[0] + 1)/2) <= (idx*dimScale)/dimResolution  &&
-          ((zRange[1] + 1)/2) >= (idx*dimScale)/dimResolution )
+        {Array(zResolution).fill(null).map((_val,idx)=>(
+          (((zRange[0] + 1)/2) <= (idx*zDimScale)/zResolution  &&
+          ((zRange[1] + 1)/2) >= (idx*zDimScale)/zResolution )
           && 
-          <group key={`zGroup_${idx}`} position={[0, 0, isPC ? -depthRatio + idx*dimScale/(dimResolution/2)*depthRatio : -1 + idx*dimScale/(dimResolution/2)]}>
+          <group key={`zGroup_${idx}`} position={[0, 0, isPC ? -depthRatio + idx*zDimScale/(zResolution/2)*depthRatio : -1 + idx*zDimScale/(zResolution/2)]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, flipY ? Math.PI/2 : -Math.PI/2 , 0]} />
             <Text 
               key={`textY_${idx}`}
-              anchorX={idx == 0 ? (flipY ? 'right' : 'left') : idx == dimResolution-1 ? (flipY ? 'left' : 'right') : 'center'}
+              anchorX={idx == 0 ? (flipY ? 'right' : 'left') : idx == zResolution-1 ? (flipY ? 'left' : 'right') : 'center'}
               anchorY={'top'} 
               fontSize={0.04} 
-              color={'black'}
+              color={colorHex}
               material-depthTest={false}
               rotation={[-Math.PI/2, 0, flipY ? Math.PI/2 : -Math.PI/2]}
               position={[flipY ? 0.05 :-0.05, 0, 0]}
-            >{parseLoc(dimArrays[0][(Math.floor((dimLengths[0]-1)*idx*valDelta)+Math.floor(dimLengths[0]*animProg))%dimLengths[0]],dimUnits[0])}</Text>
+            >{parseLoc(dimArrays[0][(Math.floor((dimLengths[0]-1)*idx*zValDelta)+Math.floor(dimLengths[0]*animProg))%dimLengths[0]],dimUnits[0])}</Text>
           </group>
         ))}
-        <Text 
-          key={'xTitle'}
-          anchorX={'center'}
-          anchorY={'top'} 
-          fontSize={0.1} 
-          color={'black'}
-          material-depthTest={false}
-          rotation={[-Math.PI/2, 0, flipY ? Math.PI/2 : -Math.PI/2]}
-          position={[flipY ? 0.2 : -0.2, 0, (zRange[0]+zRange[1])/2]}
-        >{dimNames[0]}</Text>
+        <group rotation={[-Math.PI/2, 0, flipY ? Math.PI/2 : -Math.PI/2]} position={[flipY ? 0.2 : -0.2, 0, (zRange[0]+zRange[1])/2]}>
+          <Text 
+            key={'zTitle'}
+            anchorX={'center'}
+            anchorY={'top'} 
+            fontSize={0.1} 
+            color={colorHex}
+            material-depthTest={false}
+          >{dimNames[0]}</Text>
+          {zResolution < 20 &&
+          <Text 
+            key={'zAdd'}
+            anchorX={'center'}
+            anchorY={'middle'} 
+            fontSize={0.2} 
+            color={colorHex}
+            material-depthTest={false}
+            position={[.2, -.2, 0]}
+            onClick={e=>setZResolution(x=> Math.min(x+1,20))}
+            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+            onPointerLeave={e=>document.body.style.cursor = 'default'}
+          >
+            +
+          </Text>}
+          {zResolution > 1 &&
+          <Text 
+            key={'zSub'}
+            anchorX={'center'}
+            anchorY={'middle'} 
+            fontSize={0.2} 
+            color={colorHex}
+            material-depthTest={false}
+            position={[-.2, -.2, 0]}
+            onClick={e=>setZResolution(x=> Math.max(x-1,1))}
+            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+            onPointerLeave={e=>document.body.style.cursor = 'default'}
+          >
+            -
+          </Text>}
+        </group>
       </group>
     </group>
         
     {/* Vertical Group */}
     <group position={[flipY ? xRange[0] : xRange[1], 0, flipX ? isPC ? zRange[0]*depthRatio : zRange[0] : isPC ? zRange[1]*depthRatio : zRange[1]]}> 
       <primitive key={'yLine'} object={yLine} />
-      {Array(dimResolution).fill(null).map((_val,idx)=>(
-           (((yRange[0] + 1)/2) <= (idx*dimScale)/dimResolution &&
-           ((yRange[1] + 1)/2) >= (idx*dimScale)/dimResolution)
+      {Array(yResolution).fill(null).map((_val,idx)=>(
+           (((yRange[0] + 1)/2) <= (idx*yDimScale)/yResolution &&
+           ((yRange[1] + 1)/2) >= (idx*yDimScale)/yResolution)
            &&       
-          <group key={`yGroup_${idx}`} position={[0, -shape.y/2 + idx*dimScale/(dimResolution/2)*shapeRatio, 0]}>
+          <group key={`yGroup_${idx}`} position={[0, -shape.y/2 + idx*yDimScale/(yResolution/2)*shapeRatio, 0]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, flipY ? -Math.PI/2 :Math.PI/2 , 0]} />
             <Text 
               key={`text_${idx}`}
               anchorX={flipY ? flipX ? 'left' : 'right' : flipX ? 'right' : 'left'}
               anchorY={'middle'} 
               fontSize={0.05} 
-              color={'black'}
+              color={colorHex}
               material-depthTest={false}
               rotation={[0, flipX ? Math.PI : 0, 0]}
               position={[flipY ? -0.07 : 0.07, 0, 0]}
-            >{parseLoc(dimArrays[1][Math.floor((dimLengths[1]-1)*idx*valDelta)],dimUnits[1])}</Text>
+            >{parseLoc(dimArrays[1][Math.floor((dimLengths[1]-1)*idx*yValDelta)],dimUnits[1])}</Text>
           </group>
         ))}
-        <Text 
-          key={'xTitle'}
-          anchorX={flipY ? flipX ? 'left' : 'right' : flipX ? 'right' : 'left'}
-          anchorY={'middle'} 
-          fontSize={0.1} 
-          color={'black'}
-          material-depthTest={false}
-          rotation={[0, flipX ? Math.PI : 0, 0]}
-          position={[flipY ? -0.25 : 0.25, (yRange[0]+yRange[1])/2*shapeRatio, 0]}
-        >{dimNames[1]}</Text>
+        <group rotation={[0, flipX ? Math.PI : 0, 0]} position={[flipY ? -0.25 : 0.25, (yRange[0]+yRange[1])/2*shapeRatio, 0]}>
+          <Text 
+            key={'yTitle'}
+            anchorX={flipY ? flipX ? 'left' : 'right' : flipX ? 'right' : 'left'}
+            anchorY={'middle'} 
+            fontSize={0.1} 
+            color={colorHex}
+            material-depthTest={false}
+          >{dimNames[1]}</Text>
+          {yResolution < 20 &&
+          <Text 
+            key={'zAdd'}
+            anchorX={'center'}
+            anchorY={'middle'} 
+            fontSize={0.2} 
+            color={colorHex}
+            material-depthTest={false}
+            position={[flipY ? -0.2 : 0.2, 0.2, 0]}
+            onClick={e=>setYResolution(x=> Math.min(x+1,20))}
+            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+            onPointerLeave={e=>document.body.style.cursor = 'default'}
+          >
+            +
+          </Text>}
+          {yResolution > 1 &&
+          <Text 
+            key={'zSub'}
+            anchorX={'center'}
+            anchorY={'middle'} 
+            fontSize={0.2} 
+            color={colorHex}
+            material-depthTest={false}
+            position={[flipY ? -0.2 : 0.2, -0.2, 0]}
+            onClick={e=>setYResolution(x=> Math.max(x-1,1))}
+            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+            onPointerLeave={e=>document.body.style.cursor = 'default'}
+          >
+            -
+          </Text>}
+
+        </group>
     </group>
   </group>
   )
