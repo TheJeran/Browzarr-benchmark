@@ -11,6 +11,7 @@ import { Navbar, Colorbar } from '../ui';
 import AnalysisInfo from './AnalysisInfo';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import AnalysisWG from './AnalysisWG';
+import { ParseExtent } from '@/utils/HelperFuncs';
 
 
 const Orbiter = ({isFlat} : {isFlat  : boolean}) =>{
@@ -163,9 +164,6 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
         const shapeRatio = result.shape[1] / result.shape[2] * 2;
         setShape(new THREE.Vector3(2, shapeRatio, 2));
         setDataShape(result.shape)
-        setShowLoading(false)
-        setShow(true)
-        setPlotOn(true)
       })
       }catch{
         setShowLoading(false);
@@ -199,6 +197,10 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
           tempDimUnits.push(meta.units)
         }
         setDimUnits(tempDimUnits)
+        ParseExtent(tempDimUnits, dimArrs)
+        setShowLoading(false)
+        setShow(true)
+        setPlotOn(true)
       })
 
     }
@@ -228,7 +230,7 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
         frameloop="demand"
       >
         <CountryBorders/>
-        <AxisLines />
+        {!isFlat && show && <AxisLines />}
         {plotType == "volume" && show && 
           <>
             <DataCube volTexture={texture}/>

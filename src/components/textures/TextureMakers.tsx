@@ -19,7 +19,7 @@ function ArrayTo2D(array: Array){
 
     const normed = data.map((i)=>(i-minVal)/(maxVal-minVal))
 
-    const textureData = new Uint8Array(normed.map((i)=>i*255))
+    const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254))
     const texture = new THREE.DataTexture(
         textureData,
         width,

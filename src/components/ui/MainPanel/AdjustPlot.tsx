@@ -7,6 +7,7 @@ import Slider from 'rc-slider';
 import { Button } from '../button';
 import { LuSettings } from "react-icons/lu";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { Input } from '../input';
 
 function DeNorm(val : number, min : number, max : number){
     const range = max-min;
@@ -201,6 +202,63 @@ const PointOptions = () =>{
   )
 }
 
+
+const SphereOptions = () =>{
+  const {dimArrays, dimUnits} = useGlobalStore(useShallow(state => ({
+    dimArrays: state.dimArrays,
+    dimUnits: state.dimUnits
+  })))
+
+  const {lonExtent, latExtent, lonResolution, latResolution, 
+        setLonExtent, setLatExtent, setLonResolution, setLatResolution} = usePlotStore(useShallow(state => ({
+    lonExtent: state.lonExtent,
+    latExtent: state.latExtent,
+    lonResolution: state.lonResolution,
+    latResolution: state.latResolution,
+    setLonExtent: state.setLonExtent,
+    setLatExtent: state.setLatExtent,
+    setLonResolution: state.setLonResolution,
+    setLatResolution: state.setLatResolution
+  })))
+
+
+  return (
+    <div className='grid gap-2 mb-4 justify-items-center '>
+      <h1>Spatial Extent</h1>
+      <div className='flex justify-between'>
+        <div className='flex-col justify-items-center'>
+          <h2>Min Lon</h2>
+          <Input value={lonExtent[0]} onChange={e=>setLonExtent([parseFloat(e.target.value), lonExtent[1]])} type='number'/>
+        </div>
+        <div className='flex-col justify-items-center'>
+          <h2>Max Lon</h2>
+          <Input  value={lonExtent[1]} onChange={e=>setLonExtent([lonExtent[0], parseFloat(e.target.value)])} type='number'/>
+        </div>
+      </div>
+      <div className='flex justify-between'>
+        <div className='flex-col justify-items-center'>
+          <h2>Min Lat</h2>
+          <Input value={latExtent[0]} onChange={e=>setLatExtent([parseFloat(e.target.value), latExtent[1]])} type='number'/>
+        </div>
+        <div className='flex-col justify-items-center'>
+          <h2>Min Lat</h2>
+          <Input value={latExtent[1]} onChange={e=>setLatExtent([latExtent[0], parseFloat(e.target.value)])} type='number'/>
+        </div>
+      </div>
+      <div className='flex justify-between'>
+        <div className='flex-col justify-items-center'>
+          <h2>Lon Resolution</h2>
+          <Input value={lonResolution} onChange={e=>setLonResolution(parseFloat(e.target.value))} type='number'/>
+        </div>
+        <div className='flex-col justify-items-center'>
+          <h2>Lat Resolution</h2>
+          <Input value={latResolution} onChange={e=>setLatResolution(parseFloat(e.target.value))} type='number'/>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const GlobalOptions = () =>{
   const {showBorders, borderColor, setShowBorders, setBorderColor} = usePlotStore(useShallow(state => ({
     showBorders: state.showBorders,
@@ -278,6 +336,7 @@ const AdjustPlot = () => {
             {plotType === 'volume' && <VolumeOptions />}
             {plotType === 'point-cloud' && <PointOptions />}
             {(plotType === 'volume' || plotType === 'point-cloud') && <DimSlicer />}
+            {plotType === 'sphere' && <SphereOptions />}
             <GlobalOptions />
           </div>
         </PopoverContent>
