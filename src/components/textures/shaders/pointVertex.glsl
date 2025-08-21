@@ -36,9 +36,9 @@ bool isValidPoint(){
 void main() {
     vValue = value/255.;
     vec3 scaledPos = position;
-    scaledPos.z += depthRatio;
-    scaledPos.z = mod(scaledPos.z + animateProg*2.*depthRatio, 2.*depthRatio);
-    scaledPos.z -= depthRatio;
+    scaledPos.z += depthRatio/2.;
+    scaledPos.z = mod(scaledPos.z + animateProg*depthRatio, depthRatio);
+    scaledPos.z -= depthRatio/2.;
 
     scaledPos.z *= timeScale;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(scaledPos, 1.0);

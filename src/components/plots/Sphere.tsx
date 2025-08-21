@@ -49,7 +49,7 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
         dimUnits:state.dimUnits
     })))
 
-    const {animate, animProg, cOffset, cScale, selectTS, lonExtent, latExtent, lonResolution, latResolution} = usePlotStore(useShallow(state=> ({
+    const {animate, animProg, cOffset, cScale, selectTS, lonExtent, latExtent, lonResolution, latResolution, nanColor, nanTransparency} = usePlotStore(useShallow(state=> ({
         animate: state.animate,
         animProg: state.animProg,
         cOffset: state.cOffset,
@@ -58,7 +58,9 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
         lonExtent: state.lonExtent,
         latExtent: state.latExtent,
         lonResolution: state.lonResolution,
-        latResolution: state.latResolution
+        latResolution: state.latResolution,
+        nanColor: state.nanColor,
+        nanTransparency: state.nanTransparency
     })))
 
     const [bounds, setBounds] = useState<THREE.Vector4[]>(new Array(10).fill(new THREE.Vector4(-1 , -1, -1, -1)))
@@ -75,7 +77,6 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
       const bounds = new THREE.Vector4(...xBounds, ...yBounds)
       setBounds(prev=> [bounds, ...prev].slice(0,10))
     }
-
     const [lonBounds, latBounds] = useMemo(()=>{ //The bounds for the shader. It takes the middle point of the furthest coordinate and adds the distance to edge of pixel
       const newLatStep = latResolution/2;
       const newLonStep = lonResolution/2;
@@ -98,16 +99,24 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
                 cScale: {value: cScale},
                 animateProg: {value: animProg},
                 latBounds: {value: new THREE.Vector2(deg2rad(latBounds[0]), deg2rad(latBounds[1]))},
-                lonBounds: {value: new THREE.Vector2(deg2rad(lonBounds[0]), deg2rad(lonBounds[1]))}
+                lonBounds: {value: new THREE.Vector2(deg2rad(lonBounds[0]), deg2rad(lonBounds[1]))},
+                nanColor: {value: new THREE.Color(nanColor)},
+                nanAlpha: {value: 1 - nanTransparency}
             },
             vertexShader,
             fragmentShader: isFlat ? flatSphereFrag : sphereFrag,
             blending: THREE.NormalBlending,
+            side:THREE.FrontSide,
+            transparent: true,
+            depthWrite:false,
+
         })
         return shader
-    },[texture, animProg, colormap, cOffset, cScale, animate, bounds, selectTS, lonBounds, latBounds])
+    },[texture, animProg, colormap, cOffset, cScale, animate, bounds, selectTS, lonBounds, latBounds, nanColor, nanTransparency])
 
-
+    const backMaterial = shaderMaterial.clone()
+    backMaterial.side = THREE.BackSide;
+    
     function HandleTimeSeries(event: THREE.Intersection){
         const point = event.point.normalize();
 
@@ -154,8 +163,8 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
 
   return (
     <>
-    <mesh geometry={geometry} material={shaderMaterial} onClick={e=>selectTS && HandleTimeSeries(e)}/>
-    
+    <mesh renderOrder={1} geometry={geometry} material={shaderMaterial} onClick={e=>selectTS && HandleTimeSeries(e)}/>
+    <mesh renderOrder={0} geometry={geometry} material={backMaterial} />
     </>
   )
 }

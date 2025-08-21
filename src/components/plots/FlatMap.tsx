@@ -1,12 +1,12 @@
 "use client";
 
-import React, {useMemo, useState, useEffect, useRef, useCallback} from 'react'
+import React, {useMemo, useEffect, useRef, useCallback} from 'react'
 import * as THREE from 'three'
 import { useAnalysisStore, useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
-import { fragShader, vertShader } from '@/components/computation/shaders'
-import flatFrag3D from '@/components/textures/shaders/flatFrag3D.glsl'
+import { vertShader } from '@/components/computation/shaders'
+import { flatFrag3D, fragmentFlat } from '../textures/shaders';
 import { useShallow } from 'zustand/shallow'
-import { ThreeEvent, useFrame } from '@react-three/fiber';
+import { ThreeEvent } from '@react-three/fiber';
 
 interface InfoSettersProps{
   setLoc: React.Dispatch<React.SetStateAction<number[]>>;
@@ -31,19 +31,20 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
       dimArrays: state.dimArrays,
       isFlat: state.isFlat
     })))
-    const {cScale, cOffset, animProg} = usePlotStore(useShallow(state => ({
+    const {cScale, cOffset, animProg, nanTransparency, nanColor} = usePlotStore(useShallow(state => ({
       cOffset: state.cOffset,
       cScale: state.cScale,
       resetAnim: state.resetAnim,
       animate: state.animate,
-      animProg: state.animProg
+      animProg: state.animProg,
+      nanTransparency: state.nanTransparency,
+      nanColor: state.nanColor
     })))
     const {axis, analysisMode, analysisArray} = useAnalysisStore(useShallow(state=> ({
       axis: state.axis,
       analysisMode: state.analysisMode,
       analysisArray: state.analysisArray
     })))
-
     const dataSource = texture.source.data
     const shapeRatio = useMemo(()=> dataSource.height/dataSource.width, [dataSource])
     const geometry = useMemo(()=>new THREE.PlaneGeometry(2,2*shapeRatio),[shapeRatio])
@@ -52,7 +53,6 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
     const rotateMap = analysisMode && axis == 2;
     const sampleArray = useMemo(()=> analysisMode ? analysisArray : dataArray,[analysisMode, dataArray, analysisArray])
     const analysisDims = useMemo(()=>dimArrays.filter((_e,idx)=> idx != axis),[dimArrays,axis])
-
     const shaderMaterial = useMemo(()=>new THREE.ShaderMaterial({
             glslVersion: THREE.GLSL3,
             uniforms:{
@@ -60,12 +60,14 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
               cOffset: {value: cOffset},
               data : {value: texture},
               cmap : { value : colormap},
-              animateProg: {value:animProg}
+              animateProg: {value:animProg},
+              nanColor: {value : new THREE.Color(nanColor)},
+              nanAlpha: {value: 1- nanTransparency}
             },
             vertexShader: vertShader,
-            fragmentShader: isFlat ? fragShader : flatFrag3D,
+            fragmentShader: isFlat ? fragmentFlat : flatFrag3D,
             side: THREE.DoubleSide,
-        }),[cScale, cOffset, texture, colormap, animProg])
+        }),[cScale, cOffset, texture, colormap, animProg, nanColor, nanTransparency])
 
     useEffect(()=>{
         geometry.dispose()
@@ -84,7 +86,7 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
         const xIdx = Math.round(x*xSize-.5)
         const yIdx = Math.round(y*ySize-.5)
         let dataIdx = xSize * yIdx + xIdx;
-        dataIdx += isFlat ? 0 : Math.round(dimArrays[0].length * animProg) * xSize*ySize
+        dataIdx += isFlat ? 0 : Math.floor((dimArrays[0].length-1) * animProg) * xSize*ySize
         const dataVal = sampleArray ? sampleArray[dataIdx] : 0;
         val.current = isFlat && !analysisMode ? Rescale(dataVal, valueScales) : dataVal;
         coords.current = isFlat ? analysisMode ? [analysisDims[0][yIdx], analysisDims[1][xIdx]] : [dimArrays[0][yIdx], dimArrays[1][xIdx]] : [dimArrays[1][yIdx], dimArrays[2][xIdx]]

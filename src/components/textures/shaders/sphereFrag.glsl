@@ -16,6 +16,8 @@ uniform vec4[10] selectBounds;
 uniform bool selectTS;
 uniform vec2 latBounds;
 uniform vec2 lonBounds;
+uniform vec3 nanColor;
+uniform float nanAlpha;
 
 #define pi 3.141592653
 
@@ -50,18 +52,22 @@ void main(){
     
     if (inBounds) {
     float strength = texture(map, vec3(sampleCoord, animateProg)).r;
-    strength = strength == 1. ? strength : (strength - 0.5)*cScale + 0.5;
-    strength = strength == 1. ? strength : min(strength+cOffset,0.99);
-    color = texture(cmap, vec2(strength, 0.5));
-    
+    bool isNaN = strength == 1.;
+    strength = isNaN ? strength : (strength - 0.5)*cScale + 0.5;
+    strength = isNaN ? strength : min(strength+cOffset,0.99);
+    color = isNaN ? vec4(nanColor, nanAlpha) : texture(cmap, vec2(strength, 0.5));
+    if (!isNaN){
+        color.a = 1.;
+    }
     bool cond = isValid(sampleCoord);
     if (!cond && selectTS){
         color.rgb *= 0.65;
     }
     } else {
-        color = vec4(0.0, 0.0, 0.0, 1.0); // Black
+        color = vec4(nanColor, 1.); // Black
+        color.a = nanAlpha;
     }
-    color.a = 1.;
+    
     // color = vec4(sampleCoord, 0., 1.0);
 
 }
