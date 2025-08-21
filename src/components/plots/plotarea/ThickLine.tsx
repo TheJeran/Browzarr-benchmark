@@ -40,15 +40,13 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
 		lineResolution: state.lineResolution,
     useCustomColor: state.useCustomColor
   })))
-  const compCache = useRef<string[]> ([]) //Store ids of already calculated spots.
 	const {camera} = useThree()
 
   const {maxVal, minVal} = valueScales
-
   const materials = useMemo(()=>{
         const materialObj: { [key: string]: THREE.ShaderMaterial } = {};
         Object.keys(timeSeries).reverse().map((val, idx)=>{ 
-        const [r,g,b] = evaluate_cmap(idx/10,"Paired");
+        const [r,g,b] = timeSeries[val]['color']
         materialObj[val] = 
         new THREE.ShaderMaterial({
                 glslVersion: THREE.GLSL3,
@@ -93,7 +91,7 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
     const geomObj: Record<string, THREE.BufferGeometry> = {}
     const tempInstances: Record<string, THREE.Vector3[]> = {}
     Object.keys(timeSeries).map((val, idx)=>{ 
-      const tempTS = timeSeries[val] as number[]
+      const tempTS = timeSeries[val]['data'] as number[]
       const normed = tempTS.map((i) => (i - minVal) / (maxVal - minVal))
       const size = tempTS.length;
       const xCoords = linspace(-viewWidth,viewWidth,size)
@@ -165,9 +163,9 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
 		<group>
       {Object.keys(timeSeries).map((val, idx)=>(
         <mesh key={`lineMesh_${idx}`} geometry={geometries[val]} material={ materials[val]} />))}
-      {showPoints && Object.keys(timeSeries).map((val, idx)=> 
+      {/* {showPoints && Object.keys(timeSeries).map((val, idx)=> 
         <PlotPoints key={`plotPoints_${idx}`} points={instancePoints[val]} tsID={val} colIDX={idx} pointSetters={pointSetters} scalers={{xScale,yScale}}/>
-      )}
+      )} */}
 		</group>
 		</>
   )

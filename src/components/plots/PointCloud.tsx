@@ -6,7 +6,7 @@ import { useErrorStore, useGlobalStore, usePlotStore } from '@/utils/GlobalState
 import { useShallow } from 'zustand/shallow';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 import { parseUVCoords, getUnitAxis } from '@/utils/HelperFuncs';
-
+import { evaluate_cmap } from 'js-colormaps-es';
 interface PCProps {
   texture: THREE.Data3DTexture | THREE.DataTexture | null,
   colormap: THREE.DataTexture
@@ -19,7 +19,7 @@ interface dimensionsProps{
 }
 
 interface pointSetters{
-  setPointIDs: React.Dispatch<React.SetStateAction<number[]>>;
+  setPoints: React.Dispatch<React.SetStateAction<Record<string, number>>>;
   setStride: React.Dispatch<React.SetStateAction<number>>;
   setDimWidth: React.Dispatch<React.SetStateAction<number>>;
 }
@@ -27,7 +27,7 @@ interface pointSetters{
 
 const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProps, ZarrDS: ZarrDataset, setters:pointSetters}) =>{
   const {width, height, depth} = dimensions;
-  const {setPointIDs, setStride, setDimWidth} = setters;
+  const {setPoints, setStride, setDimWidth} = setters;
   const selectTS = usePlotStore(state => state.selectTS)
 
   const aspectRatio = width/height;
@@ -44,9 +44,13 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
     updateDimCoords: state.updateDimCoords
   })))
 
-  const lastNormal = useRef<number | null> ( null)
+  const lastNormal = useRef<number | null> ( null )
 
-  const timeScale = usePlotStore(state=> state.timeScale)
+  const {timeScale, getColorIdx, incrementColorIdx} = usePlotStore(useShallow(state=> ({
+    timeScale: state.timeScale,
+    getColorIdx: state.getColorIdx,
+    incrementColorIdx: state.incrementColorIdx
+  })))
 
   function HandleTimeSeries(event: THREE.Intersection){
       if (!selectTS){
@@ -58,7 +62,7 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
       if (dimAxis != lastNormal.current){
         setTimeSeries({}); //Clear timeseries if new axis
         setDimCoords({});
-        setPointIDs(new Array(10).fill(-1))
+        setPoints({})
       }
       lastNormal.current = dimAxis;
       
@@ -76,7 +80,12 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
         const thisDimUnits = dimUnits.filter((_,idx)=> dimCoords[idx] !== null)
         dimCoords = dimCoords.filter(val => val !== null)
         const tsID = `${dimCoords[0]}_${dimCoords[1]}`
-        updateTimeSeries({ [tsID] : tempTS})
+        const tsObj = {
+          color:evaluate_cmap(getColorIdx()/10,"Paired"),
+          data:tempTS
+        }
+        incrementColorIdx();
+        updateTimeSeries({ [tsID] : tsObj})
         const dimObj = {
           first:{
             name:thisDimNames[0],
@@ -102,16 +111,17 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
         const newIdx = uIdx * thisStride[0] + vIdx * thisStride[1]
         const dimStride = strides.filter((_,idx)=> coordUV[idx] == null)
         setDimWidth(dimWidth[0])
-        setPointIDs(prevItems => {
-              const updated = [newIdx, ...prevItems];
-              return updated.slice(0, 10); // keep only first 10 items
+        setPoints(prevItems => {
+              const newEntry = {[tsID] : newIdx}
+              const updated = {...newEntry, ...prevItems};
+              return updated; // keep only first 10 items
             })
         setStride(dimStride[0])        
       }
 
     }
   return(
-    <mesh scale={[2*aspectRatio, 2, 2*depthRatio*timeScale]} onClick={HandleTimeSeries}>
+    <mesh scale={[aspectRatio, 1, depthRatio*timeScale]} onClick={HandleTimeSeries}>
         <boxGeometry />
         <meshBasicMaterial transparent opacity={0}/>
     </mesh>
@@ -120,7 +130,10 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
 
 export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrDataset} )=>{
     const {texture, colormap } = textures;
-    const flipY = useGlobalStore(state=>state.flipY)
+    const {timeSeries, flipY} = useGlobalStore(useShallow(state=>({
+      timeSeries: state.timeSeries,
+      flipY: state.flipY
+    })))
     const {scalePoints, scaleIntensity, pointSize, cScale, cOffset, valueRange, animProg, selectTS, timeScale, xRange, yRange, zRange,} = usePlotStore(useShallow(state => ({
       scalePoints: state.scalePoints,
       scaleIntensity: state.scaleIntensity,
@@ -137,10 +150,23 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
     })))
 
     const setOom = useErrorStore(state => state.setOom)
-
+    const [pointsObj, setPointsObj] = useState<Record<string, number>>({})
     const [pointIDs, setPointIDs] = useState<number[]>(new Array(10).fill(-1))
     const [stride, setStride] = useState<number>(1)
     const [dimWidth, setDimWidth] = useState<number>(0);
+
+    useEffect(()=>{ //This goes through the list of highlighted columns and removes those that aren't included in the timeseries object.
+      let pointIDs = Object.keys(pointsObj)
+      const tsIDs = Object.keys(timeSeries)
+      pointIDs = pointIDs.filter((val) => tsIDs.includes(val))
+      const pointValues = pointIDs.map(id => pointsObj[id]);
+      const paddedArray = [
+        ...pointValues,
+        ...Array(Math.max(0, 10 - pointValues.length)).fill(-1)
+      ];
+      setPointIDs(paddedArray)
+
+    },[timeSeries, pointsObj])
 
     //Extract data and shape from Data3DTexture
     const { data, width, height, depth } = useMemo(() => {
@@ -229,7 +255,7 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       <mesh scale={[1,flipY ? -1:1, 1]}>
         <points geometry={geometry} material={shaderMaterial} />
       </mesh>
-      <MappingCube dimensions={{width,height,depth}} ZarrDS={ZarrDS} setters={{setPointIDs, setStride, setDimWidth}}/>
+      <MappingCube dimensions={{width,height,depth}} ZarrDS={ZarrDS} setters={{setPoints:setPointsObj, setStride, setDimWidth}}/>
       </>
     );
   }

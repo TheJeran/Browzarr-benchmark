@@ -1,10 +1,11 @@
-import React, {useEffect, useMemo, useState} from 'react'
+import React, {useRef, useMemo, useState, useEffect} from 'react'
 import * as THREE from 'three'
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
 import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU';
 import { useShallow } from 'zustand/shallow'
 import { vertexShader, sphereFrag, flatSphereFrag } from '../textures/shaders'
 import { parseUVCoords } from '@/utils/HelperFuncs';
+import { evaluate_cmap } from 'js-colormaps-es';
 
 
 function XYZtoUV(xyz : THREE.Vector3, width: number, height : number){
@@ -42,14 +43,17 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
       updateTimeSeries: state.updateTimeSeries
     })))
 
-    const {dimArrays,dimNames,dimUnits} = useGlobalStore(useShallow(state=>({
+    const {dimArrays,dimNames,dimUnits, timeSeries} = useGlobalStore(useShallow(state=>({
         shape:state.shape,
         dimArrays:state.dimArrays,
         dimNames:state.dimNames,
-        dimUnits:state.dimUnits
+        dimUnits:state.dimUnits,
+        timeSeries: state.timeSeries
     })))
 
-    const {animate, animProg, cOffset, cScale, selectTS, lonExtent, latExtent, lonResolution, latResolution, nanColor, nanTransparency} = usePlotStore(useShallow(state=> ({
+    const {animate, animProg, cOffset, cScale, selectTS, lonExtent, latExtent, 
+      lonResolution, latResolution, nanColor, nanTransparency,
+      getColorIdx, incrementColorIdx} = usePlotStore(useShallow(state=> ({
         animate: state.animate,
         animProg: state.animProg,
         cOffset: state.cOffset,
@@ -60,23 +64,40 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
         lonResolution: state.lonResolution,
         latResolution: state.latResolution,
         nanColor: state.nanColor,
-        nanTransparency: state.nanTransparency
+        nanTransparency: state.nanTransparency,
+        getColorIdx: state.getColorIdx,
+        incrementColorIdx: state.incrementColorIdx
     })))
 
+    const [boundsObj, setBoundsObj] = useState<Record<string, THREE.Vector4>>({})
     const [bounds, setBounds] = useState<THREE.Vector4[]>(new Array(10).fill(new THREE.Vector4(-1 , -1, -1, -1)))
     const {height, width} = useMemo(()=>texture?.source.data, [texture])
 
-    function addBounds(uv : THREE.Vector2){ //This adds the bounds in UV space of a selected square on the sphere. 
+    useEffect(()=>{ //This goes through the list of highlighted squares and removes those that aren't included in the timeseries object.
+      let boundIDs = Object.keys(boundsObj)
+      const tsIDs = Object.keys(timeSeries)
+      boundIDs = boundIDs.filter((val) => tsIDs.includes(val))
+      const pointValues = boundIDs.map(id => boundsObj[id]);
+      const paddedArray = [
+        ...pointValues,
+        ...Array(Math.max(0, 10 - pointValues.length)).fill(new THREE.Vector4(-1 , -1, -1, -1))
+      ];
+      setBounds(paddedArray)
+    },[boundsObj, timeSeries])
+
+    function addBounds(uv : THREE.Vector2, tsID: string){ //This adds the bounds in UV space of a selected square on the sphere. 
       const widthID = Math.floor(uv.x*(width))+.5;
-      console.log(uv.x*(width))
       const heightID = Math.ceil(uv.y*height)-.5 ;
       const delX = 1/width;
       const delY = 1/height;
       const xBounds = [widthID/width-delX/2,widthID/width+delX/2]
       const yBounds = [heightID/height-delY/2,heightID/height+delY/2]
       const bounds = new THREE.Vector4(...xBounds, ...yBounds)
-      setBounds(prev=> [bounds, ...prev].slice(0,10))
+      const newBoundObj = {[tsID] : bounds}
+      setBoundsObj(prev=>{ return {...newBoundObj, ...prev}})
     }
+
+
     const [lonBounds, latBounds] = useMemo(()=>{ //The bounds for the shader. It takes the middle point of the furthest coordinate and adds the distance to edge of pixel
       const newLatStep = latResolution/2;
       const newLonStep = lonResolution/2;
@@ -86,6 +107,7 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
     },[latExtent, lonExtent, lonResolution, latResolution])
 
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(1, 9), []);
+    const colorIdx = useRef<number>(0);
     
     const shaderMaterial = useMemo(()=>{
         const shader = new THREE.ShaderMaterial({
@@ -140,7 +162,12 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
           const thisDimUnits = dimUnits.filter((_,idx)=> dimCoords[idx] !== null)
           dimCoords = dimCoords.filter(val => val !== null)
           const tsID = `${dimCoords[0]}_${dimCoords[1]}`
-          updateTimeSeries({ [tsID] : tempTS})
+          const tsObj = {
+            color:evaluate_cmap(getColorIdx()/10,"Paired"),
+            data:tempTS
+          }
+          incrementColorIdx();
+          updateTimeSeries({ [tsID] : tsObj})
           const dimObj = {
             first:{
               name:thisDimNames[0],
@@ -157,8 +184,9 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
             }
           }
           updateDimCoords({[tsID] : dimObj})
+          addBounds(uv, tsID);
         }
-        addBounds(uv);
+        
       }
 
   return (

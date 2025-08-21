@@ -4,12 +4,13 @@ import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU';
 import { parseUVCoords, getUnitAxis } from '@/utils/HelperFuncs';
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
-
+import { evaluate_cmap } from 'js-colormaps-es';
 
 export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
 
   const [clickPoint, setClickPoint] = useState<THREE.Vector3 | null>(null);
-  const {setTimeSeries,setPlotDim,setDimCoords, updateTimeSeries, updateDimCoords} = useGlobalStore(
+  const {setTimeSeries,setPlotDim,setDimCoords, updateTimeSeries, 
+    updateDimCoords} = useGlobalStore(
     useShallow(state=>({
       setTimeSeries:state.setTimeSeries, 
       setPlotDim:state.setPlotDim, 
@@ -26,8 +27,13 @@ export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
       dimUnits:state.dimUnits
     })))
   
-  const selectTS = usePlotStore(state => state.selectTS)
-  const lastNormal = useRef<number | null> ( null)
+  const {selectTS, getColorIdx, incrementColorIdx} = usePlotStore(useShallow(state => ({
+    selectTS: state.selectTS,
+    getColorIdx: state.getColorIdx,
+    incrementColorIdx: state.incrementColorIdx
+  })))
+
+  const lastNormal = useRef<number | null>( 0 )
 
   function HandleTimeSeries(event: THREE.Intersection){
     const point = event.point;
@@ -55,7 +61,12 @@ export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
       const thisDimUnits = dimUnits.filter((_,idx)=> dimCoords[idx] !== null)
       dimCoords = dimCoords.filter(val => val !== null)
       const tsID = `${dimCoords[0]}_${dimCoords[1]}`
-      updateTimeSeries({ [tsID] : tempTS})
+      const tsObj = {
+        color:evaluate_cmap(getColorIdx()/10,"Paired"),
+        data:tempTS
+      }
+      updateTimeSeries({ [tsID] : tsObj})
+      incrementColorIdx();
       const dimObj = {
         first:{
           name:thisDimNames[0],
