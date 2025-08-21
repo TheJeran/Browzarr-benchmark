@@ -9,7 +9,7 @@ import MetaDataInfo from "./MetaDataInfo";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button";
 
-const Variables = () => {
+const Variables = ({openVariables, setOpenVariables}:{openVariables: boolean, setOpenVariables: React.Dispatch<React.SetStateAction<boolean>>}) => {
   const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
 
   const [showMeta, setShowMeta] = useState(false);
@@ -40,16 +40,18 @@ const Variables = () => {
       }, []);
 
   return (
-        <Popover>
+        <Popover open={openVariables} onOpenChange={setOpenVariables}>
         <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
-            tabIndex={0}
-            aria-label="Select variable">
-              <TbVariable className="size-8"/>
-          </Button>
+          <div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
+              tabIndex={0}
+              aria-label="Select variable">
+                <TbVariable className="size-8"/>
+            </Button>
+          </div>
         </PopoverTrigger>
         <PopoverContent
           side={popoverSide}

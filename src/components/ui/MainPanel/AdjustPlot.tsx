@@ -346,18 +346,20 @@ const AdjustPlot = () => {
   return (
       <Popover>
         <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-10 cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
-            disabled={!enableCond}
-            style={{
-              color: enableCond ? '' : 'var(--text-disabled)',
-              transform: enableCond ? '' : 'scale(1)'
-            }}
-          >
-            <LuSettings className="size-8" />
-          </Button>
+          <div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-10 cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
+              disabled={!enableCond}
+              style={{
+                color: enableCond ? '' : 'var(--text-disabled)',
+                transform: enableCond ? '' : 'scale(1)'
+              }}
+            >
+              <LuSettings className="size-8" />
+            </Button>
+          </div>
         </PopoverTrigger>
         <PopoverContent
           side={isMobile ? 'top' : 'left'}

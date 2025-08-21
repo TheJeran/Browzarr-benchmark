@@ -42,6 +42,7 @@ const Colormaps = () => {
     <div className="relative">
       <Popover>
       <PopoverTrigger asChild>
+        <div>
         <Button
           size="icon"
           className='cursor-pointer hover:scale-90 transition-transform duration-100 ease-out rounded-full'
@@ -53,6 +54,7 @@ const Colormaps = () => {
             height: "32px",
           }}
         > </Button>
+        </div>
       </PopoverTrigger>
       <PopoverContent
         side={popoverSide}

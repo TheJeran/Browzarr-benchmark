@@ -237,7 +237,7 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
         timeScale: {value: timeScale},
         animateProg: {value: animProg},
         depthRatio: {value: depthRatio},
-        flatBounds:{value: new THREE.Vector4(xRange[0], xRange[1], zRange[0]*depthRatio, zRange[1]*depthRatio)},
+        flatBounds:{value: new THREE.Vector4(xRange[0], xRange[1], zRange[0]*depthRatio/2, zRange[1]*depthRatio/2)},
         vertBounds:{value: new THREE.Vector2(yRange[0]/aspectRatio, yRange[1]/aspectRatio)},
       },
       vertexShader:pointVert,
