@@ -40,16 +40,17 @@ const PlotType = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className='cursor-pointer hover:scale-90 transition-transform duration-100 ease-out'
-          tabIndex={0}
-          aria-label="Select plot type"
-        >
-          {plotIcons[plotType as keyof typeof plotIcons]}
-        </Button>
-
+        <div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className='cursor-pointer hover:scale-90 transition-transform duration-100 ease-out'
+            tabIndex={0}
+            aria-label="Select plot type"
+          >
+            {plotIcons[plotType as keyof typeof plotIcons]}
+          </Button>
+      </div>
       </PopoverTrigger>
       <PopoverContent
         side={popoverSide}

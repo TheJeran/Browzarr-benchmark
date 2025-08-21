@@ -138,18 +138,20 @@ const AnalysisOptions = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-10 cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
-          disabled={!plotOn}
-          style={{
-            color: plotOn ? '' : 'var(--text-disabled)',
-            transform: plotOn ? '' : 'scale(1)'
-          }}
-        >
-          <PiMathOperationsBold className="size-8"/>
-        </Button>
+        <div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-10 cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
+            disabled={!plotOn}
+            style={{
+              color: plotOn ? '' : 'var(--text-disabled)',
+              transform: plotOn ? '' : 'scale(1)'
+            }}
+          >
+            <PiMathOperationsBold className="size-8"/>
+          </Button>
+        </div>
       </PopoverTrigger>
       
       <PopoverContent

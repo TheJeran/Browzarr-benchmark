@@ -15,7 +15,7 @@ const ZARR_STORES = {
   SEASFIRE: 'https://s3.bgc-jena.mpg.de:9000/misc/seasfire_rechunked.zarr',
 };
 
-const Dataset = () => {
+const Dataset = ({setOpenVariables} : {setOpenVariables: React.Dispatch<React.SetStateAction<boolean>>}) => {
   const [showStoreInput, setShowStoreInput] = useState(false);
   const [showLocalInput, setShowLocalInput] = useState(false);
   const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
@@ -40,16 +40,17 @@ const Dataset = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-            tabIndex={0}
-            variant="ghost"
-            size="icon"
-            className='cursor-pointer hover:scale-90 transition-transform duration-100 ease-out'
-            aria-label="Select dataset"
-            >
-            <TbDatabasePlus className="size-8" />
-        </Button>
-        
+        <div>
+          <Button
+              tabIndex={0}
+              variant="ghost"
+              size="icon"
+              className='cursor-pointer hover:scale-90 transition-transform duration-100 ease-out'
+              aria-label="Select dataset"
+              >
+              <TbDatabasePlus className="size-8" />
+          </Button>
+        </div>
       </PopoverTrigger>
       <PopoverContent
         side={popoverSide}
@@ -63,6 +64,7 @@ const Dataset = () => {
             setShowLocalInput(false);
             setActiveOption('ESDC')
             setInitStore(ZARR_STORES.ESDC);
+            setOpenVariables(true)
           }}
         >
           ESDC
@@ -75,6 +77,7 @@ const Dataset = () => {
             setShowLocalInput(false);
             setActiveOption('seasfire')
             setInitStore(ZARR_STORES.SEASFIRE);
+            setOpenVariables(true)
           }}
         >
           Seasfire
@@ -98,6 +101,7 @@ const Dataset = () => {
                 e.preventDefault();
                 const input = e.currentTarget.elements[0] as HTMLInputElement;
                 setInitStore(input.value);
+                setOpenVariables(true)
               }}
             >
               <Input className="w-[100px]" placeholder="Store URL" />
@@ -115,14 +119,13 @@ const Dataset = () => {
               setShowLocalInput((prev) => !prev);
               setShowStoreInput(false);
               setActiveOption('local')
-              setInitStore('local')
             }}
           >
             Local
           </Button>
           {showLocalInput && (
             <div className="mt-2">
-              <LocalZarr setShowLocal={setShowLocalInput} />
+              <LocalZarr setShowLocal={setShowLocalInput} setOpenVariables={setOpenVariables} />
             </div>
           )}
         </div>
