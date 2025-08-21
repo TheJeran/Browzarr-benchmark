@@ -7,7 +7,6 @@ import './LinePlot.css'
 import { useGlobalStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
 import PlotLineOptions from '@/components/ui/LinePlotArea/PlotLineOptions'
-import { evaluate_cmap } from 'js-colormaps-es';
 import { IoCloseCircleSharp } from "react-icons/io5";
 import { DimCoords } from '@/utils/GlobalStates'
 
@@ -69,7 +68,12 @@ function PointInfo({pointID,pointLoc,showPointInfo, plotUnits}:pointInfo){
 }
 
 function PointCoords(){
-  const {coords, timeSeries, setDimCoords, setTimeSeries} = useGlobalStore(useShallow(state=>({coords: state.dimCoords, timeSeries: state.timeSeries, setDimCoords: state.setDimCoords, setTimeSeries: state.setTimeSeries})))
+  const {coords, timeSeries, setDimCoords, setTimeSeries} = useGlobalStore(useShallow(state=>({
+    coords: state.dimCoords, 
+    timeSeries: state.timeSeries, 
+    setDimCoords: state.setDimCoords, 
+    setTimeSeries: state.setTimeSeries}
+  )))
   const [moving,setMoving] = useState<boolean>(false)
   const initialMouse = useRef<number[]>([0,Math.round(window.innerHeight*0.255)])
   const initialDiv = useRef<number[]>([0,Math.round(window.innerHeight*0.255)])
@@ -130,7 +134,7 @@ function PointCoords(){
         <div className='plot-coords'
         key={val}   
         style={{
-          background: `rgb(${evaluate_cmap(idx/10,'Paired')})`,
+          background: `rgb(${timeSeries[val]['color']})`,
           justifyContent:'space-between'
         }}
       >

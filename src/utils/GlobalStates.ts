@@ -21,7 +21,7 @@ type StoreState = {
   shape: THREE.Vector3;
   valueScales: { maxVal: number; minVal: number };
   colormap: THREE.DataTexture;
-  timeSeries: Record<string, any>;
+  timeSeries: Record<string, Record<string, any>>;
   strides: number[];
   showLoading: boolean;
   metadata: Record<string, any> | null;
@@ -47,8 +47,8 @@ type StoreState = {
   setShape: (shape: THREE.Vector3) => void;
   setValueScales: (valueScales: { maxVal: number; minVal: number }) => void;
   setColormap: (colormap: THREE.DataTexture) => void;
-  setTimeSeries: (timeSeries: Record<string, number[]>) => void;
-  updateTimeSeries: (newEntries: Record<string, number[]>) => void;
+  setTimeSeries: (timeSeries: Record<string, Record<string, any>>) => void;
+  updateTimeSeries: (newEntries: Record<string, Record<string, any>>) => void;
   setStrides: (strides: number[]) => void;
   setShowLoading: (showLoading: boolean) => void;
   setMetadata: (metadata: object | null) => void;
@@ -186,6 +186,7 @@ type PlotState ={
   latExtent: [number, number];
   lonResolution: number;
   latResolution: number;
+  colorIdx: number;
 
   setQuality: (quality: number) => void;
   setTimeScale: (timeScale : number) =>void;
@@ -223,10 +224,11 @@ type PlotState ={
   setLatExtent: (latExtent: [number, number]) => void;
   setLonResolution: (lonResolution: number) => void;
   setLatResolution: (latResolution: number) => void;
+  incrementColorIdx: () => void;
+  getColorIdx: () => number;
 }
 
-export const usePlotStore = create<PlotState>((set) => ({
-  //Create the initial state for the plot store
+export const usePlotStore = create<PlotState>((set, get) => ({
   plotType: "sphere", 
   pointSize: 5,
   scalePoints: false,
@@ -263,6 +265,7 @@ export const usePlotStore = create<PlotState>((set) => ({
   latExtent: [-90, 90],
   lonResolution: 1,
   latResolution: 1,
+  colorIdx: 0,
 
   setQuality: (quality) => set({ quality }),
   setTimeScale: (timeScale) => set({ timeScale }),
@@ -299,7 +302,11 @@ export const usePlotStore = create<PlotState>((set) => ({
   setLonExtent: (lonExtent) => set({ lonExtent }),
   setLatExtent: (latExtent) => set({ latExtent }),
   setLonResolution: (lonResolution) => set({ lonResolution }),
-  setLatResolution: (latResolution) => set({ latResolution })
+  setLatResolution: (latResolution) => set({ latResolution }),
+  incrementColorIdx: () => set(state => ({ 
+    colorIdx: (state.colorIdx + 1) % 10 
+  })),
+  getColorIdx: () => get().colorIdx,
 }))
 
 
