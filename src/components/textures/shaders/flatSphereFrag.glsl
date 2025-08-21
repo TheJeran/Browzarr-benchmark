@@ -15,6 +15,8 @@ uniform float animateProg;
 uniform bool selectTS;
 uniform vec2 latBounds;
 uniform vec2 lonBounds;
+uniform vec3 nanColor;
+uniform float nanAlpha;
 
 #define pi 3.141592653
 
@@ -31,10 +33,13 @@ vec2 giveUV(vec3 position){
 void main(){
     vec2 sampleCoord = giveUV(aPosition);
     float strength = texture(map, sampleCoord).r;
-    strength = strength == 1. ? strength : (strength - 0.5)*cScale + 0.5;
-    strength = strength == 1. ? strength : min(strength+cOffset,0.99);
-    color = texture(cmap, vec2(strength, 0.5));
-    color.a = 1.;
-    // color = vec4(sampleCoord, 0., 1.0);
+    bool isNaN = strength == 1.;
+    strength = isNaN ? strength : (strength - 0.5)*cScale + 0.5;
+    strength = isNaN ? strength : min(strength+cOffset,0.99);
+    color = isNaN ? vec4(nanColor, nanAlpha) : texture(cmap, vec2(strength, 0.5));
+    if (!isNaN){
+        color.a = 1.;
+    }
+
 
 }

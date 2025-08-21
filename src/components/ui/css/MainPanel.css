@@ -62,7 +62,7 @@
 }
 
 .colormaps{
-    height: 50vh;
+    max-height: 50vh;
     width: 234px;
     display:grid;
     gap:3px;

@@ -6,17 +6,18 @@ uniform sampler2D cmap;
 uniform float cOffset;
 uniform float cScale;
 uniform float animateProg;
+uniform float nanAlpha;
+uniform vec3 nanColor;
 
 varying vec2 vUv;
 out vec4 Color;
 
 void main() {
-    vec4 val = texture(data,vec3(vUv, animateProg));
-    float d = val.x;
-    float sampLoc = d == 1. ? d : (d - 0.5)*cScale + 0.5;
-    sampLoc = d == 1. ? d : min(sampLoc+cOffset,0.99);
-    vec4 color = texture(cmap, vec2(sampLoc,0.5));
-    color.a = val.x > 0.999 ? 0. : 1.;
 
-    Color = color;
+    float strength = texture(data,vec3(vUv, animateProg)).r;
+    bool isNaN = strength == 1.;
+    float sampLoc = isNaN ? strength: (strength - 0.5)*cScale + 0.5;
+    sampLoc = isNaN ? strength : sampLoc+cOffset;
+    Color = isNaN ? vec4(nanColor, nanAlpha) : vec4(texture2D(cmap, vec2(sampLoc, 0.5)).rgb, 1.);
+
 }

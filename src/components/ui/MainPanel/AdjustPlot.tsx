@@ -157,21 +157,6 @@ const VolumeOptions = ()=>{
               className='w-full mb-2'
           onValueChange={(vals:number[]) => setTransparency(vals[0])}
           />
-      <b>NaN Transparency</b>
-      <UISlider
-              min={0}
-              max={1}
-              step={0.05}
-              value={[nanTransparency]}
-              className='w-full mb-2'
-          onValueChange={(vals:number[]) => setNanTransparency(vals[0])}
-          />
-        <b>NaN Color</b>
-      <input type="color"
-      className='w-[100%] cursor-pointer'
-              value={nanColor}
-          onChange={e => setNanColor(e.target.value)}
-          />
     </div>
   )
 }
@@ -281,15 +266,34 @@ const SpatialExtent = () =>{
 }
 
 const GlobalOptions = () =>{
-  const {showBorders, borderColor, setShowBorders, setBorderColor} = usePlotStore(useShallow(state => ({
+  const {showBorders, borderColor, nanColor, nanTransparency, setShowBorders, setBorderColor, setNanColor, setNanTransparency} = usePlotStore(useShallow(state => ({
     showBorders: state.showBorders,
     borderColor: state.borderColor,
+    nanColor: state.nanColor,
+    nanTransparency: state.nanTransparency,
     setShowBorders: state.setShowBorders,
-    setBorderColor: state.setBorderColor
+    setBorderColor: state.setBorderColor,
+    setNanColor: state.setNanColor,
+    setNanTransparency: state.setNanTransparency
   })))
 
   return (
     <div className='grid gap-y-[5px] items-center w-50 text-center'>
+      <b>NaN Transparency</b>
+      <UISlider
+              min={0}
+              max={1}
+              step={0.05}
+              value={[nanTransparency]}
+              className='w-full mb-2'
+          onValueChange={(vals:number[]) => setNanTransparency(vals[0])}
+          />
+        <b>NaN Color</b>
+      <input type="color"
+      className='w-[100%] cursor-pointer'
+              value={nanColor}
+          onChange={e => setNanColor(e.target.value)}
+          />
       <Button variant="pink" size="sm" className="w-[100%] cursor-[pointer] mb-2 mt-2" onClick={() => setShowBorders(!showBorders)}>{showBorders ? "Hide Borders" : "Show Borders" }</Button>
       {showBorders && <div>
       <b>Border Color</b>
@@ -366,7 +370,7 @@ const AdjustPlot = () => {
           {plotType === 'volume' && <VolumeOptions />}
           {plotType === 'point-cloud' && <PointOptions />}
           {(plotType === 'volume' || plotType === 'point-cloud') && <DimSlicer />}
-          <GlobalOptions />
+          {plotType != 'point-cloud' && <GlobalOptions />}
         </PopoverContent>
       </Popover>
   )
