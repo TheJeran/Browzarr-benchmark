@@ -1,8 +1,8 @@
 "use client";
 import { ArrayMinMax } from '@/utils/HelperFuncs';
 import * as THREE from 'three'
-import React, { useEffect, useState, useRef } from 'react'
-import { DataReduction, Convolve, Correlate2D, Correlate3D, CUMSUM3D } from '../computation/webGPU'
+import React, { useEffect, useRef } from 'react'
+import { DataReduction, Convolve, Multivariate2D, Multivariate3D, CUMSUM3D } from '../computation/webGPU'
 import { useGlobalStore, useAnalysisStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
@@ -23,7 +23,8 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
 
     const setPlotType = usePlotStore(state => state.setPlotType)
     const {axis, execute, operation, useTwo, variable2, 
-        valueScalesOrig, kernelSize, kernelDepth, kernelOperation, setValueScalesOrig, setAnalysisArray} = useAnalysisStore(useShallow(state => ({
+        valueScalesOrig, kernelSize, kernelDepth, kernelOperation, reverseDirection, 
+        setValueScalesOrig, setAnalysisArray} = useAnalysisStore(useShallow(state => ({
         axis: state.axis,
         execute: state.execute,
         operation: state.operation,
@@ -33,6 +34,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
         kernelSize: state.kernelSize,
         kernelDepth: state.kernelDepth,
         kernelOperation: state.kernelOperation,
+        reverseDirection: state.reverseDirection,
         setValueScalesOrig: state.setValueScalesOrig,
         setAnalysisArray: state.setAnalysisArray,
     })))
@@ -51,7 +53,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
                 async function GPUCompute(){
                     let newArray;
                     if (operation == 'CUMSUM3D'){
-                        newArray = await CUMSUM3D(dataArray, {shape:dataShape, strides}, axis)
+                        newArray = await CUMSUM3D(dataArray, {shape:dataShape, strides}, axis, reverseDirection)
                     }
                     else{
                         newArray = await DataReduction(dataArray, {shape:dataShape, strides}, axis, operation)
@@ -59,7 +61,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
                     if (!newArray){return;}
 
                     let minVal, maxVal;
-                    if (operation == 'StDev' || operation == 'CUMSUM' || operation == 'CUMSUM3D'){
+                    if (['StDev', 'CUMSUM', 'CUMSUM3D', 'LinearSlope'].includes(operation)){
                         [minVal,maxVal] = ArrayMinMax(newArray )
                         if (!valueScalesOrig){
                             setValueScalesOrig(valueScales)
@@ -135,22 +137,25 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
                     setShowLoading(false)
                 ) 
             }
-            
         }
         else{
             async function MultiVariable(){
                 setDownloading(true)
                 variable2Array.current = await ZarrDS.GetArray(variable2, zarrSlice)
                 setDownloading(false)
-                if (operation == 'Correlation2D'){ //This will need to change when new operatiosn added
+                if (['TwoVarLinearSlope2D', 'Correlation2D', 'Covariance2D'].includes(operation)){ //These are 2D operations
+                    console.log("calling this")
                     const thisShape = dataShape.filter((e, idx) => idx != axis)
-                    //@ts-expect-error It won't be undefined here as correlate2D only outputs undefined if webGPU disabled. However, impossible to call if webGPU disabled
-                    const newArray: Float32Array = await Correlate2D(dataArray, variable2Array.current.data, {shape:dataShape, strides}, axis)
+                    //@ts-expect-error It won't be undefined here as Multivariate2D only outputs undefined if webGPU disabled. However, impossible to call if webGPU disabled so moot point
+                    const newArray: Float32Array = await Multivariate2D(dataArray, variable2Array.current.data, {shape:dataShape, strides}, axis, operation)
                     if (!valueScalesOrig){
                             setValueScalesOrig(valueScales)
                     }
-                    const [minVal, maxVal] = [-1, 1]
-                    setValueScales({minVal,maxVal}) //Set to 0-1 for correlation
+                    let [minVal, maxVal] = [-1, 1]; //Set to -1-1 for correlation
+                    if (['TwoVarLinearSlope2D', 'Covariance2D'].includes(operation)){
+                        [minVal, maxVal] = ArrayMinMax(newArray) //If slope get actual bounds
+                    }
+                    setValueScales({minVal,maxVal}) 
                     const normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
                     const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254)); 
                     const newText = new THREE.DataTexture(textureData, thisShape[1], thisShape[0], THREE.RedFormat, THREE.UnsignedByteType)
@@ -160,13 +165,16 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
                     setIsFlat(true)
                     setPlotType('flat')
                 }
-                else{ //This will need to change when new operatiosn added
+                else{ //These are 3D operations
                     //@ts-expect-error It won't be undefined here as correlate2D only outputs undefined if webGPU disabled. However, impossible to call if webGPU disabled
-                    const newArray: Float32Array = await Correlate3D(dataArray, variable2Array.current.data, {shape:dataShape, strides}, {kernelDepth, kernelSize})
+                    const newArray: Float32Array = await Multivariate3D(dataArray, variable2Array.current.data, {shape:dataShape, strides}, {kernelDepth, kernelSize}, operation)
                     if (!valueScalesOrig){
                             setValueScalesOrig(valueScales)
                     }
-                    const [minVal, maxVal] = [-1, 1]
+                    let [minVal, maxVal] = [-1, 1];
+                    if (['TwoVarLinearSlope3D', 'CovarianceConvolution'].includes(operation)){
+                        [minVal, maxVal] = ArrayMinMax(newArray) //If slope get actual bounds
+                    }
                     setValueScales({minVal,maxVal})
                     const normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
                     const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254)); 

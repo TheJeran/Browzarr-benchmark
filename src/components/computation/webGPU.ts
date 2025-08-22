@@ -10,7 +10,8 @@ const operations = {
     Min: Shaders.MinReduction,
     Max: Shaders.MaxReduction,
     StDev: Shaders.StDevReduction,
-    CUMSUM: Shaders.CUMSUMReduction
+    CUMSUM: Shaders.CUMSUMReduction,
+    LinearSlope: Shaders.LinearSlopeReduction
 }
 
 const kernelOperations = {
@@ -18,6 +19,15 @@ const kernelOperations = {
     Min: Shaders.MinConvolution,
     Max: Shaders.MaxConvolution,
     StDev: Shaders.StDevConvolution
+}
+
+const multiVariateOps = {
+    Correlation2D: Shaders.Correlation2D,
+    Correlation3D: Shaders.CorrelationConvolution,
+    TwoVarLinearSlope2D: Shaders.TwoVarLinearSlopeReduction,
+    TwoVarLinearSlope3D: Shaders.TwoVarLinearSlopeConvolution,
+    Covariance2D: Shaders.CovarianceReduction,
+    Covariance3D: Shaders.CovarianceConvolution
 }
 
 export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, operation: string){
@@ -244,7 +254,7 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
     return results;
 }
 
-export async function Correlate2D(firstArray: ArrayBufferView, secondArray: ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number,){
+export async function Multivariate2D(firstArray: ArrayBufferView, secondArray: ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, operation:string){
     const adapter = await navigator.gpu?.requestAdapter();
     const maxSize = 2047483644; //Will probably remove this eventually
     const device = await adapter?.requestDevice({requiredLimits: {
@@ -264,14 +274,15 @@ export async function Correlate2D(firstArray: ArrayBufferView, secondArray: Arra
     const outputSize = thisShape[0] * thisShape[1];
     const workGroups = thisShape.map(e => Math.ceil(e/16)) //We assume the workgroups are 16 threads each dimension. We see how many of those 16 thread workgroups are needed for each dimension
 
-    const shader = Shaders.Correlation2D
+    const shader = multiVariateOps[operation as keyof typeof multiVariateOps]
+    console.log(operation)
     const computeModule = device.createShaderModule({
-        label: 'Correlation2D compute module',
+        label: 'Multivariate2D compute module',
         code:shader,
     });
 
     const pipeline = device.createComputePipeline({
-        label: 'Correlation2D compute pipeline',
+        label: 'Multivariate2D compute pipeline',
         layout: 'auto',
         compute: {
         module: computeModule,
@@ -336,10 +347,10 @@ export async function Correlate2D(firstArray: ArrayBufferView, secondArray: Arra
     });
 
     const encoder = device.createCommandEncoder({
-        label: 'Correlation2D encoder',
+        label: 'Multivariate2D encoder',
     });
     const pass = encoder.beginComputePass({
-        label: 'Correlation2D compute pass',
+        label: 'Multivariate2D compute pass',
     });
 
     pass.setPipeline(pipeline);
@@ -366,7 +377,7 @@ export async function Correlate2D(firstArray: ArrayBufferView, secondArray: Arra
     return results;
 }
 
-export async function Correlate3D(firstArray: ArrayBufferView, secondArray: ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, kernel: {kernelSize: number, kernelDepth: number}){
+export async function Multivariate3D(firstArray: ArrayBufferView, secondArray: ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, kernel: {kernelSize: number, kernelDepth: number}, operation: string){
     const adapter = await navigator.gpu?.requestAdapter();
     const maxSize = 2047483644; //Will probably remove this eventually
     const device = await adapter?.requestDevice({requiredLimits: {
@@ -385,14 +396,15 @@ export async function Correlate3D(firstArray: ArrayBufferView, secondArray: Arra
     const outputSize = shape[0] * shape[1] * shape[2];
     const workGroups = shape.map(e => Math.ceil(e/4)) //We assume the workgroups are 4 threads each dimension. We see how many of those 4 thread workgroups are needed for each dimension
 
-    const shader = Shaders.Correlation3D
+    const shader = multiVariateOps[operation as keyof typeof multiVariateOps]
+
     const computeModule = device.createShaderModule({
-        label: 'Correlation3D compute module',
+        label: 'Multivariate3D compute module',
         code:shader,
     });
 
     const pipeline = device.createComputePipeline({
-        label: 'Correlation3D compute pipeline',
+        label: 'Multivariate3D compute pipeline',
         layout: 'auto',
         compute: {
         module: computeModule,
@@ -459,10 +471,10 @@ export async function Correlate3D(firstArray: ArrayBufferView, secondArray: Arra
     });
 
     const encoder = device.createCommandEncoder({
-        label: 'Correlation3D encoder',
+        label: 'Multivariate3D encoder',
     });
     const pass = encoder.beginComputePass({
-        label: 'Correlation3D compute pass',
+        label: 'Multivariate3D compute pass',
     });
 
     pass.setPipeline(pipeline);
@@ -489,7 +501,7 @@ export async function Correlate3D(firstArray: ArrayBufferView, secondArray: Arra
     return results;
 }
 
-export async function CUMSUM3D(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number){
+export async function CUMSUM3D(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, reverse: number){
     const adapter = await navigator.gpu?.requestAdapter();
     const maxSize = 2047483644; //Will probably remove this eventually
     const device = await adapter?.requestDevice({requiredLimits: {
@@ -530,6 +542,7 @@ export async function CUMSUM3D(inputArray :  ArrayBufferView, dimInfo : {shape: 
         ySize: shape[1],
         zSize: shape[0],
         reduceDim,
+        reverse,
         workGroups:[workGroups[2], workGroups[1], workGroups[0]],
     });
 
