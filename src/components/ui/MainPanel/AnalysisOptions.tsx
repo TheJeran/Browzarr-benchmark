@@ -21,8 +21,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-const operations = ['Mean', 'Min', 'Max', 'StDev'];
-const kernelOperations = ['Mean', 'Min', 'Max', 'StDev'];
+const operations = ['Mean', 'Min', 'Max', 'StDev', 'CUMSUM'];
+const kernelOperations = ['Mean', 'Min', 'Max', 'StDev', 'CUMSUM3D'];
 
 const webGPUError = (
   <div className="m-0 p-5 font-sans flex-column justify-center items-center">
@@ -105,7 +105,7 @@ const AnalysisOptions = () => {
     }
 
     try {
-        const _adapter = await navigator.gpu.requestAdapter();
+        await navigator.gpu.requestAdapter();
         setShowError(false);
     } catch {
         setShowError(true);
@@ -246,6 +246,7 @@ const AnalysisOptions = () => {
                           <SelectGroup>
                             <SelectLabel>Three Dimensional</SelectLabel>
                             <SelectItem value="Convolution">Convolution</SelectItem>
+                            <SelectItem value="CUMSUM3D">CUMSUM</SelectItem>
                           </SelectGroup>
                         </SelectContent>
                       </Select>

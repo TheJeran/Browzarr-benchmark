@@ -2,7 +2,7 @@
 import { ArrayMinMax } from '@/utils/HelperFuncs';
 import * as THREE from 'three'
 import React, { useEffect, useState, useRef } from 'react'
-import { DataReduction, Convolve, Correlate2D, Correlate3D } from '../computation/webGPU'
+import { DataReduction, Convolve, Correlate2D, Correlate3D, CUMSUM3D } from '../computation/webGPU'
 import { useGlobalStore, useAnalysisStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
@@ -47,11 +47,19 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
         if (!useTwo){
             if (operation != 'Convolution'){
                 const thisShape = dataShape.filter((e, idx) => idx != axis)
-                DataReduction(dataArray, {shape:dataShape, strides}, axis, operation).then(newArray=>{
+                const is3D = operation == 'CUMSUM3D'
+                async function GPUCompute(){
+                    let newArray;
+                    if (operation == 'CUMSUM3D'){
+                        newArray = await CUMSUM3D(dataArray, {shape:dataShape, strides}, axis)
+                    }
+                    else{
+                        newArray = await DataReduction(dataArray, {shape:dataShape, strides}, axis, operation)
+                    }
                     if (!newArray){return;}
 
                     let minVal, maxVal;
-                    if (operation == 'StDev'){
+                    if (operation == 'StDev' || operation == 'CUMSUM' || operation == 'CUMSUM3D'){
                         [minVal,maxVal] = ArrayMinMax(newArray )
                         if (!valueScalesOrig){
                             setValueScalesOrig(valueScales)
@@ -71,15 +79,23 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
                     }
                     const normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
                     const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254)); 
-                    const newText = new THREE.DataTexture(textureData, thisShape[1], thisShape[0], THREE.RedFormat, THREE.UnsignedByteType)
+                    const newText = is3D ? new THREE.Data3DTexture(textureData, dataShape[2], dataShape[1], dataShape[0]): 
+                        new THREE.DataTexture(textureData, thisShape[1], thisShape[0], THREE.RedFormat, THREE.UnsignedByteType)
+                    if (is3D){
+                        newText.format = THREE.RedFormat;
+                        newText.minFilter = THREE.NearestFilter;
+                        newText.magFilter = THREE.NearestFilter;
+                    }
                     newText.needsUpdate = true;
                     setAnalysisArray(newArray)
                     setTexture(newText)
-                    setIsFlat(true)
-                    setPlotType('flat')
-                }).then(e=>
+                    if (operation != 'CUMSUM3D'){
+                        setIsFlat(true)
+                        setPlotType('flat')
+                    }
                     setShowLoading(false)
-                ) 
+                }
+                GPUCompute();
             }
             else{
                 Convolve(dataArray, {shape:dataShape, strides}, kernelOperation, {kernelDepth, kernelSize}).then(newArray=>{

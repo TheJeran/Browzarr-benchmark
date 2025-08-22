@@ -250,6 +250,158 @@ const StDevReduction = /* wgsl */`
     }
 `
 
+const CUMSUMReduction = /* wgsl */`
+    ${ReductionBoilerPlate}
+        
+        var accum: f32 = 0;
+        
+        // Iterate along the dimension we're averaging
+        if (reduceDim == 0u) { // Average along Z
+            let cCoord = outX * xStride + outY * yStride;
+            for (var z: u32 = 0u; z < dimLength; z++) {
+                let inputIndex = cCoord + (z * zStride);
+                accum += inputData[inputIndex];
+                
+            }
+        } else if (reduceDim == 1u) { // Average along Y
+            let cCoord = outX * xStride + outY * zStride;
+            for (var y: u32 = 0u; y < dimLength; y++) {
+                let inputIndex = cCoord + (y * yStride);
+                accum += inputData[inputIndex];
+            }
+        } else { // Average along X
+            let cCoord = outX * yStride + outY * zStride;
+            for (var x: u32 = 0u; x < dimLength; x++) {
+                let inputIndex = cCoord + (x * xStride);
+                accum += inputData[inputIndex];
+            }
+        }
+        
+        let outputIndex = outY * xSize + outX;
+        outputData[outputIndex] = accum;
+    }
+`
+
+export const LinearSlopeReduction = /* wgsl */`
+    ${ReductionBoilerPlate}
+        let meanY: f32 = f32(dimLength)/2;
+        var sum: f32 = 0.0;
+
+
+        // Iterate along the dimension we're averaging
+        if (reduceDim == 0u) { // Average along Z
+            let cCoord = outX * xStride + outY * yStride;
+            for (var z: u32 = 0u; z < dimLength; z++) {
+                let inputIndex = cCoord + (z * zStride);
+                sum += inputData[inputIndex];
+            }
+        } else if (reduceDim == 1u) { // Average along Y
+            let cCoord = outX * xStride + outY * zStride;
+            for (var y: u32 = 0u; y < dimLength; y++) {
+                let inputIndex = cCoord + (y * yStride);
+                sum += inputData[inputIndex];
+            }
+        } else { // Average along X
+            let cCoord = outX * yStride + outY * zStride;
+            for (var x: u32 = 0u; x < dimLength; x++) {
+                let inputIndex = cCoord + (x * xStride);
+                sum += inputData[inputIndex];
+            }
+        }
+        
+        let meanX: f32 = sum / f32(dimLength);
+        var numSum: f32 = 0;
+        var denomSum: f32 = 0;
+
+        if (reduceDim == 0u) { // Average along Z
+            let cCoord = outX * xStride + outY * yStride;
+            for (var z: u32 = 0u; z < dimLength; z++) {
+                let inputIndex = cCoord + (z * zStride);
+                let xi: f32 = inputData[inputIndex]
+                numSum += (xi - meanX)*(f32(z) - meanY);
+                denomSum += (xi - meanX)*(f32(z) - meanY);
+            }
+        } else if (reduceDim == 1u) { // Average along Y
+            let cCoord = outX * xStride + outY * zStride;
+            for (var y: u32 = 0u; y < dimLength; y++) {
+                let inputIndex = cCoord + (y * yStride);
+                sum += inputData[inputIndex];
+            }
+        } else { // Average along X
+            let cCoord = outX * yStride + outY * zStride;
+            for (var x: u32 = 0u; x < dimLength; x++) {
+                let inputIndex = cCoord + (x * xStride);
+                sum += inputData[inputIndex];
+            }
+        }
+        
+        let outputIndex = outY * xSize + outX;
+        outputData[outputIndex] = accum;
+    }
+`
+
+
+export const CUMSUM3D = /* wgsl */`
+    struct Params {
+        xStride: u32,
+        yStride: u32,
+        zStride: u32,
+        xSize: u32,
+        ySize: u32,
+        zSize: u32,
+        reduceDim: u32,
+        workGroups: vec3<u32>,
+    };
+    @group(0) @binding(0) var<storage, read> inputData: array<f32>;
+    @group(0) @binding(1) var<storage, read_write> outputData: array<f32>;
+    @group(0) @binding(2) var<uniform> params: Params;
+
+    @compute @workgroup_size(4, 4, 4)
+    fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
+        let zStride = params.zStride;
+        let yStride = params.yStride;
+        let xStride = params.xStride; 
+        let xSize = params.xSize;
+        let ySize = params.ySize;
+        let zSize = params.zSize; 
+        let workGroups = params.workGroups;
+        let reduceDim = params.reduceDim;
+
+        let outX = global_id.x; 
+        let outY = global_id.y;
+        let outZ = global_id.z; 
+
+        if (outX >= xSize || outY >= ySize || outZ >= zSize) {
+            return;
+        }
+
+        let baseIdx = outZ * zStride + outY * yStride + outX * xStride;
+        var accum: f32 = 0;
+
+        // Iterate along the dimension we're averaging
+        if (reduceDim == 0u) { // CUMSUM along Z
+            for (var z: u32 = 0u; z < outZ; z++) {
+                let idx = z * zStride + outY * yStride + outX * xStride;
+                accum += inputData[idx];
+            }
+
+        } else if (reduceDim == 1u) { // CUMSUM along Y
+            for (var y: u32 = 0u; y < outY; y++) {
+                let idx = outZ * zStride + y * yStride + outX * xStride;
+                accum += inputData[idx];
+            }
+        } else { // CUMSUM along X
+            for (var x: u32 = 0u; x < outX; x++) {
+                let idx = outZ * zStride + outY * yStride + x * xStride;
+                accum += inputData[idx];
+            
+            }
+        }
+        outputData[baseIdx] = accum;
+    }
+`
+
+
 const MeanConvolution = /* wgsl */`
         ${ConvolutionBoilerPlate}    
         var sum: f32 = 0.0;
@@ -584,11 +736,13 @@ const Correlation3D = /* WGSL */`
     }
 `
 
+
 export {
     MeanReduction,
     MinReduction,
     MaxReduction,
     StDevReduction,
+    CUMSUMReduction,
     MeanConvolution,
     MinConvolution,
     MaxConvolution,

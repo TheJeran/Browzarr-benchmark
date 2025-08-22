@@ -3,20 +3,21 @@ import {
   makeStructuredView,
 } from 'webgpu-utils';
 
-import { MeanReduction, MinReduction, MaxReduction, StDevReduction, MeanConvolution, MinConvolution, MaxConvolution, StDevConvolution, Correlation2D, Correlation3D } from './WGSLShaders';
+import * as Shaders from './WGSLShaders';
 
 const operations = {
-    Mean: MeanReduction,
-    Min: MinReduction,
-    Max: MaxReduction,
-    StDev: StDevReduction
+    Mean: Shaders.MeanReduction,
+    Min: Shaders.MinReduction,
+    Max: Shaders.MaxReduction,
+    StDev: Shaders.StDevReduction,
+    CUMSUM: Shaders.CUMSUMReduction
 }
 
 const kernelOperations = {
-    Mean: MeanConvolution,
-    Min: MinConvolution,
-    Max: MaxConvolution,
-    StDev: StDevConvolution
+    Mean: Shaders.MeanConvolution,
+    Min: Shaders.MinConvolution,
+    Max: Shaders.MaxConvolution,
+    StDev: Shaders.StDevConvolution
 }
 
 export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, operation: string){
@@ -263,7 +264,7 @@ export async function Correlate2D(firstArray: ArrayBufferView, secondArray: Arra
     const outputSize = thisShape[0] * thisShape[1];
     const workGroups = thisShape.map(e => Math.ceil(e/16)) //We assume the workgroups are 16 threads each dimension. We see how many of those 16 thread workgroups are needed for each dimension
 
-    const shader = Correlation2D
+    const shader = Shaders.Correlation2D
     const computeModule = device.createShaderModule({
         label: 'Correlation2D compute module',
         code:shader,
@@ -384,7 +385,7 @@ export async function Correlate3D(firstArray: ArrayBufferView, secondArray: Arra
     const outputSize = shape[0] * shape[1] * shape[2];
     const workGroups = shape.map(e => Math.ceil(e/4)) //We assume the workgroups are 4 threads each dimension. We see how many of those 4 thread workgroups are needed for each dimension
 
-    const shader = Correlation3D
+    const shader = Shaders.Correlation3D
     const computeModule = device.createShaderModule({
         label: 'Correlation3D compute module',
         code:shader,
@@ -462,6 +463,119 @@ export async function Correlate3D(firstArray: ArrayBufferView, secondArray: Arra
     });
     const pass = encoder.beginComputePass({
         label: 'Correlation3D compute pass',
+    });
+
+    pass.setPipeline(pipeline);
+    pass.setBindGroup(0, bindGroup);
+    pass.dispatchWorkgroups(workGroups[2], workGroups[1], workGroups[0]);
+    pass.end();
+
+    encoder.copyBufferToBuffer(
+    outputBuffer, 0,
+    readBuffer, 0,
+    outputSize * 4
+    );
+
+    // Submit work to GPU
+    device.queue.submit([encoder.finish()]);
+
+    // Map staging buffer to read results
+    await readBuffer.mapAsync(GPUMapMode.READ);
+    const resultArrayBuffer = readBuffer.getMappedRange();
+    const results = new Float32Array(resultArrayBuffer.slice());
+
+    // Clean up
+    readBuffer.unmap();
+    return results;
+}
+
+export async function CUMSUM3D(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number){
+    const adapter = await navigator.gpu?.requestAdapter();
+    const maxSize = 2047483644; //Will probably remove this eventually
+    const device = await adapter?.requestDevice({requiredLimits: {
+    maxBufferSize: maxSize,
+    maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
+  }}
+);
+    if (!device) {
+        Error('need a browser that supports WebGPU');
+        return;
+    }
+
+    const {strides, shape} = dimInfo;
+    const outputSize = shape[0] * shape[1] * shape[2];
+    const [zStride, yStride, xStride] = strides;
+    const workGroups = shape.map(e => Math.ceil(e/4)); //We assume the workgroups are 4 threads per dimension. We see how many of those 4 thread workgroups are needed for each dimension
+
+    const shader = Shaders.CUMSUM3D
+    const computeModule = device.createShaderModule({
+        label: 'cumsum3d compute module',
+        code:shader,
+    });
+
+    const pipeline = device.createComputePipeline({
+        label: 'cumsum3d compute pipeline',
+        layout: 'auto',
+        compute: {
+        module: computeModule,
+        },
+    });
+    const defs = makeShaderDataDefinitions(shader);
+    const myUniformValues = makeStructuredView(defs.uniforms.params);
+    myUniformValues.set({
+        xStride,
+        yStride,
+        zStride,
+        xSize: shape[2], 
+        ySize: shape[1],
+        zSize: shape[0],
+        reduceDim,
+        workGroups:[workGroups[2], workGroups[1], workGroups[0]],
+    });
+
+    // Create buffers
+    const inputBuffer = device.createBuffer({
+        label: 'Input Buffer',
+        size: inputArray.byteLength, 
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    });
+
+    const outputBuffer = device.createBuffer({
+        label: 'Output Buffer',
+        size: outputSize * 4,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
+    });
+
+    const uniformBuffer = device.createBuffer({
+        label: 'Uniform Buffer',
+        size: myUniformValues.arrayBuffer.byteLength,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+
+    const readBuffer = device.createBuffer({
+        label:'Read Buffer',
+        size: outputSize * 4,
+        usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+    });
+
+    // Write Buffers to GPU
+    device.queue.writeBuffer(inputBuffer, 0, inputArray as GPUAllowSharedBufferSource);
+    device.queue.writeBuffer(uniformBuffer, 0, myUniformValues.arrayBuffer as GPUAllowSharedBufferSource);
+
+    const bindGroup = device.createBindGroup({
+        layout: pipeline.getBindGroupLayout(0),
+        entries: [
+            { binding: 0, resource: { buffer: inputBuffer } },
+            { binding: 1, resource: { buffer: outputBuffer } },
+            { binding: 2, resource: { buffer: uniformBuffer } },
+        ],
+    });
+
+    const encoder = device.createCommandEncoder({
+        label: 'cumsum3d encoder',
+    });
+    const pass = encoder.beginComputePass({
+        label: 'cumsum3d compute pass',
     });
 
     pass.setPipeline(pipeline);
