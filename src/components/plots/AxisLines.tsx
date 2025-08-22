@@ -12,7 +12,7 @@ import { parseLoc } from '@/utils/HelperFuncs';
 import { useCSSVariable } from '../ui';
 import * as THREE from 'three'
 
-const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
+const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolean, flipDown: boolean}) =>{
   const {dimArrays, dimNames, dimUnits} = useGlobalStore(useShallow(state => ({
     dimArrays: state.dimArrays,
     dimNames: state.dimNames,
@@ -71,23 +71,19 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
     const geom = new LineSegmentsGeometry().setPositions([0, 0, 0, 0, 0, .05]);
     return new LineSegments2(geom, lineMat)},[lineMat])
 
-  
-  const dimScale = dimResolution/(dimResolution-1)
-  const valDelta = 1/(dimResolution-1)
-
   const xDimScale = xResolution/(xResolution-1)
   const xValDelta = 1/(xResolution-1)
   const yDimScale = yResolution/(yResolution-1)
   const yValDelta = 1/(yResolution-1)
   const zDimScale = zResolution/(zResolution-1)
   const zValDelta = 1/(zResolution-1)
-
+    console.log(flipY, flipX)
   return (
     <group visible={plotType != 'sphere'}>
     {/* Horizontal Group */}
-    <group position={[0, shapeRatio*yRange[0], 0]}>
+    <group position={[0, shapeRatio*yRange[0], 0]}  >
       {/* X Group */}
-      <group position={[0, 0, flipX ? isPC ? zRange[0]*depthRatio : zRange[0] : isPC ? zRange[1] * depthRatio : zRange[1]]}> 
+      <group position={[0, 0, flipX ? isPC ? zRange[0]*depthRatio : zRange[0] : isPC ? zRange[1] * depthRatio : zRange[1]]} rotation={[flipDown ? flipX ? -Math.PI/2 : Math.PI/2 : 0, 0, 0]}> 
         <primitive key={'xLine'} object={xLine} />
         {Array(xResolution).fill(null).map((_val,idx)=>(
           (((xRange[0] + 1)/2) <= (idx*xDimScale)/xResolution &&
@@ -149,7 +145,7 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
         </group>
       </group>
       {/* Z Group */}
-      <group position={[flipY ? xRange[1]: xRange[0], 0, 0]}>
+      <group position={[flipY ? xRange[1]: xRange[0], 0, 0]} rotation={[0, 0, flipDown ? flipY ? -Math.PI/2 : Math.PI/2 : 0]}>
         <primitive key={'zLine'} object={zLine} />
         {Array(zResolution).fill(null).map((_val,idx)=>(
           (((zRange[0] + 1)/2) <= (idx*zDimScale)/zResolution  &&
@@ -233,7 +229,7 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
             >{parseLoc(dimArrays[1][Math.floor((dimLengths[1]-1)*idx*yValDelta)],dimUnits[1])}</Text>
           </group>
         ))}
-        <group rotation={[0, flipX ? Math.PI : 0, 0]} position={[flipY ? -0.25 : 0.25, (yRange[0]+yRange[1])/2*shapeRatio, 0]}>
+        <group rotation={[0, flipX ? Math.PI : 0 , 0]} position={[flipY ? -0.25 : 0.25, (yRange[0]+yRange[1])/2*shapeRatio, 0]}>
           <Text 
             key={'yTitle'}
             anchorX={flipY ? flipX ? 'left' : 'right' : flipX ? 'right' : 'left'}
@@ -250,7 +246,7 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
             fontSize={0.2} 
             color={colorHex}
             material-depthTest={false}
-            position={[flipY ? -0.2 : 0.2, 0.2, 0]}
+            position={[ flipY == flipX ? 0.2 : -0.2, 0.2, 0]}
             onClick={e=>setYResolution(x=> Math.min(x+1,20))}
             onPointerEnter={e=>document.body.style.cursor = 'pointer'}
             onPointerLeave={e=>document.body.style.cursor = 'default'}
@@ -265,7 +261,7 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
             fontSize={0.2} 
             color={colorHex}
             material-depthTest={false}
-            position={[flipY ? -0.2 : 0.2, -0.2, 0]}
+            position={[flipY == flipX ? 0.2 : -0.2, -0.2, 0]}
             onClick={e=>setYResolution(x=> Math.max(x-1,1))}
             onPointerEnter={e=>document.body.style.cursor = 'pointer'}
             onPointerLeave={e=>document.body.style.cursor = 'default'}
@@ -283,6 +279,7 @@ const HorizontalAxis = ({flipX, flipY}: {flipX: boolean, flipY: boolean}) =>{
 export const AxisLines = () => {
   const [flipX, setFlipX] = useState<boolean>(false)
   const [flipY, setFlipY] = useState<boolean>(false)
+  const [flipDown, setFlipDown] = useState<boolean>(false)
 
   useFrame(({camera})=>{
       const shouldFlipX = Math.abs(camera.rotation.z) > Math.PI / 2;
@@ -296,11 +293,16 @@ export const AxisLines = () => {
       if (flipY !== shouldFlipY){
         setFlipY(shouldFlipY);
       } 
+      const shouldFlipDown = camera.rotation.x > 0
+      if (flipDown !== shouldFlipDown){
+        setFlipDown(shouldFlipDown)
+      }
+      
   })
 
   return (
     <>
-    <HorizontalAxis flipX={flipX} flipY={flipY} />
+    <HorizontalAxis flipX={flipX} flipY={flipY} flipDown={flipDown}/>
     </>
   )
 }

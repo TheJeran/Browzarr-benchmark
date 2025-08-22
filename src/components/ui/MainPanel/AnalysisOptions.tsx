@@ -161,13 +161,9 @@ const AnalysisOptions = () => {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" align="start" className="flex flex-col">
-                  <span>Available <strong>analysis:</strong></span>
-                  <span className="ml-1">• Dimensional Reduction</span>
-                  <span className="ml-3">- <strong>Mean, Min, Max, StDev</strong></span>
-                  <span className="ml-1">• 3D Operations</span>
-                  <span className="ml-3">- <strong>Convolution</strong></span>
-                  <span className="ml-1">• Two Variables</span>
-                  <span className="ml-3">- 2D/3D <strong>Correlation</strong></span>
+                  <div>
+                    Apply Operations on the Data
+                  </div>
                 </TooltipContent>
               </Tooltip>
             </div>
