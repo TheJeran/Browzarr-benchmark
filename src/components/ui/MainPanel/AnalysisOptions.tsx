@@ -22,8 +22,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-const operations = ['Mean', 'Min', 'Max', 'StDev'];
-const kernelOperations = ['Mean', 'Min', 'Max', 'StDev'];
+const operations = ['Mean', 'Min', 'Max', 'StDev', 'CUMSUM', 'LinearSlope'];
+const kernelOperations = ['Mean', 'Min', 'Max', 'StDev', 'CUMSUM3D'];
+const multivariate2DOps = ['Correlate2D', 'TwoVarLinearSlope2D']
 
 const webGPUError = (
   <div className="m-0 p-5 font-sans flex-column justify-center items-center">
@@ -58,6 +59,7 @@ const AnalysisOptions = () => {
     axis,
     variable2,
     analysisMode,
+    reverseDirection,
     setExecute,
     setAxis,
     setOperation,
@@ -66,7 +68,8 @@ const AnalysisOptions = () => {
     setKernelSize,
     setKernelDepth,
     setKernelOperation,
-    setAnalysisMode
+    setAnalysisMode,
+    setReverseDirection
   } = useAnalysisStore(useShallow(state => ({
     execute: state.execute,
     operation: state.operation,
@@ -77,6 +80,7 @@ const AnalysisOptions = () => {
     axis: state.axis,
     variable2: state.variable2,
     analysisMode: state.analysisMode,
+    reverseDirection: state.reverseDirection,
     setExecute: state.setExecute,
     setAxis: state.setAxis,
     setOperation: state.setOperation,
@@ -85,7 +89,8 @@ const AnalysisOptions = () => {
     setKernelSize: state.setKernelSize,
     setKernelDepth: state.setKernelDepth,
     setKernelOperation: state.setKernelOperation,
-    setAnalysisMode: state.setAnalysisMode
+    setAnalysisMode: state.setAnalysisMode,
+    setReverseDirection: state.setReverseDirection,
     })));
 
   const { variables, dimNames } = useGlobalStore(useShallow(state => ({
@@ -98,6 +103,7 @@ const AnalysisOptions = () => {
     setReFetch: state.setReFetch
   })))
   const [showError, setShowError] = useState<boolean>(false);
+  
   useEffect(() => {
     const checkWebGPU = async () => {
     if (!navigator.gpu) {
@@ -106,7 +112,7 @@ const AnalysisOptions = () => {
     }
 
     try {
-        const _adapter = await navigator.gpu.requestAdapter();
+        await navigator.gpu.requestAdapter();
         setShowError(false);
     } catch {
         setShowError(true);
@@ -142,8 +148,9 @@ const AnalysisOptions = () => {
         <Popover>
           <PopoverTrigger asChild>
             <div>
-              <Tooltip>
+              <Tooltip delayDuration={500}>
                 <TooltipTrigger asChild>
+                  <div>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -151,6 +158,7 @@ const AnalysisOptions = () => {
                   >
                     <PiMathOperationsBold className="size-8"/>
                   </Button>
+                  </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" align="start" className="flex flex-col">
                   <span>Available <strong>analysis:</strong></span>
@@ -208,91 +216,96 @@ const AnalysisOptions = () => {
                           {variable}
                         </button>
 
-                      </td>
-                    </tr>
-                    {useTwo && <>
-                    <tr>
-                      <th>Second Variable</th>
-                      <td>
-                          <Select onValueChange={setVariable2}>
-                            <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
-                              <SelectValue placeholder={variable2 == 'Default' ? "Select..." : variable2} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {variables.map((iVar, idx) => { //Dont allow correlation of two variables
-                                if (iVar == variable){
-                                  return null;
-                                }
-                                return (
-                                <SelectItem key={idx} value={iVar}>
-                                  {iVar}
-                                </SelectItem>)
-                            })}
-                            </SelectContent>
-                          </Select>
-                      </td>
-                    </tr>
-                    </>}
-                    
-                    <tr>
-                      <th>Operation</th>
-                      {!useTwo && (
-                        <td>
-                          <Select onValueChange={setOperation}>
-                            <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
-                              <SelectValue
-                                placeholder={operation === 'Default' ? 'Select...' : operation}
-                              />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectGroup>
-                                <SelectLabel>Dimension Reduction</SelectLabel>
-                                {operations.map((op, idx) => (
-                                  <SelectItem key={idx} value={op}>
-                                    {op}
-                                  </SelectItem>
-                                ))}
-                              </SelectGroup>
-                              <SelectGroup>
-                                <SelectLabel>Three Dimensional</SelectLabel>
-                                <SelectItem value="Convolution">Convolution</SelectItem>
-                              </SelectGroup>
-                            </SelectContent>
-                          </Select>
-                        </td>
-                      )}
-                      
-                      {useTwo && (
-                        <td>
-                          <Select onValueChange={setOperation}>
-                            <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
-                              <SelectValue
-                                placeholder={operation === 'Default' ? 'Select...' : operation}
-                              />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectGroup>
-                                <SelectLabel>Dimension Reduction</SelectLabel>
-                                <SelectItem value="Correlation2D">Correlation</SelectItem>
-                              </SelectGroup>
-                              <SelectGroup>
-                                <SelectLabel>Three Dimensional</SelectLabel>
-                                <SelectItem value="Correlation3D">Correlation</SelectItem>
-                              </SelectGroup>
-                            </SelectContent>
-                          </Select>
-                        </td>
-                      )}
-                    </tr>
+                  </td>
+                </tr>
+                {useTwo && <>
+                <tr>
+                  <th>Second Variable</th>
+                  <td>
+                      <Select onValueChange={setVariable2}>
+                        <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
+                          <SelectValue placeholder={variable2 == 'Default' ? "Select..." : variable2} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {variables.map((iVar, idx) => { //Dont allow correlation of two variables
+                            if (iVar == variable){
+                              return null;
+                            }
+                            return (
+                            <SelectItem key={idx} value={iVar}>
+                              {iVar}
+                            </SelectItem>)
+                        })}
+                        </SelectContent>
+                      </Select>
+                  </td>
+                </tr>
+                </>}
+                
+                <tr>
+                  <th>Operation</th>
+                  {!useTwo && (
+                    <td>
+                      <Select onValueChange={setOperation}>
+                        <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
+                          <SelectValue
+                            placeholder={operation === 'Default' ? 'Select...' : operation}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Dimension Reduction</SelectLabel>
+                            {operations.map((op, idx) => (
+                              <SelectItem key={idx} value={op}>
+                                {op}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                          <SelectGroup>
+                            <SelectLabel>Three Dimensional</SelectLabel>
+                            <SelectItem value="Convolution">Convolution</SelectItem>
+                            <SelectItem value="CUMSUM3D">CUMSUM</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                  )}
+                  
+                  {useTwo && (
+                    <td>
+                      <Select onValueChange={setOperation}>
+                        <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
+                          <SelectValue
+                            placeholder={operation === 'Default' ? 'Select...' : operation}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Dimension Reduction</SelectLabel>
+                            <SelectItem value="Correlation2D">Correlation</SelectItem>
+                            <SelectItem value="TwoVarLinearSlope2D">Linear Slope</SelectItem>
+                            <SelectItem value="Covariance2D">Covariance</SelectItem>
+                          </SelectGroup>
 
-                    {operation !== 'Convolution' &&
-                      operation !== 'Correlation3D' &&
-                      operation !== 'Default' && (
+                          <SelectGroup>
+                            <SelectLabel>Three Dimensional</SelectLabel>
+                            <SelectItem value="Correlation3D">Correlation</SelectItem>
+                            <SelectItem value="TwoVarLinearSlope3D">Linear Slope</SelectItem>
+                            <SelectItem value="Covariance3D">Covariance</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                  )}
+                </tr>
+
+                    {!['Convolution', 'Correlation3D', 'Default', 'Covariance3D', 'TwoVarLinearSlope3D'].includes(operation) && //Hide if NOT in left arrays
+                        (
                         <tr>
                           <th>Axis</th>
-                          <td>
+                          <td style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             <Select onValueChange={e => setAxis(parseInt(e))}>
-                              <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
+                              <SelectTrigger style={{ width: ['CUMSUM3D', 'LinearSlope'].includes(operation) ? '50%' : '175px', marginLeft: '10px' }}>
                                 <SelectValue placeholder={dimNames[axis]} />
                               </SelectTrigger>
                               <SelectContent>
@@ -303,11 +316,23 @@ const AnalysisOptions = () => {
                                 ))}
                               </SelectContent>
                             </Select>
+                            {['CUMSUM3D'].includes(operation) &&
+                            <Tooltip delayDuration={300}>
+                              <TooltipTrigger asChild>
+                                <div style={{width:'50%', display:'flex', alignItems:'center'}}>
+                                  <label htmlFor="reverse-axis" style={{textAlign:'left', marginRight: '-20px',  marginLeft: '-10px' }}>Rev.</label>
+                                  <Input id='reverse-axis' type='checkbox' checked={reverseDirection == 1} onChange={e=> {setReverseDirection(e.target.checked ? 1 : 0)}}/>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent side='bottom'>
+                                Reverse the direction of the operation along the axis
+                              </TooltipContent>
+                            </Tooltip>
+                            }
                           </td>
                         </tr>
                       )}
-
-                    {(operation === 'Convolution' || operation === 'Correlation3D') && (
+                    {['Convolution', 'Correlation3D', 'Covariance3D', 'TwoVarLinearSlope3D'].includes(operation) && ( //Show if IN left arrays
                       <>
                         {operation === 'Convolution' && (
                           <tr>
