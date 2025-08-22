@@ -354,17 +354,19 @@ const AdjustPlot = () => {
         <Popover>
           <PopoverTrigger asChild>
             <div>
-              <Tooltip>
+              <Tooltip delayDuration={500} >
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-10 cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
-                  >
-                    <LuSettings className="size-8" />
-                  </Button>
+                  <div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-10 cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
+                    >
+                      <LuSettings className="size-8" />
+                    </Button>
+                  </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" align="start">
+                <TooltipContent side="left" align="start">
                   <span>Plot Settings</span>
                 </TooltipContent>
               </Tooltip>
