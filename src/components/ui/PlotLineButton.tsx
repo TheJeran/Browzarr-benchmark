@@ -20,7 +20,7 @@ const PlotLineButton = () => {
   return (
     <div className='selectTS' 
       style={{display: animate ? 'none' : ''}}>
-      <Tooltip>
+      <Tooltip delayDuration={500} >
         <TooltipTrigger asChild>
           <Button
             variant="ghost"

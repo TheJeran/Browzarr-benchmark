@@ -46,23 +46,22 @@ const Dataset = ({setOpenVariables} : {setOpenVariables: React.Dispatch<React.Se
     <Popover>
       <PopoverTrigger asChild>
         <div>
-          <Tooltip>
+          <Tooltip delayDuration={500} >
             <TooltipTrigger asChild>
-              <Button
-                tabIndex={0}
-                variant="ghost"
-                size="icon"
-                className='cursor-pointer hover:scale-90 transition-transform duration-100 ease-out'
-                aria-label="Select dataset"
-                >
-                <TbDatabasePlus className="size-8" />
-              </Button>
+              <div>
+                <Button
+                  tabIndex={0}
+                  variant="ghost"
+                  size="icon"
+                  className='cursor-pointer hover:scale-90 transition-transform duration-100 ease-out'
+                  aria-label="Select dataset"
+                  >
+                  <TbDatabasePlus className="size-8" />
+                </Button>
+              </div>
             </TooltipTrigger>
-            <TooltipContent side="bottom" align="start" className="flex flex-col">
-              <span>Open <strong>dataset</strong> from:</span>
-              <span className="ml-1">• ESDC (Earth System Data Cube)</span>
-              <span className="ml-1">• Seasfire Dataset</span>
-              <span className="ml-1">• <strong>Remote</strong> or <strong>Local Storage</strong></span>
+            <TooltipContent side="left" align="start" className="flex flex-col">
+              <span>Select datase</span>
             </TooltipContent>
           </Tooltip>
         </div>

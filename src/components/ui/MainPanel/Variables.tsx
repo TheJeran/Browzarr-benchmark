@@ -49,18 +49,20 @@ const Variables = ({openVariables, setOpenVariables}:{openVariables: boolean, se
         <Popover open={openVariables} onOpenChange={setOpenVariables}>
         <PopoverTrigger asChild>
           <div>
-            <Tooltip>
+            <Tooltip delayDuration={500} >
               <TooltipTrigger asChild>
-                <Button
-                variant="ghost"
-                size="icon"
-                className="cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
-                tabIndex={0}
-                aria-label="Select variable">
-                  <TbVariable className="size-8"/>
-              </Button>
+                <div>
+                  <Button
+                  variant="ghost"
+                  size="icon"
+                  className="cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
+                  tabIndex={0}
+                  aria-label="Select variable">
+                    <TbVariable className="size-8"/>
+                </Button>
+              </div>
               </TooltipTrigger>
-              <TooltipContent side="bottom" align="start">
+              <TooltipContent side="left" align="start">
                 <span>Select Variable</span>
               </TooltipContent>
             </Tooltip>

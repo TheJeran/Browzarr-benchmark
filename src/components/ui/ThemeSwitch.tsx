@@ -31,7 +31,7 @@ const ThemeSwitch = () => {
   const current = mounted ? (theme ?? resolvedTheme) : undefined
 
   return (
-    <Tooltip>
+    <Tooltip delayDuration={500} >
       <TooltipTrigger asChild>
     <Button
       variant="ghost"

@@ -146,22 +146,21 @@ const PlayButton = () => {
   return (
     <div>
       {enableCond ? (
-        <Tooltip>
+        <Tooltip delayDuration={500} >
           <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-10 cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
-              onClick={() => {if (cond){setShowOptions(x=>!x)}}}
-            >
-              <PiPlayPauseFill className="size-8" />
-            </Button>
+            <div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-10 cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
+                onClick={() => {if (cond){setShowOptions(x=>!x)}}}
+              >
+                <PiPlayPauseFill className="size-8" />
+              </Button>
+            </div>
           </TooltipTrigger>
-          <TooltipContent side="bottom" align="start" className="flex flex-col">
-            <span>Animation <strong>controls:</strong></span>
-            <span className="ml-1">• <strong>Play</strong> / Pause</span>
-            <span className="ml-1">• <strong>Speed</strong> control</span>
-            <span className="ml-1">• <strong>Time</strong> Slider</span>
+          <TooltipContent side="left" align="start" className="flex flex-col">
+            <span>Animation controls</span>
           </TooltipContent>
         </Tooltip>
       ) : (

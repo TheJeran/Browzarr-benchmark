@@ -31,9 +31,10 @@ const Metadata = ({ data }: { data: Record<string, any> }) => {
     return (
         <div className="metadata-container">
             <Dialog>
-                <Tooltip>
+                <Tooltip delayDuration={500} >
                     <TooltipTrigger asChild>
                     <DialogTrigger asChild>
+                        <div>
                         <Button
                             variant="ghost"
                             size="icon"
@@ -44,6 +45,7 @@ const Metadata = ({ data }: { data: Record<string, any> }) => {
                             >
                             <HiInformationCircle className="size-6" />
                         </Button>
+                        </div>
                         </DialogTrigger>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" align="start">

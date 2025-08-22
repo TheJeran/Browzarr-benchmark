@@ -144,7 +144,7 @@ const Navbar = React.memo(function Navbar(){
   
   return (
     <nav className="navbar" ref={navRef}>
-      <Tooltip>
+      <Tooltip delayDuration={500} >
         <TooltipTrigger asChild>
            <Button
             variant="ghost"
@@ -168,7 +168,7 @@ const Navbar = React.memo(function Navbar(){
           <Drawer>
             <DrawerTrigger asChild>
               <div>
-                <Tooltip>
+                <Tooltip delayDuration={500} >
                   <TooltipTrigger asChild>
                     <Button 
                       variant="ghost"
@@ -197,7 +197,7 @@ const Navbar = React.memo(function Navbar(){
           </Drawer>
           
           {plotOn && (
-            <Tooltip>
+            <Tooltip delayDuration={500} >
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"

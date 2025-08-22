@@ -48,21 +48,22 @@ const Colormaps = () => {
       <Popover>
       <PopoverTrigger asChild>
         <div>
-        <Tooltip>
+        <Tooltip delayDuration={500} >
           <TooltipTrigger asChild>
-            <Button
-              size="icon"
-              className='cursor-pointer hover:scale-90 transition-transform duration-100 ease-out rounded-full'
-              style={{
-                backgroundImage: `url(./colormap_icons/${cmap}.webp)` ,
-                backgroundSize: "100%",
-                transform: flipCmap ? "scaleX(-1)" : "",
-                width: "32px",
-                height: "32px",
-              }}
-            > </Button>
+            <div>
+              <Button
+                size="icon"
+                className='cursor-pointer hover:scale-90 transition-transform duration-100 ease-out rounded-full'
+                style={{
+                  backgroundImage: `url(./colormap_icons/${cmap}.webp)` ,
+                  backgroundSize: "100%",
+                  transform: flipCmap ? "scaleX(-1)" : "",
+                  width: "32px",
+                  height: "32px",
+                }} /> 
+            </div>
           </TooltipTrigger>
-          <TooltipContent side="bottom" align="start">
+          <TooltipContent side="left" align="start">
             <span>Change Colormap</span>
           </TooltipContent>
         </Tooltip>

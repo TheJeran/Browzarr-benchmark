@@ -46,24 +46,22 @@ const PlotType = () => {
     <Popover>
       <PopoverTrigger asChild>
         <div>
-          <Tooltip>
+          <Tooltip delayDuration={500} >
             <TooltipTrigger asChild>
-              <Button
-              variant="ghost"
-              size="icon"
-              className='cursor-pointer hover:scale-90 transition-transform duration-100 ease-out'
-              tabIndex={0}
-              aria-label="Select plot type"
-            >
-              {plotIcons[plotType as keyof typeof plotIcons]}
-            </Button>
+              <div>
+                <Button
+                variant="ghost"
+                size="icon"
+                className='cursor-pointer hover:scale-90 transition-transform duration-100 ease-out'
+                tabIndex={0}
+                aria-label="Select plot type"
+              >
+                {plotIcons[plotType as keyof typeof plotIcons]}
+              </Button>
+            </div>
             </TooltipTrigger>
-            <TooltipContent side="bottom" align="start" className="flex flex-col">
-              <span><strong>Select plot type:</strong></span>
-              <span className="ml-1">• Volume (3D)</span>
-              <span className="ml-1">• Point Cloud (3D)</span>
-              <span className="ml-1">• Sphere Projection</span>
-              <span className="ml-1">• Flat View</span>
+            <TooltipContent side="left" align="start" className="flex flex-col">
+              <span>Change plot type</span>
             </TooltipContent>
           </Tooltip>
       </div>

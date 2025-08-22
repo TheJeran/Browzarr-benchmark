@@ -160,9 +160,9 @@ const AnalysisOptions = () => {
                   </Button>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" align="start" className="flex flex-col">
+                <TooltipContent side="left" align="start" className="flex flex-col">
                   <div>
-                    Apply Operations on the Data
+                    Apply operations
                   </div>
                 </TooltipContent>
               </Tooltip>
