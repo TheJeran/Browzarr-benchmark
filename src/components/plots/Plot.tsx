@@ -12,6 +12,7 @@ import AnalysisInfo from './AnalysisInfo';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import AnalysisWG from './AnalysisWG';
 import { ParseExtent } from '@/utils/HelperFuncs';
+import ExportCanvas from '@/utils/ExportCanvas';
 
 
 const Orbiter = ({isFlat} : {isFlat  : boolean}) =>{
@@ -229,8 +230,10 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
       {((!isFlat && plotType != "flat") || (isFlat && plotType === 'sphere')) && <>
       <Canvas id='main-canvas' camera={{ position: isFlat ? [0,0,5] : [-4.5, 3, 4.5], fov: 50 }}
         frameloop="demand"
+        gl={{ preserveDrawingBuffer: true }}
       >
         <CountryBorders/>
+        <ExportCanvas show={show}/>
         {!isFlat && show && <AxisLines />}
         {plotType == "volume" && show && 
           <>

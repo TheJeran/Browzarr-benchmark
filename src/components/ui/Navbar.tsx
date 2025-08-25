@@ -1,22 +1,21 @@
 "use client";
-import React, { useMemo } from "react";
-import { LuChevronsUpDown } from "react-icons/lu";
-import { IoIosCheckmark } from "react-icons/io";
+import React from "react";
 import Image from "next/image";
 import { PlotLineButton } from "@/components/ui";
 import ThemeSwitch  from "@/components/ui/ThemeSwitch";
 import logo from "@/app/logo.png"
 import './css/Navbar.css'
 import { useShallow } from "zustand/shallow";
-import { useGlobalStore, usePlotStore } from "@/utils/GlobalStates";
-import { colormaps } from '@/components/textures';
+import { useGlobalStore, useImageExportStore, usePlotStore } from "@/utils/GlobalStates";
 import { useEffect, useState, useRef } from "react";
-import { GetColorMapTexture } from "@/components/textures";
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { MdFlipCameraIos } from "react-icons/md";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import AboutInfo from "@/components/ui/AboutInfo";
+import { IoImage } from "react-icons/io5";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { Input } from "./input";
 
 import {
   Tooltip,
@@ -44,103 +43,39 @@ const FiveDotsIcon: React.FC<{ className?: string }> = ({ className }) => {
   );
 };
 
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command"
-
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-
-const ColorMaps = ({cmap, setCmap} : {cmap : string, setCmap : React.Dispatch<React.SetStateAction<string>>}) => {
-  const [open, setOpen] = useState(false)
-  return (
-    <Popover open={open} onOpenChange={setOpen}>    
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-[100%] justify-between"
-        >
-          {cmap === "Default" ?  "Select Colormap..." : cmap }
-          <LuChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[100%] p-0">
-        <Command>
-          <CommandInput placeholder="Search framework..." />
-          <CommandList>
-            <CommandEmpty>No Colormap found.</CommandEmpty>
-            <CommandGroup>
-              {colormaps.map((value) => (
-                <CommandItem
-                  key={value}
-                  value={value}
-                  onSelect={(currentValue) => {
-                    setCmap(currentValue)
-                    setOpen(false);
-                  }}
-                >
-                  <IoIosCheckmark
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === cmap ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {value}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  )
-
-}
-
 const Navbar = React.memo(function Navbar(){
-  const {setInitStore, setVariable, setColormap, setTimeSeries, setDimCoords, isFlat, plotOn, variables, variable} = useGlobalStore(
+  const { isFlat, plotOn} = useGlobalStore(
     useShallow(state=>({
-      setInitStore : state.setInitStore, 
-      setVariable : state.setVariable,
-      setColormap : state.setColormap,
-      setTimeSeries: state.setTimeSeries,
-      setDimCoords: state.setDimCoords,
       isFlat: state.isFlat,
       plotOn: state.plotOn,
-      variables: state.variables,
-      variable: state.variable
     })))
 
+  const {
+    includeBackground,
+    includeColorbar,
+    doubleSize,
+    ExportImg, 
+    setIncludeBackground, 
+    setIncludeColorbar, 
+    setDoubleSize} = useImageExportStore(useShallow(state => ({
+      includeBackground: state.includeBackground,
+      includeColorbar: state.includeColorbar,
+      doubleSize: state.doubleSize,
+      ExportImg: state.ExportImg,
+      setIncludeBackground: state.setIncludeBackground,
+      setIncludeColorbar: state.setIncludeColorbar,
+      setDoubleSize: state.setDoubleSize
+  })))
 
-  const {setPlotType, plotType, resetCamera, setAnimate, setResetCamera} = usePlotStore(useShallow(state=> ({
-    setPlotType: state.setPlotType,
-    plotType: state.plotType,
+
+  const {resetCamera,setResetCamera} = usePlotStore(useShallow(state=> ({
     resetCamera: state.resetCamera,
-    setAnimate: state.setAnimate,
     setResetCamera: state.setResetCamera
   })))
 
-  const [showStoreInput, setShowStoreInput] = useState<boolean>(false)
-  const [showLocalInput, setShowLocalInput] = useState<boolean>(false)
-  const [cmap, setCmap] = useState<string>("Default")
-  const [flipCmap, setFlipCmap] = useState<boolean>(false)
-  const colormap = useGlobalStore(useShallow(state=>state.colormap))
   const [isOpen, setIsOpen] = useState<boolean>(true)
   const navRef = useRef<HTMLElement | null>(null)
 
-  useEffect(()=>{
-    setColormap(GetColorMapTexture(colormap, cmap === "Default" ? "Spectral" : cmap, 1, "#000000", 0, flipCmap));
-  },[cmap, flipCmap])
   
   return (
     <nav className="navbar" ref={navRef}>
@@ -151,15 +86,13 @@ const Navbar = React.memo(function Navbar(){
             size="icon"
             className="navbar-trigger size-10"
             aria-expanded={isOpen}
-            aria-label={isOpen ? "Close navigation" : "Open navigation"}
-            title={isOpen ? "Close navigation" : "Open navigation"}
             onClick={() => setIsOpen((prev) => !prev)}
           >
             <FiveDotsIcon className="navbar-trigger-icon rotating size-6" />
           </Button>
         </TooltipTrigger>
         <TooltipContent side="right" align="start">
-          {isOpen ? <span>Close navigation</span> : <span>Open navigation</span>}
+          {isOpen ? 'Close navigation' : 'Open navigation'}
         </TooltipContent>
       </Tooltip>
 
@@ -175,7 +108,6 @@ const Navbar = React.memo(function Navbar(){
                       size="icon"
                       className="cursor-pointer"
                       tabIndex={0}
-                      aria-label="About Browzarr"
                       title="About Browzarr">
                         <Image src={logo} alt="browzarr" />
                     </Button>
@@ -204,8 +136,6 @@ const Navbar = React.memo(function Navbar(){
                   size="icon"
                   className="size-10 cursor-pointer"
                   tabIndex={0}
-                  aria-label="Reset camera view"
-                  title="Reset camera view"
                   onClick={() => setResetCamera(!resetCamera)}
                 >
                   <MdFlipCameraIos className="size-8" />
@@ -217,11 +147,50 @@ const Navbar = React.memo(function Navbar(){
             </Tooltip>
 
           )}
-          {/* {!isFlat && plotOn && <PlotTweaker/>} */}
           {plotOn && !isFlat && <PlotLineButton />}
+          {plotOn && 
+          <Popover>
+            <PopoverTrigger asChild>
+              <div>
+                <Tooltip delayDuration={500} >
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost"
+                      size="icon"
+                      className="cursor-pointer"
+                    >
+                      <IoImage className="size-8"/>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start">
+                    Export view as Image
+                  </TooltipContent>
+              </Tooltip>
+              </div>
+            </PopoverTrigger>
+            <PopoverContent
+              side="right"
+              className="w-[200px]"
+            >
+              <div className="grid grid-cols-[auto_50px] items-center gap-2">
+                <label htmlFor="includeBG">Include Background</label>
+                <Input id='includeBG' type="checkbox" checked={includeBackground} onChange={e => setIncludeBackground(e.target.checked)}/>
+                <label htmlFor="includeCbar">Include Colorbar</label>
+                <Input id='includeCbar' type="checkbox" checked={includeColorbar} onChange={e => setIncludeColorbar(e.target.checked)}/>
+                <label htmlFor="includeCbar" >Double Resolution</label>
+                <Input id='includeCbar' type="checkbox" checked={doubleSize} onChange={e => setDoubleSize(e.target.checked)}/>
+                <Button
+                  className="col-span-2"
+                  variant='pink'
+                  onClick={e=>ExportImg()}
+                >Export</Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+          
+          }
+          <ThemeSwitch />
         </div>
-
-        <ThemeSwitch />
       </div>
     </nav>
   );

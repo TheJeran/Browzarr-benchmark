@@ -99,8 +99,6 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   is4D: false,
   idx4D: null,
 
-
-
   setDataShape: (dataShape) => set({ dataShape}),
   setShape: (shape) => set({ shape }),
   setValueScales: (valueScales) => set({ valueScales }),
@@ -413,5 +411,29 @@ export const useErrorStore = create<ErrorState>((set) =>({
   setCors: (cors) => set({ cors }),
   setOom: (oom) => set({ oom }),
   setInvalidURL: (invalidURL) => set({ invalidURL })
-
 }))
+
+
+type ImageExportState = {
+  exportImg: boolean;
+  includeBackground: boolean;
+  includeColorbar: boolean;
+  doubleSize: boolean;
+
+  ExportImg: () => void;
+  setIncludeBackground: (includeBackground: boolean) => void;
+  setIncludeColorbar: (includeColorbar: boolean) => void;
+  setDoubleSize: (doubleSize: boolean) => void;
+}
+
+export const useImageExportStore = create<ImageExportState>((set, get) => ({
+  exportImg: false,
+  includeBackground: false,
+  includeColorbar: true,
+  doubleSize: false,
+
+  ExportImg: () => set({ exportImg: !get().exportImg }),
+  setIncludeBackground: (includeBackground) => set({ includeBackground }),
+  setIncludeColorbar: (includeColorbar) => set({ includeColorbar }),
+  setDoubleSize: (doubleSize) => set({ doubleSize })
+}));
