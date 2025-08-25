@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Image from "next/image";
-import { PlotLineButton } from "@/components/ui";
+import { PlotLineButton, ExportImageSettings  } from "@/components/ui";
 import ThemeSwitch  from "@/components/ui/ThemeSwitch";
 import logo from "@/app/logo.png"
 import './css/Navbar.css'
@@ -13,9 +13,7 @@ import { cn } from "@/lib/utils"
 import { MdFlipCameraIos } from "react-icons/md";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import AboutInfo from "@/components/ui/AboutInfo";
-import { IoImage } from "react-icons/io5";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
-import { Input } from "./input";
+
 
 import {
   Tooltip,
@@ -50,25 +48,7 @@ const Navbar = React.memo(function Navbar(){
       plotOn: state.plotOn,
     })))
 
-  const {
-    includeBackground,
-    includeColorbar,
-    doubleSize,
-    ExportImg, 
-    setIncludeBackground, 
-    setIncludeColorbar, 
-    setDoubleSize} = useImageExportStore(useShallow(state => ({
-      includeBackground: state.includeBackground,
-      includeColorbar: state.includeColorbar,
-      doubleSize: state.doubleSize,
-      ExportImg: state.ExportImg,
-      setIncludeBackground: state.setIncludeBackground,
-      setIncludeColorbar: state.setIncludeColorbar,
-      setDoubleSize: state.setDoubleSize
-  })))
-
-
-  const {resetCamera,setResetCamera} = usePlotStore(useShallow(state=> ({
+    const {resetCamera,setResetCamera} = usePlotStore(useShallow(state=> ({
     resetCamera: state.resetCamera,
     setResetCamera: state.setResetCamera
   })))
@@ -149,45 +129,7 @@ const Navbar = React.memo(function Navbar(){
           )}
           {plotOn && !isFlat && <PlotLineButton />}
           {plotOn && 
-          <Popover>
-            <PopoverTrigger asChild>
-              <div>
-                <Tooltip delayDuration={500} >
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost"
-                      size="icon"
-                      className="cursor-pointer"
-                    >
-                      <IoImage className="size-8"/>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" align="start">
-                    Export view as Image
-                  </TooltipContent>
-              </Tooltip>
-              </div>
-            </PopoverTrigger>
-            <PopoverContent
-              side="right"
-              className="w-[200px]"
-            >
-              <div className="grid grid-cols-[auto_50px] items-center gap-2">
-                <label htmlFor="includeBG">Include Background</label>
-                <Input id='includeBG' type="checkbox" checked={includeBackground} onChange={e => setIncludeBackground(e.target.checked)}/>
-                <label htmlFor="includeCbar">Include Colorbar</label>
-                <Input id='includeCbar' type="checkbox" checked={includeColorbar} onChange={e => setIncludeColorbar(e.target.checked)}/>
-                <label htmlFor="includeCbar" >Double Resolution</label>
-                <Input id='includeCbar' type="checkbox" checked={doubleSize} onChange={e => setDoubleSize(e.target.checked)}/>
-                <Button
-                  className="col-span-2"
-                  variant='pink'
-                  onClick={e=>ExportImg()}
-                >Export</Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-          
+          <ExportImageSettings />
           }
           <ThemeSwitch />
         </div>

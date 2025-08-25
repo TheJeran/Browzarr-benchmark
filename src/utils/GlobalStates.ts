@@ -419,11 +419,14 @@ type ImageExportState = {
   includeBackground: boolean;
   includeColorbar: boolean;
   doubleSize: boolean;
+  cbarLoc: string;
 
   ExportImg: () => void;
   setIncludeBackground: (includeBackground: boolean) => void;
   setIncludeColorbar: (includeColorbar: boolean) => void;
   setDoubleSize: (doubleSize: boolean) => void;
+  setCbarLoc: (cbarLoc: string) => void;
+  getCbarLoc: () => string;
 }
 
 export const useImageExportStore = create<ImageExportState>((set, get) => ({
@@ -431,9 +434,12 @@ export const useImageExportStore = create<ImageExportState>((set, get) => ({
   includeBackground: false,
   includeColorbar: true,
   doubleSize: false,
+  cbarLoc: "bottom",
 
   ExportImg: () => set({ exportImg: !get().exportImg }),
   setIncludeBackground: (includeBackground) => set({ includeBackground }),
   setIncludeColorbar: (includeColorbar) => set({ includeColorbar }),
-  setDoubleSize: (doubleSize) => set({ doubleSize })
+  setDoubleSize: (doubleSize) => set({ doubleSize }),
+  setCbarLoc: (cbarLoc) => set({ cbarLoc }),
+  getCbarLoc: () => get().cbarLoc
 }));

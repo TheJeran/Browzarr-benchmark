@@ -51,19 +51,18 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
   },[secondaryColor])
 
   const lineMat = useMemo(()=>new LineMaterial({color: colorHex ? colorHex : 0, linewidth: 2.0}),[colorHex])
-
-  const dimResolution = 7;
+  const tickLength = 0.05;
 
   const xLine = useMemo(()=> {
-    const geom = new LineSegmentsGeometry().setPositions([xRange[0], 0, 0, xRange[1], 0, 0]);
+    const geom = new LineSegmentsGeometry().setPositions([(xRange[0]-tickLength/2), 0, 0, (xRange[1]+tickLength/2), 0, 0]);
     return new LineSegments2(geom, lineMat)},[xRange, lineMat])
 
   const yLine = useMemo(() =>{
-    const geom = new LineSegmentsGeometry().setPositions([0, yRange[0]*shapeRatio, 0, 0, yRange[1]*shapeRatio, 0]);
+    const geom = new LineSegmentsGeometry().setPositions([0, yRange[0]*shapeRatio, 0, 0, yRange[1]*shapeRatio+tickLength/2, 0]);
     return new LineSegments2(geom, lineMat)},[yRange, shapeRatio, lineMat])
 
   const zLine = useMemo(()=> {
-    const geom = new LineSegmentsGeometry().setPositions([0, 0, isPC ? zRange[0]*depthRatio : zRange[0], 0, 0, isPC ? zRange[1]*depthRatio : zRange[1]]);
+    const geom = new LineSegmentsGeometry().setPositions([0, 0, isPC ? zRange[0]*depthRatio-tickLength/2 : zRange[0]-tickLength/2, 0, 0, isPC ? zRange[1]*depthRatio+tickLength/2 : zRange[1]+tickLength/2]);
     return new LineSegments2(geom, lineMat)},[zRange, depthRatio, isPC, lineMat])
 
   const tickLine = useMemo(()=> {
@@ -81,7 +80,7 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
     {/* Horizontal Group */}
     <group position={[0, shapeRatio*yRange[0], 0]}  >
       {/* X Group */}
-      <group position={[0, 0, flipX ? isPC ? zRange[0]*depthRatio : zRange[0] : isPC ? zRange[1] * depthRatio : zRange[1]]} rotation={[flipDown ? flipX ? -Math.PI/2 : Math.PI/2 : 0, 0, 0]}> 
+      <group position={[0, 0, flipX ? isPC ? zRange[0]*depthRatio-tickLength/2 : zRange[0]-tickLength/2 : isPC ? zRange[1] * depthRatio +tickLength/2 : zRange[1]+tickLength/2]} rotation={[flipDown ? flipX ? -Math.PI/2 : Math.PI/2 : 0, 0, 0]}> 
         <primitive key={'xLine'} object={xLine} />
         {Array(xResolution).fill(null).map((_val,idx)=>(
           (((xRange[0] + 1)/2) <= (idx*xDimScale)/xResolution &&
@@ -143,7 +142,7 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
         </group>
       </group>
       {/* Z Group */}
-      <group position={[flipY ? xRange[1]: xRange[0], 0, 0]} rotation={[0, 0, flipDown ? flipY ? -Math.PI/2 : Math.PI/2 : 0]}>
+      <group position={[flipY ? xRange[1] + tickLength/2: xRange[0] - tickLength/2, 0, 0]} rotation={[0, 0, flipDown ? flipY ? -Math.PI/2 : Math.PI/2 : 0]}>
         <primitive key={'zLine'} object={zLine} />
         {Array(zResolution).fill(null).map((_val,idx)=>(
           (((zRange[0] + 1)/2) <= (idx*zDimScale)/zResolution  &&
@@ -207,7 +206,7 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
     </group>
         
     {/* Vertical Group */}
-    <group position={[flipY ? xRange[0] : xRange[1], 0, flipX ? isPC ? zRange[0]*depthRatio : zRange[0] : isPC ? zRange[1]*depthRatio : zRange[1]]}> 
+    <group position={[flipY ? xRange[0] - tickLength/2 : xRange[1] + tickLength/2, 0, flipX ? isPC ? zRange[0]*depthRatio - tickLength/2 : zRange[0] - tickLength/2 : isPC ? zRange[1]*depthRatio + tickLength/2 : zRange[1] +tickLength/2]}> 
       <primitive key={'yLine'} object={yLine} />
       {Array(yResolution).fill(null).map((_val,idx)=>(
            (((yRange[0] + 1)/2) <= (idx*yDimScale)/yResolution &&
