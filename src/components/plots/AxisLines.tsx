@@ -77,7 +77,6 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
   const yValDelta = 1/(yResolution-1)
   const zDimScale = zResolution/(zResolution-1)
   const zValDelta = 1/(zResolution-1)
-    console.log(flipY, flipX)
   return (
     <group visible={plotType != 'sphere'}>
     {/* Horizontal Group */}
@@ -275,25 +274,24 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
   )
 }
 
-
 export const AxisLines = () => {
   const [flipX, setFlipX] = useState<boolean>(false)
   const [flipY, setFlipY] = useState<boolean>(false)
   const [flipDown, setFlipDown] = useState<boolean>(false)
 
   useFrame(({camera})=>{
-      const shouldFlipX = Math.abs(camera.rotation.z) > Math.PI / 2;
+      const shouldFlipX = Math.abs(camera.rotation.z) > Math.PI / 2
       if (flipX !== shouldFlipX) {
         setFlipX(shouldFlipX);
       }
 
       const shouldFlipY =
         (camera.rotation.z > 0 && camera.rotation.x < 0) ||
-        (camera.rotation.z <= 0 && camera.rotation.x > 0);
+        (camera.rotation.z <= 0 && camera.rotation.x > 0) 
       if (flipY !== shouldFlipY){
         setFlipY(shouldFlipY);
       } 
-      const shouldFlipDown = camera.rotation.x > 0
+      const shouldFlipDown = camera.rotation.x > 0 || camera.position.y <= 0;
       if (flipDown !== shouldFlipDown){
         setFlipDown(shouldFlipDown)
       }

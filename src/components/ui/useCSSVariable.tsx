@@ -1,8 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react';
 
-const useCSSVariable = (variableName: string) => {
-  const [value, setValue] = useState<string>(''); // Init with empty until mounted
+const useCSSVariable = (variableName: string, fallback: string = '') => {
+  const [value, setValue] = useState<string>(fallback);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -12,9 +12,25 @@ const useCSSVariable = (variableName: string) => {
       return getComputedStyle(root).getPropertyValue(variableName).trim();
     };
 
-    const updateValue = () => setValue(getCSSVariable());
+    const updateValue = () => {
+      const newValue = getCSSVariable();
+      if (newValue || !value) { // Update if we get a value or haven't set one yet
+        setValue(newValue || fallback);
+      }
+    };
 
-    updateValue(); // Get value on mount
+    // Retry logic for when CSS hasn't loaded yet
+    const initialUpdate = () => {
+      updateValue();
+      
+      // If no value found, retry after a short delay
+      const currentValue = getCSSVariable();
+      if (!currentValue) {
+        setTimeout(updateValue, 100);
+      }
+    };
+
+    initialUpdate();
 
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
@@ -30,7 +46,7 @@ const useCSSVariable = (variableName: string) => {
     });
 
     return () => observer.disconnect();
-  }, [variableName]);
+  }, [variableName, fallback]);
 
   return value;
 };

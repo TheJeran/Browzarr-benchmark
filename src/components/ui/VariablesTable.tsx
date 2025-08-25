@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState, useMemo} from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -24,11 +24,11 @@ export default function VariablesTable() {
     }))
   );
   
-  const [query, setQuery] = React.useState("");
-  const [selectedMeta, setSelectedMeta] = React.useState<any>(null);
-  const [showMetaDialog, setShowMetaDialog] = React.useState(false);
+  const [query, setQuery] = useState("");
+  const [selectedMeta, setSelectedMeta] = useState<any>(null);
+  const [showMetaDialog, setShowMetaDialog] = useState(false);
 
-  const filtered = React.useMemo(() => {
+  const filtered = useMemo(() => {
     const q = query.toLowerCase().trim();
     if (!q) return variables;
     return variables.filter((variable) =>
