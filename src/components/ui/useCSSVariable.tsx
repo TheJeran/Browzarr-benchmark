@@ -6,7 +6,6 @@ const useCSSVariable = (variableName: string, fallback: string = '') => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
     const getCSSVariable = () => {
       const root = document.documentElement;
       return getComputedStyle(root).getPropertyValue(variableName).trim();

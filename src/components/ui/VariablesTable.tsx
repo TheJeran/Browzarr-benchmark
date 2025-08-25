@@ -43,7 +43,7 @@ export default function VariablesTable() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-start justify-center pt-[8vh] p-0 relative">
+    <div className="min-h-screen w-full flex items-start justify-center pt-[8vh] p-0 relative z-1">
       <Card className="w-full max-w-full md:max-w-[80%] shadow-xl rounded-2xl border-0 bg-transparent">
         <CardHeader className="gap-3">
           {/* <CardTitle className="text-2xl text-center">Variables</CardTitle> */}

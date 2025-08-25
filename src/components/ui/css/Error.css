@@ -4,7 +4,7 @@
     left:50%;
     transform: translateX(-50%);
     border-radius: 8px;
-    z-index: 2;
+    z-index: 4;
     background: var(--background);
     padding: 10px;
     filter: drop-shadow(0px 0px 4px black);

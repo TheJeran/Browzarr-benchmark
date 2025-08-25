@@ -179,3 +179,42 @@ export function ParseExtent(dimUnits: string[], dimArrays: number[][]){
     setLatExtent([-90,90])
   }
 }
+
+export async function testCORSConfiguration(storePath: string): Promise<{
+    isAccessible: boolean;
+    corsEnabled: boolean;
+    errorDetails: string | null;
+}> {
+    try {
+        // Test with CORS mode
+        const corsResponse = await fetch(storePath, {
+            method: 'HEAD',
+            mode: 'cors'
+        });
+        return {
+            isAccessible: true,
+            corsEnabled: true,
+            errorDetails: String(corsResponse.status)
+        };
+    } catch (corsError) {
+        try {
+            // Test with no-cors mode
+            await fetch(storePath, {
+                method: 'HEAD',
+                mode: 'no-cors'
+            });
+            
+            return {
+                isAccessible: true,
+                corsEnabled: false,
+                errorDetails: 'Server is accessible but CORS is not properly configured'
+            };
+        } catch (networkError) {
+            return {
+                isAccessible: false,
+                corsEnabled: false,
+                errorDetails: 'Server is not accessible or URL is incorrect'
+            };
+        }
+    }
+}
