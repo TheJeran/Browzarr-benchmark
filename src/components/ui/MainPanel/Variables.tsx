@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { TbVariable } from "react-icons/tb";
 import { useGlobalStore } from "@/utils/GlobalStates";
 import { useShallow } from "zustand/shallow";
@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import MetaDataInfo from "./MetaDataInfo";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button";
+import { Input } from "../input";
 import {
   Tooltip,
   TooltipContent,
@@ -26,15 +27,24 @@ const Variables = ({openVariables, setOpenVariables}:{openVariables: boolean, se
     }))
   );
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedVar, setSelectedVar] = useState<string | null>(null);
   const [meta, setMeta] = useState<any>(null);
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+      const q = query.toLowerCase().trim();
+      if (!q) return variables;
+      return variables.filter((variable) =>
+        variable.toLowerCase().includes(q)
+      );
+    }, [query, variables]);
 
   useEffect(() => {
-    if (variables && zMeta && selectedIndex) {
-      const tempVar = variables[selectedIndex];
-      const relevant = zMeta.find((e: any) => e.name === tempVar);
+    if (variables && zMeta && selectedVar) {
+      const relevant = zMeta.find((e: any) => e.name === selectedVar);
       setMeta(relevant);
     }
-  }, [selectedIndex, variables]);
+  }, [selectedVar, variables]);
 
   useEffect(() => {
         const handleResize = () => {
@@ -70,24 +80,35 @@ const Variables = ({openVariables, setOpenVariables}:{openVariables: boolean, se
         </PopoverTrigger>
         <PopoverContent
           side={popoverSide}
-          className="colormaps"
+          className="max-h-[50vh] overflow-hidden flex flex-col"
         >
-            {variables.map((val, idx) => (
+          <div className="flex items-center gap-2 mb-4 justify-center max-w-[240px] md:max-w-sm mx-auto flex-shrink-0">
+            <Input
+              placeholder="Search variable..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="flex-1"
+            />
+            <Button variant="secondary" onClick={() => setQuery("")}>Clear</Button>
+          </div>
+          <div className="overflow-y-auto flex-1 [&::-webkit-scrollbar]:hidden">
+            {filtered.map((val, idx) => (
               <React.Fragment key={idx}>
                 <div
-                  className="cursor-pointer pl-2 py-1 text-sm hover:bg-muted rounded"
+                  className="cursor-pointer pl-2 py-1 text-sm hover:bg-muted rounded "
                   style={{background: idx == selectedIndex ? '#d6d6d6ff' : ''}}
                   onClick={() => {
                     setSelectedIndex(idx);
+                    setSelectedVar(val)
                     setShowMeta(true);
                   }}
                 >
                   {val}
                 </div>
-                {/* The below expression is to not have a seperator under last item */}
-                {idx != variables.length-1 && <Separator className="my-1" />} 
+                {idx != filtered.length-1 && <Separator className="my-1" />} 
               </React.Fragment>
             ))}
+          </div>
           {showMeta && meta && (
             <div className="meta-options w-[300px]">
               <MetaDataInfo

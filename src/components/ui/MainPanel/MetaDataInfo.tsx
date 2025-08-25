@@ -176,7 +176,7 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
                   <div className="mt-3">
                     {currentSize < 1e8 && (
                       <div className="flex items-center gap-2 p-2 bg-emerald-50 dark:bg-emerald-950/30 rounded-md border border-emerald-200 dark:border-emerald-800">
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full"/>
                         <span className="text-xs font-medium text-emerald-800 dark:text-emerald-200">
                           Selected data will fit in memory
                         </span>
@@ -269,13 +269,30 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
                 )}
                 <b>Total Size: </b>{formatBytes(currentSize)}<br />
                 {currentSize < 1e8 && (
-                  <span className="bg-green-500 rounded px-2 py-1">Selected data will fit in memory</span>
+                  <>
+                  <div className="flex items-center gap-2 p-2 bg-emerald-50 dark:bg-emerald-950/30 rounded-md border border-emerald-200 dark:border-emerald-800">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full"/>
+                        <span className="text-xs font-medium text-emerald-800 dark:text-emerald-200">
+                          Selected data will fit in memory
+                        </span>
+                  </div>
+                  </>
                 )}
                 {currentSize > 1e8 && currentSize < 2e8 && (
-                  <span className="bg-yellow-500 rounded px-2 py-1">Data may not fit in memory</span>
+                  <div className="flex items-center gap-2 p-2 bg-orange-50 dark:bg-orange-950/30 rounded-md border border-orange-200 dark:border-orange-800">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                      <span className="text-xs font-medium text-orange-800 dark:text-orange-200">
+                        Data may not fit in memory
+                      </span>
+                  </div>
                 )}
                 {currentSize > 2e8 && (
-                  <span className="bg-red-400 rounded px-2 py-1">Data will not fit in memory</span>
+                  <div className="flex items-center gap-2 p-2 bg-red-50 dark:bg-red-950/30 rounded-md border border-red-200 dark:border-red-800">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span className="text-xs font-medium text-red-800 dark:text-red-200">
+                      Data will not fit in memory
+                    </span>
+                  </div>
                 )}
               </>
             }
