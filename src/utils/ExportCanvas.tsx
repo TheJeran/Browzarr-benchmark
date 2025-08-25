@@ -14,11 +14,12 @@ const ExportCanvas = ({show}:{show: boolean}) => {
         metadata: state.metadata
     })))
 
-    const {exportImg, includeBackground, includeColorbar, doubleSize} = useImageExportStore(useShallow(state => ({
+    const {exportImg, includeBackground, includeColorbar, doubleSize, getCbarLoc} = useImageExportStore(useShallow(state => ({
         exportImg: state.exportImg,
         includeBackground: state.includeBackground,
         includeColorbar: state.includeColorbar,
-        doubleSize: state.doubleSize
+        doubleSize: state.doubleSize,
+        getCbarLoc: state.getCbarLoc
     })))
     
     const {gl, scene, camera} = useThree()
@@ -34,8 +35,11 @@ const ExportCanvas = ({show}:{show: boolean}) => {
             skipFirst.current = false
             return
         }
-        const docWidth = doubleSize ? window.innerWidth * 2 : window.innerWidth
-        const docHeight = doubleSize ? window.innerHeight * 2 : window.innerHeight
+        const domWidth = gl.domElement.width;
+        const domHeight = gl.domElement.height;
+
+        const docWidth = doubleSize ? domWidth * 2 : domWidth
+        const docHeight = doubleSize ? domHeight * 2 : domHeight
 
         // Create a new canvas for compositing
         const compositeCanvas = document.createElement('canvas')
@@ -44,12 +48,6 @@ const ExportCanvas = ({show}:{show: boolean}) => {
 
         compositeCanvas.width = docWidth
         compositeCanvas.height = docHeight
-        const cbarWidth = doubleSize ? 1024 : 512
-        const cbarHeight = doubleSize ? 48: 24;
-        const cbarStartPos = Math.round(docWidth/2 - cbarWidth/2)
-
-        const cbarTop = doubleSize ? docHeight - 140 : docHeight-70
-        
         if (includeBackground){
             ctx.fillStyle = bgColor
             ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height)
@@ -57,6 +55,7 @@ const ExportCanvas = ({show}:{show: boolean}) => {
         if (doubleSize){
             const originalSize = gl.getSize(new THREE.Vector2())
             // Set higher resolution
+            
             gl.setSize(docWidth, docHeight)
             gl.render(scene, camera)
             ctx.drawImage(gl.domElement, 0, 0, docWidth, docHeight) 
@@ -78,6 +77,23 @@ const ExportCanvas = ({show}:{show: boolean}) => {
         
         if (includeColorbar){
             const secondCanvas = document.getElementById('colorbar-canvas')
+            const cbarLoc = getCbarLoc();
+            
+
+            let cbarWidth = doubleSize ? 1024 : 512
+            let cbarHeight = doubleSize ? 48: 24;
+
+            const cbarStartPos = Math.round(docWidth/2 - cbarWidth/2)
+            const cbarTop = doubleSize ? docHeight - 140 : docHeight-70
+
+            const transPose = cbarLoc === 'right' || cbarLoc === 'left'
+
+            if (transPose){
+                const tempWidth = cbarWidth
+                cbarWidth = cbarHeight
+                cbarHeight = tempWidth
+            }
+
 
             if (secondCanvas instanceof HTMLCanvasElement) {
                 ctx.drawImage(secondCanvas, cbarStartPos, cbarTop , cbarWidth, cbarHeight) // These are the default dimensions of the colorbar-canvas. It is 50px from bottom
@@ -106,7 +122,7 @@ const ExportCanvas = ({show}:{show: boolean}) => {
         ctx.font = `${waterMarkSize}px "Segoe UI", serif `
         ctx.textAlign = 'left'
         ctx.textBaseline = 'bottom'
-        ctx.fillText("BrowZarr.io", doubleSize ? 20 : 10, doubleSize ? docHeight - 20 : docHeight - 10) // Watermark
+        ctx.fillText("browzarr.io", doubleSize ? 20 : 10, doubleSize ? docHeight - 20 : docHeight - 10) // Watermark
 
         // Export the composite
         compositeCanvas.toBlob((blob) => {

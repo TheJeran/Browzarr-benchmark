@@ -22,6 +22,7 @@ import PlayButton from "./MainPanel/PlayButton";
 import Error from "./Error";
 import AnalysisOptions from "./MainPanel/AnalysisOptions";
 import KernelVisualizer from "./KernelVisualizer";
+import ExportImageSettings from "./ExportImageSettings";
 export {
   Navbar,
   Footer,
@@ -46,5 +47,6 @@ export {
   PlayButton,
   Error,
   AnalysisOptions,
-  KernelVisualizer
+  KernelVisualizer,
+  ExportImageSettings
 };

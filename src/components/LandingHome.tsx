@@ -4,13 +4,12 @@ THREE.Cache.enabled = true;
 import { GetZarrMetadata, GetVariableNames } from '@/components/zarr/GetMetadata';
 import { ZarrDataset, GetStore } from '@/components/zarr/ZarrLoaderLRU';
 import { useRef, useState } from 'react';
-import VariableScroller from './ui/VariableScroller';
 import { useEffect, useMemo } from 'react';
 import { PlotArea, Plot } from '@/components/plots';
 import { MainPanel } from '@/components/ui';
 import { Metadata, Loading, Navbar, Error } from '@/components/ui';
 import { useGlobalStore, useZarrStore } from '@/utils/GlobalStates';
-import { useShallow, shallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/shallow';
 import { GetTitleDescription } from '@/components/zarr/GetMetadata';
 import ScrollableLinksTable from './ui/VariablesTable';
 
