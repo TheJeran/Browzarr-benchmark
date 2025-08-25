@@ -1,7 +1,7 @@
 import * as zarr from "zarrita";
 import * as THREE from 'three';
 import QuickLRU from 'quick-lru';
-import { parseUVCoords } from "@/utils/HelperFuncs";
+import { parseUVCoords, testCORSConfiguration } from "@/utils/HelperFuncs";
 import { GetSize } from "./GetMetadata";
 import { useGlobalStore, useZarrStore, useErrorStore } from "@/utils/GlobalStates";
 
@@ -20,29 +20,19 @@ export class ZarrError extends Error {
     }
 }
 
-export async function GetStore(storePath: string): Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>{
-	// const setZarrFetch = useErrorStore.getState().setZarrFetch
-	// const setCors = useErrorStore.getState().setCors
-	try {
-		await fetch(storePath, { method: 'HEAD', mode: 'cors' });
+export async function GetStore(storePath: string): Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>> | null>{
+		try {
+			const d_store = zarr.tryWithConsolidated(
+				new zarr.FetchStore(storePath)
+			);
+			const gs = await d_store.then(store => zarr.open(store, {kind: 'group'}));
+			return gs;
 		} catch (error) {
-		if (error instanceof TypeError) {
-			// setCors(true)
-			throw new ZarrError(`CORS check failed for ${storePath}. The server may not allow cross-origin requests from this site.`, error);
-		}
-	}
+			useErrorStore.getState().setZarrFetch(true)
+			useGlobalStore.getState().setShowLoading(false)
+			throw new ZarrError(`Failed to initialize store at ${storePath}`, error);
 
-    try {
-        const d_store = zarr.tryWithConsolidated(
-            new zarr.FetchStore(storePath)
-        );
-        const gs = await d_store.then(store => zarr.open(store, {kind: 'group'}));
-        return gs;
-    } catch (error) {
-		// setZarrFetch(true)
-        throw new ZarrError(`Failed to initialize store at ${storePath}`, error);
-		
-    }
+		}    
 }
 
 interface TimeSeriesInfo{

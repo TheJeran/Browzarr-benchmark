@@ -71,9 +71,10 @@ const Dataset = ({setOpenVariables} : {setOpenVariables: React.Dispatch<React.Se
         side={popoverSide}
         className="flex flex-col items-start max-w-[220px] p-3 gap-3 w-auto mb-1"
       >
+        <p >Curated</p>
         <Button
           variant={activeOption === 'ESDC' ? "default" : "ghost"}
-          className='cursor-pointer'
+          className='cursor-pointer mt-[-20px]'
           onClick={() => {
             setShowStoreInput(false);
             setShowLocalInput(false);
@@ -97,18 +98,22 @@ const Dataset = ({setOpenVariables} : {setOpenVariables: React.Dispatch<React.Se
         >
           Seasfire
         </Button>
+        <div className="w-full h-px bg-gray-300" />
+        <p >Personal</p>
         <div>
           <Button
             variant={activeOption === 'remote' ? "default" : "ghost"}
-            className='cursor-pointer'
+            className='cursor-pointer mt-[-20px]'
             onClick={() => {
               setShowLocalInput(false);
               setActiveOption('remote')
               setShowStoreInput((prev) => !prev);
             }}
           >
+          
             Remote
           </Button>
+          
           {showStoreInput && (
             <form
               className="mt-2 flex items-center gap-2"

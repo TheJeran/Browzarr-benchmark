@@ -395,19 +395,23 @@ type ErrorState = {
   zarrFetch: boolean;
   cors: boolean;
   oom: boolean;
+  invalidURL: boolean; 
 
   setZarrFetch: (zarrFetch: boolean) => void; 
   setCors: (cors: boolean) => void; 
   setOom: (oom: boolean) => void; 
+  setInvalidURL: (invalidURL: boolean) => void;
 }
 
 export const useErrorStore = create<ErrorState>((set) =>({
   zarrFetch: false,
   cors: false,
   oom: false,
+  invalidURL: false,
 
   setZarrFetch: (zarrFetch) => set({ zarrFetch }),
   setCors: (cors) => set({ cors }),
-  setOom: (oom) => set({ oom })
+  setOom: (oom) => set({ oom }),
+  setInvalidURL: (invalidURL) => set({ invalidURL })
 
 }))
