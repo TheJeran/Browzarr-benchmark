@@ -64,6 +64,7 @@ const ExportCanvas = ({show}:{show: boolean}) => {
             gl.render(scene, camera)
         }
         else{
+            gl.render(scene, camera)
             ctx.drawImage(gl.domElement, 0, 0, docWidth, docHeight) 
         }
 
