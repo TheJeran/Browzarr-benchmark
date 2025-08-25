@@ -38,7 +38,7 @@ const Error = () => {
 
   return (
     <Dialog open={renderCond}>
-        <DialogContent>
+        <DialogContent aria-describedby='Error Message' >
             <DialogTitle className="text-center text-lg font-semibold">
                 Error
             </DialogTitle>

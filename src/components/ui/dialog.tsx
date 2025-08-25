@@ -71,11 +71,6 @@ function DialogContent({
             data-slot="dialog-close"
             className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
           >
-            {/* Added the below component cause its exclusion kept giving errors. I have no idea what it does */}
-            <DialogPrimitive.Description id="dialog-description" className="sr-only"> 
-            This dialog contains important information for screen readers.
-          </DialogPrimitive.Description>
-
             <XIcon />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>

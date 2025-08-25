@@ -46,17 +46,8 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
   const secondaryColor = useCSSVariable('--text-plot') //replace with needed variable
   const colorHex = useMemo(()=>{
     if (!secondaryColor){return}
-    console.log(secondaryColor)
-    if (secondaryColor.includes('rgba')){
-      const noAlpha = `${secondaryColor.slice(0,-5)})`  //This slice removes the alpha part of the string which kept causing a warning in console
-      const col = new THREE.Color(noAlpha) 
-      return col.getHex()
-    }
-    else{
-      const col = new THREE.Color(secondaryColor) 
-      return col.getHex()
-    }
-    
+    const col = new THREE.Color(secondaryColor) 
+    return col.getHex()
   },[secondaryColor])
 
   const lineMat = useMemo(()=>new LineMaterial({color: colorHex ? colorHex : 0, linewidth: 5}),[colorHex])

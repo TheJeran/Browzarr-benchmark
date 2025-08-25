@@ -61,7 +61,7 @@ const Dataset = ({setOpenVariables} : {setOpenVariables: React.Dispatch<React.Se
               </div>
             </TooltipTrigger>
             <TooltipContent side="left" align="start" className="flex flex-col">
-              <span>Select datase</span>
+              <span>Select dataset</span>
             </TooltipContent>
           </Tooltip>
         </div>
