@@ -82,9 +82,9 @@ const ExportCanvas = ({show}:{show: boolean}) => {
 
             let cbarWidth = doubleSize ? 1024 : 512
             let cbarHeight = doubleSize ? 48: 24;
-            
-            let cbarStartPos = Math.round(docWidth/2 - cbarWidth/2)
-            let cbarTop = doubleSize ? docHeight - 140 : docHeight-70
+
+            const cbarStartPos = Math.round(docWidth/2 - cbarWidth/2)
+            const cbarTop = doubleSize ? docHeight - 140 : docHeight-70
 
             const transPose = cbarLoc === 'right' || cbarLoc === 'left'
 
