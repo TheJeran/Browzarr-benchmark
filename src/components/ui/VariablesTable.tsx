@@ -76,7 +76,7 @@ export default function VariablesTable() {
                             setSelectedMeta(null);
                           }
                         }}>
-                          <DialogTrigger asChild>
+                          <DialogTrigger  asChild>
                             <Button 
                               variant="ghost" 
                               className="w-full text-center text-lg cursor-pointer"
@@ -85,8 +85,8 @@ export default function VariablesTable() {
                               {variable}
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-[85%] md:max-w-2xl max-h-[80vh] overflow-y-auto">
-                              <DialogTitle className="text-center text-lg font-semibold">
+                          <DialogContent aria-describedby="Data information for selected variable" aria-description="Data information for selected variable" className="max-w-[85%] md:max-w-2xl max-h-[80vh] overflow-y-auto">
+                              <DialogTitle  className="text-center text-lg font-semibold">
                                 {variable}
                               </DialogTitle>
                             <div className="mt-4">

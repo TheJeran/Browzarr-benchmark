@@ -52,7 +52,7 @@ const Metadata = ({ data }: { data: Record<string, any> }) => {
                         <span>Show Variable Metadata</span>
                     </TooltipContent>
                 </Tooltip>
-                <DialogContent className="metadata-dialog">
+                <DialogContent aria-describedby="Metadata Information for variable" className="metadata-dialog">
                     <DialogHeader>
                         <DialogTitle>Variable Metadata</DialogTitle>
                         <DialogDescription>
