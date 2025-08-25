@@ -50,7 +50,7 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
     return col.getHex()
   },[secondaryColor])
 
-  const lineMat = useMemo(()=>new LineMaterial({color: colorHex ? colorHex : 0, linewidth: 5}),[colorHex])
+  const lineMat = useMemo(()=>new LineMaterial({color: colorHex ? colorHex : 0, linewidth: 2.0}),[colorHex])
 
   const dimResolution = 7;
 
