@@ -135,7 +135,7 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
         >{vals[idx].toFixed(2)}
         </p>
         ))}
-        <canvas  ref={canvasRef} width={512} height={24} onMouseDown={handleMouseDown}/>
+        <canvas id="colorbar-canvas" ref={canvasRef} width={512} height={24} onMouseDown={handleMouseDown}/>
         <p className="colorbar-title"
             style={{
             position:'absolute',
