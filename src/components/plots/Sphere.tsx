@@ -1,10 +1,10 @@
 import React, {useRef, useMemo, useState, useEffect} from 'react'
 import * as THREE from 'three'
-import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
+import { useAnalysisStore, useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
 import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU';
 import { useShallow } from 'zustand/shallow'
 import { vertexShader, sphereFrag, flatSphereFrag } from '../textures/shaders'
-import { parseUVCoords } from '@/utils/HelperFuncs';
+import { parseUVCoords, GetTimeSeries } from '@/utils/HelperFuncs';
 import { evaluate_cmap } from 'js-colormaps-es';
 
 
@@ -32,9 +32,8 @@ function deg2rad(deg: number){
 }
 
 export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE.DataTexture | null, ZarrDS: ZarrDataset}) => {
-    const {colormap, flipY, isFlat} = useGlobalStore(useShallow(state=> ({
+    const {colormap, isFlat} = useGlobalStore(useShallow(state=> ({
         colormap: state.colormap,
-        flipY: state.flipY,
         isFlat: state.isFlat
     })))
     const {setPlotDim,updateDimCoords, updateTimeSeries} = useGlobalStore(useShallow(state=>({
@@ -42,13 +41,19 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
       updateDimCoords:state.updateDimCoords,
       updateTimeSeries: state.updateTimeSeries
     })))
+    const {analysisMode, analysisArray} = useAnalysisStore(useShallow(state => ({
+      analysisMode: state.analysisMode,
+      analysisArray: state.analysisArray
+    })))
 
-    const {dimArrays,dimNames,dimUnits, timeSeries} = useGlobalStore(useShallow(state=>({
-        shape:state.shape,
+    const {dimArrays,dimNames,dimUnits, timeSeries, dataShape, dataArray, strides} = useGlobalStore(useShallow(state=>({
         dimArrays:state.dimArrays,
         dimNames:state.dimNames,
         dimUnits:state.dimUnits,
-        timeSeries: state.timeSeries
+        timeSeries: state.timeSeries,
+        dataShape: state.dataShape,
+        dataArray: state.dataArray,
+        strides: state.strides
     })))
 
     const {animate, animProg, cOffset, cScale, selectTS, lonExtent, latExtent, 
@@ -148,7 +153,7 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
         const normal = new THREE.Vector3(0,0,1)
     
         if(ZarrDS){
-          const tempTS = ZarrDS.GetTimeSeries({uv,normal})
+          const tempTS = GetTimeSeries({data:analysisMode ? analysisArray : dataArray, shape:dataShape, stride:strides},{uv,normal})
           const plotDim = (normal.toArray()).map((val, idx) => {
             if (Math.abs(val) > 0) {
               return idx;

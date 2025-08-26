@@ -13,7 +13,6 @@ import { useShallow } from 'zustand/shallow';
 import { GetTitleDescription } from '@/components/zarr/GetMetadata';
 import ScrollableLinksTable from './ui/VariablesTable';
 
-
 export function LandingHome() {
 
   const {initStore, setZMeta} = useGlobalStore(useShallow(state=>({initStore: state.initStore, setZMeta: state.setZMeta})))
@@ -21,7 +20,18 @@ export function LandingHome() {
     currentStore: state.currentStore,
     setCurrentStore: state.setCurrentStore
   })))
-  
+
+  const {setVariables, setPlotOn, timeSeries, variable, metadata, plotOn  } = useGlobalStore(
+    useShallow(state => ({
+      setVariables: state.setVariables,
+      setPlotOn: state.setPlotOn,
+      timeSeries: state.timeSeries,
+      variable: state.variable,
+      metadata: state.metadata,
+      plotOn: state.plotOn
+    }))
+  );
+
   useEffect(()=>{ //Update store if URL changes
     const newStore = GetStore(initStore)
     setCurrentStore(newStore)
@@ -35,25 +45,13 @@ export function LandingHome() {
     GetTitleDescription(currentStore).then((result) => {
       if (isMounted) setTitleDescription(result);
     });
-    const store = currentStore;
-    const fullmetadata = GetZarrMetadata(store);
+    const fullmetadata = GetZarrMetadata(currentStore);
     const variables = GetVariableNames(fullmetadata);
     fullmetadata.then(e=>setZMeta(e))
     variables.then(e=> {setVariables(e)})
     return () => { isMounted = false; };
   }, [currentStore]);
 
-
-  const {   setVariables, setPlotOn, timeSeries, variable, metadata, plotOn  } = useGlobalStore(
-    useShallow(state => ({
-      setVariables: state.setVariables,
-      setPlotOn: state.setPlotOn,
-      timeSeries: state.timeSeries,
-      variable: state.variable,
-      metadata: state.metadata,
-      plotOn: state.plotOn
-    }))
-  );
 
   useEffect(()=>{
     if (variable === "Default"){

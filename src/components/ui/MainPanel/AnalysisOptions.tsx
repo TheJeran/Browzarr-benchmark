@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAnalysisStore, useGlobalStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import '../css/MainPanel.css';
@@ -47,7 +47,17 @@ const webGPUError = (
 );
 
 const AnalysisOptions = () => {
-  const {plotOn, variable} = useGlobalStore(useShallow(state => ({plotOn: state.plotOn, variable: state.variable})));
+  const {plotOn, variable, variables, dimNames, initStore, setTimeSeries} = useGlobalStore(useShallow(state => ({
+    plotOn: state.plotOn, 
+    variable: state.variable,
+    variables: state.variables,
+    dimNames: state.dimNames,
+    initStore: state.initStore,
+    setTimeSeries: state.setTimeSeries
+  })));
+
+  const previousStore = useRef<string>(initStore)
+  const [incompatible, setIncompatible] = useState(false); 
   
   const {
     execute,
@@ -93,11 +103,6 @@ const AnalysisOptions = () => {
     setReverseDirection: state.setReverseDirection,
     })));
 
-  const { variables, dimNames } = useGlobalStore(useShallow(state => ({
-    variables: state.variables,
-    dimNames: state.dimNames
-  })));
-  
   const {reFetch, setReFetch} = useZarrStore(useShallow(state => ({
     reFetch: state.reFetch,
     setReFetch: state.setReFetch
@@ -121,6 +126,15 @@ const AnalysisOptions = () => {
 
     checkWebGPU();
     }, [plotOn]);
+    console.log(variable)
+  useEffect(()=>{ // Changing stores makes it so you can't use two variable operations. When you load a new variable from this dataset it will become compatible. 
+    if(initStore != previousStore.current){
+      setIncompatible(true)
+      previousStore.current = initStore // If you change stores, then change back. Then you still can't use Two. I'm thinking I will redo the cache and make it a global which will solve this eventually. 
+    }else{
+      setIncompatible(false)
+    }
+  },[initStore, variable])
 
   const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
     useEffect(() => {
@@ -132,15 +146,15 @@ const AnalysisOptions = () => {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-    function HandleKernelNums(e: string){
-      const newVal = parseInt(e);
-      if (newVal % 2 == 0){
-        return Math.max(1, newVal - 1)
-      }
-      else{
-        return newVal
-      }
+  function HandleKernelNums(e: string){
+    const newVal = parseInt(e);
+    if (newVal % 2 == 0){
+      return Math.max(1, newVal - 1)
     }
+    else{
+      return newVal
+    }
+  }
 
   return (
     <>
@@ -178,6 +192,7 @@ const AnalysisOptions = () => {
               <>
                 <Button
                   className="cursor-pointer active:scale-[0.95]"
+                  disabled={incompatible}
                   onClick={() => {
                     setUseTwo(!useTwo);
                     setOperation('Default');
@@ -397,6 +412,7 @@ const AnalysisOptions = () => {
                   onClick={() => {
                     setExecute(!execute);
                     setAnalysisMode(true);
+                    setTimeSeries({});
                   }}
                 >
                   Execute
