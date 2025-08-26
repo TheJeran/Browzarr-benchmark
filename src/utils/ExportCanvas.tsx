@@ -43,7 +43,7 @@ const ExportCanvas = ({show}:{show: boolean}) => {
 
         const docWidth = useCustomRes ? customRes[0] : (doubleSize ? domWidth * 2 : domWidth)
         const docHeight = useCustomRes ? customRes[1] : (doubleSize ? domHeight * 2 : domHeight)
-        
+
 
         // Create a new canvas for compositing
         const compositeCanvas = document.createElement('canvas')
@@ -94,16 +94,16 @@ const ExportCanvas = ({show}:{show: boolean}) => {
             gl.render(scene, camera)
             ctx.drawImage(gl.domElement, 0, 0, docWidth, docHeight) 
             if (camera instanceof THREE.PerspectiveCamera) {
-                //@ts-ignore asepct won't be undefined when perspective
+                //@ts-expect-error asepct won't be undefined when perspective
                 camera.aspect = originalCameraSettings.aspect
             } else if (camera instanceof THREE.OrthographicCamera) {
-                //@ts-ignore These won't be undefined when orthographic
+                //@ts-expect-error These won't be undefined when orthographic
                 camera.left = originalCameraSettings.left
-                //@ts-ignore These won't be undefined when orthographic
+                //@ts-expect-error These won't be undefined when orthographic
                 camera.right = originalCameraSettings.right
-                //@ts-ignore These won't be undefined when orthographic
+                //@ts-expect-error These won't be undefined when orthographic
                 camera.top = originalCameraSettings.top
-                //@ts-ignore These won't be undefined when orthographic
+                //@ts-expect-error These won't be undefined when orthographic
                 camera.bottom = originalCameraSettings.bottom
             }
             gl.setSize(originalSize.x, originalSize.y)
