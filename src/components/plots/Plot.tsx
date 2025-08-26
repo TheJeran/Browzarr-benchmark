@@ -234,7 +234,7 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
       >
         <CountryBorders/>
         <ExportCanvas show={show}/>
-        {!isFlat && show && <AxisLines />}
+        {show && <AxisLines />}
         {plotType == "volume" && show && 
           <>
             <DataCube volTexture={texture}/>
@@ -259,6 +259,7 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
         >
           <ExportCanvas show={show}/>
           <CountryBorders/>
+          {show && <AxisLines />}
           <FlatMap texture={texture as THREE.DataTexture | THREE.Data3DTexture} infoSetters={infoSetters} />
           <Orbiter isFlat={true}/>
         </Canvas>
