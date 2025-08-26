@@ -14,20 +14,21 @@ const ExportCanvas = ({show}:{show: boolean}) => {
         metadata: state.metadata
     })))
 
-    const {exportImg, includeBackground, includeColorbar, doubleSize, getCbarLoc, getCbarNum} = useImageExportStore(useShallow(state => ({
+    const {exportImg, includeBackground, includeColorbar, doubleSize, useCustomRes, getCbarLoc, getCbarNum, getCustomRes} = useImageExportStore(useShallow(state => ({
         exportImg: state.exportImg,
         includeBackground: state.includeBackground,
         includeColorbar: state.includeColorbar,
         doubleSize: state.doubleSize,
+        useCustomRes: state.useCustomRes,
         getCbarLoc: state.getCbarLoc,
-        getCbarNum: state.getCbarNum
+        getCbarNum: state.getCbarNum,
+        getCustomRes: state.getCustomRes
     })))
     
     const {gl, scene, camera} = useThree()
     const skipFirst = useRef<boolean>(true)
     const textColor = useCSSVariable('--text-plot')
     const bgColor = useCSSVariable('--background')
-
     useEffect(()=>{   
         if (!show){
             return
@@ -38,9 +39,11 @@ const ExportCanvas = ({show}:{show: boolean}) => {
         }
         const domWidth = gl.domElement.width;
         const domHeight = gl.domElement.height;
+        const customRes = getCustomRes();
 
-        const docWidth = doubleSize ? domWidth * 2 : domWidth
-        const docHeight = doubleSize ? domHeight * 2 : domHeight
+        const docWidth = useCustomRes ? customRes[0] : (doubleSize ? domWidth * 2 : domWidth)
+        const docHeight = useCustomRes ? customRes[1] : (doubleSize ? domHeight * 2 : domHeight)
+        
 
         // Create a new canvas for compositing
         const compositeCanvas = document.createElement('canvas')
@@ -53,19 +56,64 @@ const ExportCanvas = ({show}:{show: boolean}) => {
             ctx.fillStyle = bgColor
             ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height)
         }
-        if (doubleSize){
+        if (useCustomRes){
             const originalSize = gl.getSize(new THREE.Vector2())
-            // Set higher resolution
+            let originalCameraSettings
+
+            if (camera instanceof THREE.PerspectiveCamera) {
+                originalCameraSettings = { aspect: camera.aspect }
+                camera.aspect = docWidth / docHeight
+                camera.updateProjectionMatrix()
+            } else if (camera instanceof THREE.OrthographicCamera) {
+                originalCameraSettings = {
+                    left: camera.left,
+                    right: camera.right,
+                    top: camera.top,
+                    bottom: camera.bottom
+                }
+
+                const newAspect = docWidth / docHeight
+                const currentAspect = (camera.right - camera.left) / (camera.top - camera.bottom)
             
+                if (newAspect > currentAspect) {
+                    // Wider - expand left/right
+                    const width = (camera.top - camera.bottom) * newAspect
+                    const center = (camera.left + camera.right) / 2
+                    camera.left = center - width / 2
+                    camera.right = center + width / 2
+                } else {
+                    // Taller - expand top/bottom
+                    const height = (camera.right - camera.left) / newAspect
+                    const center = (camera.top + camera.bottom) / 2
+                    camera.top = center + height / 2
+                    camera.bottom = center - height / 2
+                }
+                camera.updateProjectionMatrix()
+            }
             gl.setSize(docWidth, docHeight)
             gl.render(scene, camera)
             ctx.drawImage(gl.domElement, 0, 0, docWidth, docHeight) 
+            if (camera instanceof THREE.PerspectiveCamera) {
+                //@ts-ignore asepct won't be undefined when perspective
+                camera.aspect = originalCameraSettings.aspect
+            } else if (camera instanceof THREE.OrthographicCamera) {
+                //@ts-ignore These won't be undefined when orthographic
+                camera.left = originalCameraSettings.left
+                //@ts-ignore These won't be undefined when orthographic
+                camera.right = originalCameraSettings.right
+                //@ts-ignore These won't be undefined when orthographic
+                camera.top = originalCameraSettings.top
+                //@ts-ignore These won't be undefined when orthographic
+                camera.bottom = originalCameraSettings.bottom
+            }
             gl.setSize(originalSize.x, originalSize.y)
+            camera.updateProjectionMatrix()
             gl.render(scene, camera)
         }
         else{
             gl.render(scene, camera)
             ctx.drawImage(gl.domElement, 0, 0, docWidth, docHeight) 
+            gl.render(scene, camera)
         }
 
         const variableSize = doubleSize ? 72 : 36
@@ -73,15 +121,15 @@ const ExportCanvas = ({show}:{show: boolean}) => {
         ctx.font = `${variableSize}px "Segoe UI"`
         ctx.fillText(variable, doubleSize ? 40 : 20, doubleSize ? 100 : 50) // Variable in top Left
 
-        const cbarTickSize = doubleSize ? 28 : 14
-        const unitSize = doubleSize ? 40 : 20
+        const cbarTickSize = doubleSize ? 36 : 18
+        const unitSize = doubleSize ? 52 : 26
         
         if (includeColorbar){
             const secondCanvas = document.getElementById('colorbar-canvas')
             const cbarLoc = getCbarLoc();
             
 
-            let cbarWidth = doubleSize ? 1024 : 512
+            let cbarWidth = doubleSize ? Math.min(1024, domWidth*0.8)  : Math.min(512, domWidth*0.8)
             let cbarHeight = doubleSize ? 48: 24;
 
             let cbarStartPos = Math.round(docWidth/2 - cbarWidth/2)
@@ -155,7 +203,7 @@ const ExportCanvas = ({show}:{show: boolean}) => {
             ctx.fillStyle = textColor
             ctx.font = `${unitSize}px "Segoe UI" bold`
             ctx.textAlign = 'center'
-            ctx.fillText(metadata?.units, cbarStartPos+cbarWidth/2, cbarTop-unitSize-6) // Cbar Units above middle of cbar
+            ctx.fillText(metadata?.units, cbarStartPos+cbarWidth/2, cbarTop-unitSize-4) // Cbar Units above middle of cbar
         }
         
         const waterMarkSize = doubleSize ? 40 : 20

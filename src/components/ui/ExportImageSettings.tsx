@@ -26,25 +26,34 @@ const ExportImageSettings = () => {
         doubleSize,
         cbarLoc,
         cbarNum,
+        useCustomRes,
+        customRes,
         ExportImg, 
         setIncludeBackground, 
         setIncludeColorbar, 
         setDoubleSize,
         setCbarLoc,
-        setCbarNum
+        setCbarNum,
+        setUseCustomRes,
+        setCustomRes,
+
     } = useImageExportStore(useShallow(state => ({
           includeBackground: state.includeBackground,
           includeColorbar: state.includeColorbar,
           doubleSize: state.doubleSize,
           cbarLoc: state.cbarLoc,
           cbarNum: state.cbarNum,
+          useCustomRes: state.useCustomRes,
+          customRes: state.customRes,
 
           ExportImg: state.ExportImg,
           setIncludeBackground: state.setIncludeBackground,
           setIncludeColorbar: state.setIncludeColorbar,
           setDoubleSize: state.setDoubleSize,
           setCbarLoc: state.setCbarLoc,
-          setCbarNum: state.setCbarNum
+          setCbarNum: state.setCbarNum,
+          setUseCustomRes: state.setUseCustomRes,
+          setCustomRes: state.setCustomRes
       })))
 
     interface CapitalizeFn {
@@ -103,8 +112,24 @@ const ExportImageSettings = () => {
             <Input id='cbarNum' type="number" min={0} max={20} step={1} value={cbarNum} onChange={e => setCbarNum(parseInt(e.target.value))}/>
             </>          
             }
+            <label htmlFor="useCustomRes" >Set Resolution</label>
+            <Input id='useCustomRes' type="checkbox" checked={useCustomRes} onChange={e => setUseCustomRes(e.target.checked)}/>
+            {useCustomRes &&
+                <div className='grid grid-cols-[50%_50%] col-span-2 '>
+                <div className='flex flex-col items-center'>
+                    <h1>Width</h1>
+                    <Input id='cbarNum' type="number"  value={customRes[0]} onChange={e => setCustomRes([parseInt(e.target.value), customRes[1]])}/>
+                </div>
+                <div className='flex flex-col items-center'>
+                    <h1>Height</h1>
+                    <Input id='cbarNum' type="number"  value={customRes[1]} onChange={e => setCustomRes([customRes[0], parseInt(e.target.value)])}/>
+                </div>
+            </div>}
+            {!useCustomRes &&
+            <>
             <label htmlFor="includeCbar" >Double Resolution</label>
             <Input id='includeCbar' type="checkbox" checked={doubleSize} onChange={e => setDoubleSize(e.target.checked)}/>
+            </>}
             <Button
                 className="col-span-2"
                 variant='pink'
