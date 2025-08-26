@@ -107,6 +107,7 @@ const AnalysisOptions = () => {
     reFetch: state.reFetch,
     setReFetch: state.setReFetch
   })))
+
   const [showError, setShowError] = useState<boolean>(false);
   
   useEffect(() => {
@@ -126,15 +127,21 @@ const AnalysisOptions = () => {
 
     checkWebGPU();
     }, [plotOn]);
-    console.log(variable)
-  useEffect(()=>{ // Changing stores makes it so you can't use two variable operations. When you load a new variable from this dataset it will become compatible. 
+
+
+  useEffect(()=>{ // Changing stores makes it so you can't use two variable operations. 
     if(initStore != previousStore.current){
       setIncompatible(true)
-      previousStore.current = initStore // If you change stores, then change back. Then you still can't use Two. I'm thinking I will redo the cache and make it a global which will solve this eventually. 
-    }else{
+    }
+    else{
       setIncompatible(false)
     }
-  },[initStore, variable])
+  },[initStore])
+
+  useEffect(()=>{ // When data is downloaded (indicated by changes in refetch) The newly plotted and any future variables are compatible until initStore changes. 
+    setIncompatible(false);
+    previousStore.current = initStore
+  },[reFetch])
 
   const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
     useEffect(() => {

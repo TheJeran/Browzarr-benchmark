@@ -217,6 +217,7 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
                 }
                 else{
                   setVariable(meta.name)
+                  setReFetch(!reFetch)
                 }
                 setShowMeta(false)
               }}
@@ -308,6 +309,7 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
               }
               else{
                 setVariable(meta.name)
+                setReFetch(!reFetch)
               }
               setShowMeta(false)
             }}

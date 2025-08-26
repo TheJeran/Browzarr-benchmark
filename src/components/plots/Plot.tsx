@@ -209,7 +209,7 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
       else{
         setMetadata(null)
       }
-  }, [variable, reFetch])
+  }, [reFetch])
 
   const infoSetters = useMemo(()=>({
     setLoc,
