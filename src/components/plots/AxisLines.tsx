@@ -76,7 +76,7 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
   const zDimScale = zResolution/(zResolution-1)
   const zValDelta = 1/(zResolution-1)
   return (
-    <group visible={plotType != 'sphere'}>
+    <group visible={plotType != 'sphere' && plotType != 'flat'}>
     {/* Horizontal Group */}
     <group position={[0, shapeRatio*yRange[0], 0]}  >
       {/* X Group */}
@@ -162,7 +162,7 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
             >{parseLoc(dimArrays[0][(Math.floor((dimLengths[0]-1)*idx*zValDelta)+Math.floor(dimLengths[0]*animProg))%dimLengths[0]],dimUnits[0])}</Text>
           </group>
         ))}
-        <group rotation={[-Math.PI/2, 0, flipY ? Math.PI/2 : -Math.PI/2]} position={[flipY ? 0.2 : -0.2, 0, (zRange[0]+zRange[1])/2]}>
+        <group rotation={[-Math.PI/2, 0, flipY ? Math.PI/2 : -Math.PI/2]} position={[flipY ? 0.2 : -0.2, 0, isPC ? (zRange[0]+zRange[1])/2*depthRatio : (zRange[0]+zRange[1])/2]}>
           <Text 
             key={'zTitle'}
             anchorX={'center'}
@@ -204,7 +204,6 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
         </group>
       </group>
     </group>
-        
     {/* Vertical Group */}
     <group position={[flipY ? xRange[0] - tickLength/2 : xRange[1] + tickLength/2, 0, flipX ? isPC ? zRange[0]*depthRatio - tickLength/2 : zRange[0] - tickLength/2 : isPC ? zRange[1]*depthRatio + tickLength/2 : zRange[1] +tickLength/2]}> 
       <primitive key={'yLine'} object={yLine} />
@@ -272,6 +271,185 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
   )
 }
 
+
+const FlatAxis = () =>{
+  const {dimArrays, dimNames, dimUnits, shape} = useGlobalStore(useShallow(state => ({
+    dimArrays: state.dimArrays,
+    dimNames: state.dimNames,
+    dimUnits: state.dimUnits,
+    shape: state.shape,
+  })))
+
+  const {plotType} = usePlotStore(useShallow(state=>({
+    plotType: state.plotType
+  })))
+  const dimLengths = [dimArrays[0].length, dimArrays[1].length, dimArrays[2].length]
+
+  const [xResolution, setXResolution] = useState<number>(7)
+  const [yResolution, setYResolution] = useState<number>(7)
+
+  const shapeRatio = useMemo(()=>shape.y/shape.x, [shape])
+
+  const secondaryColor = useCSSVariable('--text-plot') //replace with needed variable
+  const colorHex = useMemo(()=>{
+    if (!secondaryColor){return}
+    const col = new THREE.Color(secondaryColor) 
+    return col.getHex()
+  },[secondaryColor])
+
+  const lineMat = useMemo(()=>new LineMaterial({color: colorHex ? colorHex : 0, linewidth: 2.0}),[colorHex])
+  const tickLength = 0.05;
+
+  const xLine = useMemo(()=> {
+    const geom = new LineSegmentsGeometry().setPositions([(-1-tickLength/2), 0, 0, (1+tickLength/2), 0, 0]);
+    return new LineSegments2(geom, lineMat)},[lineMat])
+
+  const yLine = useMemo(() =>{
+    const geom = new LineSegmentsGeometry().setPositions([0, -shapeRatio-tickLength/2, 0, 0, shapeRatio+tickLength/2, 0]);
+    return new LineSegments2(geom, lineMat)},[shapeRatio, lineMat])
+  
+  const tickLine = useMemo(()=> {
+    const geom = new LineSegmentsGeometry().setPositions([0, 0, 0, 0, 0, .05]);
+    return new LineSegments2(geom, lineMat)},[lineMat])
+
+
+  const xDimScale = xResolution/(xResolution-1)
+  const xValDelta = 1/(xResolution-1)
+  const yDimScale = yResolution/(yResolution-1)
+  const yValDelta = 1/(yResolution-1)
+
+  return (
+    <group visible={plotType == 'flat'}>
+      {/* X Group */}
+      <group position={[0, -shapeRatio-tickLength/2, 0]} rotation={[ Math.PI/2, 0, 0]}> 
+        <primitive key={'xLine'} object={xLine} />
+        {Array(xResolution).fill(null).map((_val,idx)=>(        
+          <group key={`xGroup_${idx}`} position={[-1 + idx*xDimScale/(xResolution/2), 0, 0]}>
+            <primitive key={idx} object={tickLine.clone()}  rotation={[0, 0, 0]} />
+            <Text 
+              key={`textX_${idx}`}
+              anchorX={idx == 0 ? 'left' : idx == xResolution-1 ? 'right' : 'center'}
+              anchorY={'top'} 
+              fontSize={0.05} 
+              color={colorHex}
+              material-depthTest={false}
+              rotation={[-Math.PI/2, 0, 0]}
+              position={[0, 0, .05]}
+            >{parseLoc(dimArrays[2][Math.floor((dimLengths[2]-1)*idx*xValDelta)],dimUnits[2])}</Text>
+          </group>
+        ))}
+        <group rotation={[-Math.PI/2, 0, 0]} position={[0, 0, 0.2]}>
+          <Text 
+            key={'xTitle'}
+            anchorX={'center'}
+            anchorY={'top'} 
+            fontSize={0.1} 
+            color={colorHex}
+            material-depthTest={false}
+          >{dimNames[2]}</Text>
+          {xResolution < 20 &&
+          <Text 
+            key={'xAdd'}
+            anchorX={'center'}
+            anchorY={'middle'} 
+            fontSize={0.15} 
+            color={colorHex}
+            material-depthTest={false}
+            position={[.2, -0.15, 0]}
+            onClick={e=>setXResolution(x=> Math.min(x+1,20))}
+            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+            onPointerLeave={e=>document.body.style.cursor = 'default'}
+          >
+            +
+          </Text>}
+          { xResolution > 1 &&
+          <Text 
+            key={'xSub'}
+            anchorX={'center'}
+            anchorY={'middle'} 
+            fontSize={0.15} 
+            color={colorHex}
+            material-depthTest={false}
+            position={[-.2, -0.15, 0]}
+            onClick={e=>setXResolution(x=> Math.max(x-1,1))}
+            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+            onPointerLeave={e=>document.body.style.cursor = 'default'}
+          >
+            -
+          </Text>}
+        </group>
+      </group>
+    {/* Vertical Group */}
+    <group position={[-1- tickLength/2, 0, 0]}> 
+      <primitive key={'yLine'} object={yLine} />
+      {Array(yResolution).fill(null).map((_val,idx)=>(    
+          <group key={`yGroup_${idx}`} position={[0, -shape.y/2 + idx*yDimScale/(yResolution/2)*shapeRatio, 0]} rotation={[0, 0, Math.PI]}>
+            <primitive key={idx} object={tickLine.clone()}  rotation={[0, Math.PI/2 , 0]} />
+            <Text 
+              key={`text_${idx}`}
+              anchorX={'right'}
+              anchorY={'middle'} 
+              fontSize={0.05} 
+              color={colorHex}
+              material-depthTest={false}
+              rotation={[0,  0, -Math.PI]}
+              position={[0.07, 0, 0]}
+            >{parseLoc(dimArrays[1][Math.floor((dimLengths[1]-1)*idx*yValDelta)],dimUnits[1])}</Text>
+          </group>
+        ))}
+        <group rotation={[0, 0 , 0]} position={[-0.25, 0, 0]}>
+          <Text 
+            key={'yTitle'}
+            anchorX={'right'}
+            anchorY={'middle'} 
+            fontSize={0.1} 
+            color={colorHex}
+            material-depthTest={false}
+          >{dimNames[1]}</Text>
+          {yResolution < 20 &&
+          <Text 
+            key={'zAdd'}
+            anchorX={'center'}
+            anchorY={'middle'} 
+            fontSize={0.15} 
+            color={colorHex}
+            material-depthTest={false}
+            position={[ -.1, 0.2, 0]}
+            onClick={e=>setYResolution(x=> Math.min(x+1,20))}
+            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+            onPointerLeave={e=>document.body.style.cursor = 'default'}
+          >
+            +
+          </Text>}
+          {yResolution > 1 &&
+          <Text 
+            key={'zSub'}
+            anchorX={'center'}
+            anchorY={'middle'} 
+            fontSize={0.15} 
+            color={colorHex}
+            material-depthTest={false}
+            position={[-.1, -0.2, 0]}
+            onClick={e=>setYResolution(x=> Math.max(x-1,1))}
+            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+            onPointerLeave={e=>document.body.style.cursor = 'default'}
+          >
+            -
+          </Text>}
+
+        </group>
+    </group>
+
+
+    </group>
+
+  )
+
+
+
+}
+
+
 export const AxisLines = () => {
   const [flipX, setFlipX] = useState<boolean>(false)
   const [flipY, setFlipY] = useState<boolean>(false)
@@ -299,6 +477,7 @@ export const AxisLines = () => {
   return (
     <>
     <HorizontalAxis flipX={flipX} flipY={flipY} flipDown={flipDown}/>
+    <FlatAxis />
     </>
   )
 }
