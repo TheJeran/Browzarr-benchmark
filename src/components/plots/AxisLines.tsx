@@ -328,7 +328,7 @@ const FlatAxis = () =>{
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, 0, 0]} />
             <Text 
               key={`textX_${idx}`}
-              anchorX={idx == 0 ? 'left' : idx == xResolution-1 ? 'right' : 'center'}
+              anchorX={'center'}
               anchorY={'top'} 
               fontSize={0.05} 
               color={colorHex}

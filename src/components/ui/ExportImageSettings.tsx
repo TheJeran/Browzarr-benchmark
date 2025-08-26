@@ -25,22 +25,26 @@ const ExportImageSettings = () => {
         includeColorbar,
         doubleSize,
         cbarLoc,
+        cbarNum,
         ExportImg, 
         setIncludeBackground, 
         setIncludeColorbar, 
         setDoubleSize,
-        setCbarLoc
+        setCbarLoc,
+        setCbarNum
     } = useImageExportStore(useShallow(state => ({
           includeBackground: state.includeBackground,
           includeColorbar: state.includeColorbar,
           doubleSize: state.doubleSize,
           cbarLoc: state.cbarLoc,
+          cbarNum: state.cbarNum,
 
           ExportImg: state.ExportImg,
           setIncludeBackground: state.setIncludeBackground,
           setIncludeColorbar: state.setIncludeColorbar,
           setDoubleSize: state.setDoubleSize,
-          setCbarLoc: state.setCbarLoc
+          setCbarLoc: state.setCbarLoc,
+          setCbarNum: state.setCbarNum
       })))
 
     interface CapitalizeFn {
@@ -73,12 +77,13 @@ const ExportImageSettings = () => {
             side="right"
             className="w-[200px] select-none"
         >
-            <div className="grid grid-cols-[auto_70px] items-center gap-2">
+            <div className="grid grid-cols-[auto_60px] items-center gap-2">
             <label htmlFor="includeBG">Include Background</label>
             <Input id='includeBG' type="checkbox" checked={includeBackground} onChange={e => setIncludeBackground(e.target.checked)}/>
             <label htmlFor="includeCbar">Include Colorbar</label>
             <Input id='includeCbar' type="checkbox" checked={includeColorbar} onChange={e => setIncludeColorbar(e.target.checked)}/>
             {includeColorbar &&
+            <>
             <div  className='col-span-2 flex justify-between'>
                 <label htmlFor="colorbar-loc ">Colorbar <br/> Location</label>
                 <div id='colorbar-loc'>
@@ -93,7 +98,10 @@ const ExportImageSettings = () => {
                         </SelectContent>
                     </Select>
                 </div>
-            </div>            
+            </div>  
+            <label htmlFor="cbarNum" >Number of Ticks</label>
+            <Input id='cbarNum' type="number" min={0} max={20} step={1} value={cbarNum} onChange={e => setCbarNum(parseInt(e.target.value))}/>
+            </>          
             }
             <label htmlFor="includeCbar" >Double Resolution</label>
             <Input id='includeCbar' type="checkbox" checked={doubleSize} onChange={e => setDoubleSize(e.target.checked)}/>

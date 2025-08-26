@@ -14,12 +14,13 @@ const ExportCanvas = ({show}:{show: boolean}) => {
         metadata: state.metadata
     })))
 
-    const {exportImg, includeBackground, includeColorbar, doubleSize, getCbarLoc} = useImageExportStore(useShallow(state => ({
+    const {exportImg, includeBackground, includeColorbar, doubleSize, getCbarLoc, getCbarNum} = useImageExportStore(useShallow(state => ({
         exportImg: state.exportImg,
         includeBackground: state.includeBackground,
         includeColorbar: state.includeColorbar,
         doubleSize: state.doubleSize,
-        getCbarLoc: state.getCbarLoc
+        getCbarLoc: state.getCbarLoc,
+        getCbarNum: state.getCbarNum
     })))
     
     const {gl, scene, camera} = useThree()
@@ -83,31 +84,72 @@ const ExportCanvas = ({show}:{show: boolean}) => {
             let cbarWidth = doubleSize ? 1024 : 512
             let cbarHeight = doubleSize ? 48: 24;
 
-            const cbarStartPos = Math.round(docWidth/2 - cbarWidth/2)
-            const cbarTop = doubleSize ? docHeight - 140 : docHeight-70
+            let cbarStartPos = Math.round(docWidth/2 - cbarWidth/2)
+            let cbarTop = cbarLoc === 'top' ? (doubleSize ? 140 : 70) : (doubleSize ? docHeight - 140 : docHeight-70)
 
-            const transPose = cbarLoc === 'right' || cbarLoc === 'left'
+            const transpose = cbarLoc === 'right' || cbarLoc === 'left'
 
-            if (transPose){
+            if (transpose){
                 const tempWidth = cbarWidth
                 cbarWidth = cbarHeight
                 cbarHeight = tempWidth
+                cbarTop = Math.round(docHeight/2 - cbarHeight/2)
+                cbarStartPos = cbarLoc === 'right' ? (doubleSize ? docWidth - 140 : docWidth - 70) : (doubleSize ? 140 : 70)
             }
-
 
             if (secondCanvas instanceof HTMLCanvasElement) {
-                ctx.drawImage(secondCanvas, cbarStartPos, cbarTop , cbarWidth, cbarHeight) // These are the default dimensions of the colorbar-canvas. It is 50px from bottom
+                if (transpose) {
+                    // Save the current canvas state
+                    ctx.save()
+                    
+                    // Calculate the center point for rotation
+                    const centerX = cbarStartPos + cbarWidth/2
+                    const centerY = cbarTop + cbarHeight/2
+                    
+                    // Move to the center point
+                    ctx.translate(centerX, centerY)
+                    
+                    // Rotate anti-clockwise
+                    ctx.rotate(-Math.PI / 2)
+                    
+                    // Draw the image centered at the origin (since we translated to center)
+                    // Use original dimensions since we're rotating the canvas context
+                    const originalWidth = doubleSize ? 1024 : 512
+                    const originalHeight = doubleSize ? 48 : 24
+                    ctx.drawImage(secondCanvas, -originalWidth/2, -originalHeight/2, originalWidth, originalHeight)
+                    
+                    // Restore the canvas state
+                    ctx.restore()
+                } else if(cbarLoc === 'top'){
+                    ctx.drawImage(secondCanvas, cbarStartPos, cbarTop, cbarWidth, cbarHeight)
+                }else {
+                    ctx.drawImage(secondCanvas, cbarStartPos, cbarTop, cbarWidth, cbarHeight)
+                }
             }
-            const labelNum = 10; // Number of cbar "ticks"
+            const labelNum = getCbarNum(); // Number of cbar "ticks"
             const valRange = valueScales.maxVal-valueScales.minVal;
             const valScale = 1/(labelNum-1)
-            const posDelta = 1/(labelNum-1)*cbarWidth
-        
-            for (let i =0; i < labelNum; i++){
-                ctx.font = `${cbarTickSize}px "Segoe UI"`
-                ctx.textAlign = 'center'
+            const posDelta = transpose ? 1/(labelNum-1)*cbarHeight : 1/(labelNum-1)*cbarWidth
+
+            // TickLabels
+            ctx.font = `${cbarTickSize}px "Segoe UI"`
+
+            if (transpose){
+                ctx.textBaseline = 'middle'
+                ctx.textAlign = cbarLoc == 'left' ? 'left' : 'right'
+                for (let i =0; i < labelNum; i++){
+                    if (cbarLoc == 'left'){
+                        ctx.fillText(String((valueScales.minVal+(i*valScale*valRange)).toFixed(2)), cbarStartPos+cbarWidth+6, cbarTop+cbarHeight-i*posDelta) 
+                    } else{
+                        ctx.fillText(String((valueScales.minVal+(i*valScale*valRange)).toFixed(2)), cbarStartPos-6, cbarTop+cbarHeight-i*posDelta) 
+                    }
+                }
+            } else{
                 ctx.textBaseline = 'top'
-                ctx.fillText(String((valueScales.minVal+(i*valScale*valRange)).toFixed(2)), cbarStartPos+i*posDelta, cbarTop+cbarHeight+6) 
+                ctx.textAlign = 'center'
+                for (let i =0; i < labelNum; i++){
+                    ctx.fillText(String((valueScales.minVal+(i*valScale*valRange)).toFixed(2)), cbarStartPos+i*posDelta, cbarTop+cbarHeight+6) 
+                }
             }
 
             ctx.fillStyle = textColor
@@ -116,7 +158,6 @@ const ExportCanvas = ({show}:{show: boolean}) => {
             ctx.fillText(metadata?.units, cbarStartPos+cbarWidth/2, cbarTop-unitSize-6) // Cbar Units above middle of cbar
         }
         
-
         const waterMarkSize = doubleSize ? 40 : 20
         ctx.fillStyle = "#888888"
         ctx.font = `${waterMarkSize}px "Segoe UI", serif `
