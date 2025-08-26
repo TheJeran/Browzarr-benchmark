@@ -25,22 +25,35 @@ const ExportImageSettings = () => {
         includeColorbar,
         doubleSize,
         cbarLoc,
+        cbarNum,
+        useCustomRes,
+        customRes,
         ExportImg, 
         setIncludeBackground, 
         setIncludeColorbar, 
         setDoubleSize,
-        setCbarLoc
+        setCbarLoc,
+        setCbarNum,
+        setUseCustomRes,
+        setCustomRes,
+
     } = useImageExportStore(useShallow(state => ({
           includeBackground: state.includeBackground,
           includeColorbar: state.includeColorbar,
           doubleSize: state.doubleSize,
           cbarLoc: state.cbarLoc,
+          cbarNum: state.cbarNum,
+          useCustomRes: state.useCustomRes,
+          customRes: state.customRes,
 
           ExportImg: state.ExportImg,
           setIncludeBackground: state.setIncludeBackground,
           setIncludeColorbar: state.setIncludeColorbar,
           setDoubleSize: state.setDoubleSize,
-          setCbarLoc: state.setCbarLoc
+          setCbarLoc: state.setCbarLoc,
+          setCbarNum: state.setCbarNum,
+          setUseCustomRes: state.setUseCustomRes,
+          setCustomRes: state.setCustomRes
       })))
 
     interface CapitalizeFn {
@@ -73,12 +86,13 @@ const ExportImageSettings = () => {
             side="right"
             className="w-[200px] select-none"
         >
-            <div className="grid grid-cols-[auto_70px] items-center gap-2">
+            <div className="grid grid-cols-[auto_60px] items-center gap-2">
             <label htmlFor="includeBG">Include Background</label>
             <Input id='includeBG' type="checkbox" checked={includeBackground} onChange={e => setIncludeBackground(e.target.checked)}/>
             <label htmlFor="includeCbar">Include Colorbar</label>
             <Input id='includeCbar' type="checkbox" checked={includeColorbar} onChange={e => setIncludeColorbar(e.target.checked)}/>
             {includeColorbar &&
+            <>
             <div  className='col-span-2 flex justify-between'>
                 <label htmlFor="colorbar-loc ">Colorbar <br/> Location</label>
                 <div id='colorbar-loc'>
@@ -93,10 +107,29 @@ const ExportImageSettings = () => {
                         </SelectContent>
                     </Select>
                 </div>
-            </div>            
+            </div>  
+            <label htmlFor="cbarNum" >Number of Ticks</label>
+            <Input id='cbarNum' type="number" min={0} max={20} step={1} value={cbarNum} onChange={e => setCbarNum(parseInt(e.target.value))}/>
+            </>          
             }
+            <label htmlFor="useCustomRes" >Set Resolution</label>
+            <Input id='useCustomRes' type="checkbox" checked={useCustomRes} onChange={e => setUseCustomRes(e.target.checked)}/>
+            {useCustomRes &&
+                <div className='grid grid-cols-[50%_50%] col-span-2 '>
+                <div className='flex flex-col items-center'>
+                    <h1>Width</h1>
+                    <Input id='cbarNum' type="number"  value={customRes[0]} onChange={e => setCustomRes([parseInt(e.target.value), customRes[1]])}/>
+                </div>
+                <div className='flex flex-col items-center'>
+                    <h1>Height</h1>
+                    <Input id='cbarNum' type="number"  value={customRes[1]} onChange={e => setCustomRes([customRes[0], parseInt(e.target.value)])}/>
+                </div>
+            </div>}
+            {!useCustomRes &&
+            <>
             <label htmlFor="includeCbar" >Double Resolution</label>
             <Input id='includeCbar' type="checkbox" checked={doubleSize} onChange={e => setDoubleSize(e.target.checked)}/>
+            </>}
             <Button
                 className="col-span-2"
                 variant='pink'
