@@ -30,6 +30,7 @@ const PlayInterFace = ({visible}:{visible : boolean}) =>{
     })))
 
     const timeLength = useMemo(()=>dimArrays[0].length,[dimArrays])
+    const [timeStep, setTimeStep] = useState(0)
     
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const previousVal = useRef<number>(0)
@@ -64,7 +65,7 @@ const PlayInterFace = ({visible}:{visible : boolean}) =>{
         
     }, [animate, fps]);
 
-    const currentLabel = parseLoc(dimArrays[0][Math.min(Math.round(animProg*timeLength),timeLength-1)], dimUnits[0], true)
+    const currentLabel = parseLoc(dimArrays[0][timeStep], dimUnits[0], true)
     const firstLabel = parseLoc(dimArrays[0][0], dimUnits[0], true)
     const lastLabel = parseLoc(dimArrays[0][timeLength-1], dimUnits[0], true)
 
@@ -80,12 +81,13 @@ const PlayInterFace = ({visible}:{visible : boolean}) =>{
                 <Slider
                   value={[Math.round(animProg * timeLength)]}
                   min={0}
-                  max={timeLength}
+                  max={timeLength-1}
                   step={1}
                   className='flex-1'
                   onValueChange={(vals: number[])=>{
                     const v = Array.isArray(vals) ? vals[0] : 0;
-                    setAnimProg(v / timeLength);
+                    setTimeStep(v)
+                    setAnimProg(v / (timeLength-1));
                   }}
                 />
                 <span className='text-xs'>{lastLabel}</span>
