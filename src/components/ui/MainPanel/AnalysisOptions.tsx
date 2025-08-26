@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAnalysisStore, useGlobalStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import '../css/MainPanel.css';
@@ -47,7 +47,17 @@ const webGPUError = (
 );
 
 const AnalysisOptions = () => {
-  const {plotOn, variable} = useGlobalStore(useShallow(state => ({plotOn: state.plotOn, variable: state.variable})));
+  const {plotOn, variable, variables, dimNames, initStore, setTimeSeries} = useGlobalStore(useShallow(state => ({
+    plotOn: state.plotOn, 
+    variable: state.variable,
+    variables: state.variables,
+    dimNames: state.dimNames,
+    initStore: state.initStore,
+    setTimeSeries: state.setTimeSeries
+  })));
+
+  const previousStore = useRef<string>(initStore)
+  const [incompatible, setIncompatible] = useState(false); 
   
   const {
     execute,
@@ -93,15 +103,11 @@ const AnalysisOptions = () => {
     setReverseDirection: state.setReverseDirection,
     })));
 
-  const { variables, dimNames } = useGlobalStore(useShallow(state => ({
-    variables: state.variables,
-    dimNames: state.dimNames
-  })));
-  
   const {reFetch, setReFetch} = useZarrStore(useShallow(state => ({
     reFetch: state.reFetch,
     setReFetch: state.setReFetch
   })))
+
   const [showError, setShowError] = useState<boolean>(false);
   
   useEffect(() => {
@@ -122,6 +128,21 @@ const AnalysisOptions = () => {
     checkWebGPU();
     }, [plotOn]);
 
+
+  useEffect(()=>{ // Changing stores makes it so you can't use two variable operations. 
+    if(initStore != previousStore.current){
+      setIncompatible(true)
+    }
+    else{
+      setIncompatible(false)
+    }
+  },[initStore])
+
+  useEffect(()=>{ // When data is downloaded (indicated by changes in refetch) The newly plotted and any future variables are compatible until initStore changes. 
+    setIncompatible(false);
+    previousStore.current = initStore
+  },[reFetch])
+
   const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
     useEffect(() => {
         const handleResize = () => {
@@ -132,15 +153,15 @@ const AnalysisOptions = () => {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-    function HandleKernelNums(e: string){
-      const newVal = parseInt(e);
-      if (newVal % 2 == 0){
-        return Math.max(1, newVal - 1)
-      }
-      else{
-        return newVal
-      }
+  function HandleKernelNums(e: string){
+    const newVal = parseInt(e);
+    if (newVal % 2 == 0){
+      return Math.max(1, newVal - 1)
     }
+    else{
+      return newVal
+    }
+  }
 
   return (
     <>
@@ -178,6 +199,7 @@ const AnalysisOptions = () => {
               <>
                 <Button
                   className="cursor-pointer active:scale-[0.95]"
+                  disabled={incompatible}
                   onClick={() => {
                     setUseTwo(!useTwo);
                     setOperation('Default');
@@ -397,6 +419,7 @@ const AnalysisOptions = () => {
                   onClick={() => {
                     setExecute(!execute);
                     setAnalysisMode(true);
+                    setTimeSeries({});
                   }}
                 >
                   Execute

@@ -145,7 +145,7 @@ const Dataset = ({setOpenVariables} : {setOpenVariables: React.Dispatch<React.Se
           </Button>
           {showLocalInput && (
             <div className="mt-2">
-              <LocalZarr setShowLocal={setShowLocalInput} setOpenVariables={setOpenVariables} />
+              <LocalZarr setShowLocal={setShowLocalInput} setOpenVariables={setOpenVariables} setInitStore={setInitStore} />
             </div>
           )}
         </div>

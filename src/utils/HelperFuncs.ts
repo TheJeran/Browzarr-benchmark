@@ -218,3 +218,35 @@ export async function testCORSConfiguration(storePath: string): Promise<{
         }
     }
 }
+
+interface TimeSeriesInfo{
+  uv:THREE.Vector2,
+  normal:THREE.Vector3
+}
+interface arrayInfo{
+  data: Uint8Array<ArrayBufferLike> | Float32Array<ArrayBufferLike>,
+  shape:number[],
+  stride:number[]
+}
+
+export function GetTimeSeries(array : arrayInfo, TimeSeriesInfo:TimeSeriesInfo){
+  const {uv,normal} = TimeSeriesInfo
+  const {data, shape, stride} = array
+
+  //This is a complicated logic check but it works bb
+  const sliceSize = parseUVCoords({normal,uv})
+  const slice = sliceSize.map((value, index) =>
+    value === null || shape[index] === null ? null : Math.round(value * shape[index]-.5));
+  const mapDim = slice.indexOf(null);
+  const dimStride = stride[mapDim];
+  const pz = slice[0] == null ? 0 : stride[0]*slice[0]
+  const py = slice[1] == null ? 0 : stride[1]*slice[1]
+  const px = slice[2] == null ? 0 : stride[2]*slice[2]
+  const ts = [];
+
+  for (let i = 0; i < shape[mapDim] ; i++){
+    const idx = i*dimStride+pz+py+px
+    ts.push(data[idx])
+  }
+		return ts;
+}

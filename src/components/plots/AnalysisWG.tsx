@@ -18,7 +18,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
         setIsFlat: state.setIsFlat,
         setDownloading: state.setDownloading,
         setShowLoading: state.setShowLoading,
-        setValueScales: state.setValueScales
+        setValueScales: state.setValueScales,
     })))
 
     const setPlotType = usePlotStore(state => state.setPlotType)

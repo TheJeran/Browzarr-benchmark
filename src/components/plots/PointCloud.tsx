@@ -2,10 +2,10 @@
 import * as THREE from 'three'
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { pointFrag, pointVert } from '@/components/textures/shaders'
-import { useErrorStore, useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
+import { useAnalysisStore, useErrorStore, useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
-import { parseUVCoords, getUnitAxis } from '@/utils/HelperFuncs';
+import { parseUVCoords, getUnitAxis, GetTimeSeries } from '@/utils/HelperFuncs';
 import { evaluate_cmap } from 'js-colormaps-es';
 interface PCProps {
   texture: THREE.Data3DTexture | THREE.DataTexture | null,
@@ -32,16 +32,22 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
 
   const aspectRatio = width/height;
   const depthRatio = depth/height;
-  const {dimArrays, dimUnits, dimNames, strides, setPlotDim, setTimeSeries, updateTimeSeries, setDimCoords, updateDimCoords} = useGlobalStore(useShallow(state => ({
+  const {dimArrays, dimUnits, dimNames, strides, dataShape, dataArray, setPlotDim, setTimeSeries, updateTimeSeries, setDimCoords, updateDimCoords} = useGlobalStore(useShallow(state => ({
     dimArrays: state.dimArrays,
     dimUnits: state.dimUnits,
     dimNames: state.dimNames,
     strides: state.strides,
+    dataShape: state.dataShape,
+    dataArray: state.dataArray,
     setPlotDim: state.setPlotDim,
     setTimeSeries: state.setTimeSeries,
     updateTimeSeries: state.updateTimeSeries,
     setDimCoords: state.setDimCoords,
     updateDimCoords: state.updateDimCoords
+  })))
+  const {analysisMode, analysisArray} = useAnalysisStore(useShallow(state=> ({
+    analysisMode: state.analysisMode,
+    analysisArray: state.analysisArray
   })))
 
   const lastNormal = useRef<number | null> ( null )
@@ -67,7 +73,7 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
       lastNormal.current = dimAxis;
       
       if(ZarrDS){
-        const tempTS = ZarrDS.GetTimeSeries({uv,normal})
+        const tempTS = GetTimeSeries({data: analysisMode? analysisArray : dataArray, shape: dataShape, stride: strides},{uv,normal})
         const plotDim = (normal.toArray()).map((val, idx) => {
           if (Math.abs(val) > 0) {
             return idx;

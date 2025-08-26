@@ -5,7 +5,13 @@ import { useZarrStore, useGlobalStore } from '@/utils/GlobalStates';
 import { Input } from '../input';
 import ZarrParser from '@/components/zarr/ZarrParser';
 
-const LocalZarr = ({setShowLocal, setOpenVariables}:{setShowLocal: React.Dispatch<React.SetStateAction<boolean>>, setOpenVariables: React.Dispatch<React.SetStateAction<boolean>>}) => {
+interface LocalZarrType {
+  setShowLocal: React.Dispatch<React.SetStateAction<boolean>>;
+  setOpenVariables: React.Dispatch<React.SetStateAction<boolean>>;
+  setInitStore: (store: string) => void;
+}
+
+const LocalZarr = ({setShowLocal, setOpenVariables, setInitStore}:LocalZarrType) => {
   const setCurrentStore = useZarrStore(state => state.setCurrentStore)
 
   const handleFileSelect = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -47,6 +53,7 @@ const LocalZarr = ({setShowLocal, setOpenVariables}:{setShowLocal: React.Dispatc
       gs.then(e=>{setCurrentStore(e)})
       setShowLocal(false)
       setOpenVariables(true)
+      setInitStore(`local_$${baseDir}`)
     } catch (error) {
       if (error instanceof Error) {
         console.log(`Error opening Zarr store: ${error.message}`);

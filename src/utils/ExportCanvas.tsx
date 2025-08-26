@@ -26,15 +26,16 @@ const ExportCanvas = ({show}:{show: boolean}) => {
     })))
     
     const {gl, scene, camera} = useThree()
-    const skipFirst = useRef<boolean>(true)
+    const hasMounted = useRef(false);
     const textColor = useCSSVariable('--text-plot')
     const bgColor = useCSSVariable('--background')
+
     useEffect(()=>{   
         if (!show){
             return
         }
-        if (skipFirst.current){ // It will try to render on first load. So this has to be here to stop it. Will retweak logic at some point cause it doesn't ALWAYS try. 
-            skipFirst.current = false
+        if (!hasMounted.current){ // It will try to render on first load. So this has to be here to stop it. Will retweak logic at some point cause it doesn't ALWAYS try. 
+            hasMounted.current = true
             return
         }
         const domWidth = gl.domElement.width;
