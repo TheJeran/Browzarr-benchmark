@@ -8,29 +8,32 @@ import { useEffect, useMemo } from 'react';
 import { PlotArea, Plot } from '@/components/plots';
 import { MainPanel } from '@/components/ui';
 import { Metadata, Loading, Navbar, Error } from '@/components/ui';
-import { useGlobalStore, useZarrStore } from '@/utils/GlobalStates';
+import { useGlobalStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { GetTitleDescription } from '@/components/zarr/GetMetadata';
 import ScrollableLinksTable from './ui/VariablesTable';
 
 export function LandingHome() {
 
-  const {initStore, setZMeta} = useGlobalStore(useShallow(state=>({initStore: state.initStore, setZMeta: state.setZMeta})))
+  const {initStore,timeSeries, variable, metadata, plotOn, setZMeta, setVariables, setPlotOn} = useGlobalStore(useShallow(state=>({
+    initStore: state.initStore, 
+    timeSeries: state.timeSeries,
+    variable: state.variable,
+    metadata: state.metadata,
+    plotOn: state.plotOn,
+    setZMeta: state.setZMeta,
+    setVariables: state.setVariables,
+    setPlotOn: state.setPlotOn,
+  })))
+  const {setMaxTextureSize} = usePlotStore(useShallow(state => ({
+    setMaxTextureSize: state.setMaxTextureSize
+  })))
+
   const {currentStore, setCurrentStore} = useZarrStore(useShallow(state=> ({
     currentStore: state.currentStore,
     setCurrentStore: state.setCurrentStore
   })))
 
-  const {setVariables, setPlotOn, timeSeries, variable, metadata, plotOn  } = useGlobalStore(
-    useShallow(state => ({
-      setVariables: state.setVariables,
-      setPlotOn: state.setPlotOn,
-      timeSeries: state.timeSeries,
-      variable: state.variable,
-      metadata: state.metadata,
-      plotOn: state.plotOn
-    }))
-  );
 
   useEffect(()=>{ //Update store if URL changes
     const newStore = GetStore(initStore)
@@ -51,9 +54,17 @@ export function LandingHome() {
     variables.then(e=> {setVariables(e)})
     return () => { isMounted = false; };
   }, [currentStore]);
+  
+  useEffect(()=>{ // Set maxtexture size to warn users if custom data is too big
+    const renderer = new THREE.WebGLRenderer();
+    const gl = renderer.getContext();
+    setMaxTextureSize(gl.getParameter(gl.MAX_TEXTURE_SIZE))
+    return () => {
+    renderer.dispose();
+  };
+  },[])
 
-
-  useEffect(()=>{
+  useEffect(()=>{ // Maybe we change remove this. Do we want to go back to home screen?
     if (variable === "Default"){
       setPlotOn(false)
     }

@@ -185,6 +185,7 @@ type PlotState ={
   lonResolution: number;
   latResolution: number;
   colorIdx: number;
+  maxTextureSize: number;
 
   setQuality: (quality: number) => void;
   setTimeScale: (timeScale : number) =>void;
@@ -224,6 +225,7 @@ type PlotState ={
   setLatResolution: (latResolution: number) => void;
   incrementColorIdx: () => void;
   getColorIdx: () => number;
+  setMaxTextureSize: (maxTextureSize: number) => void;
 }
 
 export const usePlotStore = create<PlotState>((set, get) => ({
@@ -264,6 +266,7 @@ export const usePlotStore = create<PlotState>((set, get) => ({
   lonResolution: 1,
   latResolution: 1,
   colorIdx: 0,
+  maxTextureSize: 2048,
 
   setQuality: (quality) => set({ quality }),
   setTimeScale: (timeScale) => set({ timeScale }),
@@ -305,6 +308,7 @@ export const usePlotStore = create<PlotState>((set, get) => ({
     colorIdx: (state.colorIdx + 1) % 10 
   })),
   getColorIdx: () => get().colorIdx,
+  setMaxTextureSize: (maxTextureSize) => set({ maxTextureSize })
 }))
 
 
@@ -390,27 +394,14 @@ export const useZarrStore = create<ZarrState>((set) => ({
 
 
 type ErrorState = {
-  zarrFetch: boolean;
-  cors: boolean;
-  oom: boolean;
-  invalidURL: boolean; 
+  error : string | null;
 
-  setZarrFetch: (zarrFetch: boolean) => void; 
-  setCors: (cors: boolean) => void; 
-  setOom: (oom: boolean) => void; 
-  setInvalidURL: (invalidURL: boolean) => void;
+  setError: (error: string | null) => void;
 }
 
 export const useErrorStore = create<ErrorState>((set) =>({
-  zarrFetch: false,
-  cors: false,
-  oom: false,
-  invalidURL: false,
-
-  setZarrFetch: (zarrFetch) => set({ zarrFetch }),
-  setCors: (cors) => set({ cors }),
-  setOom: (oom) => set({ oom }),
-  setInvalidURL: (invalidURL) => set({ invalidURL })
+  error: null,
+  setError: (error) => set({ error })
 }))
 
 

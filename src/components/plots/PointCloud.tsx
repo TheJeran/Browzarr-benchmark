@@ -155,7 +155,7 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       zRange: state.zRange
     })))
 
-    const setOom = useErrorStore(state => state.setOom)
+    const setError = useErrorStore(state => state.setError)
     const [pointsObj, setPointsObj] = useState<Record<string, number>>({})
     const [pointIDs, setPointIDs] = useState<number[]>(new Array(10).fill(-1))
     const [stride, setStride] = useState<number>(1)
@@ -195,7 +195,7 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       try{
         positions = new Float32Array(depth*height*width*3);
       }catch{
-        setOom(true) //Set out of memeory error
+        setError('oom') // Set out of memeory error
         return {positions: [], values: []};
       }
       const values = new Uint8Array(depth*height*width);

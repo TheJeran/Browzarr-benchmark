@@ -1,7 +1,7 @@
 import * as zarr from "zarrita";
 import * as THREE from 'three';
 import QuickLRU from 'quick-lru';
-import { parseUVCoords, testCORSConfiguration } from "@/utils/HelperFuncs";
+import { parseUVCoords } from "@/utils/HelperFuncs";
 import { GetSize } from "./GetMetadata";
 import { useGlobalStore, useZarrStore, useErrorStore } from "@/utils/GlobalStates";
 
@@ -29,11 +29,10 @@ export async function GetStore(storePath: string): Promise<zarr.Group<zarr.Fetch
 			return gs;
 		} catch (error) {
 			if (storePath.slice(0,5) != 'local'){
-				useErrorStore.getState().setZarrFetch(true)
+				useErrorStore.getState().setError('zarrFetch')
 				useGlobalStore.getState().setShowLoading(false)
 			}
 			throw new ZarrError(`Failed to initialize store at ${storePath}`, error);
-
 		}    
 }
 

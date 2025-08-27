@@ -387,10 +387,16 @@ const AnalysisOptions = () => {
                                 </tr>
                                 <tr>
                                   <td style={{ textAlign: 'center', padding:'0px 12px'}}>
-                                    <Input type='number' min='1' step='2' value={String(kernelSize)} onChange={e=>setKernelSize(HandleKernelNums(e.target.value))}/>
+                                    <Input type='number' min='1' step='2' value={String(kernelSize)} 
+                                      onChange={e=>setKernelSize(parseInt(e.target.value))}
+                                      onBlur={e=>setKernelSize(HandleKernelNums(e.target.value))}
+                                    />
                                   </td>
                                   <td style={{ textAlign: 'center', padding:'0px 12px' }}>
-                                    <Input type='number' min='1' step='2' value={String(kernelDepth)} onChange={e=>setKernelDepth(HandleKernelNums(e.target.value))}/>
+                                    <Input type='number' min='1' step='2' value={String(kernelDepth)} 
+                                      onChange={e=>setKernelDepth(parseInt(e.target.value))}
+                                      onBlur={e=>setKernelDepth(HandleKernelNums(e.target.value))}
+                                    />
                                   </td>
                                 </tr>
                               </tbody>

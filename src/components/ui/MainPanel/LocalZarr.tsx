@@ -1,7 +1,7 @@
 "use client";
 import React, {useState, useEffect, ChangeEvent} from 'react'
 import * as zarr from 'zarrita'
-import { useZarrStore, useGlobalStore } from '@/utils/GlobalStates';
+import { useZarrStore, useErrorStore } from '@/utils/GlobalStates';
 import { Input } from '../input';
 import ZarrParser from '@/components/zarr/ZarrParser';
 
@@ -16,9 +16,12 @@ const LocalZarr = ({setShowLocal, setOpenVariables, setInitStore}:LocalZarrType)
 
   const handleFileSelect = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-
+    
     if (!files || files.length === 0) {
       return;
+    }
+    if (files.length > 1000){
+      // useErrorStore.getState().setError('filecount')
     }
     // Create a Map to hold the Zarr store data
     const store = new Map<string, Promise<ArrayBuffer>>();
