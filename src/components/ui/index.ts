@@ -24,6 +24,7 @@ import AnalysisOptions from "./MainPanel/AnalysisOptions";
 import KernelVisualizer from "./KernelVisualizer";
 import ExportImageSettings from "./ExportImageSettings";
 import LogoDrawer from "./AboutDrawer";
+import DatasetToast from "./DatasetToast";
 
 export {
   Navbar,
@@ -47,6 +48,7 @@ export {
   Colormaps,
   AdjustPlot,
   Dataset,
+  DatasetToast,
   PlayButton,
   Error,
   AnalysisOptions,

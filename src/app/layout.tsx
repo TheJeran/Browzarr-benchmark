@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import ClientRoot from "./ClientRoot";
+import { Toaster } from "@/components/ui/sonner"
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -21,6 +22,7 @@ export default function RootLayout({
       <body className="antialiased">
         <ClientRoot>
           {children}
+          <Toaster position="top-center" />
         </ClientRoot>
       </body>
     </html>

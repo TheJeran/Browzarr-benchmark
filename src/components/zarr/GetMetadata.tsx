@@ -107,9 +107,18 @@ export async function GetVariableNames(variables: Promise<ZarrMetadata[]>): Prom
         .sort((a, b) => a.localeCompare(b));
 }
 
-export async function GetTitleDescription(groupStore: Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>): Promise<ZarrTitleDescription> {
-    const group = await groupStore;
-    const description = 'attrs' in group ? ('description' in group.attrs ? String(group.attrs.description) : '') : '';
-    const title = 'attrs' in group ? ('title' in group.attrs ? String(group.attrs.title) : '') : '';
-    return { title, description };
+export async function GetTitleDescription(
+  groupStore: Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>, 
+  initStore: string
+): Promise<ZarrTitleDescription> {
+  
+  const group = await groupStore;
+  const description = 'attrs' in group ? ('description' in group.attrs ? String(group.attrs.description) : '') : '';
+  const title = 'attrs' in group ? ('title' in group.attrs ? String(group.attrs.title) : '') : '';
+
+  if (!title && !description) {
+    return { title: initStore, description: '' };
+  }
+
+  return { title, description };
 }
