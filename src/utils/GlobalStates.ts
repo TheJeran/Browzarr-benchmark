@@ -38,11 +38,13 @@ type StoreState = {
   variables: string[];
   plotOn: boolean;
   isFlat: boolean;
-  progress: number,
+  progress: number;
   downloading: boolean;
   is4D: boolean;
   idx4D: number | null;
-
+  titleDescription: { title?: string; description?: string };
+  
+  // setters
   setDataShape: (dataShape: number[]) => void;
   setShape: (shape: THREE.Vector3) => void;
   setValueScales: (valueScales: { maxVal: number; minVal: number }) => void;
@@ -70,6 +72,7 @@ type StoreState = {
   setDownloading: (downloading: boolean) => void;
   setIs4D: (is4D: boolean) => void;
   setIdx4D: (idx4D: number | null) => void;
+  setTitleDescription: (titleDescription: { title?: string; description?: string }) => void;
 };
 
 export const useGlobalStore = create<StoreState>((set, get) => ({
@@ -89,7 +92,7 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   dimCoords: {},
   plotDim: 0,
   flipY: false,
-  initStore: "https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr",
+  initStore: ESDC,
   variable: 'Default',
   variables: [],
   plotOn: false,
@@ -98,8 +101,9 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   downloading: false,
   is4D: false,
   idx4D: null,
+  titleDescription: {},
 
-  setDataShape: (dataShape) => set({ dataShape}),
+  setDataShape: (dataShape) => set({ dataShape }),
   setShape: (shape) => set({ shape }),
   setValueScales: (valueScales) => set({ valueScales }),
   setColormap: (colormap) => set({ colormap }),
@@ -117,7 +121,7 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   setStrides: (strides) => set({ strides }),
   setShowLoading: (showLoading) => set({ showLoading }),
   setMetadata: (metadata) => set({ metadata }),
-  setZMeta: (zMeta) => set({ zMeta}),
+  setZMeta: (zMeta) => set({ zMeta }),
   setDataArray: (dataArray) => set({ dataArray }),
   setDimArrays: (dimArrays) => set({ dimArrays }),
   setDimNames: (dimNames) => set({ dimNames }),
@@ -138,13 +142,15 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   setFlipY: (flipY) => set({ flipY }),
   setInitStore: (initStore) => set({ initStore }),
   setVariable: (variable) => set({ variable }),
-  setVariables: (variables) => set({variables}),
+  setVariables: (variables) => set({ variables }),
   setPlotOn: (plotOn) => set({ plotOn }),
-  setIsFlat: (isFlat) => set({ isFlat}),
+  setIsFlat: (isFlat) => set({ isFlat }),
   setProgress: (progress) => set({ progress }),
   setDownloading: (downloading) => set({ downloading }),
   setIs4D: (is4D) => set({ is4D }),
   setIdx4D: (idx4D) => set({ idx4D }),
+
+  setTitleDescription: (titleDescription) => set({ titleDescription }),
 }));
 
 type PlotState ={
