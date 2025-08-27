@@ -273,22 +273,24 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
 
 
 const FlatAxis = () =>{
-  const {dimArrays, dimNames, dimUnits, shape} = useGlobalStore(useShallow(state => ({
+  const {dimArrays, dimNames, dimUnits} = useGlobalStore(useShallow(state => ({
     dimArrays: state.dimArrays,
     dimNames: state.dimNames,
     dimUnits: state.dimUnits,
-    shape: state.shape,
   })))
 
   const {plotType} = usePlotStore(useShallow(state=>({
     plotType: state.plotType
   })))
-  const dimLengths = [dimArrays[0].length, dimArrays[1].length, dimArrays[2].length]
+
+  const dimLengths = dimArrays.map((val) => val.length )
+  const widthIdx = dimArrays.length-1
+  const heightIdx = dimArrays.length-2
 
   const [xResolution, setXResolution] = useState<number>(7)
   const [yResolution, setYResolution] = useState<number>(7)
 
-  const shapeRatio = useMemo(()=>shape.y/shape.x, [shape])
+  const shapeRatio = useMemo(()=>dimLengths[heightIdx]/dimLengths[widthIdx], [dimLengths])
 
   const secondaryColor = useCSSVariable('--text-plot') //replace with needed variable
   const colorHex = useMemo(()=>{
@@ -335,7 +337,7 @@ const FlatAxis = () =>{
               material-depthTest={false}
               rotation={[-Math.PI/2, 0, 0]}
               position={[0, 0, .05]}
-            >{parseLoc(dimArrays[2][Math.floor((dimLengths[2]-1)*idx*xValDelta)],dimUnits[2])}</Text>
+            >{parseLoc(dimArrays[widthIdx][Math.floor((dimLengths[widthIdx]-1)*idx*xValDelta)],dimUnits[widthIdx])}</Text>
           </group>
         ))}
         <group rotation={[-Math.PI/2, 0, 0]} position={[0, 0, 0.2]}>
@@ -383,7 +385,7 @@ const FlatAxis = () =>{
     <group position={[-1- tickLength/2, 0, 0]}> 
       <primitive key={'yLine'} object={yLine} />
       {Array(yResolution).fill(null).map((_val,idx)=>(    
-          <group key={`yGroup_${idx}`} position={[0, -shape.y/2 + idx*yDimScale/(yResolution/2)*shapeRatio, 0]} rotation={[0, 0, Math.PI]}>
+          <group key={`yGroup_${idx}`} position={[0, -shapeRatio + idx*yDimScale/(yResolution/2)*shapeRatio, 0]} rotation={[0, 0, Math.PI]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, Math.PI/2 , 0]} />
             <Text 
               key={`text_${idx}`}
@@ -394,7 +396,7 @@ const FlatAxis = () =>{
               material-depthTest={false}
               rotation={[0,  0, -Math.PI]}
               position={[0.07, 0, 0]}
-            >{parseLoc(dimArrays[1][Math.floor((dimLengths[1]-1)*idx*yValDelta)],dimUnits[1])}</Text>
+            >{parseLoc(dimArrays[heightIdx][Math.floor((dimLengths[heightIdx]-1)*idx*yValDelta)],dimUnits[heightIdx])}</Text>
           </group>
         ))}
         <group rotation={[0, 0 , 0]} position={[-0.25, 0, 0]}>
@@ -455,6 +457,10 @@ export const AxisLines = () => {
   const [flipY, setFlipY] = useState<boolean>(false)
   const [flipDown, setFlipDown] = useState<boolean>(false)
 
+  const {isFlat} = useGlobalStore(useShallow(state => ({
+    isFlat: state.isFlat
+  })))
+
   useFrame(({camera})=>{
       const shouldFlipX = Math.abs(camera.rotation.z) > Math.PI / 2
       if (flipX !== shouldFlipX) {
@@ -476,7 +482,7 @@ export const AxisLines = () => {
 
   return (
     <>
-    <HorizontalAxis flipX={flipX} flipY={flipY} flipDown={flipDown}/>
+    {!isFlat && <HorizontalAxis flipX={flipX} flipY={flipY} flipDown={flipDown}/>}
     <FlatAxis />
     </>
   )

@@ -165,12 +165,12 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
         const shapeRatio = result.shape[1] / result.shape[2] * 2;
         setShape(new THREE.Vector3(2, shapeRatio, 2));
         setDataShape(result.shape)
+        console.log("set false")
         setShowLoading(false)
         setShow(true)
         setPlotOn(true)
       })
       }catch{
-        console.log("Heh?")
         setShowLoading(false);
         return;
       }

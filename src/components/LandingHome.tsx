@@ -34,7 +34,6 @@ export function LandingHome() {
     setCurrentStore: state.setCurrentStore
   })))
 
-
   useEffect(()=>{ //Update store if URL changes
     const newStore = GetStore(initStore)
     setCurrentStore(newStore)
