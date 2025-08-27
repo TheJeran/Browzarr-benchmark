@@ -47,12 +47,13 @@ const webGPUError = (
 );
 
 const AnalysisOptions = () => {
-  const {plotOn, variable, variables, dimNames, initStore, setTimeSeries} = useGlobalStore(useShallow(state => ({
+  const {plotOn, variable, variables, dimNames, initStore, isFlat, setTimeSeries} = useGlobalStore(useShallow(state => ({
     plotOn: state.plotOn, 
     variable: state.variable,
     variables: state.variables,
     dimNames: state.dimNames,
     initStore: state.initStore,
+    isFlat: state.isFlat,
     setTimeSeries: state.setTimeSeries
   })));
 
@@ -143,6 +144,14 @@ const AnalysisOptions = () => {
     previousStore.current = initStore
   },[reFetch])
 
+  useEffect(()=>{
+    if (isFlat){
+      setKernelDepth(1)
+    }else{
+      setKernelDepth(3)
+    }
+  },[isFlat])
+
   const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
     useEffect(() => {
         const handleResize = () => {
@@ -197,7 +206,8 @@ const AnalysisOptions = () => {
               webGPUError
             ) : (
               <>
-                <Button
+                {!isFlat && 
+                  <Button
                   className="cursor-pointer active:scale-[0.95]"
                   disabled={incompatible}
                   onClick={() => {
@@ -206,7 +216,7 @@ const AnalysisOptions = () => {
                   }}
                 >
                   {useTwo ? 'Use One \n Variable' : 'Use Two Variables'}
-                </Button>
+                </Button>}
 
                 <table style={{ textAlign: 'right' }}>
                   <tbody>
@@ -271,18 +281,20 @@ const AnalysisOptions = () => {
                           />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectGroup>
+
+                          {!isFlat &&
+                            <SelectGroup>
                             <SelectLabel>Dimension Reduction</SelectLabel>
                             {operations.map((op, idx) => (
                               <SelectItem key={idx} value={op}>
                                 {op}
                               </SelectItem>
                             ))}
-                          </SelectGroup>
+                          </SelectGroup>}
                           <SelectGroup>
-                            <SelectLabel>Three Dimensional</SelectLabel>
+                            <SelectLabel>{isFlat ? '' : 'Three Dimensional'}</SelectLabel>
                             <SelectItem value="Convolution">Convolution</SelectItem>
-                            <SelectItem value="CUMSUM3D">CUMSUM</SelectItem>
+                            {!isFlat && <SelectItem value="CUMSUM3D">CUMSUM</SelectItem>}
                           </SelectGroup>
                         </SelectContent>
                       </Select>
@@ -352,39 +364,45 @@ const AnalysisOptions = () => {
                       )}
                     {['Convolution', 'Correlation3D', 'Covariance3D', 'TwoVarLinearSlope3D'].includes(operation) && ( //Show if IN left arrays
                       <>
-                        {operation === 'Convolution' && (
-                          <tr>
-                            <th>Kernel Op.</th>
-                            <td>
-                              <Select onValueChange={setKernelOperation}>
-                                <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
-                                  <SelectValue
-                                    placeholder={
-                                      kernelOperation === 'Default' ? 'Select...' : kernelOperation
-                                    }
-                                  />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {kernelOperations.map((kernelOp, idx) => (
+                        
+                        <tr>
+                          <th>Kernel Op.</th>
+                          <td>
+                            <Select onValueChange={setKernelOperation}>
+                              <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
+                                <SelectValue
+                                  placeholder={
+                                    kernelOperation === 'Default' ? 'Select...' : kernelOperation
+                                  }
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {kernelOperations.map((kernelOp, idx) => {
+                                  if (isFlat && kernelOp == 'CUMSUM3D'){
+                                    return null;
+                                  }else{
+                                    return (
                                     <SelectItem key={idx} value={kernelOp}>
                                       {kernelOp}
                                     </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </td>
-                          </tr>
-                        )}
-
+                                    )
+                                  }
+                                    
+}
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </td>
+                        </tr>
                         <tr>
                           <th style={{padding:'0px 12px'}}>Kernel Size</th>
                           <td>
                             <table style={{ width: '100%', tableLayout: 'fixed' }}>
                               <tbody>
-                                <tr>
+                                {!isFlat &&<tr>
                                   <td style={{ textAlign: 'center' }}>Size</td>
-                                  <td style={{ textAlign: 'center' }}>Depth</td>
-                                </tr>
+                                   <td style={{ textAlign: 'center' }}>Depth</td>
+                                </tr>}
                                 <tr>
                                   <td style={{ textAlign: 'center', padding:'0px 12px'}}>
                                     <Input type='number' min='1' step='2' value={String(kernelSize)} 
@@ -392,12 +410,13 @@ const AnalysisOptions = () => {
                                       onBlur={e=>setKernelSize(HandleKernelNums(e.target.value))}
                                     />
                                   </td>
-                                  <td style={{ textAlign: 'center', padding:'0px 12px' }}>
+                                  {!isFlat &&
+                                    <td  style={{ textAlign: 'center', padding:'0px 12px' }}>
                                     <Input type='number' min='1' step='2' value={String(kernelDepth)} 
                                       onChange={e=>setKernelDepth(parseInt(e.target.value))}
                                       onBlur={e=>setKernelDepth(HandleKernelNums(e.target.value))}
                                     />
-                                  </td>
+                                  </td>}
                                 </tr>
                               </tbody>
                             </table>

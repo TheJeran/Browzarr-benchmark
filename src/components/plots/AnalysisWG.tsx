@@ -2,7 +2,7 @@
 import { ArrayMinMax } from '@/utils/HelperFuncs';
 import * as THREE from 'three'
 import React, { useEffect, useRef } from 'react'
-import { DataReduction, Convolve, Multivariate2D, Multivariate3D, CUMSUM3D } from '../computation/webGPU'
+import { DataReduction, Convolve, Multivariate2D, Multivariate3D, CUMSUM3D, Convolve2D } from '../computation/webGPU'
 import { useGlobalStore, useAnalysisStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
@@ -10,11 +10,12 @@ import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 
 const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.SetStateAction<THREE.Data3DTexture | THREE.DataTexture | null>>, ZarrDS: ZarrDataset}) => {
     
-    const {dataArray, strides, dataShape, valueScales, setIsFlat, setDownloading, setShowLoading, setValueScales} = useGlobalStore(useShallow(state=>({
+    const {dataArray, strides, dataShape, valueScales, isFlat, setIsFlat, setDownloading, setShowLoading, setValueScales} = useGlobalStore(useShallow(state=>({
         dataArray : state.dataArray,
         strides: state.strides,
         dataShape: state.dataShape,
         valueScales: state.valueScales,
+        isFlat: state.isFlat,
         setIsFlat: state.setIsFlat,
         setDownloading: state.setDownloading,
         setShowLoading: state.setShowLoading,
@@ -41,8 +42,10 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
 
     const zarrSlice = useZarrStore(state => state.slice)
     const variable2Array = useRef<ArrayBufferView>(new Float32Array(1))
+
+    // 3D Computations
     useEffect(()=>{ 
-        if (dataArray.length <= 1){
+        if (dataArray.length <= 1 || isFlat){
             return;
         }
         setShowLoading(true)
@@ -193,6 +196,48 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
         }
     },[execute])
 
+    useEffect(()=>{
+        if (dataArray.length <= 1 || !isFlat){
+            return;
+        }
+        setShowLoading(true)
+        if (!useTwo){
+            if (operation != 'Convolution'){
+                //Future Proof
+            }
+            else{
+                Convolve2D(dataArray, {shape:dataShape, strides}, kernelOperation, kernelSize).then(newArray=>{
+                    if (!newArray){return;}
+                    let minVal, maxVal;
+                    if (kernelOperation == 'StDev'){
+                        [minVal,maxVal] = ArrayMinMax(newArray )
+                        if (!valueScalesOrig){
+                            setValueScalesOrig(valueScales)
+                        }
+                        setValueScales({minVal,maxVal})
+                    }else{
+                        if (!valueScalesOrig){
+                            minVal = valueScales.minVal;
+                            maxVal = valueScales.maxVal
+                        }
+                        else{
+                            minVal = valueScalesOrig.minVal;
+                            maxVal = valueScalesOrig.maxVal
+                            setValueScales(valueScalesOrig)
+                            setValueScalesOrig(null)
+                        }
+                    }
+                    const normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
+                    const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254));
+                    const newText = new THREE.DataTexture(textureData, dataShape[1], dataShape[0], THREE.RedFormat, THREE.UnsignedByteType)
+                    newText.needsUpdate = true;
+                    setAnalysisArray(newArray)
+                    setTexture(newText)
+                    setShowLoading(false)
+                })
+            }
+        }
+    },[execute])
   return null
     
 }

@@ -14,12 +14,20 @@ const operations = {
     LinearSlope: Shaders.LinearSlopeReduction
 }
 
-const kernelOperations = {
+const kernelOperations3D = {
     Mean: Shaders.MeanConvolution,
     Min: Shaders.MinConvolution,
     Max: Shaders.MaxConvolution,
     StDev: Shaders.StDevConvolution
 }
+
+const kernelOperations2D = {
+    Mean: Shaders.MeanConvolution2D,
+    Min: Shaders.MinConvolution2D,
+    Max: Shaders.MaxConvolution2D,
+    StDev: Shaders.StDevConvolution2D
+}
+
 
 const multiVariateOps = {
     Correlation2D: Shaders.Correlation2D,
@@ -158,7 +166,7 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
     const [zStride, yStride, xStride] = strides;
     const workGroups = shape.map(e => Math.ceil(e/4)); //We assume the workgroups are 4 threads per dimension. We see how many of those 4 thread workgroups are needed for each dimension
 
-    const shader = kernelOperations[operation as keyof typeof kernelOperations]
+    const shader = kernelOperations3D[operation as keyof typeof kernelOperations3D]
     const computeModule = device.createShaderModule({
         label: 'convolution compute module',
         code:shader,
@@ -594,6 +602,112 @@ export async function CUMSUM3D(inputArray :  ArrayBufferView, dimInfo : {shape: 
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bindGroup);
     pass.dispatchWorkgroups(workGroups[2], workGroups[1], workGroups[0]);
+    pass.end();
+
+    encoder.copyBufferToBuffer(
+    outputBuffer, 0,
+    readBuffer, 0,
+    outputSize * 4
+    );
+
+    // Submit work to GPU
+    device.queue.submit([encoder.finish()]);
+
+    // Map staging buffer to read results
+    await readBuffer.mapAsync(GPUMapMode.READ);
+    const resultArrayBuffer = readBuffer.getMappedRange();
+    const results = new Float32Array(resultArrayBuffer.slice());
+
+    // Clean up
+    readBuffer.unmap();
+    return results;
+}
+
+export async function Convolve2D(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, operation: string, kernelSize: number){
+    const adapter = await navigator.gpu?.requestAdapter();
+    const maxSize = 2047483644; //Will probably remove this eventually
+    const device = await adapter?.requestDevice({requiredLimits: {
+    maxBufferSize: maxSize,
+    maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
+  }}
+);
+    if (!device) {
+        Error('need a browser that supports WebGPU');
+        return;
+    }
+    const {strides, shape} = dimInfo;
+    const outputSize = shape[0] * shape[1];
+    const [yStride, xStride] = [strides[0], strides[1]];
+    const workGroups = [Math.ceil(shape[1]/16), Math.ceil(shape[0]/16)]; //We assume the workgroups are 16 threads per dimension. We see how many of those 16 thread workgroups are needed for each dimension
+    const shader = kernelOperations2D[operation as keyof typeof kernelOperations2D]
+    const computeModule = device.createShaderModule({
+        label: 'convolution2d compute module',
+        code:shader,
+    });
+    const pipeline = device.createComputePipeline({
+        label: 'convolution2d compute pipeline',
+        layout: 'auto',
+        compute: {
+        module: computeModule,
+        },
+    });
+    const defs = makeShaderDataDefinitions(shader);
+    const myUniformValues = makeStructuredView(defs.uniforms.params);
+    myUniformValues.set({
+        xStride,
+        yStride,
+        xSize: shape[1], 
+        ySize: shape[0],
+        kernelSize
+    });
+    // Create buffers
+    const inputBuffer = device.createBuffer({
+        label: 'Input Buffer',
+        size: inputArray.byteLength, 
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    });
+
+    const outputBuffer = device.createBuffer({
+        label: 'Output Buffer',
+        size: outputSize * 4,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
+    });
+
+    const uniformBuffer = device.createBuffer({
+        label: 'Uniform Buffer',
+        size: myUniformValues.arrayBuffer.byteLength,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+
+    const readBuffer = device.createBuffer({
+        label:'Read Buffer',
+        size: outputSize * 4,
+        usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+    });
+
+    // Write Buffers to GPU
+    device.queue.writeBuffer(inputBuffer, 0, inputArray as GPUAllowSharedBufferSource);
+    device.queue.writeBuffer(uniformBuffer, 0, myUniformValues.arrayBuffer as GPUAllowSharedBufferSource);
+
+    const bindGroup = device.createBindGroup({
+        layout: pipeline.getBindGroupLayout(0),
+        entries: [
+            { binding: 0, resource: { buffer: inputBuffer } },
+            { binding: 1, resource: { buffer: outputBuffer } },
+            { binding: 2, resource: { buffer: uniformBuffer } },
+        ],
+    });
+
+    const encoder = device.createCommandEncoder({
+        label: 'convolution2d encoder',
+    });
+    const pass = encoder.beginComputePass({
+        label: 'convolution2d compute pass',
+    });
+
+    pass.setPipeline(pipeline);
+    pass.setBindGroup(0, bindGroup);
+    pass.dispatchWorkgroups(workGroups[0], workGroups[1], 1);
     pass.end();
 
     encoder.copyBufferToBuffer(
