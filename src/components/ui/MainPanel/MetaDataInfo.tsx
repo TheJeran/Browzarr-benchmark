@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react"
-import { useGlobalStore, useZarrStore } from '@/utils/GlobalStates'
+import { useGlobalStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
 import { SliderThumbs } from "@/components/ui/SliderThumbs"
 import { Card } from "@/components/ui/card"
@@ -37,6 +37,10 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
     setReFetch: state.setReFetch
   })))
 
+  const {maxTextureSize} = usePlotStore(useShallow(state => ({maxTextureSize: state.maxTextureSize})))
+
+  const [tooBig, setTooBig] = useState(false)
+
   const totalSize = useMemo(() => meta.totalSize ? meta.totalSize : 0, [meta])
   const length = useMemo(() => meta.shape ? meta.shape.length == 4 ? meta.shape[1] : meta.shape[0] : 0, [meta])
   const is3D = useMemo(() => meta.shape ? meta.shape.length == 3 : false, [meta])
@@ -71,7 +75,14 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
   useEffect(()=>{
     setSlice([0,null]);
     setIdx4D(null)
-  },[meta])
+    const width = meta.shape[meta.shape.length-1]
+    const height = meta.shape[meta.shape.length-2]
+    if (width > maxTextureSize || height > maxTextureSize){
+      setTooBig(true)
+    }else{
+      setTooBig(false)
+    }
+  },[meta, maxTextureSize])
 
   return (
     <>
@@ -100,7 +111,18 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
             </div>
           </div>
 
+          {tooBig && 
+          <div className="flex items-center gap-2 p-2 bg-red-50 dark:bg-red-950/30 rounded-md border border-red-200 dark:border-red-800">
+            <div className="w-2 h-2 bg-red-500 rounded-full"/>
+            <span className="text-xs font-medium text-red-800 dark:text-red-200">
+              One or more of the dimensions in your dataset exceed this browsers maximum texture size: <b>{maxTextureSize}</b>
+            </span>
+          </div>
+          }
+
           {/* 4D Dataset Section */}
+          {!tooBig &&
+          <>
           {is4D && (
             <div className="space-y-3 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
               <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100">4D Dataset Configuration</h4>
@@ -109,7 +131,7 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
               </p>
               <div className="space-y-2">
                 <label className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                  Select index (0 to {meta.shape[0]-1}):
+                  Select index (<b>0</b> to <b>{meta.shape[0]-1}</b>):
                 </label>
                 <Input 
                   type="number" 
@@ -225,7 +247,10 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
               Plot Variable
             </Button>
           </div>
+          </>}
+
         </div>
+        
       ) : (
         <Card className="meta-container max-w-sm md:max-w-md p-4 mb-4 border border-muted select-none">
           <div className="meta-info">
@@ -235,6 +260,15 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
             <b>Shape</b><br/> 
             {`[${formatArray(meta.shape)}]`}<br/>
             <br/>
+            {tooBig && 
+            <div className="bg-[#FFBEB388] rounded-md p-1">
+              <span className="text-xs font-medium text-red-800 dark:text-red-200">
+                One or more of the dimensions in your dataset exceed this browsers maximum texture size: <b>{maxTextureSize}</b>
+              </span>
+            </div>
+            }
+            {!tooBig && 
+            <>
             {is4D &&
             <>
               <div>
@@ -296,13 +330,15 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
                   </div>
                 )}
               </>
-            }
+            }</>}
           </div>
+          
           <Button
             variant="pink"
             size="sm"
+            
             className="cursor-pointer hover:scale-[1.05]"
-            disabled={(is4D && idx4D == null)}
+            disabled={((is4D && idx4D == null) || tooBig)}
             onClick={() => {
               if (variable == meta.name){
                 setReFetch(!reFetch)
@@ -316,6 +352,7 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
           >
             Plot
           </Button>
+          
         </Card>
       )}
     </>
