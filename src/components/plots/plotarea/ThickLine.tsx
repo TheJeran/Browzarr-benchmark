@@ -156,14 +156,13 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
   useEffect(()=>{
     invalidate()
   },[showPoints])
-
   return (
     <>
 		<group>
       {Object.keys(timeSeries).map((val, idx)=>(
         <mesh key={`lineMesh_${idx}`} geometry={geometries[val]} material={ materials[val]} />))}
       {showPoints && Object.keys(timeSeries).map((val, idx)=> 
-        <PlotPoints key={`plotPoints_${idx}`} points={instancePoints[val]} tsID={val} colIDX={idx} pointSetters={pointSetters} scalers={{xScale,yScale}}/>
+        <PlotPoints key={`plotPoints_${idx}`} points={instancePoints[val]} tsID={val}  pointSetters={pointSetters} scalers={{xScale,yScale}}/>
       )}
 		</group>
 		</>

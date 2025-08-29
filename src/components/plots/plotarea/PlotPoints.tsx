@@ -1,7 +1,7 @@
 import React, {useRef, useMemo, useEffect, useState} from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
-import { usePlotStore } from '@/utils/GlobalStates'
+import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
 import { evaluate_cmap } from 'js-colormaps-es'
 
@@ -11,7 +11,7 @@ interface pointSetters{
   setShowPointInfo:React.Dispatch<React.SetStateAction<boolean>>,
 }
 
-function PlotPoints({ points, tsID, pointSetters, colIDX, scalers }: { points: THREE.Vector3[]; tsID: string, pointSetters:pointSetters; colIDX: number, scalers:{xScale:number,yScale:number} }) {
+function PlotPoints({ points, tsID, pointSetters, scalers }: { points: THREE.Vector3[]; tsID: string, pointSetters:pointSetters; scalers:{xScale:number,yScale:number} }) {
   const ref = useRef<THREE.InstancedMesh | null>(null);
   const count = points.length;
   const lastID = useRef<number | null>(null);
@@ -25,9 +25,13 @@ function PlotPoints({ points, tsID, pointSetters, colIDX, scalers }: { points: T
     useCustomPointColor: state.useCustomPointColor
   })))
   const {xScale, yScale} = scalers;
-  const [r, g, b] = useMemo(()=>evaluate_cmap(colIDX/10, "Paired"),[colIDX])
+  const {timeSeries} = useGlobalStore(useShallow(state =>({
+    timeSeries: state.timeSeries
+  })))
+  const [r, g, b] = timeSeries[tsID]['color']
   const geometry = useMemo(() => new THREE.SphereGeometry(pointSize), [pointSize])
-  const material = useMemo(()=> new THREE.MeshBasicMaterial({color: useCustomPointColor ? pointColor : new THREE.Color().setRGB(r/500, g/500, b/500)}),[pointColor, useCustomPointColor])
+  const material = useMemo(()=> new THREE.MeshBasicMaterial({color: new THREE.Color().setRGB(r/300, g/300, b/300).convertSRGBToLinear()}),[pointColor, useCustomPointColor])  // It was converting to sRGB colorspace while the line shader uses linear
+
 
   useEffect(() => {
     if (ref.current){
