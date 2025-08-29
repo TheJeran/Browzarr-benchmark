@@ -9,30 +9,6 @@ import { useShallow } from 'zustand/shallow'
 import './css/Colorbar.css'
 import { linspace } from '@/utils/HelperFuncs';
 
-function RescaleLoc(val : number, offset : number, scale : number){
-    const rescale = (val-50)*scale+50;
-    return rescale+offset;
-}
-
-function opacity(val : number){
-    const decayFac = 6
-    if (val > 100){
-        const diff = val-100
-        return 1-(diff*decayFac/100)
-    }
-    if (val < 0){
-        const diff = Math.abs(val)
-        return 1-(diff*decayFac/100)
-    }
-    else{
-        return 1;
-    }
-}
-
-function clamp(val : number, min=0 , max=100){
-     return Math.max(Math.min(val, max),min);
-}
-
 const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: number, minVal:number}}) => {
     const {colormap, variable} = useGlobalStore(useShallow(state => ({
         colormap: state.colormap,
@@ -49,7 +25,12 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const scaling = useRef<boolean>(false)
     const prevPos = useRef<{ x: number | null; y: number | null }>({ x: null, y: null });
+    const range = useMemo(()=>valueScales.maxVal - valueScales.minVal,[valueScales])
+    const mean = useMemo(()=>(valueScales.maxVal + valueScales.minVal)/2,[valueScales])
     const [tickCount, setTickCount] = useState<number>(5)
+    const [newMin, setNewMin] = useState(Math.round(valueScales.minVal*100)/100)
+    const [newMax, setNewMax] = useState(Math.round(valueScales.maxVal*100)/100)
+    const prevVals = useRef<{ min: number | null; max: number | null }>({ min: null, max: null });
 
     const colors = useMemo(()=>{
         const colors = []
@@ -64,9 +45,9 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
 
     const [locs, vals] = useMemo(()=>{
         const locs = linspace(0, 100, tickCount)
-        const vals = linspace(valueScales.minVal, valueScales.maxVal, tickCount)
+        const vals = linspace(newMin, newMax, tickCount)
         return [locs, vals]
-    },[valueScales, tickCount])
+    },[ tickCount, newMin, newMax])
 
     // Mouse move handler
     const handleMouseMove = (e: MouseEvent) => {
@@ -76,11 +57,17 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
             prevPos.current.x = e.clientX;
             prevPos.current.y = e.clientY;
         }
+        if (prevVals.current.min === null || prevVals.current.max === null){
+            prevVals.current.min = newMin;
+            prevVals.current.max = newMax;
+        }
+
         const deltaX = prevPos.current.x - e.clientX;
-        const deltaY = prevPos.current.y - e.clientY;
-        setCOffset(cOffset - deltaX  / 100)
-        setCScale(cScale + deltaY/100)
-        // setValueScales({minVal: newMin, maxVal: newMax})
+        const thisOffset = deltaX  / 100
+        const lastMin = prevVals.current.min
+        const lastMax = prevVals.current.max
+        setNewMin(lastMin+(range*thisOffset))
+        setNewMax(lastMax+(range*thisOffset))
 
     };
 
@@ -88,6 +75,7 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
     const handleMouseUp = () => {
         scaling.current = false;
         prevPos.current = {x: null, y: null}
+        prevVals.current = {min: null, max: null}
         document.removeEventListener("mousemove", handleMouseMove);
         document.removeEventListener("mouseup", handleMouseUp);
     };
@@ -107,63 +95,101 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
         };
     }, []);
 
-  useEffect(() => {
-    if (canvasRef.current) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-        if (ctx){
-            colors.forEach((color, index) => {
-            ctx.fillStyle = color;
-            ctx.fillRect(index*2, 0, 2, 24); // Each color is 1px wide and 50px tall
-            });
-        }     
-    }
-  }, [colors]);
-  return (
-    <>
-    <div className='colorbar' >
-        {Array.from({length: tickCount}).map((_val,idx)=>(
-            <p
-            key={idx}
-            style={{
-                left: `${clamp(RescaleLoc(locs[idx], cOffset*100, cScale))}%`,
-                top:'100%',
-                position:'absolute',
-                transform:'translateX(-50%)',
-                opacity: opacity(RescaleLoc(locs[idx], cOffset*100, cScale))
-            }}
-        >{vals[idx].toFixed(2)}
-        </p>
-        ))}
-        <canvas id="colorbar-canvas" ref={canvasRef} width={512} height={24} onMouseDown={handleMouseDown}/>
-        <p className="colorbar-title"
-            style={{
-            position:'absolute',
-            top:'-24px',
-            left:'50%',
-            transform:'translateX(-50%)',
-        }}>
-            {`${variable} [ ${units} ]`}
-        </p>
-    {(cScale != 1 || cOffset != 0) && <RxReset size={25} style={{position:'absolute', top:'-25px', cursor:'pointer'}} onClick={()=>{setCScale(1); setCOffset(0)}}/>}
-    <div
-        style={{
-            position:'absolute',
-            right:'0%',
-            bottom:'100%',
-            display:'flex',
-            width:'10%',
-            justifyContent:'space-around'
-        }}
-    >
-        <FaMinus className='cursor-pointer' onClick={()=>setTickCount(Math.max(tickCount-1, 2))}/>
-        <FaPlus className='cursor-pointer' onClick={()=>setTickCount(Math.min(tickCount+1, 10))}/>
-    </div>
-    </div>
+    useEffect(()=>{
+        const newMean = (newMax + newMin)/2
+        const newRange = (newMax - newMin)
+        const offset = (mean - newMean)/range
+        const scale = newRange/range
 
-    </>
-    
-  )
+        setCOffset(offset)
+        setCScale(scale)
+
+    },[newMin, newMax])
+
+    useEffect(() => {
+        if (canvasRef.current) {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
+            if (ctx){
+                colors.forEach((color, index) => {
+                ctx.fillStyle = color;
+                ctx.fillRect(index*2, 0, 2, 24); // Each color is 1px wide and 50px tall
+                });
+            }     
+        }
+    }, [colors]);
+
+    return (
+        <>
+        <div className='colorbar' >
+            <input type="number" 
+                className="text-[14px] font-semibold"
+                style={{
+                    left: `0%`,
+                    top:'100%',
+                    position:'absolute',
+                    width:'45px',
+                    transform:'translateX(-50%)',
+                }}
+                value={newMin}
+                onChange={e=>setNewMin(parseFloat(e.target.value))}
+            />
+            {Array.from({length: tickCount}).map((_val,idx)=>{
+                if (idx == 0 || idx == tickCount-1){
+                    return null
+                }
+                return (<p
+                key={idx}
+                style={{
+                    left: `${locs[idx]}%`,
+                    top:'100%',
+                    position:'absolute',
+                    transform:'translateX(-50%)',
+                }}
+            >{vals[idx].toFixed(2)}
+            </p>)}
+            )}
+            <input type="number" 
+                className="text-[14px] font-semibold"
+                style={{
+                    left: `100%`,
+                    top:'100%',
+                    position:'absolute',
+                    width:'45px',
+                    transform:'translateX(-50%)',
+                }}
+                value={newMax}
+                onChange={e=>setNewMax(parseFloat(e.target.value))}
+            />
+            <canvas id="colorbar-canvas" ref={canvasRef} width={512} height={24} onMouseDown={handleMouseDown}/>
+            <p className="colorbar-title"
+                style={{
+                position:'absolute',
+                top:'-24px',
+                left:'50%',
+                transform:'translateX(-50%)',
+            }}>
+                {`${variable} [ ${units} ]`}
+            </p>
+        {(cScale != 1 || cOffset != 0) && <RxReset size={25} style={{position:'absolute', top:'-25px', cursor:'pointer'}} onClick={()=>{setNewMin(valueScales.minVal); setNewMax(valueScales.maxVal)}}/>}
+        <div
+            style={{
+                position:'absolute',
+                right:'0%',
+                bottom:'100%',
+                display:'flex',
+                width:'10%',
+                justifyContent:'space-around'
+            }}
+        >
+            <FaMinus className='cursor-pointer' onClick={()=>setTickCount(Math.max(tickCount-1, 2))}/>
+            <FaPlus className='cursor-pointer' onClick={()=>setTickCount(Math.min(tickCount+1, 10))}/>
+        </div>
+        </div>
+
+        </>
+        
+    )
 }
 
 export default Colorbar

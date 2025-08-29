@@ -7,7 +7,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useImageExportStore } from '@/utils/GlobalStates';
+import { useImageExportStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import {
   Select,
@@ -28,6 +28,7 @@ const ExportImageSettings = () => {
         cbarNum,
         useCustomRes,
         customRes,
+        includeAxis,
         ExportImg, 
         setIncludeBackground, 
         setIncludeColorbar, 
@@ -36,6 +37,9 @@ const ExportImageSettings = () => {
         setCbarNum,
         setUseCustomRes,
         setCustomRes,
+        setIncludeAxis,
+        setHideAxis,
+        setHideAxisControls
 
     } = useImageExportStore(useShallow(state => ({
           includeBackground: state.includeBackground,
@@ -45,6 +49,7 @@ const ExportImageSettings = () => {
           cbarNum: state.cbarNum,
           useCustomRes: state.useCustomRes,
           customRes: state.customRes,
+          includeAxis: state.includeAxis,
 
           ExportImg: state.ExportImg,
           setIncludeBackground: state.setIncludeBackground,
@@ -53,13 +58,20 @@ const ExportImageSettings = () => {
           setCbarLoc: state.setCbarLoc,
           setCbarNum: state.setCbarNum,
           setUseCustomRes: state.setUseCustomRes,
-          setCustomRes: state.setCustomRes
+          setCustomRes: state.setCustomRes,
+          setIncludeAxis: state.setIncludeAxis,
+          setHideAxis: state.setHideAxis,
+          setHideAxisControls: state.setHideAxisControls
       })))
 
     interface CapitalizeFn {
         (str: string): string;
     }
 
+    const {plotType} = usePlotStore(useShallow(state=>({
+        plotType: state.plotType
+    })))
+    
     const capitalize: CapitalizeFn = str => str.charAt(0).toUpperCase() + str.slice(1);
 
   return (
@@ -89,6 +101,12 @@ const ExportImageSettings = () => {
             <div className="grid grid-cols-[auto_60px] items-center gap-2">
             <label htmlFor="includeBG">Include Background</label>
             <Input id='includeBG' type="checkbox" checked={includeBackground} onChange={e => setIncludeBackground(e.target.checked)}/>
+            {plotType != 'sphere' &&
+            <>
+            <label htmlFor="includeBG">Include Axis</label>
+            <Input id='includeBG' type="checkbox" checked={includeAxis} onChange={e => setIncludeAxis(e.target.checked)}/>
+            </>
+            }
             <label htmlFor="includeCbar">Include Colorbar</label>
             <Input id='includeCbar' type="checkbox" checked={includeColorbar} onChange={e => setIncludeColorbar(e.target.checked)}/>
             {includeColorbar &&
@@ -133,7 +151,7 @@ const ExportImageSettings = () => {
             <Button
                 className="col-span-2"
                 variant='pink'
-                onClick={e=>ExportImg()}
+                onClick={e=>{ExportImg(); setHideAxisControls(true); setHideAxis(!includeAxis)}}
             >Export</Button>
             </div>
         </PopoverContent>

@@ -14,7 +14,18 @@ const ExportCanvas = ({show}:{show: boolean}) => {
         metadata: state.metadata
     })))
 
-    const {exportImg, includeBackground, includeColorbar, doubleSize, useCustomRes, getCbarLoc, getCbarNum, getCustomRes} = useImageExportStore(useShallow(state => ({
+    const {exportImg, 
+        includeBackground, 
+        includeColorbar, 
+        doubleSize, 
+        useCustomRes, 
+        getCbarLoc, 
+        getCbarNum, 
+        getCustomRes,
+        setHideAxisControls,
+        setHideAxis
+    
+    } = useImageExportStore(useShallow(state => ({
         exportImg: state.exportImg,
         includeBackground: state.includeBackground,
         includeColorbar: state.includeColorbar,
@@ -22,7 +33,9 @@ const ExportCanvas = ({show}:{show: boolean}) => {
         useCustomRes: state.useCustomRes,
         getCbarLoc: state.getCbarLoc,
         getCbarNum: state.getCbarNum,
-        getCustomRes: state.getCustomRes
+        getCustomRes: state.getCustomRes,
+        setHideAxisControls: state.setHideAxisControls,
+        setHideAxis: state.setHideAxis
     })))
     
     const {gl, scene, camera} = useThree()
@@ -34,7 +47,7 @@ const ExportCanvas = ({show}:{show: boolean}) => {
         if (!show){
             return
         }
-        if (!hasMounted.current){ // It will try to render on first load. So this has to be here to stop it. Will retweak logic at some point cause it doesn't ALWAYS try. 
+        if (!hasMounted.current){ // It will try to render on first load. So this has to be here to stop it. 
             hasMounted.current = true
             return
         }
@@ -53,6 +66,8 @@ const ExportCanvas = ({show}:{show: boolean}) => {
 
         compositeCanvas.width = docWidth
         compositeCanvas.height = docHeight
+
+
         if (includeBackground){
             ctx.fillStyle = bgColor
             ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height)
@@ -109,12 +124,16 @@ const ExportCanvas = ({show}:{show: boolean}) => {
             }
             gl.setSize(originalSize.x, originalSize.y)
             camera.updateProjectionMatrix()
+            setHideAxis(false)
+            setHideAxisControls(false)
             gl.render(scene, camera)
         }
         else{
             gl.render(scene, camera)
             ctx.drawImage(gl.domElement, 0, 0, docWidth, docHeight) 
             gl.render(scene, camera)
+            setHideAxis(false)
+            setHideAxisControls(false)
         }
 
         const variableSize = doubleSize ? 72 : 36
