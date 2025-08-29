@@ -8,7 +8,6 @@ import vertexShader from '@/components/textures/shaders/thickLineVert.glsl'
 import { PlotPoints } from './PlotPoints';
 import { useThree } from '@react-three/fiber';
 import { invalidate } from '@react-three/fiber';
-import { evaluate_cmap } from 'js-colormaps-es';
 
 
 function linspace(start: number, stop: number, num: number): number[] {
@@ -17,7 +16,7 @@ function linspace(start: number, stop: number, num: number): number[] {
   }
 
 interface pointSetters{
-  setPointID:React.Dispatch<React.SetStateAction<Record<string, number>>>,
+  setPointID:React.Dispatch<React.SetStateAction<[string, number]>>,
   setPointLoc:React.Dispatch<React.SetStateAction<number[]>>,
   setShowPointInfo:React.Dispatch<React.SetStateAction<boolean>>,
 }

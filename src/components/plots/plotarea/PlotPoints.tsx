@@ -6,7 +6,7 @@ import { useShallow } from 'zustand/shallow'
 import { evaluate_cmap } from 'js-colormaps-es'
 
 interface pointSetters{
-  setPointID:React.Dispatch<React.SetStateAction<Record<string,number>>>,
+  setPointID:React.Dispatch<React.SetStateAction<[string,number]>>,
   setPointLoc:React.Dispatch<React.SetStateAction<number[]>>,
   setShowPointInfo:React.Dispatch<React.SetStateAction<boolean>>,
 }
@@ -74,7 +74,7 @@ function PlotPoints({ points, tsID, pointSetters, colIDX, scalers }: { points: T
       ref.current.setMatrixAt(e.instanceId, dummy.matrix);
       ref.current.instanceMatrix.needsUpdate = true;
       setreRender((x) => !x);
-      setPointID({[tsID] : e.instanceId})
+      setPointID([tsID, e.instanceId])
       setPointLoc([e.clientX,e.clientY])
       setShowPointInfo(true)
     }
