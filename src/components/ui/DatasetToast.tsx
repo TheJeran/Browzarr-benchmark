@@ -19,7 +19,7 @@ export function DatasetToast() {
             description: titleDescription.description || "",
             action: {
             label: "Dismiss",
-            onClick: () => console.log("Toast dismissed"),
+            onClick: () => null,
             },
         }
     )

@@ -1,6 +1,6 @@
 "use cleint";
 
-import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
+import { useGlobalStore, useImageExportStore, usePlotStore } from '@/utils/GlobalStates'
 import React, {useState, useMemo} from 'react'
 import { useShallow } from 'zustand/shallow'
 import { Text } from '@react-three/drei'
@@ -13,10 +13,12 @@ import { useCSSVariable } from '../ui';
 import * as THREE from 'three'
 
 const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolean, flipDown: boolean}) =>{
-  const {dimArrays, dimNames, dimUnits} = useGlobalStore(useShallow(state => ({
+  const {dimArrays, dimNames, dimUnits, shape, dataShape} = useGlobalStore(useShallow(state => ({
     dimArrays: state.dimArrays,
     dimNames: state.dimNames,
-    dimUnits: state.dimUnits
+    dimUnits: state.dimUnits,
+    shape: state.shape,
+    dataShape: state.dataShape
   })))
 
   const {xRange, yRange, zRange, plotType, timeScale, animProg} = usePlotStore(useShallow(state => ({
@@ -27,12 +29,14 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
     timeScale: state.timeScale,
     animProg: state.animProg
   })))
+
+  const {hideAxis, hideAxisControls} = useImageExportStore(useShallow( state => ({
+    hideAxis: state.hideAxis,
+    hideAxisControls: state.hideAxisControls
+  })))
+
   const dimLengths = [dimArrays[0].length, dimArrays[1].length, dimArrays[2].length]
 
-  const {shape, dataShape} = useGlobalStore(useShallow(state => ({
-    shape: state.shape,
-    dataShape: state.dataShape
-  })))
 
   const [xResolution, setXResolution] = useState<number>(7)
   const [yResolution, setYResolution] = useState<number>(7)
@@ -76,7 +80,7 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
   const zDimScale = zResolution/(zResolution-1)
   const zValDelta = 1/(zResolution-1)
   return (
-    <group visible={plotType != 'sphere' && plotType != 'flat'}>
+    <group visible={plotType != 'sphere' && plotType != 'flat' && !hideAxis}>
     {/* Horizontal Group */}
     <group position={[0, shapeRatio*yRange[0], 0]}  >
       {/* X Group */}
@@ -109,36 +113,38 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
             color={colorHex}
             material-depthTest={false}
           >{dimNames[2]}</Text>
-          {xResolution < 20 &&
-          <Text 
-            key={'xAdd'}
-            anchorX={'center'}
-            anchorY={'middle'} 
-            fontSize={0.2} 
-            color={colorHex}
-            material-depthTest={false}
-            position={[.2, -0.2, 0]}
-            onClick={e=>setXResolution(x=> Math.min(x+1,20))}
-            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
-            onPointerLeave={e=>document.body.style.cursor = 'default'}
-          >
-            +
-          </Text>}
-          { xResolution > 1 &&
-          <Text 
-            key={'xSub'}
-            anchorX={'center'}
-            anchorY={'middle'} 
-            fontSize={0.2} 
-            color={colorHex}
-            material-depthTest={false}
-            position={[-.2, -0.2, 0]}
-            onClick={e=>setXResolution(x=> Math.max(x-1,1))}
-            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
-            onPointerLeave={e=>document.body.style.cursor = 'default'}
-          >
-            -
-          </Text>}
+          <group visible={!hideAxisControls}>
+            {xResolution < 20 &&
+            <Text 
+              key={'xAdd'}
+              anchorX={'center'}
+              anchorY={'middle'} 
+              fontSize={0.2} 
+              color={colorHex}
+              material-depthTest={false}
+              position={[.2, -0.2, 0]}
+              onClick={e=>setXResolution(x=> Math.min(x+1,20))}
+              onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+              onPointerLeave={e=>document.body.style.cursor = 'default'}
+            >
+              +
+            </Text>}
+            { xResolution > 1 &&
+            <Text 
+              key={'xSub'}
+              anchorX={'center'}
+              anchorY={'middle'} 
+              fontSize={0.2} 
+              color={colorHex}
+              material-depthTest={false}
+              position={[-.2, -0.2, 0]}
+              onClick={e=>setXResolution(x=> Math.max(x-1,1))}
+              onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+              onPointerLeave={e=>document.body.style.cursor = 'default'}
+            >
+              -
+            </Text>}
+          </group>
         </group>
       </group>
       {/* Z Group */}
@@ -171,36 +177,38 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
             color={colorHex}
             material-depthTest={false}
           >{dimNames[0]}</Text>
-          {zResolution < 20 &&
-          <Text 
-            key={'zAdd'}
-            anchorX={'center'}
-            anchorY={'middle'} 
-            fontSize={0.2} 
-            color={colorHex}
-            material-depthTest={false}
-            position={[.2, -.2, 0]}
-            onClick={e=>setZResolution(x=> Math.min(x+1,20))}
-            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
-            onPointerLeave={e=>document.body.style.cursor = 'default'}
-          >
-            +
-          </Text>}
-          {zResolution > 1 &&
-          <Text 
-            key={'zSub'}
-            anchorX={'center'}
-            anchorY={'middle'} 
-            fontSize={0.2} 
-            color={colorHex}
-            material-depthTest={false}
-            position={[-.2, -.2, 0]}
-            onClick={e=>setZResolution(x=> Math.max(x-1,1))}
-            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
-            onPointerLeave={e=>document.body.style.cursor = 'default'}
-          >
-            -
-          </Text>}
+          <group visible={!hideAxisControls}>
+            {zResolution < 20 &&
+            <Text 
+              key={'zAdd'}
+              anchorX={'center'}
+              anchorY={'middle'} 
+              fontSize={0.2} 
+              color={colorHex}
+              material-depthTest={false}
+              position={[.2, -.2, 0]}
+              onClick={e=>setZResolution(x=> Math.min(x+1,20))}
+              onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+              onPointerLeave={e=>document.body.style.cursor = 'default'}
+            >
+              +
+            </Text>}
+            {zResolution > 1 &&
+            <Text 
+              key={'zSub'}
+              anchorX={'center'}
+              anchorY={'middle'} 
+              fontSize={0.2} 
+              color={colorHex}
+              material-depthTest={false}
+              position={[-.2, -.2, 0]}
+              onClick={e=>setZResolution(x=> Math.max(x-1,1))}
+              onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+              onPointerLeave={e=>document.body.style.cursor = 'default'}
+            >
+              -
+            </Text>}
+          </group>
         </group>
       </group>
     </group>
@@ -234,37 +242,38 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
             color={colorHex}
             material-depthTest={false}
           >{dimNames[1]}</Text>
-          {yResolution < 20 &&
-          <Text 
-            key={'zAdd'}
-            anchorX={'center'}
-            anchorY={'middle'} 
-            fontSize={0.2} 
-            color={colorHex}
-            material-depthTest={false}
-            position={[ flipY == flipX ? 0.2 : -0.2, 0.2, 0]}
-            onClick={e=>setYResolution(x=> Math.min(x+1,20))}
-            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
-            onPointerLeave={e=>document.body.style.cursor = 'default'}
-          >
-            +
-          </Text>}
-          {yResolution > 1 &&
-          <Text 
-            key={'zSub'}
-            anchorX={'center'}
-            anchorY={'middle'} 
-            fontSize={0.2} 
-            color={colorHex}
-            material-depthTest={false}
-            position={[flipY == flipX ? 0.2 : -0.2, -0.2, 0]}
-            onClick={e=>setYResolution(x=> Math.max(x-1,1))}
-            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
-            onPointerLeave={e=>document.body.style.cursor = 'default'}
-          >
-            -
-          </Text>}
-
+          <group visible={!hideAxisControls}>
+            {yResolution < 20 &&
+            <Text 
+              key={'zAdd'}
+              anchorX={'center'}
+              anchorY={'middle'} 
+              fontSize={0.2} 
+              color={colorHex}
+              material-depthTest={false}
+              position={[ flipY == flipX ? 0.2 : -0.2, 0.2, 0]}
+              onClick={e=>setYResolution(x=> Math.min(x+1,20))}
+              onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+              onPointerLeave={e=>document.body.style.cursor = 'default'}
+            >
+              +
+            </Text>}
+            {yResolution > 1 &&
+            <Text 
+              key={'zSub'}
+              anchorX={'center'}
+              anchorY={'middle'} 
+              fontSize={0.2} 
+              color={colorHex}
+              material-depthTest={false}
+              position={[flipY == flipX ? 0.2 : -0.2, -0.2, 0]}
+              onClick={e=>setYResolution(x=> Math.max(x-1,1))}
+              onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+              onPointerLeave={e=>document.body.style.cursor = 'default'}
+            >
+              -
+            </Text>}
+          </group>
         </group>
     </group>
   </group>
@@ -281,6 +290,11 @@ const FlatAxis = () =>{
 
   const {plotType} = usePlotStore(useShallow(state=>({
     plotType: state.plotType
+  })))
+
+  const {hideAxis, hideAxisControls} = useImageExportStore(useShallow( state => ({
+    hideAxis: state.hideAxis,
+    hideAxisControls: state.hideAxisControls
   })))
 
   const dimLengths = dimArrays.map((val) => val.length )
@@ -321,7 +335,7 @@ const FlatAxis = () =>{
   const yValDelta = 1/(yResolution-1)
 
   return (
-    <group visible={plotType == 'flat'}>
+    <group visible={plotType == 'flat' && !hideAxis}>
       {/* X Group */}
       <group position={[0, -shapeRatio-tickLength/2, 0]} rotation={[ Math.PI/2, 0, 0]}> 
         <primitive key={'xLine'} object={xLine} />
@@ -348,37 +362,39 @@ const FlatAxis = () =>{
             fontSize={0.1} 
             color={colorHex}
             material-depthTest={false}
-          >{dimNames[2]}</Text>
-          {xResolution < 20 &&
-          <Text 
-            key={'xAdd'}
-            anchorX={'center'}
-            anchorY={'middle'} 
-            fontSize={0.15} 
-            color={colorHex}
-            material-depthTest={false}
-            position={[.2, -0.15, 0]}
-            onClick={e=>setXResolution(x=> Math.min(x+1,20))}
-            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
-            onPointerLeave={e=>document.body.style.cursor = 'default'}
-          >
-            +
-          </Text>}
-          { xResolution > 1 &&
-          <Text 
-            key={'xSub'}
-            anchorX={'center'}
-            anchorY={'middle'} 
-            fontSize={0.15} 
-            color={colorHex}
-            material-depthTest={false}
-            position={[-.2, -0.15, 0]}
-            onClick={e=>setXResolution(x=> Math.max(x-1,1))}
-            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
-            onPointerLeave={e=>document.body.style.cursor = 'default'}
-          >
-            -
-          </Text>}
+          >{dimNames[widthIdx]}</Text>
+          <group visible={!hideAxisControls}>
+            {xResolution < 20 &&
+            <Text 
+              key={'xAdd'}
+              anchorX={'center'}
+              anchorY={'middle'} 
+              fontSize={0.15} 
+              color={colorHex}
+              material-depthTest={false}
+              position={[.2, -0.15, 0]}
+              onClick={e=>setXResolution(x=> Math.min(x+1,20))}
+              onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+              onPointerLeave={e=>document.body.style.cursor = 'default'}
+            >
+              +
+            </Text>}
+            { xResolution > 1 &&
+            <Text 
+              key={'xSub'}
+              anchorX={'center'}
+              anchorY={'middle'} 
+              fontSize={0.15} 
+              color={colorHex}
+              material-depthTest={false}
+              position={[-.2, -0.15, 0]}
+              onClick={e=>setXResolution(x=> Math.max(x-1,1))}
+              onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+              onPointerLeave={e=>document.body.style.cursor = 'default'}
+            >
+              -
+            </Text>}
+          </group>
         </group>
       </group>
     {/* Vertical Group */}
@@ -407,38 +423,39 @@ const FlatAxis = () =>{
             fontSize={0.1} 
             color={colorHex}
             material-depthTest={false}
-          >{dimNames[1]}</Text>
-          {yResolution < 20 &&
-          <Text 
-            key={'zAdd'}
-            anchorX={'center'}
-            anchorY={'middle'} 
-            fontSize={0.15} 
-            color={colorHex}
-            material-depthTest={false}
-            position={[ -.1, 0.2, 0]}
-            onClick={e=>setYResolution(x=> Math.min(x+1,20))}
-            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
-            onPointerLeave={e=>document.body.style.cursor = 'default'}
-          >
-            +
-          </Text>}
-          {yResolution > 1 &&
-          <Text 
-            key={'zSub'}
-            anchorX={'center'}
-            anchorY={'middle'} 
-            fontSize={0.15} 
-            color={colorHex}
-            material-depthTest={false}
-            position={[-.1, -0.2, 0]}
-            onClick={e=>setYResolution(x=> Math.max(x-1,1))}
-            onPointerEnter={e=>document.body.style.cursor = 'pointer'}
-            onPointerLeave={e=>document.body.style.cursor = 'default'}
-          >
-            -
-          </Text>}
-
+          >{dimNames[heightIdx]}</Text>
+          <group visible={!hideAxisControls}>
+            {yResolution < 20 &&
+            <Text 
+              key={'zAdd'}
+              anchorX={'center'}
+              anchorY={'middle'} 
+              fontSize={0.15} 
+              color={colorHex}
+              material-depthTest={false}
+              position={[ -.1, 0.2, 0]}
+              onClick={e=>setYResolution(x=> Math.min(x+1,20))}
+              onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+              onPointerLeave={e=>document.body.style.cursor = 'default'}
+            >
+              +
+            </Text>}
+            {yResolution > 1 &&
+            <Text 
+              key={'zSub'}
+              anchorX={'center'}
+              anchorY={'middle'} 
+              fontSize={0.15} 
+              color={colorHex}
+              material-depthTest={false}
+              position={[-.1, -0.2, 0]}
+              onClick={e=>setYResolution(x=> Math.max(x-1,1))}
+              onPointerEnter={e=>document.body.style.cursor = 'pointer'}
+              onPointerLeave={e=>document.body.style.cursor = 'default'}
+            >
+              -
+            </Text>}
+          </group>
         </group>
     </group>
 

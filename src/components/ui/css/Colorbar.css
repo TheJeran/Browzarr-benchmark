@@ -30,6 +30,23 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+.colorbar input::-webkit-outer-spin-button,
+.colorbar input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    
+}
+
+/* Firefox */
+.colorbar input[type=number] {
+  -moz-appearance: textfield;
+  font-weight: 500;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px) saturate(180%);
+    border-radius: 4px;
+    padding: 0 4px;
+    margin: 0;
+}
   
 
 @media (max-width: 768px) {

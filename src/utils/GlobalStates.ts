@@ -415,15 +415,20 @@ type ImageExportState = {
   exportImg: boolean;
   includeBackground: boolean;
   includeColorbar: boolean;
+  includeAxis: boolean;
   doubleSize: boolean;
   cbarLoc: string;
   cbarNum: number;
   useCustomRes: boolean;
   customRes: [number, number];
+  hideAxisControls: boolean;
+  hideAxis: boolean;
 
   ExportImg: () => void;
   setIncludeBackground: (includeBackground: boolean) => void;
   setIncludeColorbar: (includeColorbar: boolean) => void;
+  setIncludeAxis: (includeAxis: boolean) => void;
+  getIncludeAxis: () => boolean;
   setDoubleSize: (doubleSize: boolean) => void;
   setCbarLoc: (cbarLoc: string) => void;
   getCbarLoc: () => string;
@@ -432,6 +437,10 @@ type ImageExportState = {
   setUseCustomRes: (useCustomRes: boolean) => void;
   setCustomRes: (customRes: [number, number]) => void;
   getCustomRes: () => [number, number];
+  setHideAxisControls: (hideAxisControls: boolean) => void;
+  getHideAxisControls: () => boolean;
+  setHideAxis: (hideAxis: boolean) => void;
+
 }
 
 export const useImageExportStore = create<ImageExportState>((set, get) => ({
@@ -443,6 +452,9 @@ export const useImageExportStore = create<ImageExportState>((set, get) => ({
   cbarNum: 5,
   useCustomRes: false,
   customRes: [1920, 1080],
+  includeAxis: true,
+  hideAxisControls: false,
+  hideAxis: false,
 
   ExportImg: () => set({ exportImg: !get().exportImg }),
   setIncludeBackground: (includeBackground) => set({ includeBackground }),
@@ -455,4 +467,10 @@ export const useImageExportStore = create<ImageExportState>((set, get) => ({
   setUseCustomRes: (useCustomRes) => set({ useCustomRes }),
   setCustomRes: (customRes) => set({ customRes }),
   getCustomRes: () => get().customRes,
+  setIncludeAxis: (includeAxis) => set({ includeAxis }),
+  getIncludeAxis: () => get().includeAxis,
+  setHideAxisControls: (hideAxisControls) => set({ hideAxisControls }),
+  getHideAxisControls: () => get().hideAxisControls,
+  setHideAxis: (hideAxis) => set({ hideAxis }),
+
 }));
