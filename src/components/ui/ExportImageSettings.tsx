@@ -7,7 +7,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useImageExportStore } from '@/utils/GlobalStates';
+import { useImageExportStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import {
   Select,
@@ -68,6 +68,10 @@ const ExportImageSettings = () => {
         (str: string): string;
     }
 
+    const {plotType} = usePlotStore(useShallow(state=>({
+        plotType: state.plotType
+    })))
+    
     const capitalize: CapitalizeFn = str => str.charAt(0).toUpperCase() + str.slice(1);
 
   return (
@@ -97,8 +101,12 @@ const ExportImageSettings = () => {
             <div className="grid grid-cols-[auto_60px] items-center gap-2">
             <label htmlFor="includeBG">Include Background</label>
             <Input id='includeBG' type="checkbox" checked={includeBackground} onChange={e => setIncludeBackground(e.target.checked)}/>
+            {plotType != 'sphere' &&
+            <>
             <label htmlFor="includeBG">Include Axis</label>
             <Input id='includeBG' type="checkbox" checked={includeAxis} onChange={e => setIncludeAxis(e.target.checked)}/>
+            </>
+            }
             <label htmlFor="includeCbar">Include Colorbar</label>
             <Input id='includeCbar' type="checkbox" checked={includeColorbar} onChange={e => setIncludeColorbar(e.target.checked)}/>
             {includeColorbar &&
