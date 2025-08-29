@@ -32,6 +32,7 @@ function PointInfo({pointID,pointLoc,showPointInfo, plotUnits}:pointInfo){
   );
   let pointY = 0;
   let pointX = 0;
+  console.log(timeSeries)
   if (Object.entries(pointID).length > 0 && Object.entries(timeSeries).length > 0){
     const [tsID, idx] = Object.entries(pointID)[0];
     pointY = timeSeries[tsID][idx];

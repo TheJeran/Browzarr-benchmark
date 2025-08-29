@@ -14,7 +14,6 @@ import AnalysisWG from './AnalysisWG';
 import { ParseExtent } from '@/utils/HelperFuncs';
 import ExportCanvas from '@/utils/ExportCanvas';
 
-
 const Orbiter = ({isFlat} : {isFlat  : boolean}) =>{
   const {resetCamera} = usePlotStore(useShallow(state => ({
       resetCamera: state.resetCamera
@@ -100,7 +99,7 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
           setShowLoading: state.setShowLoading  
         }
         )))
-    const {colormap, variable, isFlat, metadata, valueScales, is4D, setIsFlat, setDataArray} = useGlobalStore(useShallow(state=>({
+    const {colormap, variable, isFlat, metadata, valueScales, is4D, setIsFlat} = useGlobalStore(useShallow(state=>({
       colormap: state.colormap, 
       variable: state.variable, 
       isFlat: state.isFlat, 
@@ -108,7 +107,6 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
       valueScales: state.valueScales,
       is4D: state.is4D,
       setIsFlat: state.setIsFlat, 
-      setDataArray: state.setDataArray
     })))
 
     const {plotType} = usePlotStore(useShallow(state => ({
@@ -161,7 +159,6 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
         else{
           setIsFlat(false)
         }
-        setDataArray(result.data)
         const shapeRatio = result.shape[1] / result.shape[2] * 2;
         setShape(new THREE.Vector3(2, shapeRatio, 2));
         setDataShape(result.shape)

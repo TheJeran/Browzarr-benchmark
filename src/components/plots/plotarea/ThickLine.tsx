@@ -163,9 +163,9 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
 		<group>
       {Object.keys(timeSeries).map((val, idx)=>(
         <mesh key={`lineMesh_${idx}`} geometry={geometries[val]} material={ materials[val]} />))}
-      {/* {showPoints && Object.keys(timeSeries).map((val, idx)=> 
+      {showPoints && Object.keys(timeSeries).map((val, idx)=> 
         <PlotPoints key={`plotPoints_${idx}`} points={instancePoints[val]} tsID={val} colIDX={idx} pointSetters={pointSetters} scalers={{xScale,yScale}}/>
-      )} */}
+      )}
 		</group>
 		</>
   )

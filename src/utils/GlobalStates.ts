@@ -2,6 +2,8 @@ import { create } from "zustand";
 import * as THREE from 'three';
 import { GetColorMapTexture } from "@/components/textures";
 import { GetStore } from "@/components/zarr/ZarrLoaderLRU";
+import QuickLRU from 'quick-lru';
+
 
 const ESDC = 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr'
 
@@ -26,7 +28,6 @@ type StoreState = {
   showLoading: boolean;
   metadata: Record<string, any> | null;
   zMeta: object[];
-  dataArray: Uint8Array | Float32Array;
   dimArrays: number[][];
   dimNames: string[];
   dimUnits: string[];
@@ -55,7 +56,6 @@ type StoreState = {
   setShowLoading: (showLoading: boolean) => void;
   setMetadata: (metadata: object | null) => void;
   setZMeta: (zMeta: object[]) => void;
-  setDataArray: (dataArray: Uint8Array | Float32Array) => void;
   setDimArrays: (dimArrays: number[][]) => void;
   setDimNames: (dimNames: string[]) => void;
   setDimUnits: (dimUnits: string[]) => void;
@@ -85,7 +85,6 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   showLoading: false,
   metadata: null,
   zMeta: [{}],
-  dataArray: new Uint8Array(1),
   dimArrays: [[0], [0], [0]],
   dimNames: ["Default"],
   dimUnits: ["Default"],
@@ -122,7 +121,6 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   setShowLoading: (showLoading) => set({ showLoading }),
   setMetadata: (metadata) => set({ metadata }),
   setZMeta: (zMeta) => set({ zMeta }),
-  setDataArray: (dataArray) => set({ dataArray }),
   setDimArrays: (dimArrays) => set({ dimArrays }),
   setDimNames: (dimNames) => set({ dimNames }),
   setDimUnits: (dimUnits) => set({ dimUnits }),
@@ -379,23 +377,46 @@ type ZarrState = {
   compress: boolean,
   currentStore: any;
   reFetch: boolean;
+  currentChunks: number[];
+  arraySize: number,
 
   setSlice: (slice: [number , number | null]) => void;
   setCompress: (compress: boolean) => void;
   setCurrentStore: (currentStore: any) => void;
   setReFetch: (reFetch: boolean) => void;
+  setCurrentChunks: (currentChunks: number[]) => void;
+  setArraySize: (arraySize: number) => void;
 }
 
-export const useZarrStore = create<ZarrState>((set) => ({
+export const useZarrStore = create<ZarrState>((set, get) => ({
   slice: [0, null],
   compress: false,
   currentStore: GetStore(ESDC),
   reFetch: false,
+  currentChunks: [],
+  arraySize: 0,
 
   setSlice: (slice) => set({ slice }),
   setCompress: (compress) => set({ compress }),
   setCurrentStore: (currentStore) => set({ currentStore }),
-  setReFetch: (reFetch) => set({ reFetch })
+  setReFetch: (reFetch) => set({ reFetch }),
+  setCurrentChunks: (currentChunks) => set({ currentChunks }),
+  setArraySize: (arraySize) => set({ arraySize })
+}))
+
+type CacheState = {
+  cache: QuickLRU<string, any>;
+  clearCache: () => void;
+}
+
+
+export const useCacheStore = create<CacheState>((set, get) => ({
+  cache: new QuickLRU({ maxSize: 2000 }),
+  // Cache operations
+  clearCache: () => {
+    const { cache } = get()
+    cache.clear()
+  }
 }))
 
 

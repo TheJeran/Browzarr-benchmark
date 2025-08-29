@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { ArrayMinMax} from '@/utils/HelperFuncs';
 
 interface Array {
-    data: Float32Array | Float64Array | Int32Array | Uint32Array;
+    data: Float32Array | Float64Array | Int32Array | Uint32Array | Float32Array;
     shape: number[];
 }
 

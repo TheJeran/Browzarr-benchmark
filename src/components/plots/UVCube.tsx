@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU';
-import { parseUVCoords, getUnitAxis, GetTimeSeries } from '@/utils/HelperFuncs';
+import { parseUVCoords, getUnitAxis, GetTimeSeries, GetCurrentArray } from '@/utils/HelperFuncs';
 import { useAnalysisStore, useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { evaluate_cmap } from 'js-colormaps-es';
@@ -24,11 +24,10 @@ export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
     analysisArray: state.analysisArray
   })))
 
-  const {shape, dataShape, dataArray, strides, dimArrays,dimNames,dimUnits} = useGlobalStore(
+  const {shape, dataShape, strides, dimArrays,dimNames,dimUnits} = useGlobalStore(
     useShallow(state=>({
       shape:state.shape,
       dataShape: state.dataShape,
-      dataArray: state.dataArray,
       strides: state.strides,
       dimArrays:state.dimArrays,
       dimNames:state.dimNames,
@@ -55,7 +54,7 @@ export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
     lastNormal.current = dimAxis;
     
     if(ZarrDS){
-      const tempTS = GetTimeSeries({data: analysisMode ? analysisArray : dataArray, shape: dataShape, stride: strides},{uv,normal})
+      const tempTS = GetTimeSeries({data: analysisMode ? analysisArray : GetCurrentArray(), shape: dataShape, stride: strides},{uv,normal})
       const plotDim = (normal.toArray()).map((val, idx) => {
         if (Math.abs(val) > 0) {
           return idx;

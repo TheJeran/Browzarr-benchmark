@@ -5,7 +5,7 @@ import { pointFrag, pointVert } from '@/components/textures/shaders'
 import { useAnalysisStore, useErrorStore, useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
-import { parseUVCoords, getUnitAxis, GetTimeSeries } from '@/utils/HelperFuncs';
+import { parseUVCoords, getUnitAxis, GetTimeSeries, GetCurrentArray } from '@/utils/HelperFuncs';
 import { evaluate_cmap } from 'js-colormaps-es';
 interface PCProps {
   texture: THREE.Data3DTexture | THREE.DataTexture | null,
@@ -32,13 +32,12 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
 
   const aspectRatio = width/height;
   const depthRatio = depth/height;
-  const {dimArrays, dimUnits, dimNames, strides, dataShape, dataArray, setPlotDim, setTimeSeries, updateTimeSeries, setDimCoords, updateDimCoords} = useGlobalStore(useShallow(state => ({
+  const {dimArrays, dimUnits, dimNames, strides, dataShape, setPlotDim, setTimeSeries, updateTimeSeries, setDimCoords, updateDimCoords} = useGlobalStore(useShallow(state => ({
     dimArrays: state.dimArrays,
     dimUnits: state.dimUnits,
     dimNames: state.dimNames,
     strides: state.strides,
     dataShape: state.dataShape,
-    dataArray: state.dataArray,
     setPlotDim: state.setPlotDim,
     setTimeSeries: state.setTimeSeries,
     updateTimeSeries: state.updateTimeSeries,
@@ -73,7 +72,7 @@ const MappingCube = ({dimensions, ZarrDS, setters} : {dimensions: dimensionsProp
       lastNormal.current = dimAxis;
       
       if(ZarrDS){
-        const tempTS = GetTimeSeries({data: analysisMode? analysisArray : dataArray, shape: dataShape, stride: strides},{uv,normal})
+        const tempTS = GetTimeSeries({data: analysisMode? analysisArray : GetCurrentArray(), shape: dataShape, stride: strides},{uv,normal})
         const plotDim = (normal.toArray()).map((val, idx) => {
           if (Math.abs(val) > 0) {
             return idx;

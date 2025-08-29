@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import QuickLRU from 'quick-lru';
 import { parseUVCoords } from "@/utils/HelperFuncs";
 import { GetSize } from "./GetMetadata";
-import { useGlobalStore, useZarrStore, useErrorStore } from "@/utils/GlobalStates";
+import { useGlobalStore, useZarrStore, useErrorStore, useCacheStore } from "@/utils/GlobalStates";
 
 export const ZARR_STORES = {
     ESDC: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr',
@@ -51,23 +51,21 @@ export class ZarrDataset{
 	constructor(store: Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>){
 		this.groupStore = store;
 		this.variable = "Default";
-		this.cache = new QuickLRU({maxSize: 2000});
+		this.cache = useCacheStore.getState().cache;
 		this.dimNames = ["","",""]
 		this.chunkIDs = [];
 	}
 
 	async GetArray(variable: string, slice: [number, number | null]){
 
-		const setProgress = useGlobalStore.getState().setProgress;
-		const setStrides = useGlobalStore.getState().setStrides;
-		const setDownloading = useGlobalStore.getState().setDownloading;
-		const compress = useZarrStore.getState().compress;
-		const is4D = useGlobalStore.getState().is4D;
-		const idx4D = useGlobalStore.getState().idx4D;
+		const {is4D, idx4D, setProgress, setStrides, setDownloading} = useGlobalStore.getState();
+		const {compress, setCurrentChunks, setArraySize} = useZarrStore.getState()
+		const {cache} = useCacheStore.getState();
+
 		//Check if cached
 		this.variable = variable;
-		if (this.cache.has(is4D ? `${idx4D}_${variable}` : variable)){
-			return this.cache.get(variable)
+		if (cache.has(is4D ? `${idx4D}_${variable}` : variable)){
+			return cache.get(variable)
 		}
 
 		const group = await this.groupStore;
@@ -84,7 +82,6 @@ export class ZarrDataset{
 			let chunk;
 			let typedArray;
 			let shape;
-			this.chunkIDs = []
 			if (totalSize < 1e8 || !hasTimeChunks){ //Check if total is less than 100MB or no chunks along time
 				setDownloading(true)
 				chunk = is4D ? await zarr.get(outVar, [idx4D, null , null, null]) :  await zarr.get(outVar) ;
@@ -94,7 +91,7 @@ export class ZarrDataset{
 							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
 				} else {
 					typedArray = new Float32Array(chunk.data)
-					this.cache.set(is4D ? `${idx4D}_${variable}` : variable, chunk)
+					cache.set(is4D ? `${idx4D}_${variable}` : variable, chunk)
 				}
 				setDownloading(false)
 			}
@@ -108,16 +105,17 @@ export class ZarrDataset{
 				const arraySize = (endIdx-startIdx)*chunkShape[0]*timeSize
 				shape = is4D ? [(endIdx-startIdx)*chunkShape[0], outVar.shape[2],outVar.shape[3]]
 				: [(endIdx-startIdx)*chunkShape[0], outVar.shape[1],outVar.shape[2]]
-
+				setArraySize(arraySize) // This is used for the getcurrentarray function
 				typedArray = compress ? new Uint8Array(arraySize) : new Float32Array(arraySize);
 				let accum = 0;
 				let iter = 1;
+				const chunkIDs = []
 				for (let i= startIdx ; i < endIdx ; i++){
 					const cacheName = is4D ? `${idx4D}_${variable}_chunk_${i}` : `${variable}_chunk_${i}`
-					this.chunkIDs.push(i) //identify which chunks to use when recombining cache for timeseries
+					chunkIDs.push(i) //identify which chunks to use when recombining cache for timeseries
 					if (this.cache.has(cacheName)){
 						//Add a check and throw error here if user set compress but the local files are not compressed
-						chunk = this.cache.get(cacheName)
+						chunk = cache.get(cacheName)
 						setStrides(chunk.stride)
 						typedArray.set(chunk.data,accum)
 						setProgress(Math.round(iter/chunkCount*100))
@@ -125,13 +123,12 @@ export class ZarrDataset{
 						iter ++;
 					}
 					else{
-						
 						chunk = await zarr.get(outVar, is4D ? [idx4D , zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null] : [zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null])
 						if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
 							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
 						} else {
 							typedArray.set(chunk.data,accum)
-							this.cache.set(cacheName,chunk)
+							cache.set(cacheName,chunk)
 							accum += chunk.data.length;
 							setStrides(chunk.stride)
 							setProgress(Math.round(iter/chunkCount*100))
@@ -139,10 +136,10 @@ export class ZarrDataset{
 						}
 					}
 				}
+				setCurrentChunks(chunkIDs) // These are used for the Getcurrentarray 
 				setDownloading(false)
 				setProgress(0)
 			}
-
 			return {
 				data: typedArray,
 				shape: shape,
@@ -154,23 +151,24 @@ export class ZarrDataset{
 	}
 
 	async GetAttributes(variable:string){
+		const {cache} = useCacheStore.getState();
 		const cacheName = `${variable}_meta`
-		if (this.cache.has(cacheName)){
-			return this.cache.get(cacheName)
+		if (cache.has(cacheName)){
+			return cache.get(cacheName)
 		}
 		const group = await this.groupStore;
 		const outVar = await zarr.open(group.resolve(variable), {kind:"array"});
 		const meta = outVar.attrs;
-		this.cache.set(cacheName, meta);
+		cache.set(cacheName, meta);
 		const dims = [];
 		for (const dim of meta._ARRAY_DIMENSIONS as string[]){ //Put the dimension arrays in the cache to access later
-			if (!this.cache.has(dim)){
+			if (!cache.has(dim)){
 				const dimArray = await zarr.open(group.resolve(dim), {kind:"array"})
 						.then((result) => zarr.get(result));
 					const dimMeta = await zarr.open(group.resolve(dim), {kind:"array"})
 						.then((result) => result.attrs)
-					this.cache.set(dim, dimArray.data);
-					this.cache.set(`${dim}_meta`, dimMeta)
+					cache.set(dim, dimArray.data);
+					cache.set(`${dim}_meta`, dimMeta)
 				}
 				dims.push(dim)
 		}
@@ -194,7 +192,6 @@ export class ZarrDataset{
 		if (!this.cache.has(this.variable) && this.chunkIDs.length == 0){
 			return [0]
 		}
-
 		let data, shape : number[], stride; 
 		if (this.chunkIDs.length > 0){
 			const arrays = []

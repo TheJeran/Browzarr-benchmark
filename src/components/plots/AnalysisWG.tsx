@@ -1,5 +1,5 @@
 "use client";
-import { ArrayMinMax } from '@/utils/HelperFuncs';
+import { ArrayMinMax, GetCurrentArray } from '@/utils/HelperFuncs';
 import * as THREE from 'three'
 import React, { useEffect, useRef } from 'react'
 import { DataReduction, Convolve, Multivariate2D, Multivariate3D, CUMSUM3D, Convolve2D } from '../computation/webGPU'
@@ -10,8 +10,7 @@ import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 
 const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.SetStateAction<THREE.Data3DTexture | THREE.DataTexture | null>>, ZarrDS: ZarrDataset}) => {
     
-    const {dataArray, strides, dataShape, valueScales, isFlat, setIsFlat, setDownloading, setShowLoading, setValueScales} = useGlobalStore(useShallow(state=>({
-        dataArray : state.dataArray,
+    const { strides, dataShape, valueScales, isFlat, setIsFlat, setDownloading, setShowLoading, setValueScales} = useGlobalStore(useShallow(state=>({
         strides: state.strides,
         dataShape: state.dataShape,
         valueScales: state.valueScales,
@@ -45,6 +44,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
 
     // 3D Computations
     useEffect(()=>{ 
+        const dataArray = GetCurrentArray()
         if (dataArray.length <= 1 || isFlat){
             return;
         }
@@ -197,6 +197,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
     },[execute])
 
     useEffect(()=>{
+        const dataArray = GetCurrentArray()
         if (dataArray.length <= 1 || !isFlat){
             return;
         }
