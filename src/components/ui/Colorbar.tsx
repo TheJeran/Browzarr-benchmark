@@ -106,6 +106,11 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
 
     },[newMin, newMax])
 
+    useEffect(()=>{ // Update internal vals when global vals change
+        setNewMin(valueScales.minVal)
+        setNewMax(valueScales.maxVal)
+    },[valueScales])
+
     useEffect(() => {
         if (canvasRef.current) {
         const canvas = canvasRef.current;

@@ -1,11 +1,18 @@
 import React, { useState, useMemo, useEffect } from "react"
-import { useGlobalStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates'
+import { useCacheStore, useGlobalStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
 import { SliderThumbs } from "@/components/ui/SliderThumbs"
 import { Card } from "@/components/ui/card"
-// import { Button } from "./button"
 import { Button } from "@/components/ui/button"
 import { Input } from "../input"
+import { BsFillQuestionCircleFill } from "react-icons/bs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+
 const formatArray = (value: string | number[]): string => {
   if (typeof value === 'string') return value
   return Array.isArray(value) ? value.join(', ') : String(value)
@@ -22,24 +29,29 @@ const formatBytes = (bytes: number): string => {
 
 
 const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setShowMeta: React.Dispatch<React.SetStateAction<boolean>>, noCard?: boolean }) => {
-  const {is4D, idx4D, variable, setIs4D, setIdx4D, setVariable} = useGlobalStore(useShallow(state => ({
+  const {is4D, idx4D, variable, initStore, setIs4D, setIdx4D, setVariable} = useGlobalStore(useShallow(state => ({
     is4D: state.is4D,
     idx4D: state.idx4D,
     variable: state.variable,
+    initStore: state.initStore,
     setIs4D: state.setIs4D,
     setIdx4D: state.setIdx4D,
     setVariable: state.setVariable,
   })))
-  const { slice, reFetch, setSlice, setReFetch } = useZarrStore(useShallow(state => ({
+
+  const { slice, reFetch, compress, setSlice, setReFetch, setCompress } = useZarrStore(useShallow(state => ({
     reFetch: state.reFetch,
     slice: state.slice,
+    compress: state.compress,
     setSlice: state.setSlice,
-    setReFetch: state.setReFetch
+    setReFetch: state.setReFetch,
+    setCompress: state.setCompress
   })))
-
+  const cache = useCacheStore(state => state.cache)
   const {maxTextureSize} = usePlotStore(useShallow(state => ({maxTextureSize: state.maxTextureSize})))
 
   const [tooBig, setTooBig] = useState(false)
+  const [cached, setCached] = useState(false)
 
   const totalSize = useMemo(() => meta.totalSize ? meta.totalSize : 0, [meta])
   const length = useMemo(() => meta.shape ? meta.shape.length == 4 ? meta.shape[1] : meta.shape[0] : 0, [meta])
@@ -74,7 +86,15 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
 
   useEffect(()=>{
     setSlice([0,null]);
+    setCompress(false)
     setIdx4D(null)
+
+    if (cache.has(`${initStore}_${meta.name}`)){
+      setCached(true)
+      return;
+    }else{
+      setCached(false)
+    }
     const width = meta.shape[meta.shape.length-1]
     const height = meta.shape[meta.shape.length-2]
     if (width > maxTextureSize || height > maxTextureSize){
@@ -146,7 +166,7 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
           )}
 
           {/* Data Range Section */}
-          {(is3D || idx4D != null) && (
+          {((is3D || idx4D != null) && !cached) && (
             <div className="space-y-4">
               {totalSize > 1e8 && hasTimeChunks && (
                 <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-orange-200 dark:border-orange-800">
@@ -226,6 +246,13 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
             </div>
           )}
 
+          {cached &&
+          <div>
+            This variable is already cached. 
+          </div>
+
+          }
+
           {/* Action Button */}
           <div className="flex justify-end pt-4 border-t border-border">
             <Button
@@ -280,7 +307,7 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
               </div>
             </>
             }
-            {(is3D || idx4D != null) &&
+            {((is3D || idx4D != null) && !cached) &&
               <>
                 {totalSize > 1e8 && hasTimeChunks && (
                   <>
@@ -329,10 +356,30 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
                     </span>
                   </div>
                 )}
-              </>
-            }</>}
+                <div className="grid grid-cols-[auto_40%] items-center gap-2">
+                  <div>
+                  <label htmlFor="compress-data">Compress Data </label>
+                  <Tooltip>
+                    <TooltipTrigger>
+                     <BsFillQuestionCircleFill/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Compress data to preserve memory at the expense of slightly longer load times
+                    </TooltipContent>
+                  </Tooltip>
+                  </div>
+                  
+                  <Input className="w-[50px]" type="checkbox" id="compress-data" checked={compress} onChange={e=>setCompress(e.target.checked)}/>
+                </div>
+              </>}
+          </>}
           </div>
-          
+          {cached &&
+          <div>
+            <b>This data is already cached. </b>
+          </div>
+
+          }
           <Button
             variant="pink"
             size="sm"

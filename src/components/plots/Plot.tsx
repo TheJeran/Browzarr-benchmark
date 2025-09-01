@@ -134,7 +134,7 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
       setShow(false)
       try{
         ZarrDS.GetArray(variable, slice).then((result) => {
-        // result now contains: { data: TypedArray, shape: number[], dtype: string }
+          console.log(result)
         const [texture, scaling] = ArrayToTexture({
           data: result.data,
           shape: result.shape
@@ -145,13 +145,11 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
           console.error("Invalid texture type returned from ArrayToTexture");
           setTexture(null);
         }
-        if (
-          typeof scaling === 'object' &&
-          'maxVal' in scaling &&
-          'minVal' in scaling
-        ) {
+        if (result.scalingFactor){
+          const {maxVal, minVal} = scaling
+          setValueScales({ maxVal: maxVal*(Math.pow(10,result.scalingFactor)), minVal: minVal*(Math.pow(10,result.scalingFactor)) });
+        }else{
           setValueScales(scaling as { maxVal: number; minVal: number });
-          
         }
         if (result.shape.length == 2){
           setIsFlat(true)

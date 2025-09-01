@@ -9,14 +9,13 @@ interface Array {
 
 
 // ? Please, try when possible to define the types of your variables. Otherwise building will fail.
-function ArrayTo2D(array: Array){
+function ArrayTo2D(array: Array): [ THREE.DataTexture, {minVal: number, maxVal: number}]{
     //We assume there is no slicing here. That will occur in the ZarrLoader stage. This is just pure data transfer
     const shape = array.shape;
     const data = array.data;
     const width = shape[1];
     const height = shape[0];
     const [minVal,maxVal] = ArrayMinMax(data)
-
     const normed = data.map((i)=>(i-minVal)/(maxVal-minVal))
 
     const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254))
@@ -33,12 +32,13 @@ function ArrayTo2D(array: Array){
     return [texture, {maxVal,minVal}]
 }
 
-export function ArrayTo3D(array: Array){
+export function ArrayTo3D(array: Array) : [ THREE.Data3DTexture, {minVal: number, maxVal: number}]{
     const shape = array.shape;
     const data = array.data;
     const [lz,ly,lx] = shape
 
     const [minVal,maxVal] = ArrayMinMax(data)
+    
     const normed = data.map((i)=>(i-minVal)/(maxVal-minVal))
     const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254));   
     const volTexture = new THREE.Data3DTexture(textureData, lx, ly, lz);
@@ -49,7 +49,7 @@ export function ArrayTo3D(array: Array){
     return [volTexture, {maxVal,minVal}]
 }
 
-export function ArrayToTexture(array: Array){
+export function ArrayToTexture(array: Array): [ THREE.Data3DTexture | THREE.DataTexture, {minVal: number, maxVal: number}]{
     const shape = array.shape;
     const [texture,scales] = shape.length == 3 ? ArrayTo3D(array) : ArrayTo2D(array);
     return [texture, scales];

@@ -23,7 +23,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
 
     const setPlotType = usePlotStore(state => state.setPlotType)
     const {axis, execute, operation, useTwo, variable2, 
-        valueScalesOrig, kernelSize, kernelDepth, kernelOperation, reverseDirection, 
+        valueScalesOrig, kernelSize, kernelDepth, kernelOperation, reverseDirection, analysisStore,
         setValueScalesOrig, setAnalysisArray} = useAnalysisStore(useShallow(state => ({
         axis: state.axis,
         execute: state.execute,
@@ -35,6 +35,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
         kernelDepth: state.kernelDepth,
         kernelOperation: state.kernelOperation,
         reverseDirection: state.reverseDirection,
+        analysisStore: state.analysisStore,
         setValueScalesOrig: state.setValueScalesOrig,
         setAnalysisArray: state.setAnalysisArray,
     })))
@@ -44,7 +45,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
 
     // 3D Computations
     useEffect(()=>{ 
-        const dataArray = GetCurrentArray()
+        const dataArray = GetCurrentArray(analysisStore)
         if (dataArray.length <= 1 || isFlat){
             return;
         }
@@ -147,7 +148,6 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
                 variable2Array.current = await ZarrDS.GetArray(variable2, zarrSlice)
                 setDownloading(false)
                 if (['TwoVarLinearSlope2D', 'Correlation2D', 'Covariance2D'].includes(operation)){ //These are 2D operations
-                    console.log("calling this")
                     const thisShape = dataShape.filter((e, idx) => idx != axis)
                     //@ts-expect-error It won't be undefined here as Multivariate2D only outputs undefined if webGPU disabled. However, impossible to call if webGPU disabled so moot point
                     const newArray: Float32Array = await Multivariate2D(dataArray, variable2Array.current.data, {shape:dataShape, strides}, axis, operation)
@@ -174,6 +174,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
                     if (!valueScalesOrig){
                             setValueScalesOrig(valueScales)
                     }
+
                     let [minVal, maxVal] = [-1, 1];
                     if (['TwoVarLinearSlope3D', 'CovarianceConvolution'].includes(operation)){
                         [minVal, maxVal] = ArrayMinMax(newArray) //If slope get actual bounds
@@ -197,7 +198,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
     },[execute])
 
     useEffect(()=>{
-        const dataArray = GetCurrentArray()
+        const dataArray = GetCurrentArray(analysisStore)
         if (dataArray.length <= 1 || !isFlat){
             return;
         }
@@ -239,6 +240,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
             }
         }
     },[execute])
+
   return null
     
 }

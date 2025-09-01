@@ -252,19 +252,20 @@ export function GetTimeSeries(array : arrayInfo, TimeSeriesInfo:TimeSeriesInfo){
 		return ts;
 }
 
-export function GetCurrentArray(){
-  const { variable, is4D, idx4D }= useGlobalStore.getState()
+export function GetCurrentArray(overrideStore?:string){
+  const { variable, is4D, idx4D, initStore }= useGlobalStore.getState()
   const { arraySize, currentChunks }= useZarrStore.getState()
   const {cache} = useCacheStore.getState();
+  const store = overrideStore ? overrideStore : initStore
   
-  if (cache.has(is4D ? `${idx4D}_${variable}` : variable)){
-			return cache.get(variable).data
+  if (cache.has(is4D ? `${store}_${idx4D}_${variable}` : `${store}_${variable}`)){
+			return cache.get(is4D ? `${store}_${idx4D}_${variable}` : `${store}_${variable}`).data
   }
   else{
     const typedArray = new Float32Array(arraySize)
     let accum = 0;
 				for (const i of currentChunks){
-					const cacheName = is4D ? `${idx4D}_${variable}_chunk_${i}` : `${variable}_chunk_${i}`
+					const cacheName = is4D ? `${store}_${idx4D}_${variable}_chunk_${i}` : `${store}_${variable}_chunk_${i}`
 						//Add a check and throw error here if user set compress but the local files are not compressed
 						const chunk = cache.get(cacheName)
 						typedArray.set(chunk.data,accum)
