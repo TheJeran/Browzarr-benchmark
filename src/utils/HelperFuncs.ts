@@ -1,6 +1,7 @@
 'use client';
 import * as THREE from 'three'
-import { useGlobalStore, usePlotStore } from './GlobalStates';
+import { useGlobalStore, usePlotStore, useZarrStore, useCacheStore } from './GlobalStates';
+
 
 export function parseTimeUnit(units: string | undefined): number {
     if (units === "Default"){
@@ -108,7 +109,7 @@ export function getUnitAxis(vec: THREE.Vector3) { //Takes the normal of a cube i
   return null;
 }
 
-export function ArrayMinMax(array:number[] | Uint8Array<ArrayBufferLike> | Int16Array<ArrayBufferLike> | Int32Array<ArrayBufferLike> | Uint32Array<ArrayBufferLike> | Float32Array<ArrayBufferLike> | Float64Array<ArrayBufferLike>){
+export function ArrayMinMax(array:number[] | Uint8Array<ArrayBufferLike> | Int16Array<ArrayBufferLike> | Float32Array<ArrayBufferLike> | Int32Array<ArrayBufferLike> | Uint32Array<ArrayBufferLike> | Float32Array<ArrayBufferLike> | Float64Array<ArrayBufferLike>){
   let minVal = Infinity;
   let maxVal = -Infinity;
   for (let i = 0; i < array.length; i++){
@@ -249,4 +250,27 @@ export function GetTimeSeries(array : arrayInfo, TimeSeriesInfo:TimeSeriesInfo){
     ts.push(data[idx])
   }
 		return ts;
+}
+
+export function GetCurrentArray(overrideStore?:string){
+  const { variable, is4D, idx4D, initStore }= useGlobalStore.getState()
+  const { arraySize, currentChunks }= useZarrStore.getState()
+  const {cache} = useCacheStore.getState();
+  const store = overrideStore ? overrideStore : initStore
+  
+  if (cache.has(is4D ? `${store}_${idx4D}_${variable}` : `${store}_${variable}`)){
+			return cache.get(is4D ? `${store}_${idx4D}_${variable}` : `${store}_${variable}`).data
+  }
+  else{
+    const typedArray = new Float32Array(arraySize)
+    let accum = 0;
+				for (const i of currentChunks){
+					const cacheName = is4D ? `${store}_${idx4D}_${variable}_chunk_${i}` : `${store}_${variable}_chunk_${i}`
+						//Add a check and throw error here if user set compress but the local files are not compressed
+						const chunk = cache.get(cacheName)
+						typedArray.set(chunk.data,accum)
+						accum += chunk.data.length;
+        }
+      return typedArray
+  }
 }

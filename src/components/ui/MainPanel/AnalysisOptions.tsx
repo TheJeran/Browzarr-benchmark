@@ -80,7 +80,8 @@ const AnalysisOptions = () => {
     setKernelDepth,
     setKernelOperation,
     setAnalysisMode,
-    setReverseDirection
+    setReverseDirection,
+    setAnalysisStore
   } = useAnalysisStore(useShallow(state => ({
     execute: state.execute,
     operation: state.operation,
@@ -102,6 +103,7 @@ const AnalysisOptions = () => {
     setKernelOperation: state.setKernelOperation,
     setAnalysisMode: state.setAnalysisMode,
     setReverseDirection: state.setReverseDirection,
+    setAnalysisStore: state.setAnalysisStore
     })));
 
   const {reFetch, setReFetch} = useZarrStore(useShallow(state => ({
@@ -142,6 +144,7 @@ const AnalysisOptions = () => {
   useEffect(()=>{ // When data is downloaded (indicated by changes in refetch) The newly plotted and any future variables are compatible until initStore changes. 
     setIncompatible(false);
     previousStore.current = initStore
+    setAnalysisStore(initStore)
   },[reFetch])
 
   useEffect(()=>{
@@ -368,8 +371,7 @@ const AnalysisOptions = () => {
                       )}
                     {['Convolution', 'Correlation3D', 'Covariance3D', 'TwoVarLinearSlope3D'].includes(operation) && ( //Show if IN left arrays
                       <>
-                        
-                        <tr>
+                        {/* <tr>
                           <th>Kernel Op.</th>
                           <td>
                             <Select onValueChange={setKernelOperation}>
@@ -397,7 +399,7 @@ const AnalysisOptions = () => {
                               </SelectContent>
                             </Select>
                           </td>
-                        </tr>
+                        </tr> */}
                         <tr>
                           <th style={{padding:'0px 12px'}}>Kernel Size</th>
                           <td>

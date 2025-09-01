@@ -4,7 +4,7 @@ import { useAnalysisStore, useGlobalStore, usePlotStore } from '@/utils/GlobalSt
 import { ZarrDataset } from '@/components/zarr/ZarrLoaderLRU';
 import { useShallow } from 'zustand/shallow'
 import { vertexShader, sphereFrag, flatSphereFrag } from '../textures/shaders'
-import { parseUVCoords, GetTimeSeries } from '@/utils/HelperFuncs';
+import { parseUVCoords, GetTimeSeries, GetCurrentArray } from '@/utils/HelperFuncs';
 import { evaluate_cmap } from 'js-colormaps-es';
 
 
@@ -46,13 +46,12 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
       analysisArray: state.analysisArray
     })))
 
-    const {dimArrays,dimNames,dimUnits, timeSeries, dataShape, dataArray, strides} = useGlobalStore(useShallow(state=>({
+    const {dimArrays,dimNames,dimUnits, timeSeries, dataShape, strides} = useGlobalStore(useShallow(state=>({
         dimArrays:state.dimArrays,
         dimNames:state.dimNames,
         dimUnits:state.dimUnits,
         timeSeries: state.timeSeries,
         dataShape: state.dataShape,
-        dataArray: state.dataArray,
         strides: state.strides
     })))
 
@@ -153,7 +152,7 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
         const normal = new THREE.Vector3(0,0,1)
     
         if(ZarrDS){
-          const tempTS = GetTimeSeries({data:analysisMode ? analysisArray : dataArray, shape:dataShape, stride:strides},{uv,normal})
+          const tempTS = GetTimeSeries({data:analysisMode ? analysisArray : GetCurrentArray(), shape:dataShape, stride:strides},{uv,normal})
           const plotDim = (normal.toArray()).map((val, idx) => {
             if (Math.abs(val) > 0) {
               return idx;

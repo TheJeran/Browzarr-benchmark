@@ -28,7 +28,7 @@ const PlayInterFace = ({visible}:{visible : boolean}) =>{
         dimNames: state.dimNames,
         dimUnits: state.dimUnits 
     })))
-
+    // console.log(dimArrays[0].slice(0,5), dimArrays[1].slice(0,5))
     const timeLength = useMemo(()=>dimArrays[0].length,[dimArrays])
     const [timeStep, setTimeStep] = useState(0)
     

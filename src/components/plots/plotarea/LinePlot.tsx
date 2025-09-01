@@ -12,7 +12,7 @@ import { DimCoords } from '@/utils/GlobalStates'
 
 
 interface pointInfo{
-  pointID:Record<string,number>,
+  pointID:[string, number],
   pointLoc:number[],
   showPointInfo:boolean
   plotUnits:string
@@ -20,7 +20,6 @@ interface pointInfo{
 const MIN_HEIGHT = 10;
 
 function PointInfo({pointID,pointLoc,showPointInfo, plotUnits}:pointInfo){
-
   const {plotDim, dimArrays, dimNames, dimUnits, timeSeries} = useGlobalStore(
     useShallow(state=>({
       plotDim:state.plotDim,
@@ -33,10 +32,11 @@ function PointInfo({pointID,pointLoc,showPointInfo, plotUnits}:pointInfo){
   let pointY = 0;
   let pointX = 0;
   if (Object.entries(pointID).length > 0 && Object.entries(timeSeries).length > 0){
-    const [tsID, idx] = Object.entries(pointID)[0];
-    pointY = timeSeries[tsID][idx];
+    const [tsID, idx] = pointID;
+    pointY = timeSeries[tsID]['data'][idx];
     pointX = dimArrays[plotDim][idx];
   }
+
   const [divX,divY] = pointLoc;
   const [show,setShow] = useState(false);
 
@@ -160,7 +160,7 @@ function PointCoords(){
 }
 
 export function PlotArea() {
-  const [pointID, setPointID] = useState<Record<string, number>>({});
+  const [pointID, setPointID] = useState<[string, number]>(['',0]);
   const [pointLoc, setPointLoc] = useState<number[]>([0,0])
   const [showPointInfo,setShowPointInfo] = useState<boolean>(false)
   const [height, setHeight] = useState<number>(Math.round(window.innerHeight-(window.innerHeight*0.25)))
@@ -173,7 +173,7 @@ export function PlotArea() {
   const pointSetters ={
     setPointID,
     setPointLoc,
-    setShowPointInfo
+    setShowPointInfo,
   }
 
   // Handle orientation changes

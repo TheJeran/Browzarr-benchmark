@@ -8,7 +8,6 @@ import vertexShader from '@/components/textures/shaders/thickLineVert.glsl'
 import { PlotPoints } from './PlotPoints';
 import { useThree } from '@react-three/fiber';
 import { invalidate } from '@react-three/fiber';
-import { evaluate_cmap } from 'js-colormaps-es';
 
 
 function linspace(start: number, stop: number, num: number): number[] {
@@ -17,7 +16,7 @@ function linspace(start: number, stop: number, num: number): number[] {
   }
 
 interface pointSetters{
-  setPointID:React.Dispatch<React.SetStateAction<Record<string, number>>>,
+  setPointID:React.Dispatch<React.SetStateAction<[string, number]>>,
   setPointLoc:React.Dispatch<React.SetStateAction<number[]>>,
   setShowPointInfo:React.Dispatch<React.SetStateAction<boolean>>,
 }
@@ -157,15 +156,14 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
   useEffect(()=>{
     invalidate()
   },[showPoints])
-
   return (
     <>
 		<group>
       {Object.keys(timeSeries).map((val, idx)=>(
         <mesh key={`lineMesh_${idx}`} geometry={geometries[val]} material={ materials[val]} />))}
-      {/* {showPoints && Object.keys(timeSeries).map((val, idx)=> 
-        <PlotPoints key={`plotPoints_${idx}`} points={instancePoints[val]} tsID={val} colIDX={idx} pointSetters={pointSetters} scalers={{xScale,yScale}}/>
-      )} */}
+      {showPoints && Object.keys(timeSeries).map((val, idx)=> 
+        <PlotPoints key={`plotPoints_${idx}`} points={instancePoints[val]} tsID={val}  pointSetters={pointSetters} scalers={{xScale,yScale}}/>
+      )}
 		</group>
 		</>
   )

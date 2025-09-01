@@ -73,7 +73,7 @@ void main() {
         texCoord.z = mod(texCoord.z + animateProg, 1.0001);
         float d = sample1(texCoord);
 
-        bool cond = nanAlpha == 0. ? (d > threshold.x) && (d < threshold.y) : (d > threshold.x) && (d < threshold.y+.01); //We skip over nans if the transparency is enabled
+        bool cond = nanAlpha == 0. ? (d >= threshold.x) && (d <= threshold.y) : (d >= threshold.x) && (d <= threshold.y); //We skip over nans if the transparency is enabled
         
         if (cond) {
             if (d == 1.){

@@ -7,6 +7,7 @@ import { vertShader } from '@/components/computation/shaders'
 import { flatFrag3D, fragmentFlat } from '../textures/shaders';
 import { useShallow } from 'zustand/shallow'
 import { ThreeEvent } from '@react-three/fiber';
+import { GetCurrentArray } from '@/utils/HelperFuncs';
 
 interface InfoSettersProps{
   setLoc: React.Dispatch<React.SetStateAction<number[]>>;
@@ -23,10 +24,9 @@ function Rescale(value: number, scales: {minVal: number, maxVal: number}){
 
 const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.Data3DTexture, infoSetters : InfoSettersProps}) => {
     const {setLoc, setShowInfo, val, coords} = infoSetters;
-    const {flipY, colormap, dataArray, valueScales, dimArrays, isFlat} = useGlobalStore(useShallow(state => ({
+    const {flipY, colormap, valueScales, dimArrays, isFlat} = useGlobalStore(useShallow(state => ({
       flipY: state.flipY, 
       colormap: state.colormap, 
-      dataArray: state.dataArray,
       valueScales: state.valueScales,
       dimArrays: state.dimArrays,
       isFlat: state.isFlat
@@ -45,13 +45,14 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
       analysisMode: state.analysisMode,
       analysisArray: state.analysisArray
     })))
+
     const dataSource = texture.source.data
     const shapeRatio = useMemo(()=> dataSource.height/dataSource.width, [dataSource])
     const geometry = useMemo(()=>new THREE.PlaneGeometry(2,2*shapeRatio),[shapeRatio])
     const infoRef = useRef<boolean>(false)
     const lastUV = useRef<THREE.Vector2>(new THREE.Vector2(0,0))
     const rotateMap = analysisMode && axis == 2;
-    const sampleArray = useMemo(()=> analysisMode ? analysisArray : dataArray,[analysisMode, dataArray, analysisArray])
+    const sampleArray = useMemo(()=> analysisMode ? analysisArray : GetCurrentArray(),[analysisMode, analysisArray])
     const analysisDims = useMemo(()=>dimArrays.filter((_e,idx)=> idx != axis),[dimArrays,axis])
     const shaderMaterial = useMemo(()=>new THREE.ShaderMaterial({
             glslVersion: THREE.GLSL3,

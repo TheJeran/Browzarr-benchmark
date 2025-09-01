@@ -8,6 +8,7 @@ import { useThree } from '@react-three/fiber';
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { ThreeEvent } from '@react-three/fiber';
+import { GetCurrentArray } from '@/utils/HelperFuncs';
 
 interface Array{
     data:number[],
@@ -54,7 +55,7 @@ const ComputeModule = ({arrays,values, setters}:ComputeModule) => {
     const [planeShape,setPlaneShape] = useState<number[]>(shape.filter((_val,idx)=> idx !== axis))
     const {gl} = useThree()
     const infoRef = useRef<boolean>(false)
-    const dataArray = useRef<Float32Array>(new Float32Array(0));
+    const dataArray = useRef<Float32Array>(new Float32Array(GetCurrentArray()));
 
     const {cScale, cOffset} = usePlotStore(useShallow(state => ({
       cScale: state.cScale,
