@@ -226,7 +226,6 @@ export class ZarrDataset{
 				setDownloading(false)
 				setProgress(0) // Reset progress for next load
 			}
-			console.log(typedArray)
 			return {
 				data: typedArray,
 				shape: shape,
