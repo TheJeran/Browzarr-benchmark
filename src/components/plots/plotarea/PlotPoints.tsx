@@ -3,7 +3,6 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
-import { evaluate_cmap } from 'js-colormaps-es'
 
 interface pointSetters{
   setPointID:React.Dispatch<React.SetStateAction<[string,number]>>,
@@ -30,7 +29,7 @@ function PlotPoints({ points, tsID, pointSetters, scalers }: { points: THREE.Vec
   })))
   const [r, g, b] = timeSeries[tsID]['color']
   const geometry = useMemo(() => new THREE.SphereGeometry(pointSize), [pointSize])
-  const material = useMemo(()=> new THREE.MeshBasicMaterial({color: new THREE.Color().setRGB(r/300, g/300, b/300).convertSRGBToLinear()}),[pointColor, useCustomPointColor])  // It was converting to sRGB colorspace while the line shader uses linear
+  const material = useMemo(()=> new THREE.MeshBasicMaterial({color: new THREE.Color().setRGB(r/300, g/300, b/300).convertSRGBToLinear()}),[pointColor, useCustomPointColor, timeSeries])  // It was converting to sRGB colorspace while the line shader uses linear
 
 
   useEffect(() => {

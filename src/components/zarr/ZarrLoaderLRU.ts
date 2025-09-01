@@ -117,7 +117,6 @@ export class ZarrDataset{
 					}
 					else{
 						scalingFactor = Math.ceil(Math.log10(maxVal/65504))
-						console.log(scalingFactor)
 						for (let i = 0; i < typedArray.length; i++) {
 							typedArray[i] /= Math.pow(10,scalingFactor);
 						}
