@@ -53,7 +53,7 @@ void main(){
     if (inBounds) {
     float strength = texture(map, vec3(sampleCoord, animateProg)).r;
     bool isNaN = strength == 1.;
-    strength = isNaN ? strength : (strength - 0.5)*cScale + 0.5;
+    strength = isNaN ? strength : (strength)*cScale;
     strength = isNaN ? strength : min(strength+cOffset,0.99);
     color = isNaN ? vec4(nanColor, nanAlpha) : texture(cmap, vec2(strength, 0.5));
     if (!isNaN){

@@ -96,11 +96,10 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
     }, []);
 
     useEffect(()=>{
-        const newMean = (newMax + newMin)/2
         const newRange = (newMax - newMin)
-        const offset = (mean - newMean)/range
-        const scale = newRange/range
-
+        const scale = range/newRange;
+        const offset = -(newMin - valueScales.minVal)/(newMax - newMin)
+        console.log(scale,offset)
         setCOffset(offset)
         setCScale(scale)
 
