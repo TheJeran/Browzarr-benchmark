@@ -2,7 +2,6 @@ import { create } from "zustand";
 import * as THREE from 'three';
 import { GetColorMapTexture } from "@/components/textures";
 import { GetStore } from "@/components/zarr/ZarrLoaderLRU";
-import QuickLRU from 'quick-lru';
 import MemoryLRU from "./MemoryLRU";
 
 
