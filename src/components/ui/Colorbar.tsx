@@ -99,7 +99,6 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
         const newRange = (newMax - newMin)
         const scale = range/newRange;
         const offset = -(newMin - valueScales.minVal)/(newMax - newMin)
-        console.log(scale,offset)
         setCOffset(offset)
         setCScale(scale)
 
