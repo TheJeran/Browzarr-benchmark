@@ -1,6 +1,6 @@
 import * as zarr from "zarrita";
 import * as THREE from 'three';
-import QuickLRU from 'quick-lru';
+import MemoryLRU from "@/utils/MemoryLRU";
 import { parseUVCoords, ArrayMinMax } from "@/utils/HelperFuncs";
 import { GetSize } from "./GetMetadata";
 import { useGlobalStore, useZarrStore, useErrorStore, useCacheStore } from "@/utils/GlobalStates";
@@ -59,7 +59,7 @@ interface TimeSeriesInfo{
 export class ZarrDataset{
 	private groupStore: Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>;
 	private variable: string;
-	private cache: QuickLRU<string,any>;
+	private cache: MemoryLRU<string,any>;
 	private dimNames: string[];
 	private chunkIDs: number[];
 
@@ -123,7 +123,7 @@ export class ZarrDataset{
 						typedArray = new Float16Array(typedArray)
 					}
 					const cacheChunk = {
-						data: compress ? CompressArray(typedArray, 6) : typedArray,
+						data: compress ? CompressArray(typedArray, 7) : typedArray,
 						shape: chunk.shape,
 						stride: chunk.stride,
 						scaling: scalingFactor,
@@ -202,7 +202,7 @@ export class ZarrDataset{
 						}
 						const newTyped = new Float16Array(newData)
 						const newChunk = {
-							data: compress ? CompressArray(newTyped, 6) : newTyped,
+							data: compress ? CompressArray(newTyped, 7) : newTyped,
 							shape: chunk.shape,
 							stride: chunk.stride,
 							scaling: scalingFactor,
@@ -214,7 +214,7 @@ export class ZarrDataset{
 						chunk = cache.get(cacheName)
 						const newTyped = new Float16Array(chunk.data)
 						const newChunk = {
-							data: compress ? CompressArray(newTyped, 6) : newTyped,
+							data: compress ? CompressArray(newTyped, 7) : newTyped,
 							shape: chunk.shape,
 							stride: chunk.stride,
 							scaling: null
