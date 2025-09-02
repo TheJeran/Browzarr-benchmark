@@ -70,11 +70,6 @@ export function LandingHome() {
   };
   },[setMaxTextureSize])
 
-  useEffect(()=>{ // Maybe we change remove this. Do we want to go back to home screen?
-    if (variable === "Default"){
-      setPlotOn(false)
-    }
-  }, [variable, setPlotOn])
 
   return (
     <>

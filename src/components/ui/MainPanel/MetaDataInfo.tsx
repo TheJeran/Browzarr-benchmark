@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react"
-import { useCacheStore, useGlobalStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates'
+import { useAnalysisStore, useCacheStore, useGlobalStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
 import { SliderThumbs } from "@/components/ui/SliderThumbs"
 import { Card } from "@/components/ui/card"
@@ -38,6 +38,7 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
     setIdx4D: state.setIdx4D,
     setVariable: state.setVariable,
   })))
+  const setAnalysisMode = useAnalysisStore.getState().setAnalysisMode
 
   const { slice, reFetch, compress, setSlice, setReFetch, setCompress } = useZarrStore(useShallow(state => ({
     reFetch: state.reFetch,
@@ -266,6 +267,7 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
                 }
                 else{
                   setVariable(meta.name)
+                  setAnalysisMode(false)
                   setReFetch(!reFetch)
                 }
                 setShowMeta(false)

@@ -16,7 +16,7 @@ void main() {
 
     float strength = texture(data,vec3(vUv, animateProg)).r;
     bool isNaN = strength == 1.;
-    float sampLoc = isNaN ? strength: (strength - 0.5)*cScale + 0.5;
+    float sampLoc = isNaN ? strength: (strength)*cScale;
     sampLoc = isNaN ? strength : min(sampLoc+cOffset,0.995);
     Color = isNaN ? vec4(nanColor, nanAlpha) : vec4(texture2D(cmap, vec2(sampLoc, 0.5)).rgb, 1.);
 

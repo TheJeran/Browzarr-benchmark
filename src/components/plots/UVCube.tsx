@@ -8,7 +8,6 @@ import { evaluate_cmap } from 'js-colormaps-es';
 
 export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
 
-  const [clickPoint, setClickPoint] = useState<THREE.Vector3 | null>(null);
   const {setTimeSeries,setPlotDim,setDimCoords, updateTimeSeries, 
     updateDimCoords} = useGlobalStore(
     useShallow(state=>({
@@ -91,7 +90,6 @@ export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
       }
       updateDimCoords({[tsID] : dimObj})
     }
-    setClickPoint(point);
   }
 
   const geometry = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
@@ -112,13 +110,6 @@ export const UVCube = ({ZarrDS} : {ZarrDS:ZarrDataset} )=>{
       }}>
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
-
-      {clickPoint && (
-        <mesh position={clickPoint} scale={0.01}>
-          <boxGeometry />
-          <meshBasicMaterial color="#ff0000" />
-        </mesh>
-      )}
     </>
   )
 }

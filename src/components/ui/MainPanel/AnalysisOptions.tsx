@@ -11,6 +11,7 @@ import { Button } from '../button';
 import { CiUndo } from "react-icons/ci";
 import {KernelVisualizer} from "@/components/ui";
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { BsFillQuestionCircleFill } from "react-icons/bs";
 
 import {
   Select,
@@ -231,26 +232,42 @@ const AnalysisOptions = () => {
                       
                       <th>Current Variable</th>
                       <td className="text-center w-[100%] align-middle justify-center content-center">
-                        <button 
-                          className={`rounded-[6px] self-center w-[80%] mx-auto relative border border-gray-150 py-[5px] ${analysisMode ?'hover:scale-[0.95]' : ''} transition-[0.2s]`}
-                          style={{
-                            cursor: analysisMode ? 'pointer' : '',
-                            background: analysisMode ? '#b6d1ddff' : '#f8f8f8',
-                          }}
-                          disabled={!analysisMode}
-                          onClick={e=>{setReFetch(!reFetch);setAnalysisMode(false)}}
-                        >
-                          {analysisMode && <CiUndo 
-                            size={20}
+                        <div className='grid grid-cols-[65%_auto] w-[90%] mx-auto'>
+                          {analysisMode &&
+                          <div className='rounded-[6px] self-center mx-2 relative border border-gray-150 py-[5px] px-1 bg-[#f8f8f8]'>
+                            <div className='flex justify-around'>
+                            Current
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <BsFillQuestionCircleFill/>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Operations will be applied to the newly generated data. 
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
+                            
+                          </div>}
+                          <button 
+                            className={`rounded-[6px] self-center ${analysisMode ? null : 'col-span-2'} w-[100%] pl-2 relative border border-gray-150 py-[5px] ${analysisMode ?'hover:scale-[0.95]' : ''} transition-[0.2s]`}
                             style={{
-                              position:'absolute',
-                              left:'0%',
-                              top:'10%'
+                              cursor: analysisMode ? 'pointer' : '',
+                              background: analysisMode ? '#b6d1ddff' : '#f8f8f8',
                             }}
-                          />}
-                          {variable}
-                        </button>
-
+                            disabled={!analysisMode}
+                            onClick={e=>{setReFetch(!reFetch);setAnalysisMode(false)}}
+                          >
+                            {analysisMode && <CiUndo 
+                              size={20}
+                              style={{
+                                position:'absolute',
+                                left:'0%',
+                                top:'10%'
+                              }}
+                            />}
+                            {analysisMode ? 'Reset' : variable}
+                          </button>
+                        </div>
                   </td>
                 </tr>
                 {useTwo && <>
@@ -335,7 +352,6 @@ const AnalysisOptions = () => {
                     </td>
                   )}
                 </tr>
-
                     {!['Convolution', 'Correlation3D', 'Default', 'Covariance3D', 'TwoVarLinearSlope3D'].includes(operation) && //Hide if NOT in left arrays
                         (
                         <tr>
@@ -369,9 +385,11 @@ const AnalysisOptions = () => {
                           </td>
                         </tr>
                       )}
-                    {['Convolution', 'Correlation3D', 'Covariance3D', 'TwoVarLinearSlope3D'].includes(operation) && ( //Show if IN left arrays
+                    {['Convolution' ,'Correlation3D', 'Covariance3D', 'TwoVarLinearSlope3D'].includes(operation) && ( //Show if IN left arrays
                       <>
-                        {/* <tr>
+
+                        {operation == 'Convolution' &&
+                          <tr>
                           <th>Kernel Op.</th>
                           <td>
                             <Select onValueChange={setKernelOperation}>
@@ -392,14 +410,12 @@ const AnalysisOptions = () => {
                                       {kernelOp}
                                     </SelectItem>
                                     )
-                                  }
-                                    
-}
-                                )}
+                                  }              
+                                })}
                               </SelectContent>
                             </Select>
                           </td>
-                        </tr> */}
+                        </tr>}
                         <tr>
                           <th style={{padding:'0px 12px'}}>Kernel Size</th>
                           <td>
@@ -449,7 +465,6 @@ const AnalysisOptions = () => {
                   }
                   onClick={() => {
                     setExecute(!execute);
-                    setAnalysisMode(true);
                     setTimeSeries({});
                   }}
                 >
