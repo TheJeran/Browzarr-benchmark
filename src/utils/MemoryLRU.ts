@@ -32,7 +32,7 @@ export class MemoryLRU<K, V> {
     private cache = new Map<K, V>();
     private order: K[] = [];
     private totalSize = 0;
-    private readonly maxSize: number;
+    private maxSize: number;
     private readonly sizeCalculator: SizeCalculator<V>;
     private sizes = new Map<K, number>();
 
@@ -66,6 +66,23 @@ export class MemoryLRU<K, V> {
         this.order.push(key);
 
         // Evict least recently used until under maxSize
+        while (this.totalSize > this.maxSize && this.order.length > 0) {
+            const oldestKey = this.order[0];
+            this.order.shift();
+            const oldestSize = this.sizes.get(oldestKey) ?? 0;
+            this.cache.delete(oldestKey);
+            this.sizes.delete(oldestKey);
+            this.totalSize -= oldestSize;
+        }
+    }
+
+    resize(newSize: number): void {
+        if (newSize < 0) {
+            throw new Error("Cache size cannot be negative.");
+        }
+        this.maxSize = newSize;
+
+        // Evict least recently used until under new maxSize
         while (this.totalSize > this.maxSize && this.order.length > 0) {
             const oldestKey = this.order[0];
             this.order.shift();

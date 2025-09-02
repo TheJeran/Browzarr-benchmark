@@ -123,7 +123,7 @@ export class ZarrDataset{
 						typedArray = new Float16Array(typedArray)
 					}
 					const cacheChunk = {
-						data: compress ? CompressArray(typedArray, 6) : typedArray,
+						data: compress ? CompressArray(typedArray, 7) : typedArray,
 						shape: chunk.shape,
 						stride: chunk.stride,
 						scaling: scalingFactor,
@@ -202,7 +202,7 @@ export class ZarrDataset{
 						}
 						const newTyped = new Float16Array(newData)
 						const newChunk = {
-							data: compress ? CompressArray(newTyped, 6) : newTyped,
+							data: compress ? CompressArray(newTyped, 7) : newTyped,
 							shape: chunk.shape,
 							stride: chunk.stride,
 							scaling: scalingFactor,
@@ -214,7 +214,7 @@ export class ZarrDataset{
 						chunk = cache.get(cacheName)
 						const newTyped = new Float16Array(chunk.data)
 						const newChunk = {
-							data: compress ? CompressArray(newTyped, 6) : newTyped,
+							data: compress ? CompressArray(newTyped, 7) : newTyped,
 							shape: chunk.shape,
 							stride: chunk.stride,
 							scaling: null
@@ -226,7 +226,6 @@ export class ZarrDataset{
 				setDownloading(false)
 				setProgress(0) // Reset progress for next load
 			}
-			console.log(cache)
 			return {
 				data: typedArray,
 				shape: shape,

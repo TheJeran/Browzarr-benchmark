@@ -410,16 +410,24 @@ export const useZarrStore = create<ZarrState>((set, get) => ({
 
 type CacheState = {
   cache: MemoryLRU<string, any>;
+  maxSize: number;
   clearCache: () => void;
+  setMaxSize: (maxSize: number) => void;
 }
 
 
 export const useCacheStore = create<CacheState>((set, get) => ({
   cache: new MemoryLRU({ maxSize: 200 * 1024 * 1024 }), // 200 MB
+  maxSize: 200 * 1024 * 1024,
   // Cache operations
   clearCache: () => {
     const { cache } = get()
     cache.clear()
+  },
+  setMaxSize: (maxSize) => {
+    const { cache } = get()
+    cache.resize(maxSize)
+    set({ maxSize })
   }
 }))
 

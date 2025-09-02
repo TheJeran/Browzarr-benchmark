@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "../input"
 import { BsFillQuestionCircleFill } from "react-icons/bs";
+
 import {
   Tooltip,
   TooltipContent,
@@ -39,7 +40,9 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
     setVariable: state.setVariable,
   })))
   const setAnalysisMode = useAnalysisStore.getState().setAnalysisMode
-
+  const {maxSize, setMaxSize} = useCacheStore.getState()
+  const [cacheSize, setCacheSize] = useState(maxSize)
+  
   const { slice, reFetch, compress, setSlice, setReFetch, setCompress } = useZarrStore(useShallow(state => ({
     reFetch: state.reFetch,
     slice: state.slice,
@@ -84,7 +87,6 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
     const this4D = meta.shape.length == 4;
     setIs4D(this4D);
   })
-
   useEffect(()=>{
     setSlice([0,null]);
     setCompress(false)
@@ -106,7 +108,8 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
   },[meta, maxTextureSize])
 
   return (
-    <>
+      // Don't put any more work in the landing page version. Since it won't be visible in the future
+    <> 
       {noCard ? (
         <div className="space-y-6">
           {/* Header Section */}
@@ -332,7 +335,42 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
                   </>
                 )}
                 <b>Total Size: </b>{formatBytes(currentSize)}<br />
-                {currentSize < 1e8 && (
+                {currentSize > maxSize && (
+                  <>
+                  <div className={`flex items-center gap-2 p-2 ${currentSize > cacheSize ? "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800" : "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800"} rounded-md border`}>
+                        <div className={`w-2 h-2 ${currentSize > cacheSize ? "bg-red-500" : "bg-emerald-500"} rounded-full`}></div>
+                        <span className={`text-xs font-medium ${currentSize > cacheSize ? "text-red-800 dark:text-red-200" : "text-emerald-800 dark:text-emerald-200"}`}>
+                          {currentSize > cacheSize ? "Selection won't fit in Cache" : "Data Will Fit"}
+                        </span>                  
+                        </div>
+                        <div className="">
+                          Decrease selection or Increase cache size <br/>
+                          <div className="flex justify-center">
+                            <p>Expand Cache: <b>{cacheSize/(1024*1024)}MB</b>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                <BsFillQuestionCircleFill/>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Increasing this too far can cause crashes. Mobile users beware 
+                                </TooltipContent>
+                              </Tooltip>
+                            </p>
+                          </div>
+                          
+                          <SliderThumbs 
+                            id="newCache-size"
+                            min={0}
+                            max={1000}
+                            step={10}
+                            onValueChange={e=>setCacheSize(maxSize+e[0]*(1024*1024))}
+                        />
+                  </div>
+                  </>
+                )
+
+                }
+                {/* {currentSize < 1e8 && (
                   <>
                   <div className="flex items-center gap-2 p-2 bg-emerald-50 dark:bg-emerald-950/30 rounded-md border border-emerald-200 dark:border-emerald-800">
                         <div className="w-2 h-2 bg-emerald-500 rounded-full"/>
@@ -357,8 +395,8 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
                       Data will not fit in memory
                     </span>
                   </div>
-                )}
-                <div className="grid grid-cols-[auto_40%] items-center gap-2">
+                )} */}
+                <div className="grid grid-cols-[auto_40%] items-center gap-2 mt-2">
                   <div>
                   <label htmlFor="compress-data">Compress Data </label>
                   <Tooltip>
@@ -393,6 +431,7 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
                 setReFetch(!reFetch)
               }
               else{
+                setMaxSize(cacheSize)
                 setVariable(meta.name)
                 setReFetch(!reFetch)
               }
