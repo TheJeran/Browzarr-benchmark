@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { GetColorMapTexture } from "@/components/textures";
 import { GetStore } from "@/components/zarr/ZarrLoaderLRU";
 import QuickLRU from 'quick-lru';
+import MemoryLRU from "./MemoryLRU";
 
 
 const ESDC = 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr'
@@ -409,13 +410,13 @@ export const useZarrStore = create<ZarrState>((set, get) => ({
 }))
 
 type CacheState = {
-  cache: QuickLRU<string, any>;
+  cache: MemoryLRU<string, any>;
   clearCache: () => void;
 }
 
 
 export const useCacheStore = create<CacheState>((set, get) => ({
-  cache: new QuickLRU({ maxSize: 2000 }),
+  cache: new MemoryLRU({ maxSize: 200 * 1024 * 1024 }), // 200 MB
   // Cache operations
   clearCache: () => {
     const { cache } = get()

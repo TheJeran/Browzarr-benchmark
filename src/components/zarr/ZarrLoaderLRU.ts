@@ -1,6 +1,6 @@
 import * as zarr from "zarrita";
 import * as THREE from 'three';
-import QuickLRU from 'quick-lru';
+import MemoryLRU from "@/utils/MemoryLRU";
 import { parseUVCoords, ArrayMinMax } from "@/utils/HelperFuncs";
 import { GetSize } from "./GetMetadata";
 import { useGlobalStore, useZarrStore, useErrorStore, useCacheStore } from "@/utils/GlobalStates";
@@ -59,7 +59,7 @@ interface TimeSeriesInfo{
 export class ZarrDataset{
 	private groupStore: Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>;
 	private variable: string;
-	private cache: QuickLRU<string,any>;
+	private cache: MemoryLRU<string,any>;
 	private dimNames: string[];
 	private chunkIDs: number[];
 
@@ -226,6 +226,7 @@ export class ZarrDataset{
 				setDownloading(false)
 				setProgress(0) // Reset progress for next load
 			}
+			console.log(cache)
 			return {
 				data: typedArray,
 				shape: shape,
