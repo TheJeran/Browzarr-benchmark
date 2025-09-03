@@ -14,21 +14,22 @@ export const ZARR_STORES = {
     LOCAL: 'http://localhost:5173/GlobalForcingTiny.zarr'
 } as const;
 
-function ToFloat16(array : Float32Array) : [Float16Array, number | null]{ 
+function ToFloat16(array : Float32Array, scalingFactor: number | null) : [Float16Array, number | null]{ 
 	let newArray : Float16Array;
-	let scalingFactor: number | null = null;
+	let newScalingFactor: number | null = null;
 	const [minVal, maxVal] = ArrayMinMax(array)
 	if (maxVal <= 65504 && minVal >= -65504){ // If values fit in Float16, use that to save memory
 		newArray = new Float16Array(array)
 	}
 	else{
-		scalingFactor = Math.ceil(Math.log10(maxVal/65504))
+		newScalingFactor = Math.ceil(Math.log10(maxVal/65504))
+		newScalingFactor = scalingFactor ? (scalingFactor > newScalingFactor ? scalingFactor : newScalingFactor) : newScalingFactor
 		for (let i = 0; i < array.length; i++) {
-			array[i] /= Math.pow(10,scalingFactor);
+			array[i] /= Math.pow(10,newScalingFactor);
 		}
 		newArray = new Float16Array(array)
 	}
-	return [newArray, scalingFactor]
+	return [newArray, newScalingFactor]
 }
 
 function RescaleArray(array: Float16Array, scalingFactor: number){ // Rescales built array when new chunk has higher scalingFactor
@@ -139,7 +140,7 @@ export class ZarrDataset{
 				if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
 							throw new Error("BigInt arrays are not supported for conversion to Float16Array.");
 				} else {
-					[typedArray, scalingFactor] = ToFloat16(chunk.data as Float32Array)
+					[typedArray, scalingFactor] = ToFloat16(chunk.data as Float32Array, null)
 					const cacheChunk = {
 						data: compress ? CompressArray(typedArray, 7) : typedArray,
 						shape: chunk.shape,
@@ -190,7 +191,7 @@ export class ZarrDataset{
 						} else {
 							let newScalingFactor:number | null;
 							let chunkF16: Float16Array;
-							[chunkF16, newScalingFactor] = ToFloat16(chunk.data as Float32Array)
+							[chunkF16, newScalingFactor] = ToFloat16(chunk.data as Float32Array, scalingFactor)
 							if (newScalingFactor != null && newScalingFactor != scalingFactor){ // If the scalingFactor has changed, need to rescale main array
 								if (scalingFactor == null || newScalingFactor > scalingFactor){ 
 									const thisScaling = scalingFactor ? newScalingFactor - scalingFactor : newScalingFactor
