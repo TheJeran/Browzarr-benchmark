@@ -327,7 +327,7 @@ type AnalysisState = {
   kernelSize: number;
   kernelDepth: number;
   kernelOperation: string;
-  analysisArray: Uint8Array | Float32Array;
+  analysisArray: Uint8Array | Float32Array | Float16Array;
   reverseDirection: number;
   analysisStore: string;
 
@@ -341,7 +341,7 @@ type AnalysisState = {
   setKernelSize: (kernelSize: number) => void;
   setKernelDepth: (kernelDepth: number) => void;
   setKernelOperation: (kernelOperation: string) => void;
-  setAnalysisArray: (analysisArray: Uint8Array | Float32Array) => void;
+  setAnalysisArray: (analysisArray: Uint8Array | Float32Array | Float16Array) => void;
   setReverseDirection: (reverseDirection: number) => void;
   setAnalysisStore: (analysisStore: string) => void;
 }

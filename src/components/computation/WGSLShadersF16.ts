@@ -1,6 +1,7 @@
 // #region REDUCTION SHADERS
 
 const ReductionBoilerPlate = /* WGSL */`
+    enable f16;
     struct Params {
         zStride: u32,
         yStride: u32,
@@ -10,8 +11,8 @@ const ReductionBoilerPlate = /* WGSL */`
         reduceDim: u32,
         dimLength: u32,
     };
-    @group(0) @binding(0) var<storage, read> inputData: array<f32>;
-    @group(0) @binding(1) var<storage, read_write> outputData: array<f32>;
+    @group(0) @binding(0) var<storage, read> inputData: array<f16>;
+    @group(0) @binding(1) var<storage, read_write> outputData: array<f16>;
     @group(0) @binding(2) var<uniform> params: Params;
 
     @compute @workgroup_size(16, 16, 1)
@@ -41,24 +42,24 @@ const MeanReduction = /* wgsl */`
             let cCoord = outX * xStride + outY * yStride;
             for (var z: u32 = 0u; z < dimLength; z++) {
                 let inputIndex = cCoord + (z * zStride);
-                sum += inputData[inputIndex];
+                sum += f32(inputData[inputIndex]);
             }
         } else if (reduceDim == 1u) { // Average along Y
             let cCoord = outX * xStride + outY * zStride;
             for (var y: u32 = 0u; y < dimLength; y++) {
                 let inputIndex = cCoord + (y * yStride);
-                sum += inputData[inputIndex];
+                sum += f32(inputData[inputIndex]);
             }
         } else { // Average along X
             let cCoord = outX * yStride + outY * zStride;
             for (var x: u32 = 0u; x < dimLength; x++) {
                 let inputIndex = cCoord + (x * xStride);
-                sum += inputData[inputIndex];
+                sum += f32(inputData[inputIndex]);
             }
         }
         
         let outputIndex = outY * xSize + outX;
-        outputData[outputIndex] = sum / f32(dimLength);
+        outputData[outputIndex] = f16(sum / f32(dimLength));
     }
 `
 
@@ -71,7 +72,7 @@ const MinReduction = /* wgsl */`
             let cCoord = outX * xStride + outY * yStride;
             for (var z: u32 = 0u; z < dimLength; z++) {
                 let inputIndex = cCoord + (z * zStride);
-                let newMin = inputData[inputIndex];
+                let newMin = f32(inputData[inputIndex]);
                 if (newMin < min) {
                     min = newMin;
                 }
@@ -80,7 +81,7 @@ const MinReduction = /* wgsl */`
             let cCoord = outX * xStride + outY * zStride;
             for (var y: u32 = 0u; y < dimLength; y++) {
                 let inputIndex = cCoord + (y * yStride);
-                let newMin = inputData[inputIndex];
+                let newMin = f32(inputData[inputIndex]);
                 if (newMin < min) {
                     min = newMin;
                 }
@@ -89,7 +90,7 @@ const MinReduction = /* wgsl */`
             let cCoord = outX * yStride + outY * zStride;
             for (var x: u32 = 0u; x < dimLength; x++) {
                 let inputIndex = cCoord + (x * xStride);
-                let newMin = inputData[inputIndex];
+                let newMin = f32(inputData[inputIndex]);
                 if (newMin < min) {
                     min = newMin;
                 }
@@ -97,7 +98,7 @@ const MinReduction = /* wgsl */`
         }
         
         let outputIndex = outY * xSize + outX;
-        outputData[outputIndex] = min;
+        outputData[outputIndex] = f16(min);
     }
 `
 
@@ -111,7 +112,7 @@ const MaxReduction = /* wgsl */`
             let cCoord = outX * xStride + outY * yStride;
             for (var z: u32 = 0u; z < dimLength; z++) {
                 let inputIndex = cCoord + (z * zStride);
-                let newMax = inputData[inputIndex];
+                let newMax = f32(inputData[inputIndex]);
                 if (newMax > max) {
                     max = newMax;
                 }
@@ -120,7 +121,7 @@ const MaxReduction = /* wgsl */`
             let cCoord = outX * xStride + outY * zStride;
             for (var y: u32 = 0u; y < dimLength; y++) {
                 let inputIndex = cCoord + (y * yStride);
-                let newMax = inputData[inputIndex];
+                let newMax = f32(inputData[inputIndex]);
                 if (newMax > max) {
                     max = newMax;
                 }
@@ -129,7 +130,7 @@ const MaxReduction = /* wgsl */`
             let cCoord = outX * yStride + outY * zStride;
             for (var x: u32 = 0u; x < dimLength; x++) {
                 let inputIndex = cCoord + (x * xStride);
-                let newMax = inputData[inputIndex];
+                let newMax = f32(inputData[inputIndex]);
                 if (newMax > max) {
                     max = newMax;
                 }
@@ -137,7 +138,7 @@ const MaxReduction = /* wgsl */`
         }
         
         let outputIndex = outY * xSize + outX;
-        outputData[outputIndex] = max;
+        outputData[outputIndex] = f16(max);
     }
 `
 
@@ -149,19 +150,19 @@ const StDevReduction = /* wgsl */`
             let cCoord = outX * xStride + outY * yStride;
             for (var z: u32 = 0u; z < dimLength; z++) {
                 let inputIndex = cCoord + (z * zStride);
-                sum += inputData[inputIndex];
+                sum += f32(inputData[inputIndex]);
             }
         } else if (reduceDim == 1u) { // Average along Y
             let cCoord = outX * xStride + outY * zStride;
             for (var y: u32 = 0u; y < dimLength; y++) {
                 let inputIndex = cCoord + (y * yStride);
-                sum += inputData[inputIndex];
+                sum += f32(inputData[inputIndex]);
             }
         } else { // Average along X
             let cCoord = outX * yStride + outY * zStride;
             for (var x: u32 = 0u; x < dimLength; x++) {
                 let inputIndex = cCoord + (x * xStride);
-                sum += inputData[inputIndex];
+                sum += f32(inputData[inputIndex]);
             }
         }
         
@@ -174,33 +175,62 @@ const StDevReduction = /* wgsl */`
             let cCoord = outX * xStride + outY * yStride;
             for (var z: u32 = 0u; z < dimLength; z++) {
                 let inputIndex = cCoord + (z * zStride);
-                let diff: f32 = mean - inputData[inputIndex];
+                let diff: f32 = mean - f32(inputData[inputIndex]);
                 squaredDiffSum += diff*diff;
             }
         } else if (reduceDim == 1u) { // Average along Y
             let cCoord = outX * xStride + outY * zStride;
             for (var y: u32 = 0u; y < dimLength; y++) {
                 let inputIndex = cCoord + (y * yStride);
-                let diff: f32 = mean - inputData[inputIndex];
+                let diff: f32 = mean - f32(inputData[inputIndex]);
                 squaredDiffSum += diff*diff;
             }
         } else { // Average along X
             let cCoord = outX * yStride + outY * zStride;
             for (var x: u32 = 0u; x < dimLength; x++) {
                 let inputIndex = cCoord + (x * xStride);
-                let diff: f32 = mean - inputData[inputIndex];
+                let diff: f32 = mean - f32(inputData[inputIndex]);
                 squaredDiffSum += diff*diff;
             }
         }
 
         let stDev: f32 = sqrt(squaredDiffSum / f32(dimLength));
         let outputIndex = outY * xSize + outX;
-        outputData[outputIndex] = stDev;
+        outputData[outputIndex] = f16(stDev);
     }
 `
 
 const CUMSUMReduction = /* wgsl */`
-    ${ReductionBoilerPlate}
+    enable f16;
+    struct Params {
+        zStride: u32,
+        yStride: u32,
+        xStride: u32,
+        xSize: u32,
+        ySize: u32,
+        reduceDim: u32,
+        dimLength: u32,
+    };
+    @group(0) @binding(0) var<storage, read> inputData: array<f16>;
+    @group(0) @binding(1) var<storage, read_write> outputData: array<f32>;
+    @group(0) @binding(2) var<uniform> params: Params;
+
+    @compute @workgroup_size(16, 16, 1)
+    fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
+        let zStride = params.zStride;
+        let yStride = params.yStride;
+        let xStride = params.xStride;
+        let xSize = params.xSize;
+        let ySize = params.ySize;
+        let reduceDim = params.reduceDim;
+        let dimLength = params.dimLength;
+                        
+        let outX = global_id.y;
+        let outY = global_id.x;
+        
+        if (outX >= xSize || outY >= ySize) {
+            return;
+        }
         
         var accum: f32 = 0;
         
@@ -209,20 +239,20 @@ const CUMSUMReduction = /* wgsl */`
             let cCoord = outX * xStride + outY * yStride;
             for (var z: u32 = 0u; z < dimLength; z++) {
                 let inputIndex = cCoord + (z * zStride);
-                accum += inputData[inputIndex];
+                accum += f32(inputData[inputIndex]);
                 
             }
         } else if (reduceDim == 1u) { // Average along Y
             let cCoord = outX * xStride + outY * zStride;
             for (var y: u32 = 0u; y < dimLength; y++) {
                 let inputIndex = cCoord + (y * yStride);
-                accum += inputData[inputIndex];
+                accum += f32(inputData[inputIndex]);
             }
         } else { // Average along X
             let cCoord = outX * yStride + outY * zStride;
             for (var x: u32 = 0u; x < dimLength; x++) {
                 let inputIndex = cCoord + (x * xStride);
-                accum += inputData[inputIndex];
+                accum += f32(inputData[inputIndex]);
             }
         }
         
@@ -242,19 +272,19 @@ export const LinearSlopeReduction = /* wgsl */`
             let cCoord = outX * xStride + outY * yStride;
             for (var z: u32 = 0u; z < dimLength; z++) {
                 let inputIndex = cCoord + (z * zStride);
-                sum += inputData[inputIndex];
+                sum += f32(inputData[inputIndex]);
             }
         } else if (reduceDim == 1u) { // Average along Y
             let cCoord = outX * xStride + outY * zStride;
             for (var y: u32 = 0u; y < dimLength; y++) {
                 let inputIndex = cCoord + (y * yStride);
-                sum += inputData[inputIndex];
+                sum += f32(inputData[inputIndex]);
             }
         } else { // Average along X
             let cCoord = outX * yStride + outY * zStride;
             for (var x: u32 = 0u; x < dimLength; x++) {
                 let inputIndex = cCoord + (x * xStride);
-                sum += inputData[inputIndex];
+                sum += f32(inputData[inputIndex]);
             }
         }
         
@@ -266,7 +296,7 @@ export const LinearSlopeReduction = /* wgsl */`
             let cCoord = outX * xStride + outY * yStride;
             for (var z: u32 = 0u; z < dimLength; z++) {
                 let inputIndex = cCoord + (z * zStride);
-                let xi: f32 = inputData[inputIndex];
+                let xi: f32 = f32(inputData[inputIndex]);
                 numSum += (xi - meanX)*(f32(z) - meanY);
                 denomSum += (f32(z) - meanY)*(f32(z) - meanY);
             }
@@ -274,7 +304,7 @@ export const LinearSlopeReduction = /* wgsl */`
             let cCoord = outX * xStride + outY * zStride;
             for (var y: u32 = 0u; y < dimLength; y++) {
                 let inputIndex = cCoord + (y * yStride);
-                let xi: f32 = inputData[inputIndex];
+                let xi: f32 = f32(inputData[inputIndex]);
                 numSum += (xi - meanX)*(f32(y) - meanY);
                 denomSum += (f32(y) - meanY)*(f32(y) - meanY);
             }
@@ -282,18 +312,19 @@ export const LinearSlopeReduction = /* wgsl */`
             let cCoord = outX * yStride + outY * zStride;
             for (var x: u32 = 0u; x < dimLength; x++) {
                 let inputIndex = cCoord + (x * xStride);
-                let xi: f32 = inputData[inputIndex];
+                let xi: f32 = f32(inputData[inputIndex]);
                 numSum += (xi - meanX)*(f32(x) - meanY);
                 denomSum += (f32(x) - meanY)*(f32(x) - meanY);
             }
         }
         
         let outputIndex = outY * xSize + outX;
-        outputData[outputIndex] = numSum/denomSum;
+        outputData[outputIndex] = f16(numSum/denomSum);
     }
 `
 
 export const TwoVarLinearSlopeReduction = /* wgsl */`
+    enable f16;
     struct Params {
     zStride: u32,
     yStride: u32,
@@ -303,9 +334,9 @@ export const TwoVarLinearSlopeReduction = /* wgsl */`
     reduceDim: u32,
     dimLength: u32,
     };
-    @group(0) @binding(0) var<storage, read> firstData: array<f32>;
-    @group(0) @binding(1) var<storage, read> secondData: array<f32>;
-    @group(0) @binding(2) var<storage, read_write> outputData: array<f32>;
+    @group(0) @binding(0) var<storage, read> firstData: array<f16>;
+    @group(0) @binding(1) var<storage, read> secondData: array<f16>;
+    @group(0) @binding(2) var<storage, read_write> outputData: array<f16>;
     @group(0) @binding(3) var<uniform> params: Params;
 
     @compute @workgroup_size(16, 16, 1)
@@ -333,22 +364,22 @@ export const TwoVarLinearSlopeReduction = /* wgsl */`
             let cCoord = outX * xStride + outY * yStride;
             for (var z: u32 = 0u; z < dimLength; z++) {
                 let inputIndex = cCoord + (z * zStride);
-                xSum += firstData[inputIndex];
-                ySum += secondData[inputIndex];
+                xSum += f32(firstData[inputIndex]);
+                ySum += f32(secondData[inputIndex]);
             }
         } else if (reduceDim == 1u) { 
             let cCoord = outX * xStride + outY * zStride;
             for (var y: u32 = 0u; y < dimLength; y++) {
                 let inputIndex = cCoord + (y * yStride);
-                xSum += firstData[inputIndex];
-                ySum += secondData[inputIndex];
+                xSum += f32(firstData[inputIndex]);
+                ySum += f32(secondData[inputIndex]);
             }
         } else { 
             let cCoord = outX * yStride + outY * zStride;
             for (var x: u32 = 0u; x < dimLength; x++) {
                 let inputIndex = cCoord + (x * xStride);
-                xSum += firstData[inputIndex];
-                ySum += secondData[inputIndex];
+                xSum += f32(firstData[inputIndex]);
+                ySum += f32(secondData[inputIndex]);
             }
         }
         
@@ -361,8 +392,8 @@ export const TwoVarLinearSlopeReduction = /* wgsl */`
             let cCoord = outX * xStride + outY * yStride;
             for (var z: u32 = 0u; z < dimLength; z++) {
                 let inputIndex = cCoord + (z * zStride);
-                let xi: f32 = firstData[inputIndex];
-                let yi: f32 = secondData[inputIndex];
+                let xi: f32 = f32(firstData[inputIndex]);
+                let yi: f32 = f32(secondData[inputIndex]);
                 numSum += (xi - xMean)*(f32(yi) - yMean);
                 denomSum += (f32(yi) - yMean)*(f32(yi) - yMean);
             }
@@ -370,8 +401,8 @@ export const TwoVarLinearSlopeReduction = /* wgsl */`
             let cCoord = outX * xStride + outY * zStride;
             for (var y: u32 = 0u; y < dimLength; y++) {
                 let inputIndex = cCoord + (y * yStride);
-                let xi: f32 = firstData[inputIndex];
-                let yi: f32 = secondData[inputIndex];
+                let xi: f32 = f32(firstData[inputIndex]);
+                let yi: f32 = f32(secondData[inputIndex]);
                 numSum += (xi - xMean)*(f32(yi) - yMean);
                 denomSum += (f32(yi) - yMean)*(f32(yi) - yMean);
             }
@@ -379,19 +410,20 @@ export const TwoVarLinearSlopeReduction = /* wgsl */`
             let cCoord = outX * yStride + outY * zStride;
             for (var x: u32 = 0u; x < dimLength; x++) {
                 let inputIndex = cCoord + (x * xStride);
-                let xi: f32 = firstData[inputIndex];
-                let yi: f32 = secondData[inputIndex];
+                let xi: f32 = f32(firstData[inputIndex]);
+                let yi: f32 = f32(secondData[inputIndex]);
                 numSum += (xi - xMean)*(f32(yi) - yMean);
                 denomSum += (f32(yi) - yMean)*(f32(yi) - yMean);
             }
         }
         
         let outputIndex = outY * xSize + outX;
-        outputData[outputIndex] = numSum/denomSum;
+        outputData[outputIndex] = f16(numSum/(denomSum+1e-4));
     }
 `
 
 export const CovarianceReduction = /* wgsl */`
+    enable f16;
     struct Params {
     zStride: u32,
     yStride: u32,
@@ -401,9 +433,9 @@ export const CovarianceReduction = /* wgsl */`
     reduceDim: u32,
     dimLength: u32,
     };
-    @group(0) @binding(0) var<storage, read> firstData: array<f32>;
-    @group(0) @binding(1) var<storage, read> secondData: array<f32>;
-    @group(0) @binding(2) var<storage, read_write> outputData: array<f32>;
+    @group(0) @binding(0) var<storage, read> firstData: array<f16>;
+    @group(0) @binding(1) var<storage, read> secondData: array<f16>;
+    @group(0) @binding(2) var<storage, read_write> outputData: array<f16>;
     @group(0) @binding(3) var<uniform> params: Params;
 
     @compute @workgroup_size(16, 16, 1)
@@ -444,8 +476,8 @@ export const CovarianceReduction = /* wgsl */`
         // Single pass: calculate sums, means, and covariance
         for (var i: u32 = 0u; i < dimLength; i++) {
             let inputIndex = baseCoord + (i * iterStride);
-            let xi: f32 = firstData[inputIndex];
-            let yi: f32 = secondData[inputIndex];
+            let xi: f32 = f32(firstData[inputIndex]);
+            let yi: f32 = f32(secondData[inputIndex]);
             xSum += xi;
             ySum += yi;
         }
@@ -456,13 +488,13 @@ export const CovarianceReduction = /* wgsl */`
         // Second pass for covariance calculation
         for (var i: u32 = 0u; i < dimLength; i++) {
             let inputIndex = baseCoord + (i * iterStride);
-            let xi: f32 = firstData[inputIndex];
-            let yi: f32 = secondData[inputIndex];
+            let xi: f32 = f32(firstData[inputIndex]);
+            let yi: f32 = f32(secondData[inputIndex]);
             numSum += (xi - xMean) * (yi - yMean);
         }
 
         let outputIndex = outY * xSize + outX;
-        outputData[outputIndex] = numSum / (f32(dimLength) - 1);
+        outputData[outputIndex] = f16(numSum / (f32(dimLength) - 1));
     }
 `
 
@@ -473,6 +505,7 @@ export const CovarianceReduction = /* wgsl */`
 // #region CONVOLUTION SHADERS
 
 const ConvolutionBoilerPlate = /* WGSL */`
+    enable f16;
     struct Params {
         xStride: u32,
         yStride: u32,
@@ -484,10 +517,10 @@ const ConvolutionBoilerPlate = /* WGSL */`
         kernelSize: u32,
         kernelDepth: u32
     };
-    @group(0) @binding(0) var<storage, read> inputData: array<f32>;
-    @group(0) @binding(1) var<storage, read_write> outputData: array<f32>;
+    @group(0) @binding(0) var<storage, read> inputData: array<f16>;
+    @group(0) @binding(1) var<storage, read_write> outputData: array<f16>;
     @group(0) @binding(2) var<uniform> params: Params;
-
+    
     @compute @workgroup_size(4, 4, 4)
     fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
         let zStride = params.zStride;
@@ -526,6 +559,7 @@ const ConvolutionBoilerPlate = /* WGSL */`
         }
 `
 const ConvolutionBoilerPlate2D = /* WGSL */`
+    enable f16;
     struct Params {
         xStride: u32,
         yStride: u32,
@@ -534,8 +568,8 @@ const ConvolutionBoilerPlate2D = /* WGSL */`
         kernelSize: u32,
         kernelDepth: u32
     };
-    @group(0) @binding(0) var<storage, read> inputData: array<f32>;
-    @group(0) @binding(1) var<storage, read_write> outputData: array<f32>;
+    @group(0) @binding(0) var<storage, read> inputData: array<f16>;
+    @group(0) @binding(1) var<storage, read_write> outputData: array<f16>;
     @group(0) @binding(2) var<uniform> params: Params;
 
     @compute @workgroup_size(16, 16, 1)
@@ -573,7 +607,6 @@ const MeanConvolution = /* wgsl */`
             for (var ky: i32 = -xy_radius + xyOffset; ky < xy_radius; ky++) {
                 for (var kz: i32 = -z_radius + zOffset; kz < z_radius; kz++){
                     let in_coord = vec3<i32>(global_id) + vec3<i32>(kx, ky, kz);
-
                     if (in_coord.x >= 0 && in_coord.x < i32(xSize) &&
                         in_coord.y >= 0 && in_coord.y < i32(ySize) &&
                         in_coord.z >= 0 && in_coord.z < i32(zSize)) { //Ensure the sampled point is within 3D dataspace
@@ -582,14 +615,13 @@ const MeanConvolution = /* wgsl */`
                         let zOffset = kz * i32(zStride);
                         let newIdx = i32(globalIdx) + xOffset + yOffset + zOffset;
 
-                        sum += inputData[u32(newIdx)];
+                        sum += f32(inputData[u32(newIdx)]);
                         count ++;
                     }
                 }
             }
         }
-        
-        outputData[globalIdx] = sum / f32(count);
+        outputData[globalIdx] = f16(sum / f32(count));
     }
 `
 
@@ -609,7 +641,7 @@ const MinConvolution = /* wgsl */`
                         let yOffset = ky * i32(yStride);
                         let zOffset = kz * i32(zStride);
                         let newIdx = i32(globalIdx) + xOffset + yOffset + zOffset;
-                        let sampledVal = inputData[u32(newIdx)];
+                        let sampledVal = f32(inputData[u32(newIdx)]);
                         if (sampledVal < minVal){
                             minVal = sampledVal;
                         }
@@ -618,7 +650,7 @@ const MinConvolution = /* wgsl */`
             }
         }
         
-        outputData[globalIdx] = minVal;
+        outputData[globalIdx] = f16(minVal);
     }
 `
 
@@ -639,7 +671,7 @@ const MaxConvolution = /* wgsl */`
                         let yOffset = ky * i32(yStride);
                         let zOffset = kz * i32(zStride);
                         let newIdx = i32(globalIdx) + xOffset + yOffset + zOffset;
-                        let sampledVal = inputData[u32(newIdx)];
+                        let sampledVal = f32(inputData[u32(newIdx)]);
                         if (sampledVal > maxVal){
                             maxVal = sampledVal;
                         }
@@ -647,8 +679,7 @@ const MaxConvolution = /* wgsl */`
                 }
             }
         }
-        
-        outputData[globalIdx] = maxVal;
+        outputData[globalIdx] = f16(maxVal);
     }
 `
 
@@ -669,7 +700,7 @@ const StDevConvolution = /* wgsl */`
                         let zOffset = kz * i32(zStride);
                         let newIdx = i32(globalIdx) + xOffset + yOffset + zOffset;
 
-                        sum += inputData[u32(newIdx)];
+                        sum += f32(inputData[u32(newIdx)]);
                         count ++;
                     }
                 }
@@ -693,7 +724,7 @@ const StDevConvolution = /* wgsl */`
                         let zOffset = kz * i32(zStride);
                         let newIdx = i32(globalIdx) + xOffset + yOffset + zOffset;
 
-                        let diff: f32 = mean - inputData[u32(newIdx)];
+                        let diff: f32 = mean - f32(inputData[u32(newIdx)]);
                         squaredDiffSum += diff*diff;
                     }
                 }
@@ -702,7 +733,7 @@ const StDevConvolution = /* wgsl */`
 
         let stDev: f32 = sqrt(squaredDiffSum / f32(count));
 
-        outputData[globalIdx] = stDev;
+        outputData[globalIdx] = f16(stDev);
     }
 `
 
@@ -718,7 +749,7 @@ export const MeanConvolution2D = /* wgsl */`
                     let xOffset = kx * i32(xStride);
                     let yOffset = ky * i32(yStride);
                     let newIdx = i32(globalIdx) + xOffset + yOffset;
-                    let newVal = inputData[u32(newIdx)];
+                    let newVal = f32(inputData[u32(newIdx)]);
                     if (newVal != newVal){ //This only evaluates if newVal is NaN
                         continue;
                     }
@@ -727,7 +758,7 @@ export const MeanConvolution2D = /* wgsl */`
                 }
             }
         }
-        outputData[globalIdx] = sum / f32(count);
+        outputData[globalIdx] = f16(sum / f32(count));
     }
 `
 
@@ -742,7 +773,7 @@ export const MinConvolution2D = /* wgsl */`
                     let xOffset = kx * i32(xStride);
                     let yOffset = ky * i32(yStride);
                     let newIdx = i32(globalIdx) + xOffset + yOffset;
-                    let newVal = inputData[u32(newIdx)];
+                    let newVal = f32(inputData[u32(newIdx)]);
                     if (newVal != newVal){ //This only evaluates if newVal is NaN
                         continue;
                     }
@@ -752,7 +783,7 @@ export const MinConvolution2D = /* wgsl */`
                 }
             }
         }
-        outputData[globalIdx] = minVal;
+        outputData[globalIdx] = f16(minVal);
     }
 `
 
@@ -767,7 +798,7 @@ export const MaxConvolution2D = /* wgsl */`
                     let xOffset = kx * i32(xStride);
                     let yOffset = ky * i32(yStride);
                     let newIdx = i32(globalIdx) + xOffset + yOffset;
-                    let newVal = inputData[u32(newIdx)];
+                    let newVal = f32(inputData[u32(newIdx)]);
                     if (newVal != newVal){ //This only evaluates if newVal is NaN
                         continue;
                     }
@@ -777,13 +808,13 @@ export const MaxConvolution2D = /* wgsl */`
                 }
             }
         }
-        outputData[globalIdx] = maxVal;
+        outputData[globalIdx] = f16(maxVal);
     }
 `
 
 export const StDevConvolution2D = /* wgsl */`
      ${ConvolutionBoilerPlate2D}  
-        var sum: f32 = 1e12;
+        var sum: f32 = 0.;
         var count: u32 = 0u;
         for (var kx: i32 = -xy_radius; kx <= xy_radius; kx++) {
             for (var ky: i32 = -xy_radius; ky <= xy_radius; ky++) {
@@ -793,7 +824,7 @@ export const StDevConvolution2D = /* wgsl */`
                     let xOffset = kx * i32(xStride);
                     let yOffset = ky * i32(yStride);
                     let newIdx = i32(globalIdx) + xOffset + yOffset;
-                    let newVal = inputData[u32(newIdx)];
+                    let newVal = f32(inputData[u32(newIdx)]);
                     if (newVal != newVal){ //This only evaluates if newVal is NaN
                         continue;
                     }
@@ -815,7 +846,7 @@ export const StDevConvolution2D = /* wgsl */`
                     let xOffset = kx * i32(xStride);
                     let yOffset = ky * i32(yStride);
                     let newIdx = i32(globalIdx) + xOffset + yOffset;
-                    let newVal = inputData[u32(newIdx)];
+                    let newVal = f32(inputData[u32(newIdx)]);
                     if (newVal != newVal){ //This only evaluates if newVal is NaN
                         continue;
                     }
@@ -826,12 +857,13 @@ export const StDevConvolution2D = /* wgsl */`
         }
         let stDev: f32 = sqrt(squaredDiffSum / f32(count));
 
-        outputData[globalIdx] = stDev;
+        outputData[globalIdx] = f16(stDev);
     }
 `
 
 
 export const CorrelationConvolution = /* WGSL */`
+    enable f16;
     struct Params {
         xStride: u32,
         yStride: u32,
@@ -843,9 +875,9 @@ export const CorrelationConvolution = /* WGSL */`
         kernelSize: u32,
         kernelDepth: u32
     };
-    @group(0) @binding(0) var<storage, read> firstData: array<f32>;
-    @group(0) @binding(1) var<storage, read> secondData: array<f32>;
-    @group(0) @binding(2) var<storage, read_write> outputData: array<f32>;
+    @group(0) @binding(0) var<storage, read> firstData: array<f16>;
+    @group(0) @binding(1) var<storage, read> secondData: array<f16>;
+    @group(0) @binding(2) var<storage, read_write> outputData: array<f16>;
     @group(0) @binding(3) var<uniform> params: Params;
 
     @compute @workgroup_size(4, 4, 4)
@@ -904,8 +936,8 @@ export const CorrelationConvolution = /* WGSL */`
                         let zOffset = kz * i32(zStride);
                         let newIdx = i32(globalIdx) + xOffset + yOffset + zOffset;
 
-                        let xI = firstData[newIdx];
-                        let yI = secondData[newIdx];
+                        let xI = f32(firstData[newIdx]);
+                        let yI = f32(secondData[newIdx]);
                         xSum += xI;
                         xxSum += xI * xI;
                         ySum += yI;
@@ -929,11 +961,12 @@ export const CorrelationConvolution = /* WGSL */`
         let denominator = sigmaX * sigmaY + epsilon;
         let correlation = covXY / denominator;
 
-        outputData[globalIdx] = correlation;
+        outputData[globalIdx] = f16(correlation);
     }
 `
 
 export const CovarianceConvolution = /* WGSL */`
+    enable f16;
     struct Params {
         xStride: u32,
         yStride: u32,
@@ -945,9 +978,9 @@ export const CovarianceConvolution = /* WGSL */`
         kernelSize: u32,
         kernelDepth: u32
     };
-    @group(0) @binding(0) var<storage, read> firstData: array<f32>;
-    @group(0) @binding(1) var<storage, read> secondData: array<f32>;
-    @group(0) @binding(2) var<storage, read_write> outputData: array<f32>;
+    @group(0) @binding(0) var<storage, read> firstData: array<f16>;
+    @group(0) @binding(1) var<storage, read> secondData: array<f16>;
+    @group(0) @binding(2) var<storage, read_write> outputData: array<f16>;
     @group(0) @binding(3) var<uniform> params: Params;
 
     @compute @workgroup_size(4, 4, 4)
@@ -1003,8 +1036,8 @@ export const CovarianceConvolution = /* WGSL */`
                         let yOffset = ky * i32(yStride);
                         let zOffset = kz * i32(zStride);
                         let newIdx = i32(globalIdx) + xOffset + yOffset + zOffset;
-                        let xI = firstData[newIdx];
-                        let yI = secondData[newIdx];
+                        let xI = f32(firstData[newIdx]);
+                        let yI = f32(secondData[newIdx]);
                         xSum += xI;    
                         ySum += yI;
                         count ++;
@@ -1028,19 +1061,20 @@ export const CovarianceConvolution = /* WGSL */`
                         let yOffset = ky * i32(yStride);
                         let zOffset = kz * i32(zStride);
                         let newIdx = i32(globalIdx) + xOffset + yOffset + zOffset;
-                        let xI = firstData[newIdx];
-                        let yI = secondData[newIdx];
+                        let xI = f32(firstData[newIdx]);
+                        let yI = f32(secondData[newIdx]);
                         numSum += (xI - meanX) * (yI - meanY);
                         count ++;
                     }
                 }
             }
         }
-        outputData[globalIdx] = numSum/(N-1);;
+        outputData[globalIdx] = f16(numSum/(N-1));
     }
 `
 
 export const TwoVarLinearSlopeConvolution = /* WGSL */`
+    enable f16;
     struct Params {
         xStride: u32,
         yStride: u32,
@@ -1052,9 +1086,9 @@ export const TwoVarLinearSlopeConvolution = /* WGSL */`
         kernelSize: u32,
         kernelDepth: u32
     };
-    @group(0) @binding(0) var<storage, read> firstData: array<f32>;
-    @group(0) @binding(1) var<storage, read> secondData: array<f32>;
-    @group(0) @binding(2) var<storage, read_write> outputData: array<f32>;
+    @group(0) @binding(0) var<storage, read> firstData: array<f16>;
+    @group(0) @binding(1) var<storage, read> secondData: array<f16>;
+    @group(0) @binding(2) var<storage, read_write> outputData: array<f16>;
     @group(0) @binding(3) var<uniform> params: Params;
 
     @compute @workgroup_size(4, 4, 4)
@@ -1109,8 +1143,8 @@ export const TwoVarLinearSlopeConvolution = /* WGSL */`
                         let yOffset = ky * i32(yStride);
                         let zOffset = kz * i32(zStride);
                         let newIdx = i32(globalIdx) + xOffset + yOffset + zOffset;
-                        let xI = firstData[newIdx];
-                        let yI = secondData[newIdx];
+                        let xI = f32(firstData[newIdx]);
+                        let yI = f32(secondData[newIdx]);
                         xSum += xI;    
                         ySum += yI;
                         count ++;
@@ -1137,15 +1171,15 @@ export const TwoVarLinearSlopeConvolution = /* WGSL */`
                         let yOffset = ky * i32(yStride);
                         let zOffset = kz * i32(zStride);
                         let newIdx = i32(globalIdx) + xOffset + yOffset + zOffset;
-                        let xI = firstData[newIdx];
-                        let yI = secondData[newIdx];
+                        let xI = f32(firstData[newIdx]);
+                        let yI = f32(secondData[newIdx]);
                         numSum += (xI - meanX)*(f32(yI) - meanY);
                         denomSum += (f32(yI) - meanY)*(f32(yI) - meanY);
                     }
                 }
             }
         }
-        outputData[globalIdx] = numSum/denomSum;;
+        outputData[globalIdx] = f16(numSum/denomSum);
     }
 `
 
@@ -1153,6 +1187,7 @@ export const TwoVarLinearSlopeConvolution = /* WGSL */`
 
 
 export const CUMSUM3D = /* wgsl */`
+    enable f16;
     struct Params {
         xStride: u32,
         yStride: u32,
@@ -1164,7 +1199,7 @@ export const CUMSUM3D = /* wgsl */`
         reverse: u32,
         workGroups: vec3<u32>,
     };
-    @group(0) @binding(0) var<storage, read> inputData: array<f32>;
+    @group(0) @binding(0) var<storage, read> inputData: array<f16>;
     @group(0) @binding(1) var<storage, read_write> outputData: array<f32>;
     @group(0) @binding(2) var<uniform> params: Params;
 
@@ -1202,7 +1237,7 @@ export const CUMSUM3D = /* wgsl */`
                     newZ = zSize - z - 1;
                 }
                 let idx = newZ * zStride + outY * yStride + outX * xStride;
-                accum += inputData[idx];
+                accum += f32(inputData[idx]);
             }
 
         } else if (reduceDim == 1u) { // CUMSUM along Y
@@ -1215,7 +1250,7 @@ export const CUMSUM3D = /* wgsl */`
                     newY = ySize - y - 1;
                 }
                 let idx = outZ * zStride + newY * yStride + outX * xStride;
-                accum += inputData[idx];
+                accum += f32(inputData[idx]);
             }
         } else { // CUMSUM along X
              if (reverse == u32(1)){
@@ -1227,7 +1262,7 @@ export const CUMSUM3D = /* wgsl */`
                     newX = xSize - x - 1;
                 }
                 let idx = outZ * zStride + outY * yStride + newX * xStride;
-                accum += inputData[idx];
+                accum += f32(inputData[idx]);
             }
         }
             outputData[baseIdx] = accum;
@@ -1235,6 +1270,7 @@ export const CUMSUM3D = /* wgsl */`
 `
 
 const Correlation2D = /* wgsl */`
+    enable f16;
     struct Params {
         zStride: u32,
         yStride: u32,
@@ -1244,9 +1280,9 @@ const Correlation2D = /* wgsl */`
         reduceDim: u32,
         dimLength: u32,
     };
-    @group(0) @binding(0) var<storage, read> firstData: array<f32>;
-    @group(0) @binding(1) var<storage, read> secondData: array<f32>;
-    @group(0) @binding(2) var<storage, read_write> outputData: array<f32>;
+    @group(0) @binding(0) var<storage, read> firstData: array<f16>;
+    @group(0) @binding(1) var<storage, read> secondData: array<f16>;
+    @group(0) @binding(2) var<storage, read_write> outputData: array<f16>;
     @group(0) @binding(3) var<uniform> params: Params;
 
     @compute @workgroup_size(16, 16, 1)
@@ -1276,8 +1312,8 @@ const Correlation2D = /* wgsl */`
             let cCoord = outX * xStride + outY * yStride;
             for (var z: u32 = 0u; z < dimLength; z++) {
                 let inputIndex = cCoord + (z * zStride);
-                let xI = firstData[inputIndex];
-                let yI = secondData[inputIndex];
+                let xI = f32(firstData[inputIndex]);
+                let yI = f32(secondData[inputIndex]);
                 xSum += xI;
                 xxSum += xI * xI;
                 ySum += yI;
@@ -1288,8 +1324,8 @@ const Correlation2D = /* wgsl */`
             let cCoord = outX * xStride + outY * zStride;
             for (var y: u32 = 0u; y < dimLength; y++) {
                 let inputIndex = cCoord + (y * yStride);
-                let xI = firstData[inputIndex];
-                let yI = secondData[inputIndex];
+                let xI = f32(firstData[inputIndex]);
+                let yI = f32(secondData[inputIndex]);
                 xSum += xI;
                 xxSum += xI * xI;
                 ySum += yI;
@@ -1300,8 +1336,8 @@ const Correlation2D = /* wgsl */`
             let cCoord = outX * yStride + outY * zStride;
             for (var x: u32 = 0u; x < dimLength; x++) {
                 let inputIndex = cCoord + (x * xStride);
-                let xI = firstData[inputIndex];
-                let yI = secondData[inputIndex];
+                let xI = f32(firstData[inputIndex]);
+                let yI = f32(secondData[inputIndex]);
                 xSum += xI;
                 xxSum += xI * xI;
                 ySum += yI;
@@ -1323,7 +1359,7 @@ const Correlation2D = /* wgsl */`
         let correlation = covXY / denominator;
 
         let outputIndex = outY * xSize + outX;
-        outputData[outputIndex] = correlation;
+        outputData[outputIndex] = f16(correlation);
     }
 `
 
