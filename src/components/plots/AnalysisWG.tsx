@@ -64,7 +64,6 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
                     }
                     else{
                         newArray = await DataReduction(analysisMode ? analysisArray : dataArray, {shape:dataShape, strides}, axis, operation)
-                        console.log(newArray)
                     }
                     if (!newArray){return;}
 

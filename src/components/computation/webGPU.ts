@@ -89,7 +89,7 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
     // Create buffers
     const inputBuffer = device.createBuffer({
         label: 'Input Buffer',
-        size: inputArray.byteLength, 
+        size: inputArray.byteLength * (hasF16 ? 1 : 2),
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     });
 
@@ -109,7 +109,6 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
         size: outputSize * (hasF16 ? 2 : 4),
         usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
     });
-    console.log(hasF16)
     // Write Buffers to GPU
     device.queue.writeBuffer(inputBuffer, 0, (hasF16 ? inputArray : new Float32Array(inputArray as Float16Array)) as GPUAllowSharedBufferSource);
     device.queue.writeBuffer(uniformBuffer, 0, myUniformValues.arrayBuffer as GPUAllowSharedBufferSource);
@@ -147,7 +146,7 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
     // Map staging buffer to read results
     await readBuffer.mapAsync(GPUMapMode.READ);
     const resultArrayBuffer = readBuffer.getMappedRange();
-    const results = new Float16Array(resultArrayBuffer.slice());
+    const results = hasF16 ? new Float16Array(resultArrayBuffer.slice()) : new Float16Array(new Float32Array(resultArrayBuffer.slice()));
 
     // Clean up
     readBuffer.unmap();
@@ -209,7 +208,7 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
     // Create buffers
     const inputBuffer = device.createBuffer({
         label: 'Input Buffer',
-        size: inputArray.byteLength, 
+        size: inputArray.byteLength * (hasF16 ? 1 : 2), 
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     });
 
@@ -268,7 +267,7 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
     // Map staging buffer to read results
     await readBuffer.mapAsync(GPUMapMode.READ);
     const resultArrayBuffer = readBuffer.getMappedRange();
-    const results = new Float16Array(resultArrayBuffer.slice());
+    const results = hasF16 ? new Float16Array(resultArrayBuffer.slice()) : new Float16Array(new Float32Array(resultArrayBuffer.slice()));
 
     // Clean up
     readBuffer.unmap();
@@ -330,13 +329,13 @@ export async function Multivariate2D(firstArray: ArrayBufferView, secondArray: A
     // Create buffers
     const firstInputBuffer = device.createBuffer({
         label: 'First Input Buffer',
-        size: firstArray.byteLength, 
+        size: firstArray.byteLength * (hasF16 ? 1 : 2), 
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     });
 
     const secondInputBuffer = device.createBuffer({
         label: 'Second Input Buffer',
-        size: secondArray.byteLength, 
+        size: secondArray.byteLength * (hasF16 ? 1 : 2), 
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     });
 
@@ -396,7 +395,7 @@ export async function Multivariate2D(firstArray: ArrayBufferView, secondArray: A
     // Map staging buffer to read results
     await readBuffer.mapAsync(GPUMapMode.READ);
     const resultArrayBuffer = readBuffer.getMappedRange();
-    const results = new Float16Array(resultArrayBuffer.slice());
+    const results = hasF16 ? new Float16Array(resultArrayBuffer.slice()) : new Float16Array(new Float32Array(resultArrayBuffer.slice()));
 
     // Clean up
     readBuffer.unmap();
@@ -459,13 +458,13 @@ export async function Multivariate3D(firstArray: ArrayBufferView, secondArray: A
     // Create buffers
     const firstInputBuffer = device.createBuffer({
         label: 'First Input Buffer',
-        size: firstArray.byteLength, 
+        size: firstArray.byteLength * (hasF16 ? 1 : 2), 
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     });
 
     const secondInputBuffer = device.createBuffer({
         label: 'Second Input Buffer',
-        size: secondArray.byteLength, 
+        size: secondArray.byteLength * (hasF16 ? 1 : 2),
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     });
 
@@ -525,7 +524,7 @@ export async function Multivariate3D(firstArray: ArrayBufferView, secondArray: A
     // Map staging buffer to read results
     await readBuffer.mapAsync(GPUMapMode.READ);
     const resultArrayBuffer = readBuffer.getMappedRange();
-    const results = new Float16Array(resultArrayBuffer.slice());
+    const results = hasF16 ? new Float16Array(resultArrayBuffer.slice()) : new Float16Array(new Float32Array(resultArrayBuffer.slice()));
 
     // Clean up
     readBuffer.unmap();
@@ -586,7 +585,7 @@ export async function CUMSUM3D(inputArray :  ArrayBufferView, dimInfo : {shape: 
     // Create buffers
     const inputBuffer = device.createBuffer({
         label: 'Input Buffer',
-        size: inputArray.byteLength, 
+        size: inputArray.byteLength * (hasF16 ? 1 : 2), 
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     });
 
@@ -655,7 +654,8 @@ export async function CUMSUM3D(inputArray :  ArrayBufferView, dimInfo : {shape: 
 export async function Convolve2D(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, operation: string, kernelSize: number){
     const adapter = await navigator.gpu?.requestAdapter();
     const maxSize = 2047483644; //Will probably remove this eventually
-    const hasF16 = adapter ? adapter.features.has("shader-f16") : false
+    // const hasF16 = adapter ? adapter.features.has("shader-f16") : false
+    const hasF16 = false;
     const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
         maxBufferSize: maxSize,
         maxStorageBufferBindingSize: maxSize}}) : 
@@ -700,7 +700,7 @@ export async function Convolve2D(inputArray :  ArrayBufferView, dimInfo : {shape
     // Create buffers
     const inputBuffer = device.createBuffer({
         label: 'Input Buffer',
-        size: inputArray.byteLength, 
+        size: inputArray.byteLength * (hasF16 ? 1 : 2), 
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     });
 
@@ -759,8 +759,8 @@ export async function Convolve2D(inputArray :  ArrayBufferView, dimInfo : {shape
     // Map staging buffer to read results
     await readBuffer.mapAsync(GPUMapMode.READ);
     const resultArrayBuffer = readBuffer.getMappedRange();
-    const results = new Float16Array(resultArrayBuffer.slice());
-    console.log(results)
+    const results = hasF16 ? new Float16Array(resultArrayBuffer.slice()) : new Float16Array(new Float32Array(resultArrayBuffer.slice()));
+
     // Clean up
     readBuffer.unmap();
     return results;
