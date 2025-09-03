@@ -14,6 +14,35 @@ export const ZARR_STORES = {
     LOCAL: 'http://localhost:5173/GlobalForcingTiny.zarr'
 } as const;
 
+function ToFloat16(array : Float32Array) : [Float16Array, number | null]{ 
+	let newArray : Float16Array;
+	let scalingFactor: number | null = null;
+	const [minVal, maxVal] = ArrayMinMax(array)
+	if (maxVal <= 65504 && minVal >= -65504){ // If values fit in Float16, use that to save memory
+		newArray = new Float16Array(array)
+	}
+	else{
+		scalingFactor = Math.ceil(Math.log10(maxVal/65504))
+		for (let i = 0; i < array.length; i++) {
+			array[i] /= Math.pow(10,scalingFactor);
+		}
+		newArray = new Float16Array(array)
+	}
+	return [newArray, scalingFactor]
+}
+
+function RescaleArray(array: Float16Array, scalingFactor: number){ // Rescales built array when new chunk has higher scalingFactor
+	for (let i = 0; i < array.length; i++) {
+		array[i] /= Math.pow(10,scalingFactor);
+	}
+}
+
+function replaceChunkNumber(input: string, newNumber: number): string { // Used to update already cached chunks' scalingFactor
+  return input.replace(/chunk_\d+$/, `chunk_${newNumber}`);
+}
+
+
+
 export class ZarrError extends Error {
     constructor(message: string, public readonly cause?: unknown) {
         super(message);
@@ -108,20 +137,9 @@ export class ZarrDataset{
 				shape = is4D ? outVar.shape.slice(1) : outVar.shape;
 				setStrides(chunk.stride) // Need strides for the point cloud
 				if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
-							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
+							throw new Error("BigInt arrays are not supported for conversion to Float16Array.");
 				} else {
-					typedArray = new Float32Array(chunk.data)
-					const [minVal, maxVal] = ArrayMinMax(typedArray)
-					if (maxVal <= 65504 && minVal >= -65504){ // If values fit in Float16, use that to save memory
-						typedArray = new Float16Array(chunk.data)
-					}
-					else{
-						scalingFactor = Math.ceil(Math.log10(maxVal/65504))
-						for (let i = 0; i < typedArray.length; i++) {
-							typedArray[i] /= Math.pow(10,scalingFactor);
-						}
-						typedArray = new Float16Array(typedArray)
-					}
+					[typedArray, scalingFactor] = ToFloat16(chunk.data as Float32Array)
 					const cacheChunk = {
 						data: compress ? CompressArray(typedArray, 7) : typedArray,
 						shape: chunk.shape,
@@ -147,7 +165,7 @@ export class ZarrDataset{
 				shape = is4D ? [(endIdx-startIdx)*chunkShape[0], outVar.shape[2],outVar.shape[3]] :
 				[(endIdx-startIdx)*chunkShape[0], outVar.shape[1],outVar.shape[2]]
 
-				typedArray = new Float32Array(arraySize);
+				typedArray = new Float16Array(arraySize);
 				let accum = 0;
 				let iter = 1;
 				const chunkIDs = []
@@ -161,65 +179,46 @@ export class ZarrDataset{
 						setStrides(chunk.stride)
 						const chunkData = chunk.compressed ? DecompressArray(chunk.data) : chunk.data // Decompress if needed
 						typedArray.set(chunkData,accum)
-						setProgress(Math.round(iter/chunkCount*100))
+						setProgress(Math.round(iter/chunkCount*100)) // Progress Bar
 						accum += chunk.data.length;
 						iter ++;
 					}
 					else{
-						rescaleIDs.push(i)
 						chunk = await zarr.get(outVar, is4D ? [idx4D , zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null] : [zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null])
 						if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
 							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
 						} else {
-							typedArray.set(chunk.data,accum)
-							cache.set(cacheName,chunk)
+							let newScalingFactor:number | null;
+							let chunkF16: Float16Array;
+							[chunkF16, newScalingFactor] = ToFloat16(chunk.data as Float32Array)
+							if (newScalingFactor != null && newScalingFactor != scalingFactor){ // If the scalingFactor has changed, need to rescale main array
+								if (scalingFactor == null || newScalingFactor > scalingFactor){ 
+									const thisScaling = scalingFactor ? newScalingFactor - scalingFactor : newScalingFactor
+									RescaleArray(typedArray, thisScaling)
+									scalingFactor = newScalingFactor
+									for (const id of rescaleIDs){ // Set new scalingFactor on the chunks
+										const tempName = replaceChunkNumber(cacheName, id)
+										const tempChunk = cache.get(tempName)
+										tempChunk.scaling = scalingFactor
+										cache.set(tempName, tempChunk)
+									}
+								}
+							}
+							typedArray.set(chunkF16,accum)
+							const cacheChunk = {
+								data: compress ? CompressArray(chunkF16, 7) : chunkF16,
+								shape: chunk.shape,
+								stride: chunk.stride,
+								scaling: scalingFactor,
+								compressed: compress
+							}
+							cache.set(cacheName,cacheChunk)
 							accum += chunk.data.length;
 							setStrides(chunk.stride)
-							setProgress(Math.round(iter/chunkCount*100))
+							setProgress(Math.round(iter/chunkCount*100)) // Progress Bar
 							iter ++;
 						}
-					}
-				}
-				const [minVal, maxVal] = ArrayMinMax(typedArray)
-				if (maxVal <= 65504 && minVal >= -65504){ // If values fit in Float16, use that to save memory
-					typedArray = new Float16Array(typedArray)
-				}
-				else{
-					scalingFactor = Math.ceil(Math.log10(maxVal/65504))
-					for (let i = 0; i < typedArray.length; i++) {
-						typedArray[i] /= Math.pow(10,scalingFactor);
-					}
-					typedArray = new Float16Array(typedArray)
-				}
-
-				for (const id of rescaleIDs){ // Rescale the chunks that were just downloaded. This isn't great logic as it assumes the scaling factor will be roughly the same as previous chunks. Will need to revisit
-					const cacheName = is4D ? `${initStore}_${idx4D}_${variable}_chunk_${id}` : `${initStore}_${variable}_chunk_${id}`
-					if (scalingFactor){
-						chunk = cache.get(cacheName)
-						const newData = new Float32Array(chunk.data.length)
-						for (let i = 0; i < chunk.data.length; i++) {
-							newData[i] = chunk.data[i]/Math.pow(10,scalingFactor);
-						}
-						const newTyped = new Float16Array(newData)
-						const newChunk = {
-							data: compress ? CompressArray(newTyped, 7) : newTyped,
-							shape: chunk.shape,
-							stride: chunk.stride,
-							scaling: scalingFactor,
-							compressed: compress
-						}
-						cache.set(cacheName,newChunk)
-					}
-					else{
-						chunk = cache.get(cacheName)
-						const newTyped = new Float16Array(chunk.data)
-						const newChunk = {
-							data: compress ? CompressArray(newTyped, 7) : newTyped,
-							shape: chunk.shape,
-							stride: chunk.stride,
-							scaling: null
-						}
-						cache.set(cacheName,newChunk)
+						rescaleIDs.push(i)
 					}
 				}
 				setCurrentChunks(chunkIDs) // These are used for the Getcurrentarray 

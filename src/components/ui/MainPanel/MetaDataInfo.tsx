@@ -83,6 +83,8 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
     }else{return 0;}
   }, [meta, slice])
 
+  const smallCache = useMemo(()=>currentSize/2 > cacheSize, [currentSize, cacheSize])
+
   useEffect(()=>{
     const this4D = meta.shape.length == 4;
     setIs4D(this4D);
@@ -337,10 +339,10 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
                 <b>Total Size: </b>{formatBytes(currentSize)}<br />
                 {currentSize > maxSize && (
                   <>
-                  <div className={`flex items-center gap-2 p-2 ${currentSize > cacheSize ? "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800" : "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800"} rounded-md border`}>
-                        <div className={`w-2 h-2 ${currentSize > cacheSize ? "bg-red-500" : "bg-emerald-500"} rounded-full`}></div>
-                        <span className={`text-xs font-medium ${currentSize > cacheSize ? "text-red-800 dark:text-red-200" : "text-emerald-800 dark:text-emerald-200"}`}>
-                          {currentSize > cacheSize ? "Selection won't fit in Cache" : "Data Will Fit"}
+                  <div className={`flex items-center gap-2 p-2 ${smallCache ? "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800" : "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800"} rounded-md border`}>
+                        <div className={`w-2 h-2 ${smallCache ? "bg-red-500" : "bg-emerald-500"} rounded-full`}></div>
+                        <span className={`text-xs font-medium ${smallCache ? "text-red-800 dark:text-red-200" : "text-emerald-800 dark:text-emerald-200"}`}>
+                          {smallCache ? "Selection won't fit in Cache" : "Data Will Fit"}
                         </span>                  
                         </div>
                         <div className="">
@@ -425,7 +427,7 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
             size="sm"
             
             className="cursor-pointer hover:scale-[1.05]"
-            disabled={((is4D && idx4D == null) || tooBig)}
+            disabled={((is4D && idx4D == null) || tooBig || smallCache)}
             onClick={() => {
               if (variable == meta.name){
                 setReFetch(!reFetch)
