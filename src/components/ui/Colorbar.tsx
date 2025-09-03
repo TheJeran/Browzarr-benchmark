@@ -121,7 +121,6 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
             }     
         }
     }, [colors]);
-
     return (
         <>
         <div className='colorbar' >
@@ -131,8 +130,10 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
                     left: `0%`,
                     top:'100%',
                     position:'absolute',
-                    width:'45px',
+                    width:`${String(newMin).length*8}px`,
                     transform:'translateX(-50%)',
+                    textAlign:'right',
+                    minWidth:'25px'
                 }}
                 value={newMin}
                 onChange={e=>setNewMin(parseFloat(e.target.value))}
@@ -158,8 +159,10 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
                     left: `100%`,
                     top:'100%',
                     position:'absolute',
-                    width:'45px',
+                    width:`${String(newMax).length*8+1}px`,
                     transform:'translateX(-50%)',
+                    textAlign:'right',
+                    minWidth:'25px'
                 }}
                 value={newMax}
                 onChange={e=>setNewMax(parseFloat(e.target.value))}
