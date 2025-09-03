@@ -189,9 +189,7 @@ export class ZarrDataset{
 						if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
 							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
 						} else {
-							let newScalingFactor:number | null;
-							let chunkF16: Float16Array;
-							[chunkF16, newScalingFactor] = ToFloat16(chunk.data as Float32Array, scalingFactor)
+							const [chunkF16, newScalingFactor] = ToFloat16(chunk.data as Float32Array, scalingFactor)
 							if (newScalingFactor != null && newScalingFactor != scalingFactor){ // If the scalingFactor has changed, need to rescale main array
 								if (scalingFactor == null || newScalingFactor > scalingFactor){ 
 									const thisScaling = scalingFactor ? newScalingFactor - scalingFactor : newScalingFactor
