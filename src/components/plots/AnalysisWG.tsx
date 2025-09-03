@@ -60,16 +60,17 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
                 async function GPUCompute(){
                     let newArray;
                     if (operation == 'CUMSUM3D'){
-                        newArray = await CUMSUM3D(analysisMode ? analysisArray : new Float32Array(dataArray), {shape:dataShape, strides}, axis, reverseDirection)
+                        newArray = await CUMSUM3D(analysisMode ? analysisArray : dataArray, {shape:dataShape, strides}, axis, reverseDirection)
                     }
                     else{
-                        newArray = await DataReduction(analysisMode ? analysisArray : new Float32Array(dataArray), {shape:dataShape, strides}, axis, operation)
+                        newArray = await DataReduction(analysisMode ? analysisArray : dataArray, {shape:dataShape, strides}, axis, operation)
+                        console.log(newArray)
                     }
                     if (!newArray){return;}
 
                     let minVal, maxVal;
                     if (['StDev', 'CUMSUM', 'CUMSUM3D', 'LinearSlope'].includes(operation)){
-                        [minVal,maxVal] = ArrayMinMax(newArray )
+                        [minVal,maxVal] = ArrayMinMax(newArray)
                         if (!valueScalesOrig){
                             setValueScalesOrig(valueScales)
                         }
@@ -108,7 +109,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
                 GPUCompute();
             }
             else{
-                Convolve(analysisMode ? analysisArray : new Float32Array(dataArray), {shape:dataShape, strides}, kernelOperation, {kernelDepth, kernelSize}).then(newArray=>{
+                Convolve(analysisMode ? analysisArray : dataArray, {shape:dataShape, strides}, kernelOperation, {kernelDepth, kernelSize}).then(newArray=>{
                     if (!newArray){return;}
                     let minVal, maxVal;
                     if (kernelOperation == 'StDev'){
@@ -155,7 +156,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
                 if (['TwoVarLinearSlope2D', 'Correlation2D', 'Covariance2D'].includes(operation)){ //These are 2D operations
                     const thisShape = dataShape.filter((e, idx) => idx != axis)
                     //@ts-expect-error It won't be undefined here as Multivariate2D only outputs undefined if webGPU disabled. However, impossible to call if webGPU disabled so moot point
-                    const newArray: Float32Array = await Multivariate2D(analysisMode ? analysisArray : new Float32Array(dataArray), new Float32Array(variable2Array.current.data), {shape:dataShape, strides}, axis, operation)
+                    const newArray: Float16Array = await Multivariate2D(analysisMode ? analysisArray : dataArray, variable2Array.current.data, {shape:dataShape, strides}, axis, operation)
                     if (!valueScalesOrig){
                             setValueScalesOrig(valueScales)
                     }
@@ -170,15 +171,15 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
                     newText.needsUpdate = true;
                     setAnalysisArray(newArray)
                     setTexture(newText)
+                    setIsFlat(true)
                     setPlotType('flat')
                 }
                 else{ //These are 3D operations
                     //@ts-expect-error It won't be undefined here as correlate2D only outputs undefined if webGPU disabled. However, impossible to call if webGPU disabled
-                    const newArray: Float32Array = await Multivariate3D(analysisMode ? analysisArray : new Float32Array(dataArray), new Float32Array(variable2Array.current.data), {shape:dataShape, strides}, {kernelDepth, kernelSize}, operation)
+                    const newArray: Float16Array = await Multivariate3D(analysisMode ? analysisArray : dataArray, variable2Array.current.data, {shape:dataShape, strides}, {kernelDepth, kernelSize}, operation)
                     if (!valueScalesOrig){
                             setValueScalesOrig(valueScales)
                     }
-                    console.log(operation)
                     let [minVal, maxVal] = [-1, 1];
                     if (['TwoVarLinearSlope3D', 'Covariance3D'].includes(operation)){
                         [minVal, maxVal] = ArrayMinMax(newArray) //If slope get actual bounds
@@ -215,7 +216,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
             else{
                 const thisShape = dataShape.length > 2 ? dataShape.slice(1) : dataShape // This may seem counter-productive since we can't get here if "isFlat". However, if 3D data was flattened the original shapes are still 3D
                 const thisStrides = strides.length > 2 ? strides.slice(1) : strides
-                Convolve2D(analysisMode ? analysisArray : new Float32Array(dataArray), {shape:thisShape, strides:thisStrides}, kernelOperation, kernelSize).then(newArray=>{
+                Convolve2D(analysisMode ? analysisArray : dataArray, {shape:thisShape, strides:thisStrides}, kernelOperation, kernelSize).then(newArray=>{
                     if (!newArray){return;}
                     let minVal, maxVal;
                     if (kernelOperation == 'StDev'){

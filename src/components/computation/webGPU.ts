@@ -3,44 +3,48 @@ import {
   makeStructuredView,
 } from 'webgpu-utils';
 
-import * as Shaders from './WGSLShaders';
+import * as Shaders32 from './WGSLShaders';
+import * as Shaders16 from './WGSLShadersF16'
 
 const operations = {
-    Mean: Shaders.MeanReduction,
-    Min: Shaders.MinReduction,
-    Max: Shaders.MaxReduction,
-    StDev: Shaders.StDevReduction,
-    CUMSUM: Shaders.CUMSUMReduction,
-    LinearSlope: Shaders.LinearSlopeReduction
+    Mean: "MeanReduction",
+    Min: "MinReduction",
+    Max: "MaxReduction",
+    StDev: "StDevReduction",
+    CUMSUM: "CUMSUMReduction",
+    LinearSlope: "LinearSlopeReduction"
 }
 
 const kernelOperations3D = {
-    Mean: Shaders.MeanConvolution,
-    Min: Shaders.MinConvolution,
-    Max: Shaders.MaxConvolution,
-    StDev: Shaders.StDevConvolution
+    Mean: "MeanConvolution",
+    Min: "MinConvolution",
+    Max: "MaxConvolution",
+    StDev: "StDevConvolution"
 }
 
 const kernelOperations2D = {
-    Mean: Shaders.MeanConvolution2D,
-    Min: Shaders.MinConvolution2D,
-    Max: Shaders.MaxConvolution2D,
-    StDev: Shaders.StDevConvolution2D
+    Mean: "MeanConvolution2D",
+    Min: "MinConvolution2D",
+    Max: "MaxConvolution2D",
+    StDev: "StDevConvolution2D"
 }
-
 
 const multiVariateOps = {
-    Correlation2D: Shaders.Correlation2D,
-    Correlation3D: Shaders.CorrelationConvolution,
-    TwoVarLinearSlope2D: Shaders.TwoVarLinearSlopeReduction,
-    TwoVarLinearSlope3D: Shaders.TwoVarLinearSlopeConvolution,
-    Covariance2D: Shaders.CovarianceReduction,
-    Covariance3D: Shaders.CovarianceConvolution
+    Correlation2D: "Correlation2D",
+    Correlation3D: "CorrelationConvolution",
+    TwoVarLinearSlope2D: "TwoVarLinearSlopeReduction",
+    TwoVarLinearSlope3D: "TwoVarLinearSlopeConvolution",
+    Covariance2D: "CovarianceReduction",
+    Covariance3D: "CovarianceConvolution"
 }
 
-export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, operation: string){
+
+export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, operation: string, ){
     const adapter = await navigator.gpu?.requestAdapter();
-    const device = await adapter?.requestDevice();
+    const hasF16 = adapter ? adapter.features.has("shader-f16") : false
+    const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"]}) : 
+    await adapter?.requestDevice();
+
     if (!device) {
         Error('need a browser that supports WebGPU');
         return;
@@ -53,7 +57,10 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
     const outputSize = thisShape[0] * thisShape[1];
     const workGroups = thisShape.map(e => Math.ceil(e/16)) //We assume the workgroups are 16 threads. We see how many of those 16 thread workgroups are needed for each dimension
 
-    const shader = operations[operation as keyof typeof operations]
+    const shaders = hasF16 ? Shaders16 : Shaders32
+    const shaderKey = operations[operation as keyof typeof operations] as keyof typeof shaders;
+    const shader = shaders[shaderKey];
+
     const computeModule = device.createShaderModule({
         label: 'reduction compute module',
         code:shader,
@@ -88,7 +95,7 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
 
     const outputBuffer = device.createBuffer({
         label: 'Output Buffer',
-        size: outputSize * 4,
+        size: outputSize * (hasF16 ? 2 : 4),
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
     });
 
@@ -99,12 +106,12 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
 
     const readBuffer = device.createBuffer({
         label:'Output Buffer',
-        size: outputSize * 4,
+        size: outputSize * (hasF16 ? 2 : 4),
         usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
     });
-
+    console.log(hasF16)
     // Write Buffers to GPU
-    device.queue.writeBuffer(inputBuffer, 0, inputArray as GPUAllowSharedBufferSource);
+    device.queue.writeBuffer(inputBuffer, 0, (hasF16 ? inputArray : new Float32Array(inputArray as Float16Array)) as GPUAllowSharedBufferSource);
     device.queue.writeBuffer(uniformBuffer, 0, myUniformValues.arrayBuffer as GPUAllowSharedBufferSource);
 
     const bindGroup = device.createBindGroup({
@@ -131,7 +138,7 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
     encoder.copyBufferToBuffer(
     outputBuffer, 0,
     readBuffer, 0,
-    outputSize * 4
+    outputSize * (hasF16 ? 2 : 4)
     );
 
     // Submit work to GPU
@@ -140,7 +147,7 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
     // Map staging buffer to read results
     await readBuffer.mapAsync(GPUMapMode.READ);
     const resultArrayBuffer = readBuffer.getMappedRange();
-    const results = new Float32Array(resultArrayBuffer.slice());
+    const results = new Float16Array(resultArrayBuffer.slice());
 
     // Clean up
     readBuffer.unmap();
@@ -151,11 +158,14 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
 export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, operation: string, kernel: {kernelSize: number, kernelDepth: number}){
     const adapter = await navigator.gpu?.requestAdapter();
     const maxSize = 2047483644; //Will probably remove this eventually
-    const device = await adapter?.requestDevice({requiredLimits: {
-    maxBufferSize: maxSize,
-    maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
-  }}
-);
+    const hasF16 = adapter ? adapter.features.has("shader-f16") : false
+    const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
+        maxBufferSize: maxSize,
+        maxStorageBufferBindingSize: maxSize}}) : 
+        await adapter?.requestDevice({requiredLimits: {
+            maxBufferSize: maxSize,
+            maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
+    }});
     if (!device) {
         Error('need a browser that supports WebGPU');
         return;
@@ -166,7 +176,10 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
     const [zStride, yStride, xStride] = strides;
     const workGroups = shape.map(e => Math.ceil(e/4)); //We assume the workgroups are 4 threads per dimension. We see how many of those 4 thread workgroups are needed for each dimension
 
-    const shader = kernelOperations3D[operation as keyof typeof kernelOperations3D]
+    const shaders = hasF16 ? Shaders16 : Shaders32
+    const shaderKey = kernelOperations3D[operation as keyof typeof kernelOperations3D] as keyof typeof shaders;
+    const shader = shaders[shaderKey];
+    
     const computeModule = device.createShaderModule({
         label: 'convolution compute module',
         code:shader,
@@ -202,7 +215,7 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
 
     const outputBuffer = device.createBuffer({
         label: 'Output Buffer',
-        size: outputSize * 4,
+        size: outputSize * (hasF16 ? 2 : 4),
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
     });
 
@@ -214,12 +227,12 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
 
     const readBuffer = device.createBuffer({
         label:'Read Buffer',
-        size: outputSize * 4,
+        size: outputSize * (hasF16 ? 2 : 4),
         usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
     });
 
     // Write Buffers to GPU
-    device.queue.writeBuffer(inputBuffer, 0, inputArray as GPUAllowSharedBufferSource);
+    device.queue.writeBuffer(inputBuffer, 0, (hasF16 ? inputArray : new Float32Array(inputArray as Float16Array)) as GPUAllowSharedBufferSource);
     device.queue.writeBuffer(uniformBuffer, 0, myUniformValues.arrayBuffer as GPUAllowSharedBufferSource);
 
     const bindGroup = device.createBindGroup({
@@ -246,7 +259,7 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
     encoder.copyBufferToBuffer(
     outputBuffer, 0,
     readBuffer, 0,
-    outputSize * 4
+    outputSize * (hasF16 ? 2 : 4)
     );
 
     // Submit work to GPU
@@ -255,7 +268,7 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
     // Map staging buffer to read results
     await readBuffer.mapAsync(GPUMapMode.READ);
     const resultArrayBuffer = readBuffer.getMappedRange();
-    const results = new Float32Array(resultArrayBuffer.slice());
+    const results = new Float16Array(resultArrayBuffer.slice());
 
     // Clean up
     readBuffer.unmap();
@@ -265,11 +278,14 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
 export async function Multivariate2D(firstArray: ArrayBufferView, secondArray: ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, operation:string){
     const adapter = await navigator.gpu?.requestAdapter();
     const maxSize = 2047483644; //Will probably remove this eventually
-    const device = await adapter?.requestDevice({requiredLimits: {
+    const hasF16 = adapter ? adapter.features.has("shader-f16") : false
+    const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
         maxBufferSize: maxSize,
-        maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
-        }}
-    );
+        maxStorageBufferBindingSize: maxSize}}) : 
+        await adapter?.requestDevice({requiredLimits: {
+            maxBufferSize: maxSize,
+            maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
+    }});
     if (!device) {
         Error('need a browser that supports WebGPU');
         return;
@@ -282,8 +298,10 @@ export async function Multivariate2D(firstArray: ArrayBufferView, secondArray: A
     const outputSize = thisShape[0] * thisShape[1];
     const workGroups = thisShape.map(e => Math.ceil(e/16)) //We assume the workgroups are 16 threads each dimension. We see how many of those 16 thread workgroups are needed for each dimension
 
-    const shader = multiVariateOps[operation as keyof typeof multiVariateOps]
-    console.log(operation)
+    const shaders = hasF16 ? Shaders16 : Shaders32
+    const shaderKey = multiVariateOps[operation as keyof typeof multiVariateOps] as keyof typeof shaders
+    const shader = shaders[shaderKey]
+
     const computeModule = device.createShaderModule({
         label: 'Multivariate2D compute module',
         code:shader,
@@ -324,7 +342,7 @@ export async function Multivariate2D(firstArray: ArrayBufferView, secondArray: A
 
     const outputBuffer = device.createBuffer({
         label: 'Output Buffer',
-        size: outputSize * 4,
+        size: outputSize * (hasF16 ? 2 : 4),
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
     });
 
@@ -335,13 +353,13 @@ export async function Multivariate2D(firstArray: ArrayBufferView, secondArray: A
 
     const readBuffer = device.createBuffer({
         label:'Output Buffer',
-        size: outputSize * 4,
+        size: outputSize * (hasF16 ? 2 : 4),
         usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
     });
 
     // Write Buffers to GPU
-    device.queue.writeBuffer(firstInputBuffer, 0, firstArray as GPUAllowSharedBufferSource);
-    device.queue.writeBuffer(secondInputBuffer, 0, secondArray as GPUAllowSharedBufferSource);
+    device.queue.writeBuffer(firstInputBuffer, 0, (hasF16 ? firstArray : new Float32Array(firstArray as Float16Array)) as GPUAllowSharedBufferSource);
+    device.queue.writeBuffer(secondInputBuffer, 0, (hasF16 ? secondArray : new Float32Array(secondArray as Float16Array)) as GPUAllowSharedBufferSource);
     device.queue.writeBuffer(uniformBuffer, 0, myUniformValues.arrayBuffer as GPUAllowSharedBufferSource);
 
     const bindGroup = device.createBindGroup({
@@ -369,7 +387,7 @@ export async function Multivariate2D(firstArray: ArrayBufferView, secondArray: A
     encoder.copyBufferToBuffer(
     outputBuffer, 0,
     readBuffer, 0,
-    outputSize * 4
+    outputSize * (hasF16 ? 2 : 4)
     );
 
     // Submit work to GPU
@@ -378,7 +396,7 @@ export async function Multivariate2D(firstArray: ArrayBufferView, secondArray: A
     // Map staging buffer to read results
     await readBuffer.mapAsync(GPUMapMode.READ);
     const resultArrayBuffer = readBuffer.getMappedRange();
-    const results = new Float32Array(resultArrayBuffer.slice());
+    const results = new Float16Array(resultArrayBuffer.slice());
 
     // Clean up
     readBuffer.unmap();
@@ -388,11 +406,14 @@ export async function Multivariate2D(firstArray: ArrayBufferView, secondArray: A
 export async function Multivariate3D(firstArray: ArrayBufferView, secondArray: ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, kernel: {kernelSize: number, kernelDepth: number}, operation: string){
     const adapter = await navigator.gpu?.requestAdapter();
     const maxSize = 2047483644; //Will probably remove this eventually
-    const device = await adapter?.requestDevice({requiredLimits: {
+    const hasF16 = adapter ? adapter.features.has("shader-f16") : false
+    const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
         maxBufferSize: maxSize,
-        maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
-        }}
-    );
+        maxStorageBufferBindingSize: maxSize}}) : 
+        await adapter?.requestDevice({requiredLimits: {
+            maxBufferSize: maxSize,
+            maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
+    }});
     if (!device) {
         Error('need a browser that supports WebGPU');
         return;
@@ -404,7 +425,9 @@ export async function Multivariate3D(firstArray: ArrayBufferView, secondArray: A
     const outputSize = shape[0] * shape[1] * shape[2];
     const workGroups = shape.map(e => Math.ceil(e/4)) //We assume the workgroups are 4 threads each dimension. We see how many of those 4 thread workgroups are needed for each dimension
 
-    const shader = multiVariateOps[operation as keyof typeof multiVariateOps]
+    const shaders = hasF16 ? Shaders16 : Shaders32
+    const shaderKey = multiVariateOps[operation as keyof typeof multiVariateOps] as keyof typeof shaders;
+    const shader = shaders[shaderKey]
 
     const computeModule = device.createShaderModule({
         label: 'Multivariate3D compute module',
@@ -448,7 +471,7 @@ export async function Multivariate3D(firstArray: ArrayBufferView, secondArray: A
 
     const outputBuffer = device.createBuffer({
         label: 'Output Buffer',
-        size: outputSize * 4,
+        size: outputSize * (hasF16 ? 2 : 4),
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
     });
 
@@ -459,13 +482,13 @@ export async function Multivariate3D(firstArray: ArrayBufferView, secondArray: A
 
     const readBuffer = device.createBuffer({
         label:'Output Buffer',
-        size: outputSize * 4,
+        size: outputSize * (hasF16 ? 2 : 4),
         usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
     });
 
     // Write Buffers to GPU
-    device.queue.writeBuffer(firstInputBuffer, 0, firstArray as GPUAllowSharedBufferSource);
-    device.queue.writeBuffer(secondInputBuffer, 0, secondArray as GPUAllowSharedBufferSource);
+    device.queue.writeBuffer(firstInputBuffer, 0, (hasF16 ? firstArray : new Float32Array(firstArray as Float16Array)) as GPUAllowSharedBufferSource);
+    device.queue.writeBuffer(secondInputBuffer, 0, (hasF16 ? secondArray : new Float32Array(secondArray as Float16Array)) as GPUAllowSharedBufferSource);
     device.queue.writeBuffer(uniformBuffer, 0, myUniformValues.arrayBuffer as GPUAllowSharedBufferSource);
 
     const bindGroup = device.createBindGroup({
@@ -493,7 +516,7 @@ export async function Multivariate3D(firstArray: ArrayBufferView, secondArray: A
     encoder.copyBufferToBuffer(
     outputBuffer, 0,
     readBuffer, 0,
-    outputSize * 4
+    outputSize * (hasF16 ? 2 : 4)
     );
 
     // Submit work to GPU
@@ -502,7 +525,7 @@ export async function Multivariate3D(firstArray: ArrayBufferView, secondArray: A
     // Map staging buffer to read results
     await readBuffer.mapAsync(GPUMapMode.READ);
     const resultArrayBuffer = readBuffer.getMappedRange();
-    const results = new Float32Array(resultArrayBuffer.slice());
+    const results = new Float16Array(resultArrayBuffer.slice());
 
     // Clean up
     readBuffer.unmap();
@@ -512,11 +535,15 @@ export async function Multivariate3D(firstArray: ArrayBufferView, secondArray: A
 export async function CUMSUM3D(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, reverse: number){
     const adapter = await navigator.gpu?.requestAdapter();
     const maxSize = 2047483644; //Will probably remove this eventually
-    const device = await adapter?.requestDevice({requiredLimits: {
-    maxBufferSize: maxSize,
-    maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
-  }}
-);
+    const hasF16 = adapter ? adapter.features.has("shader-f16") : false
+    const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
+        maxBufferSize: maxSize,
+        maxStorageBufferBindingSize: maxSize}}) : 
+        await adapter?.requestDevice({requiredLimits: {
+            maxBufferSize: maxSize,
+            maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
+    }});
+
     if (!device) {
         Error('need a browser that supports WebGPU');
         return;
@@ -527,7 +554,9 @@ export async function CUMSUM3D(inputArray :  ArrayBufferView, dimInfo : {shape: 
     const [zStride, yStride, xStride] = strides;
     const workGroups = shape.map(e => Math.ceil(e/4)); //We assume the workgroups are 4 threads per dimension. We see how many of those 4 thread workgroups are needed for each dimension
 
-    const shader = Shaders.CUMSUM3D
+    const shaders = hasF16 ? Shaders16 : Shaders32
+    const shader = shaders['CUMSUM3D']
+
     const computeModule = device.createShaderModule({
         label: 'cumsum3d compute module',
         code:shader,
@@ -580,7 +609,7 @@ export async function CUMSUM3D(inputArray :  ArrayBufferView, dimInfo : {shape: 
     });
 
     // Write Buffers to GPU
-    device.queue.writeBuffer(inputBuffer, 0, inputArray as GPUAllowSharedBufferSource);
+    device.queue.writeBuffer(inputBuffer, 0, (hasF16  ? inputArray : new Float32Array(inputArray as Float16Array)) as GPUAllowSharedBufferSource);
     device.queue.writeBuffer(uniformBuffer, 0, myUniformValues.arrayBuffer as GPUAllowSharedBufferSource);
 
     const bindGroup = device.createBindGroup({
@@ -626,11 +655,15 @@ export async function CUMSUM3D(inputArray :  ArrayBufferView, dimInfo : {shape: 
 export async function Convolve2D(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, operation: string, kernelSize: number){
     const adapter = await navigator.gpu?.requestAdapter();
     const maxSize = 2047483644; //Will probably remove this eventually
-    const device = await adapter?.requestDevice({requiredLimits: {
-    maxBufferSize: maxSize,
-    maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
-  }}
-);
+    const hasF16 = adapter ? adapter.features.has("shader-f16") : false
+    const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
+        maxBufferSize: maxSize,
+        maxStorageBufferBindingSize: maxSize}}) : 
+        await adapter?.requestDevice({requiredLimits: {
+            maxBufferSize: maxSize,
+            maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
+        }});
+
     if (!device) {
         Error('need a browser that supports WebGPU');
         return;
@@ -639,7 +672,11 @@ export async function Convolve2D(inputArray :  ArrayBufferView, dimInfo : {shape
     const outputSize = shape[0] * shape[1];
     const [yStride, xStride] = [strides[0], strides[1]];
     const workGroups = [Math.ceil(shape[1]/16), Math.ceil(shape[0]/16)]; //We assume the workgroups are 16 threads per dimension. We see how many of those 16 thread workgroups are needed for each dimension
-    const shader = kernelOperations2D[operation as keyof typeof kernelOperations2D]
+    
+    const shaders = hasF16 ? Shaders16 : Shaders32
+    const shaderKey = kernelOperations2D[operation as keyof typeof kernelOperations2D] as keyof typeof shaders;
+    const shader = shaders[shaderKey]
+
     const computeModule = device.createShaderModule({
         label: 'convolution2d compute module',
         code:shader,
@@ -669,7 +706,7 @@ export async function Convolve2D(inputArray :  ArrayBufferView, dimInfo : {shape
 
     const outputBuffer = device.createBuffer({
         label: 'Output Buffer',
-        size: outputSize * 4,
+        size: outputSize * (hasF16 ? 2 : 4),
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
     });
 
@@ -681,12 +718,12 @@ export async function Convolve2D(inputArray :  ArrayBufferView, dimInfo : {shape
 
     const readBuffer = device.createBuffer({
         label:'Read Buffer',
-        size: outputSize * 4,
+        size: outputSize * (hasF16 ? 2 : 4),
         usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
     });
 
     // Write Buffers to GPU
-    device.queue.writeBuffer(inputBuffer, 0, inputArray as GPUAllowSharedBufferSource);
+    device.queue.writeBuffer(inputBuffer, 0, (hasF16 ? inputArray : new Float32Array(inputArray as Float16Array)) as GPUAllowSharedBufferSource);
     device.queue.writeBuffer(uniformBuffer, 0, myUniformValues.arrayBuffer as GPUAllowSharedBufferSource);
 
     const bindGroup = device.createBindGroup({
@@ -713,7 +750,7 @@ export async function Convolve2D(inputArray :  ArrayBufferView, dimInfo : {shape
     encoder.copyBufferToBuffer(
     outputBuffer, 0,
     readBuffer, 0,
-    outputSize * 4
+    outputSize * (hasF16 ? 2 : 4)
     );
 
     // Submit work to GPU
@@ -722,8 +759,8 @@ export async function Convolve2D(inputArray :  ArrayBufferView, dimInfo : {shape
     // Map staging buffer to read results
     await readBuffer.mapAsync(GPUMapMode.READ);
     const resultArrayBuffer = readBuffer.getMappedRange();
-    const results = new Float32Array(resultArrayBuffer.slice());
-
+    const results = new Float16Array(resultArrayBuffer.slice());
+    console.log(results)
     // Clean up
     readBuffer.unmap();
     return results;
