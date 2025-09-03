@@ -654,8 +654,7 @@ export async function CUMSUM3D(inputArray :  ArrayBufferView, dimInfo : {shape: 
 export async function Convolve2D(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, operation: string, kernelSize: number){
     const adapter = await navigator.gpu?.requestAdapter();
     const maxSize = 2047483644; //Will probably remove this eventually
-    // const hasF16 = adapter ? adapter.features.has("shader-f16") : false
-    const hasF16 = false;
+    const hasF16 = adapter ? adapter.features.has("shader-f16") : false
     const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
         maxBufferSize: maxSize,
         maxStorageBufferBindingSize: maxSize}}) : 
