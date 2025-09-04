@@ -92,7 +92,6 @@ export class ZarrDataset{
 	private cache: MemoryLRU<string,any>;
 	private dimNames: string[];
 	private chunkIDs: number[];
-	private chunkShape: number[];
 
 	constructor(store: Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>){
 		this.groupStore = store;
@@ -100,7 +99,6 @@ export class ZarrDataset{
 		this.cache = useCacheStore.getState().cache;
 		this.dimNames = ["","",""]
 		this.chunkIDs = [];
-		this.chunkShape = [1, 1, 1]
 	}
 
 	async GetArray(variable: string, slice: [number, number | null]){
@@ -122,7 +120,6 @@ export class ZarrDataset{
 		const group = await this.groupStore;
 		const outVar = await zarr.open(group.resolve(variable), {kind:"array"})
 		let [totalSize, _chunkSize, chunkShape] = GetSize(outVar);
-		this.chunkShape = chunkShape
 		if (is4D){
 			totalSize /= outVar.shape[0];
 			chunkShape = chunkShape.slice(1);
@@ -269,21 +266,14 @@ export class ZarrDataset{
 	}
 
 	GetDimArrays(){
-		const {initStore, is4D} = useGlobalStore.getState();
+		const {initStore} = useGlobalStore.getState();
 		const {cache} = useCacheStore.getState();
-		const {slice} = useZarrStore.getState();
 		const dimArr = [];
 		const dimMetas = []
 		for (const dim of this.dimNames){
 			dimArr.push(cache.get(`${initStore}_${dim}`));
 			dimMetas.push(cache.get(`${initStore}_${dim}_meta`))
 		}
-		if (slice[0] != 0 || slice[1] != null){ //Trim the time dimension based on slice
-			const chunkDepth = is4D ? this.chunkShape[1] : this.chunkShape[0]
-			const startVal = Math.max(slice[0] - (slice[0] % chunkDepth), 0)
-			const endVal = slice[1] ? slice[1] + (chunkDepth-(slice[1] % chunkDepth)) : null
-			dimArr[0] = dimArr[0].slice(startVal,endVal)
-        }
 		return [dimArr,dimMetas, this.dimNames];
 	}
 
