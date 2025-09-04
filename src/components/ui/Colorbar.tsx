@@ -139,8 +139,8 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
                     textAlign:'right',
                     minWidth:'25px'
                 }}
-                value={TwoDecimals(newMin)}
-                onChange={e=>setNewMin(parseFloat(e.target.value))}
+                value={TwoDecimals(newMin)} // Seem redundant except the first value may be a lot of decimals before changing
+                onChange={e=>setNewMin(TwoDecimals(parseFloat(e.target.value)))}
             />
             {Array.from({length: tickCount}).map((_val,idx)=>{
                 if (idx == 0 || idx == tickCount-1){
@@ -169,7 +169,7 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
                     minWidth:'25px'
                 }}
                 value={TwoDecimals(newMax)}
-                onChange={e=>setNewMax(parseFloat(e.target.value))}
+                onChange={e=>setNewMax(TwoDecimals(parseFloat(e.target.value)))}
             />
             <canvas id="colorbar-canvas" ref={canvasRef} width={512} height={24} onMouseDown={handleMouseDown}/>
             <p className="colorbar-title"
