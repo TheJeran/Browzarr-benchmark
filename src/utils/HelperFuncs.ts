@@ -270,7 +270,7 @@ export function GetCurrentArray(overrideStore?:string){
       setDecompressing(true)
       const thisData = compressed ? DecompressArray(chunk.data) : chunk.data
       setDecompressing(false)
-			return 
+			return thisData
   }
   else{
     const typedArray = new Float16Array(arraySize)
