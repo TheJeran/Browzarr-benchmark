@@ -1,7 +1,7 @@
 'use client';
 import * as THREE from 'three'
 import { useGlobalStore, usePlotStore, useZarrStore, useCacheStore } from './GlobalStates';
-
+import { decompressSync } from 'fflate';
 
 export function parseTimeUnit(units: string | undefined): number {
     if (units === "Default"){
@@ -252,25 +252,40 @@ export function GetTimeSeries(array : arrayInfo, TimeSeriesInfo:TimeSeriesInfo){
 		return ts;
 }
 
+function DecompressArray(compressed : Uint8Array){
+	const decompressed = decompressSync(compressed)
+	const floatArray = new Float16Array(decompressed.buffer)
+	return floatArray
+}
+
 export function GetCurrentArray(overrideStore?:string){
-  const { variable, is4D, idx4D, initStore }= useGlobalStore.getState()
+  const { variable, is4D, idx4D, initStore, setDecompressing }= useGlobalStore.getState()
   const { arraySize, currentChunks }= useZarrStore.getState()
   const {cache} = useCacheStore.getState();
   const store = overrideStore ? overrideStore : initStore
   
   if (cache.has(is4D ? `${store}_${idx4D}_${variable}` : `${store}_${variable}`)){
-			return cache.get(is4D ? `${store}_${idx4D}_${variable}` : `${store}_${variable}`).data
+      const chunk = cache.get(is4D ? `${store}_${idx4D}_${variable}` : `${store}_${variable}`)
+      const compressed = chunk.compressed
+      setDecompressing(true)
+      const thisData = compressed ? DecompressArray(chunk.data) : chunk.data
+      setDecompressing(false)
+			return thisData
   }
   else{
-    const typedArray = new Float32Array(arraySize)
+    const typedArray = new Float16Array(arraySize)
     let accum = 0;
 				for (const i of currentChunks){
 					const cacheName = is4D ? `${store}_${idx4D}_${variable}_chunk_${i}` : `${store}_${variable}_chunk_${i}`
 						//Add a check and throw error here if user set compress but the local files are not compressed
 						const chunk = cache.get(cacheName)
-						typedArray.set(chunk.data,accum)
-						accum += chunk.data.length;
+            const compressed = chunk.compressed
+            setDecompressing(true)
+            const thisData = compressed ? DecompressArray(chunk.data) : chunk.data
+						typedArray.set(thisData,accum)
+						accum += thisData.length;
         }
+      setDecompressing(false)
       return typedArray
   }
 }

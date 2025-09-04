@@ -9,6 +9,10 @@ import { useShallow } from 'zustand/shallow'
 import './css/Colorbar.css'
 import { linspace } from '@/utils/HelperFuncs';
 
+function TwoDecimals(val: number){
+    return Math.round(val * 100)/100
+}
+
 const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: number, minVal:number}}) => {
     const {colormap, variable} = useGlobalStore(useShallow(state => ({
         colormap: state.colormap,
@@ -135,8 +139,8 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
                     textAlign:'right',
                     minWidth:'25px'
                 }}
-                value={newMin}
-                onChange={e=>setNewMin(parseFloat(e.target.value))}
+                value={TwoDecimals(newMin)} // Seem redundant except the first value may be a lot of decimals before changing
+                onChange={e=>setNewMin(TwoDecimals(parseFloat(e.target.value)))}
             />
             {Array.from({length: tickCount}).map((_val,idx)=>{
                 if (idx == 0 || idx == tickCount-1){
@@ -164,8 +168,8 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
                     textAlign:'right',
                     minWidth:'25px'
                 }}
-                value={newMax}
-                onChange={e=>setNewMax(parseFloat(e.target.value))}
+                value={TwoDecimals(newMax)}
+                onChange={e=>setNewMax(TwoDecimals(parseFloat(e.target.value)))}
             />
             <canvas id="colorbar-canvas" ref={canvasRef} width={512} height={24} onMouseDown={handleMouseDown}/>
             <p className="colorbar-title"

@@ -41,6 +41,7 @@ type StoreState = {
   isFlat: boolean;
   progress: number;
   downloading: boolean;
+  decompressing: boolean;
   is4D: boolean;
   idx4D: number | null;
   titleDescription: { title?: string; description?: string };
@@ -70,6 +71,7 @@ type StoreState = {
   setIsFlat: (isFlat: boolean) => void;
   setProgress: (progress: number) => void;
   setDownloading: (downloading: boolean) => void;
+  setDecompressing: (decompressing: boolean) => void;
   setIs4D: (is4D: boolean) => void;
   setIdx4D: (idx4D: number | null) => void;
   setTitleDescription: (titleDescription: { title?: string; description?: string }) => void;
@@ -101,6 +103,7 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   is4D: false,
   idx4D: null,
   titleDescription: {},
+  decompressing: false,
 
   setDataShape: (dataShape) => set({ dataShape }),
   setShape: (shape) => set({ shape }),
@@ -145,6 +148,7 @@ export const useGlobalStore = create<StoreState>((set, get) => ({
   setIsFlat: (isFlat) => set({ isFlat }),
   setProgress: (progress) => set({ progress }),
   setDownloading: (downloading) => set({ downloading }),
+  setDecompressing: (decompressing) => set({ decompressing }),
   setIs4D: (is4D) => set({ is4D }),
   setIdx4D: (idx4D) => set({ idx4D }),
 
