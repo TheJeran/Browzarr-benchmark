@@ -156,7 +156,11 @@ const AnalysisOptions = () => {
     }
   },[isFlat])
 
-  
+  useEffect(()=>{
+    setKernelOperation("Default")
+    setOperation("Default")
+    setAnalysisMode(false)
+  },[variable])
 
   const [newDim, setNewDim] = useState(0)
   useEffect(()=>{
@@ -409,7 +413,7 @@ const AnalysisOptions = () => {
                               </SelectTrigger>
                               <SelectContent>
                                 {kernelOperations.map((kernelOp, idx) => {
-                                  if (isFlat && kernelOp == 'CUMSUM3D'){
+                                  if ( kernelOp == 'CUMSUM3D'){
                                     return null;
                                   }else{
                                     return (
