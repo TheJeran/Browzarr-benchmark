@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { SetStateAction, useEffect, useState } from 'react';
 import { useGlobalStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { Input } from '../input';
@@ -19,6 +19,32 @@ const ZARR_STORES = {
   ESDC: 'https://s3.bgc-jena.mpg.de:9000/esdl-esdc-v3.0.2/esdc-16d-2.5deg-46x72x1440-3.0.2.zarr',
   SEASFIRE: 'https://s3.bgc-jena.mpg.de:9000/misc/seasfire_rechunked.zarr',
 };
+
+const DescriptionContent = ({setOpenVariables}:{setOpenVariables : React.Dispatch<SetStateAction<boolean>>}) => {
+  const {titleDescription} = useGlobalStore(useShallow(state => ({
+    titleDescription: state.titleDescription
+  })))
+  const {title, description} = titleDescription
+  return (
+    <div className='grid gap-1'>
+      <div className='mb-2'>
+        <b>Title</b>
+        <h1>
+          {title ? title : "No Title"}
+        </h1>
+        <b>Description</b>
+        <p>{description ? description : "No Description"}</p>
+      </div>
+      <div className='flex justify-center my-2'>
+        <Button
+        variant={"default"}
+        className='cursor-pointer mt-[-20px]'
+        onClick={e=>setOpenVariables(true)}
+        >Variables</Button>
+      </div>
+    </div>
+  )
+}
 
 const Dataset = ({setOpenVariables} : {setOpenVariables: React.Dispatch<React.SetStateAction<boolean>>}) => {
   const [showStoreInput, setShowStoreInput] = useState(false);
@@ -78,32 +104,49 @@ const Dataset = ({setOpenVariables} : {setOpenVariables: React.Dispatch<React.Se
         className="flex flex-col items-start max-w-[220px] p-3 gap-3 w-auto mb-1"
       >
         <p >Curated</p>
-        <Button
-          variant={activeOption === 'ESDC' ? "default" : "ghost"}
-          className='cursor-pointer mt-[-20px]'
-          onClick={() => {
-            setShowStoreInput(false);
-            setShowLocalInput(false);
-            setActiveOption('ESDC')
-            setInitStore(ZARR_STORES.ESDC);
-            setOpenVariables(true)
-          }}
-        >
-          ESDC
-        </Button>
-        <Button
-          variant={activeOption === 'seasfire' ? "default" : "ghost"}
-          className='cursor-pointer'
-          onClick={() => {
-            setShowStoreInput(false);
-            setShowLocalInput(false);
-            setActiveOption('seasfire')
-            setInitStore(ZARR_STORES.SEASFIRE);
-            setOpenVariables(true)
-          }}
-        >
-          Seasfire
-        </Button>
+        <Popover >
+          <PopoverTrigger asChild 
+            onClick={() => {
+              setShowStoreInput(false);
+              setShowLocalInput(false);
+              setActiveOption('ESDC')
+              setInitStore(ZARR_STORES.ESDC);
+            }}
+          >
+            <Button
+              variant={activeOption === 'ESDC' ? "default" : "ghost"}
+              className='cursor-pointer mt-[-20px]'
+            >
+              ESDC
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent 
+            className="flex flex-col items-start max-w-[300px] p-3 gap-3 w-auto mb-1"
+            side={'left'}
+          >
+              <DescriptionContent setOpenVariables={setOpenVariables} />
+          </PopoverContent>
+        </Popover>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant={activeOption === 'seasfire' ? "default" : "ghost"}
+              className='cursor-pointer'
+              onClick={() => {
+                setShowStoreInput(false);
+                setShowLocalInput(false);
+                setActiveOption('seasfire')
+                setInitStore(ZARR_STORES.SEASFIRE);
+              }}
+            >
+              Seasfire
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent side='left'>
+            <DescriptionContent setOpenVariables={setOpenVariables} />
+          </PopoverContent>
+        </Popover>
+        
         <div className="w-full h-px bg-gray-300" />
         <p >Personal</p>
         <div>
