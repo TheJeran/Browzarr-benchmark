@@ -310,7 +310,6 @@ const FlatAxis = () =>{
       return dimArrays.map((val) => val.length )
     }
   },[axis, dimArrays, analysisMode])
-  console.log(`dimLengths: ${dimArrays.map((val) => val.length )}`)
 
   const swap = useMemo(() => (analysisMode && axis == 2),[axis, analysisMode]) // This is for the horrible case when users plot along the horizontal dimension i.e; Longitude. Everything swaps
 
@@ -378,7 +377,8 @@ const FlatAxis = () =>{
       {/* X Group */}
       <group position={[0, -(swap ? 1 :  shapeRatio)-tickLength/2, 0]} rotation={[ Math.PI/2, 0, 0]}> 
         <primitive key={'xLine'} object={xLine} />
-        {Array(xResolution).fill(null).map((_val,idx)=>(        
+        {Array(xResolution).fill(null).map((_val,idx)=>(   
+          xResolution > 1 &&              
           <group key={`xGroup_${idx}`} position={[-(swap ? 1/shapeRatio : 1) + idx*xDimScale/(xResolution/2)*(swap ? 1/shapeRatio : 1), 0, 0]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, 0, 0]} />
             <Text 
@@ -440,6 +440,7 @@ const FlatAxis = () =>{
     <group position={[-(swap ? 1/shapeRatio : 1 )- tickLength/2, 0, 0]}> 
       <primitive key={'yLine'} object={yLine} />
       {Array(yResolution).fill(null).map((_val,idx)=>(    
+        yResolution > 1 &&     
           <group key={`yGroup_${idx}`} position={[0, -(swap ? 1 : shapeRatio )+ idx*yDimScale/(yResolution/2)*(swap ? 1 : shapeRatio), 0]} rotation={[0, 0, Math.PI]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, Math.PI/2 , 0]} />
             <Text 

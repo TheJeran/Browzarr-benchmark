@@ -134,6 +134,7 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
       setShow(false)
       try{
         ZarrDS.GetArray(variable, slice).then((result) => {
+        console.log(`DataShape: ${result.shape}`)
         const [texture, scaling] = ArrayToTexture({
           data: result.data,
           shape: result.shape

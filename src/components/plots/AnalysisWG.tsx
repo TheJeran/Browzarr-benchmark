@@ -48,7 +48,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
 
     // 3D Computations
     useEffect(()=>{ 
-        const dataArray = GetCurrentArray(analysisStore)
+        const dataArray = GetCurrentArray(analysisStore) as Float16Array
         if (dataArray.length <= 1 || isFlat){
             return;
         }
@@ -203,7 +203,7 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
 
     //2D computations
     useEffect(()=>{
-        const dataArray = GetCurrentArray(analysisStore)
+        const dataArray = GetCurrentArray(analysisStore) as Float16Array
         if (dataArray.length <= 1 || !isFlat){
             return;
         }
