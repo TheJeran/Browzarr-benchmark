@@ -113,12 +113,8 @@ export async function GetTitleDescription(
 ): Promise<ZarrTitleDescription> {
   
   const group = await groupStore;
-  const description = 'attrs' in group ? ('description' in group.attrs ? String(group.attrs.description) : '') : '';
-  const title = 'attrs' in group ? ('title' in group.attrs ? String(group.attrs.title) : '') : '';
-
-  if (!title && !description) {
-    return { title: initStore, description: '' };
-  }
+  const description = 'attrs' in group ? ('description' in group.attrs ? String(group.attrs.description) : '') : null;
+  const title = 'attrs' in group ? ('title' in group.attrs ? String(group.attrs.title) : '') : null;
 
   return { title, description };
 }

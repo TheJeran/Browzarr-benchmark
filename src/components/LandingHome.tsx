@@ -10,12 +10,11 @@ import { Metadata, Loading, Navbar, Error } from '@/components/ui';
 import { useGlobalStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import ScrollableLinksTable from './ui/VariablesTable';
-import { DatasetToast }  from '@/components/ui';
 
 export function LandingHome() {
   const {
     initStore, timeSeries, variable, metadata, plotOn,
-    setZMeta, setVariables, setPlotOn, setTitleDescription, titleDescription
+    setZMeta, setVariables, setPlotOn, setTitleDescription, 
   } = useGlobalStore(useShallow(state => ({
     initStore: state.initStore, 
     timeSeries: state.timeSeries,
@@ -26,7 +25,6 @@ export function LandingHome() {
     setVariables: state.setVariables,
     setPlotOn: state.setPlotOn,
     setTitleDescription: state.setTitleDescription,
-    titleDescription: state.titleDescription,
   })))
 
   const { setMaxTextureSize } = usePlotStore(useShallow(state => ({
@@ -78,7 +76,6 @@ export function LandingHome() {
     <Error />
     {!plotOn && <Navbar />}
     <Loading />
-    <DatasetToast />
 
     {variable === "Default" && <ScrollableLinksTable />}
     {variable != "Default" && <Plot ZarrDS={ZarrDS} />}

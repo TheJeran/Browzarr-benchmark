@@ -11,8 +11,8 @@ export interface ZarrMetadata {
 }
 
 export interface ZarrTitleDescription {
-    title: string;
-    description: string;
+    title: string | null;
+    description: string | null;
 }
 
 export interface ZarrItem {
