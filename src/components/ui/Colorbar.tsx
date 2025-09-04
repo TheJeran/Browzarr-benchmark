@@ -9,6 +9,10 @@ import { useShallow } from 'zustand/shallow'
 import './css/Colorbar.css'
 import { linspace } from '@/utils/HelperFuncs';
 
+function TwoDecimals(val: number){
+    return Math.round(val * 100)/100
+}
+
 const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: number, minVal:number}}) => {
     const {colormap, variable} = useGlobalStore(useShallow(state => ({
         colormap: state.colormap,
@@ -135,7 +139,7 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
                     textAlign:'right',
                     minWidth:'25px'
                 }}
-                value={newMin}
+                value={TwoDecimals(newMin)}
                 onChange={e=>setNewMin(parseFloat(e.target.value))}
             />
             {Array.from({length: tickCount}).map((_val,idx)=>{
@@ -164,7 +168,7 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
                     textAlign:'right',
                     minWidth:'25px'
                 }}
-                value={newMax}
+                value={TwoDecimals(newMax)}
                 onChange={e=>setNewMax(parseFloat(e.target.value))}
             />
             <canvas id="colorbar-canvas" ref={canvasRef} width={512} height={24} onMouseDown={handleMouseDown}/>

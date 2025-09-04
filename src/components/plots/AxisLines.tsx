@@ -1,6 +1,6 @@
 "use cleint";
 
-import { useGlobalStore, useImageExportStore, usePlotStore } from '@/utils/GlobalStates'
+import { useAnalysisStore, useGlobalStore, useImageExportStore, usePlotStore } from '@/utils/GlobalStates'
 import React, {useState, useMemo} from 'react'
 import { useShallow } from 'zustand/shallow'
 import { Text } from '@react-three/drei'
@@ -297,14 +297,53 @@ const FlatAxis = () =>{
     hideAxisControls: state.hideAxisControls
   })))
 
-  const dimLengths = dimArrays.map((val) => val.length )
-  const widthIdx = dimArrays.length-1
-  const heightIdx = dimArrays.length-2
+  const {analysisMode, axis} = useAnalysisStore(useShallow(state => ({
+    analysisMode: state.analysisMode,
+    axis: state.axis
+  })))
+
+  const dimLengths = useMemo(()=>{
+    if (analysisMode){
+      return dimArrays.filter((_val, idx )=> idx != axis)
+      .map((val) => val.length )
+    }else{
+      return dimArrays.map((val) => val.length )
+    }
+  },[axis, dimArrays, analysisMode])
+  console.log(`dimLengths: ${dimArrays.map((val) => val.length )}`)
+
+  const swap = useMemo(() => (analysisMode && axis == 2),[axis, analysisMode]) // This is for the horrible case when users plot along the horizontal dimension i.e; Longitude. Everything swaps
+
+  const widthIdx = swap ? dimLengths.length-2 : dimLengths.length-1
+  const heightIdx = swap ? dimLengths.length-1 : dimLengths.length-2
 
   const [xResolution, setXResolution] = useState<number>(7)
   const [yResolution, setYResolution] = useState<number>(7)
 
-  const shapeRatio = useMemo(()=>dimLengths[heightIdx]/dimLengths[widthIdx], [dimLengths])
+  const { axisArrays, axisUnits, axisNames } = useMemo(() => {
+  if (analysisMode) {
+    return {
+      axisArrays: dimArrays.filter((_val, idx) => idx != axis),
+      axisUnits: dimUnits.filter((_val, idx) => idx != axis),
+      axisNames: dimNames.filter((_val, idx) => idx != axis),
+    };
+  } else {
+    return {
+      axisArrays: dimArrays,
+      axisUnits: dimUnits,
+      axisNames: dimNames,
+    };
+  }
+}, [analysisMode, dimArrays, dimUnits, dimNames]);
+
+
+  const shapeRatio = useMemo(()=>{
+    if(analysisMode && axis == 2){
+      return dimLengths[heightIdx]/dimLengths[widthIdx]
+    }else{
+      return dimLengths[heightIdx]/dimLengths[widthIdx]
+    }
+  }, [dimLengths, analysisMode, axis])
 
   const secondaryColor = useCSSVariable('--text-plot') //replace with needed variable
   const colorHex = useMemo(()=>{
@@ -315,18 +354,18 @@ const FlatAxis = () =>{
 
   const lineMat = useMemo(()=>new LineMaterial({color: colorHex ? colorHex : 0, linewidth: 2.0}),[colorHex])
   const tickLength = 0.05;
-
+  
   const xLine = useMemo(()=> {
-    const geom = new LineSegmentsGeometry().setPositions([(-1-tickLength/2), 0, 0, (1+tickLength/2), 0, 0]);
-    return new LineSegments2(geom, lineMat)},[lineMat])
+    const geom = new LineSegmentsGeometry().setPositions( [(-1/(swap ? shapeRatio : 1)-tickLength/2), 0, 0, (1/((swap ? shapeRatio : 1))+tickLength/2), 0, 0]);
+    return new LineSegments2(geom, lineMat)},[lineMat, swap, shapeRatio])
 
   const yLine = useMemo(() =>{
-    const geom = new LineSegmentsGeometry().setPositions([0, -shapeRatio-tickLength/2, 0, 0, shapeRatio+tickLength/2, 0]);
-    return new LineSegments2(geom, lineMat)},[shapeRatio, lineMat])
+    const geom = new LineSegmentsGeometry().setPositions([0, -(swap ? 1 : shapeRatio)-tickLength/2, 0, 0, (swap ? 1 : shapeRatio)+tickLength/2, 0]);
+    return new LineSegments2(geom, lineMat)},[shapeRatio, lineMat, swap, shapeRatio])
   
   const tickLine = useMemo(()=> {
     const geom = new LineSegmentsGeometry().setPositions([0, 0, 0, 0, 0, .05]);
-    return new LineSegments2(geom, lineMat)},[lineMat])
+    return new LineSegments2(geom, lineMat)},[lineMat, swap])
 
 
   const xDimScale = xResolution/(xResolution-1)
@@ -337,10 +376,10 @@ const FlatAxis = () =>{
   return (
     <group visible={plotType == 'flat' && !hideAxis}>
       {/* X Group */}
-      <group position={[0, -shapeRatio-tickLength/2, 0]} rotation={[ Math.PI/2, 0, 0]}> 
+      <group position={[0, -(swap ? 1 :  shapeRatio)-tickLength/2, 0]} rotation={[ Math.PI/2, 0, 0]}> 
         <primitive key={'xLine'} object={xLine} />
         {Array(xResolution).fill(null).map((_val,idx)=>(        
-          <group key={`xGroup_${idx}`} position={[-1 + idx*xDimScale/(xResolution/2), 0, 0]}>
+          <group key={`xGroup_${idx}`} position={[-(swap ? 1/shapeRatio : 1) + idx*xDimScale/(xResolution/2)*(swap ? 1/shapeRatio : 1), 0, 0]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, 0, 0]} />
             <Text 
               key={`textX_${idx}`}
@@ -351,7 +390,7 @@ const FlatAxis = () =>{
               material-depthTest={false}
               rotation={[-Math.PI/2, 0, 0]}
               position={[0, 0, .05]}
-            >{parseLoc(dimArrays[widthIdx][Math.floor((dimLengths[widthIdx]-1)*idx*xValDelta)],dimUnits[widthIdx])}</Text>
+            >{parseLoc(axisArrays[widthIdx][Math.floor((dimLengths[widthIdx]-1)*idx*xValDelta)],axisUnits[widthIdx])}</Text>
           </group>
         ))}
         <group rotation={[-Math.PI/2, 0, 0]} position={[0, 0, 0.2]}>
@@ -362,7 +401,7 @@ const FlatAxis = () =>{
             fontSize={0.1} 
             color={colorHex}
             material-depthTest={false}
-          >{dimNames[widthIdx]}</Text>
+          >{axisNames[widthIdx]}</Text>
           <group visible={!hideAxisControls}>
             {xResolution < 20 &&
             <Text 
@@ -398,10 +437,10 @@ const FlatAxis = () =>{
         </group>
       </group>
     {/* Vertical Group */}
-    <group position={[-1- tickLength/2, 0, 0]}> 
+    <group position={[-(swap ? 1/shapeRatio : 1 )- tickLength/2, 0, 0]}> 
       <primitive key={'yLine'} object={yLine} />
       {Array(yResolution).fill(null).map((_val,idx)=>(    
-          <group key={`yGroup_${idx}`} position={[0, -shapeRatio + idx*yDimScale/(yResolution/2)*shapeRatio, 0]} rotation={[0, 0, Math.PI]}>
+          <group key={`yGroup_${idx}`} position={[0, -(swap ? 1 : shapeRatio )+ idx*yDimScale/(yResolution/2)*(swap ? 1 : shapeRatio), 0]} rotation={[0, 0, Math.PI]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, Math.PI/2 , 0]} />
             <Text 
               key={`text_${idx}`}
@@ -412,7 +451,7 @@ const FlatAxis = () =>{
               material-depthTest={false}
               rotation={[0,  0, -Math.PI]}
               position={[0.07, 0, 0]}
-            >{parseLoc(dimArrays[heightIdx][Math.floor((dimLengths[heightIdx]-1)*idx*yValDelta)],dimUnits[heightIdx])}</Text>
+            >{parseLoc(axisArrays[heightIdx][Math.floor((dimLengths[heightIdx]-1)*idx*yValDelta)],axisUnits[heightIdx])}</Text>
           </group>
         ))}
         <group rotation={[0, 0 , 0]} position={[-0.25, 0, 0]}>
@@ -423,7 +462,7 @@ const FlatAxis = () =>{
             fontSize={0.1} 
             color={colorHex}
             material-depthTest={false}
-          >{dimNames[heightIdx]}</Text>
+          >{axisNames[heightIdx]}</Text>
           <group visible={!hideAxisControls}>
             {yResolution < 20 &&
             <Text 

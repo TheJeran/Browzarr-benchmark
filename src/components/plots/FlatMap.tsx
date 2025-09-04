@@ -75,7 +75,7 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
     },[geometry])
 
     const eventRef = useRef<ThreeEvent<PointerEvent> | null>(null);
-
+    console.log(dataSource)
     const handleMove = useCallback((e: ThreeEvent<PointerEvent>) => {
       if (infoRef.current && e.uv) {
         eventRef.current = e;

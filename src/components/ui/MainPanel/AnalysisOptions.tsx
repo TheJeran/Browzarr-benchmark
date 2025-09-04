@@ -156,6 +156,13 @@ const AnalysisOptions = () => {
     }
   },[isFlat])
 
+  
+
+  const [newDim, setNewDim] = useState(0)
+  useEffect(()=>{
+    setNewDim(axis)
+  },[axis])
+
   const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
     useEffect(() => {
         const handleResize = () => {
@@ -357,9 +364,9 @@ const AnalysisOptions = () => {
                         <tr>
                           <th>Axis</th>
                           <td style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            <Select onValueChange={e => setAxis(parseInt(e))}>
+                            <Select onValueChange={e => setNewDim(parseInt(e))}>
                               <SelectTrigger style={{ width: ['CUMSUM3D', 'LinearSlope'].includes(operation) ? '50%' : '175px', marginLeft: '10px' }}>
-                                <SelectValue placeholder={dimNames[axis]} />
+                                <SelectValue placeholder={dimNames[newDim]} />
                               </SelectTrigger>
                               <SelectContent>
                                 {dimNames.map((dimName, idx) => (
@@ -464,6 +471,7 @@ const AnalysisOptions = () => {
                     (useTwo && variable2 === 'Default')
                   }
                   onClick={() => {
+                    setAxis(newDim)
                     setExecute(!execute);
                     setTimeSeries({});
                   }}
