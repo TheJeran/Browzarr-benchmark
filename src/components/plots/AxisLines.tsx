@@ -1,7 +1,7 @@
 "use cleint";
 
 import { useAnalysisStore, useGlobalStore, useImageExportStore, usePlotStore } from '@/utils/GlobalStates'
-import React, {useState, useMemo} from 'react'
+import React, {useState, useMemo, useRef, useEffect} from 'react'
 import { useShallow } from 'zustand/shallow'
 import { Text } from '@react-three/drei'
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
@@ -301,17 +301,18 @@ const FlatAxis = () =>{
     analysisMode: state.analysisMode,
     axis: state.axis
   })))
+  const originallyFlat = dimArrays.length == 2;
 
   const dimLengths = useMemo(()=>{
-    if (analysisMode){
+    if (analysisMode && !originallyFlat){
       return dimArrays.filter((_val, idx )=> idx != axis)
       .map((val) => val.length )
     }else{
       return dimArrays.map((val) => val.length )
     }
   },[axis, dimArrays, analysisMode])
-
-  const swap = useMemo(() => (analysisMode && axis == 2),[axis, analysisMode]) // This is for the horrible case when users plot along the horizontal dimension i.e; Longitude. Everything swaps
+  
+  const swap = useMemo(() => (analysisMode && axis == 2 && !originallyFlat),[axis, analysisMode]) // This is for the horrible case when users plot along the horizontal dimension i.e; Longitude. Everything swaps
 
   const widthIdx = swap ? dimLengths.length-2 : dimLengths.length-1
   const heightIdx = swap ? dimLengths.length-1 : dimLengths.length-2
@@ -320,20 +321,20 @@ const FlatAxis = () =>{
   const [yResolution, setYResolution] = useState<number>(7)
 
   const { axisArrays, axisUnits, axisNames } = useMemo(() => {
-  if (analysisMode) {
-    return {
-      axisArrays: dimArrays.filter((_val, idx) => idx != axis),
-      axisUnits: dimUnits.filter((_val, idx) => idx != axis),
-      axisNames: dimNames.filter((_val, idx) => idx != axis),
-    };
-  } else {
-    return {
-      axisArrays: dimArrays,
-      axisUnits: dimUnits,
-      axisNames: dimNames,
-    };
-  }
-}, [analysisMode, dimArrays, dimUnits, dimNames]);
+    if (analysisMode && !originallyFlat) {
+      return {
+        axisArrays: dimArrays.filter((_val, idx) => idx != axis),
+        axisUnits: dimUnits.filter((_val, idx) => idx != axis),
+        axisNames: dimNames.filter((_val, idx) => idx != axis),
+      };
+    } else {
+      return {
+        axisArrays: dimArrays,
+        axisUnits: dimUnits,
+        axisNames: dimNames,
+      };
+    }
+  }, [analysisMode, dimArrays, dimUnits, dimNames]);
 
 
   const shapeRatio = useMemo(()=>{
@@ -353,7 +354,6 @@ const FlatAxis = () =>{
 
   const lineMat = useMemo(()=>new LineMaterial({color: colorHex ? colorHex : 0, linewidth: 2.0}),[colorHex])
   const tickLength = 0.05;
-  
   const xLine = useMemo(()=> {
     const geom = new LineSegmentsGeometry().setPositions( [(-1/(swap ? shapeRatio : 1)-tickLength/2), 0, 0, (1/((swap ? shapeRatio : 1))+tickLength/2), 0, 0]);
     return new LineSegments2(geom, lineMat)},[lineMat, swap, shapeRatio])

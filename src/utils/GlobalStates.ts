@@ -450,6 +450,7 @@ export const useErrorStore = create<ErrorState>((set) =>({
 
 type ImageExportState = {
   exportImg: boolean;
+  enableExport: boolean;
   includeBackground: boolean;
   includeColorbar: boolean;
   includeAxis: boolean;
@@ -462,6 +463,7 @@ type ImageExportState = {
   hideAxis: boolean;
 
   ExportImg: () => void;
+  EnableExport: () => void;
   setIncludeBackground: (includeBackground: boolean) => void;
   setIncludeColorbar: (includeColorbar: boolean) => void;
   setIncludeAxis: (includeAxis: boolean) => void;
@@ -482,6 +484,7 @@ type ImageExportState = {
 
 export const useImageExportStore = create<ImageExportState>((set, get) => ({
   exportImg: false,
+  enableExport: false,
   includeBackground: false,
   includeColorbar: true,
   doubleSize: false,
@@ -494,6 +497,7 @@ export const useImageExportStore = create<ImageExportState>((set, get) => ({
   hideAxis: false,
 
   ExportImg: () => set({ exportImg: !get().exportImg }),
+  EnableExport: () => set({ enableExport: true }),
   setIncludeBackground: (includeBackground) => set({ includeBackground }),
   setIncludeColorbar: (includeColorbar) => set({ includeColorbar }),
   setDoubleSize: (doubleSize) => set({ doubleSize }),

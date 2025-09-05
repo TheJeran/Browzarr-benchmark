@@ -15,6 +15,7 @@ const ExportCanvas = ({show}:{show: boolean}) => {
     })))
 
     const {exportImg, 
+        enableExport,
         includeBackground, 
         includeColorbar, 
         doubleSize, 
@@ -27,6 +28,7 @@ const ExportCanvas = ({show}:{show: boolean}) => {
     
     } = useImageExportStore(useShallow(state => ({
         exportImg: state.exportImg,
+        enableExport: state.enableExport,
         includeBackground: state.includeBackground,
         includeColorbar: state.includeColorbar,
         doubleSize: state.doubleSize,
@@ -39,7 +41,6 @@ const ExportCanvas = ({show}:{show: boolean}) => {
     })))
     
     const {gl, scene, camera} = useThree()
-    const hasMounted = useRef(false);
     const textColor = useCSSVariable('--text-plot')
     const bgColor = useCSSVariable('--background')
 
@@ -47,8 +48,7 @@ const ExportCanvas = ({show}:{show: boolean}) => {
         if (!show){
             return
         }
-        if (!hasMounted.current){ // It will try to render on first load. So this has to be here to stop it. 
-            hasMounted.current = true
+        if (!enableExport){ // It will try to render on first load. So this has to be here to stop it. 
             return
         }
         const domWidth = gl.domElement.width;
