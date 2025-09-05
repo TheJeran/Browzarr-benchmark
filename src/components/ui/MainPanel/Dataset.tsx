@@ -179,7 +179,7 @@ const Dataset = ({setOpenVariables} : {setOpenVariables: React.Dispatch<React.Se
             </form>
           )}
         </div>
-        <Popover open={false || openDescription} onOpenChange={setOpenDescription} >
+        <Popover open={openDescription} onOpenChange={setOpenDescription} >
           <PopoverAnchor> 
             <div>
               <Button
