@@ -271,11 +271,12 @@ const SpatialExtent = () =>{
 }
 
 const GlobalOptions = () =>{
-  const {showBorders, borderColor, nanColor, nanTransparency, setShowBorders, setBorderColor, setNanColor, setNanTransparency} = usePlotStore(useShallow(state => ({
+  const {showBorders, borderColor, nanColor, nanTransparency, plotType, setShowBorders, setBorderColor, setNanColor, setNanTransparency} = usePlotStore(useShallow(state => ({
     showBorders: state.showBorders,
     borderColor: state.borderColor,
     nanColor: state.nanColor,
     nanTransparency: state.nanTransparency,
+    plotType: state.plotType,
     setShowBorders: state.setShowBorders,
     setBorderColor: state.setBorderColor,
     setNanColor: state.setNanColor,
@@ -286,8 +287,11 @@ const GlobalOptions = () =>{
     axis: state.axis
   })))
 
+  const isPC = plotType == 'point-cloud'
   return (
     <div className='grid gap-y-[5px] items-center w-50 text-center'>
+      {!isPC &&
+        <>
       <b>NaN Transparency</b>
       <UISlider
               min={0}
@@ -303,7 +307,7 @@ const GlobalOptions = () =>{
               value={nanColor}
           onChange={e => setNanColor(e.target.value)}
           />
-
+      </>}
       {!(analysisMode && axis != 0) && // Hide if Analysismode and Axis != 0
       <>
         <Button variant="pink" size="sm" className="w-[100%] cursor-[pointer] mb-2 mt-2" onClick={() => setShowBorders(!showBorders)}>{showBorders ? "Hide Borders" : "Show Borders" }</Button>
@@ -393,7 +397,7 @@ const AdjustPlot = () => {
             {plotType === 'volume' && <VolumeOptions />}
             {plotType === 'point-cloud' && <PointOptions />}
             {(plotType === 'volume' || plotType === 'point-cloud') && <DimSlicer />}
-            {plotType != 'point-cloud' && <GlobalOptions />}
+            <GlobalOptions />
           </PopoverContent>
         </Popover>
       ) : (

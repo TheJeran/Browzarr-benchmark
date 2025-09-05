@@ -177,11 +177,15 @@ const CountryBorders = () => {
     const [borders, setBorders] = useState<any>(null)
     const [swapSides, setSwapSides] = useState<boolean>(false)
 
-    const {zRange, plotType, showBorders} = usePlotStore(useShallow(state => ({
+    const {dataShape, is4D} = useGlobalStore(useShallow(state => ({
+        dataShape: state.dataShape,
+        is4D: state.is4D
+    })))
+    const {zRange, plotType, showBorders, timeScale} = usePlotStore(useShallow(state => ({
         zRange: state.zRange,
         plotType: state.plotType,
-        showBorders: state.showBorders
-
+        showBorders: state.showBorders,
+        timeScale: state.timeScale
     })))
     const {analysisMode, axis} = useAnalysisStore(useShallow(state => ({
         analysisMode: state.analysisMode,
@@ -220,8 +224,10 @@ const CountryBorders = () => {
         .then(data => setBorders(data.features));
     },[])
 
+    const isPC = plotType == 'point-cloud'
+    const depthScale = dataShape[0]/dataShape[2]*timeScale
     return(
-        <group visible={showBorders && plotType != 'point-cloud' && !(analysisMode && axis != 0)} position={spherize ? [0,0,0] : [0, 0, swapSides ? zRange[0] : zRange[1]]}>
+        <group visible={showBorders && !(analysisMode && axis != 0)} position={spherize ? [0,0,0] : [0, 0, swapSides ? zRange[0]*(isPC ? depthScale : 1) : zRange[1]*(isPC ? depthScale : 1)]}>
         {coastLines && <Borders features={coastLines} />}
         {borders && <Borders features={borders} />}
         </group>
