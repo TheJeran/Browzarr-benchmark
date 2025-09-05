@@ -114,7 +114,6 @@ export async function GetVariableNames(variables: Promise<ZarrMetadata[]>): Prom
 
 export async function GetTitleDescription(
   groupStore: Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>, 
-  initStore: string
 ): Promise<ZarrTitleDescription> {
   
   const group = await groupStore;

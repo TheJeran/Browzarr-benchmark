@@ -52,35 +52,19 @@ export class ZarrError extends Error {
 }
 
 export async function GetStore(storePath: string): Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>> | null>{
-		if (storePath.startsWith('local')){
-			try {
-				const d_store = useZarrStore.getState().currentStore as Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>;
-				const gs = await d_store.then(store => zarr.open(store, {kind: 'group'}));
-				return gs;
-			} catch (error) {
-				if (storePath.slice(0,5) != 'local'){
-					useErrorStore.getState().setError('zarrFetch')
-					useGlobalStore.getState().setShowLoading(false)
-				}
-				throw new ZarrError(`Failed to initialize store at ${storePath}`, error);
-			}
-		}
-		else{
-			try {
+		try {
 			const d_store = zarr.tryWithConsolidated(
 				new zarr.FetchStore(storePath)
 			);
 			const gs = await d_store.then(store => zarr.open(store, {kind: 'group'}));
 			return gs;
-			} catch (error) {
-				if (storePath.slice(0,5) != 'local'){
-					useErrorStore.getState().setError('zarrFetch')
-					useGlobalStore.getState().setShowLoading(false)
-				}
-				throw new ZarrError(`Failed to initialize store at ${storePath}`, error);
+		} catch (error) {
+			if (storePath.slice(0,5) != 'local'){
+				useErrorStore.getState().setError('zarrFetch')
+				useGlobalStore.getState().setShowLoading(false)
 			}
-		}
-		
+			throw new ZarrError(`Failed to initialize store at ${storePath}`, error);
+		}    
 }
 
 function CompressArray(array: Float16Array, level: number){
@@ -120,17 +104,16 @@ export class ZarrDataset{
 
 	async GetArray(variable: string, slice: [number, number | null]){
 
-		const {is4D, idx4D, initStore, setProgress, setStrides, setDownloading, setShowLoading} = useGlobalStore.getState();
+		const {is4D, idx4D, initStore, setProgress, setStrides, setDownloading} = useGlobalStore.getState();
 		const {compress, setCurrentChunks, setArraySize} = useZarrStore.getState()
 		const {cache} = useCacheStore.getState();
 
 		//Check if cached
 		this.variable = variable;
 		if (cache.has(is4D ? `${initStore}_${idx4D}_${variable}` : `${initStore}_${variable}`)){
-			const cachedChunk = cache.get(is4D ? `${initStore}_${idx4D}_${variable}` : `${initStore}_${variable}`)
-			const thisChunk = {...cachedChunk} // Without this copy the decompressed data overwrites the cached compressed data
+			const thisChunk = cache.get(is4D ? `${initStore}_${idx4D}_${variable}` : `${initStore}_${variable}`)
 			if (thisChunk.compressed){
-				thisChunk.data = DecompressArray(thisChunk.data) // This was overwriting the cached compressed data
+				thisChunk.data = DecompressArray(thisChunk.data)
 			}
 			return thisChunk;
 		}
@@ -158,10 +141,7 @@ export class ZarrDataset{
 				shape = is4D ? outVar.shape.slice(1) : outVar.shape;
 				setStrides(chunk.stride) // Need strides for the point cloud
 				if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
-					useErrorStore.getState().setError('dataType')
-					setDownloading(false)
-					setProgress(0)
-					throw new Error("BigInt arrays are not supported for conversion to Float16Array.");
+							throw new Error("BigInt arrays are not supported for conversion to Float16Array.");
 				} else {
 					[typedArray, scalingFactor] = ToFloat16(chunk.data as Float32Array, null)
 					const cacheChunk = {
@@ -209,12 +189,7 @@ export class ZarrDataset{
 					}
 					else{
 						chunk = await zarr.get(outVar, is4D ? [idx4D , zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null] : [zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null])
-						console.log(chunk)
 						if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
-							useErrorStore.getState().setError('dataType')
-							setDownloading(false)
-							setShowLoading(false)
-							setProgress(0)
 							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
 						} else {
 							const [chunkF16, newScalingFactor] = ToFloat16(chunk.data as Float32Array, scalingFactor)
@@ -250,7 +225,6 @@ export class ZarrDataset{
 				}
 				setCurrentChunks(chunkIDs) // These are used for the Getcurrentarray 
 				setDownloading(false)
-				setShowLoading(false)
 				setProgress(0) // Reset progress for next load
 			}
 			return {
