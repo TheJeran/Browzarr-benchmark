@@ -252,7 +252,7 @@ const SpatialExtent = () =>{
           <Input value={latExtent[0]} onChange={e=>setLatExtent([parseFloat(e.target.value), latExtent[1]])} type='number'/>
         </div>
         <div className='flex-col justify-items-center'>
-          <h2>Min Lat</h2>
+          <h2>Max Lat</h2>
           <Input value={latExtent[1]} onChange={e=>setLatExtent([latExtent[0], parseFloat(e.target.value)])} type='number'/>
         </div>
       </div>
