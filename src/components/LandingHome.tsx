@@ -37,6 +37,9 @@ export function LandingHome() {
   })))
 
   useEffect(() => { // Update store if URL changes
+    if (initStore.startsWith('local')){ // Don't fetch store if local 
+      return
+    }
     const newStore = GetStore(initStore)
     setCurrentStore(newStore)
   }, [initStore, setCurrentStore])
