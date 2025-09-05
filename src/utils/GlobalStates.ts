@@ -479,7 +479,6 @@ type ImageExportState = {
   setHideAxisControls: (hideAxisControls: boolean) => void;
   getHideAxisControls: () => boolean;
   setHideAxis: (hideAxis: boolean) => void;
-
 }
 
 export const useImageExportStore = create<ImageExportState>((set, get) => ({

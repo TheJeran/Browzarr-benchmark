@@ -73,7 +73,6 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
     useEffect(()=>{
         geometry.dispose()
     },[geometry])
-    console.log(analysisDims)
     const eventRef = useRef<ThreeEvent<PointerEvent> | null>(null);
     const handleMove = useCallback((e: ThreeEvent<PointerEvent>) => {
       if (infoRef.current && e.uv) {
