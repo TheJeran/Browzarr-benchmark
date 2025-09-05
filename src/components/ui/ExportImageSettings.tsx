@@ -30,6 +30,7 @@ const ExportImageSettings = () => {
         customRes,
         includeAxis,
         ExportImg, 
+        EnableExport,
         setIncludeBackground, 
         setIncludeColorbar, 
         setDoubleSize,
@@ -52,6 +53,7 @@ const ExportImageSettings = () => {
           includeAxis: state.includeAxis,
 
           ExportImg: state.ExportImg,
+          EnableExport: state.EnableExport,
           setIncludeBackground: state.setIncludeBackground,
           setIncludeColorbar: state.setIncludeColorbar,
           setDoubleSize: state.setDoubleSize,
@@ -84,6 +86,7 @@ const ExportImageSettings = () => {
                     variant="ghost"
                     size="icon"
                     className="cursor-pointer"
+                    onClick={e=>EnableExport()} // This just allows exporting to prevent the export module from firing when its loaded
                 >
                     <IoImage className="size-8"/>
                 </Button>

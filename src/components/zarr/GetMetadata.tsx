@@ -99,17 +99,21 @@ function isCoordinateVariable(name: string): boolean {
     return COORDINATE_VARS.some(coord => lowerName === coord);
 }
 
+function isOneDimensional(variable: any){
+    return variable.shape.length == 1;
+}
+
 export async function GetVariableNames(variables: Promise<ZarrMetadata[]>): Promise<string[]> {
     const metadata = await variables;
     return metadata
         .filter(variable => !isCoordinateVariable(variable.name))
+        .filter(variable => !isOneDimensional(variable))
         .map(variable => variable.name)
         .sort((a, b) => a.localeCompare(b));
 }
 
 export async function GetTitleDescription(
   groupStore: Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>, 
-  initStore: string
 ): Promise<ZarrTitleDescription> {
   
   const group = await groupStore;

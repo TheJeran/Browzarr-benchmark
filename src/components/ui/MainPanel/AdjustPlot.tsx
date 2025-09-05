@@ -1,6 +1,6 @@
 "use client";
 import React, {useState, useEffect} from 'react'
-import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
+import { useAnalysisStore, useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import '../css/MainPanel.css'
 import { useShallow } from 'zustand/shallow';
 import { Slider as UISlider } from '@/components/ui/slider';
@@ -252,7 +252,7 @@ const SpatialExtent = () =>{
           <Input value={latExtent[0]} onChange={e=>setLatExtent([parseFloat(e.target.value), latExtent[1]])} type='number'/>
         </div>
         <div className='flex-col justify-items-center'>
-          <h2>Min Lat</h2>
+          <h2>Max Lat</h2>
           <Input value={latExtent[1]} onChange={e=>setLatExtent([latExtent[0], parseFloat(e.target.value)])} type='number'/>
         </div>
       </div>
@@ -271,19 +271,27 @@ const SpatialExtent = () =>{
 }
 
 const GlobalOptions = () =>{
-  const {showBorders, borderColor, nanColor, nanTransparency, setShowBorders, setBorderColor, setNanColor, setNanTransparency} = usePlotStore(useShallow(state => ({
+  const {showBorders, borderColor, nanColor, nanTransparency, plotType, setShowBorders, setBorderColor, setNanColor, setNanTransparency} = usePlotStore(useShallow(state => ({
     showBorders: state.showBorders,
     borderColor: state.borderColor,
     nanColor: state.nanColor,
     nanTransparency: state.nanTransparency,
+    plotType: state.plotType,
     setShowBorders: state.setShowBorders,
     setBorderColor: state.setBorderColor,
     setNanColor: state.setNanColor,
     setNanTransparency: state.setNanTransparency
   })))
+  const {analysisMode, axis} = useAnalysisStore(useShallow(state =>({
+    analysisMode: state.analysisMode,
+    axis: state.axis
+  })))
 
+  const isPC = plotType == 'point-cloud'
   return (
     <div className='grid gap-y-[5px] items-center w-50 text-center'>
+      {!isPC &&
+        <>
       <b>NaN Transparency</b>
       <UISlider
               min={0}
@@ -299,15 +307,21 @@ const GlobalOptions = () =>{
               value={nanColor}
           onChange={e => setNanColor(e.target.value)}
           />
-      <Button variant="pink" size="sm" className="w-[100%] cursor-[pointer] mb-2 mt-2" onClick={() => setShowBorders(!showBorders)}>{showBorders ? "Hide Borders" : "Show Borders" }</Button>
-      {showBorders && <div>
-      <b>Border Color</b>
-      <input type="color"
-          className='w-[100%] cursor-pointer'
-              value={borderColor}
-          onChange={e => setBorderColor(e.target.value)}
-          />
-      </div>}
+      </>}
+      {!(analysisMode && axis != 0) && // Hide if Analysismode and Axis != 0
+      <>
+        <Button variant="pink" size="sm" className="w-[100%] cursor-[pointer] mb-2 mt-2" onClick={() => setShowBorders(!showBorders)}>{showBorders ? "Hide Borders" : "Show Borders" }</Button>
+        {showBorders && 
+          <div>
+          <b>Border Color</b>
+          <input type="color"
+              className='w-[100%] cursor-pointer'
+                  value={borderColor}
+              onChange={e => setBorderColor(e.target.value)}
+              />
+          </div>
+        }</>
+      }
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="pink" size="sm" className='w-[100%] cursor-pointer mb-2'>
@@ -383,7 +397,7 @@ const AdjustPlot = () => {
             {plotType === 'volume' && <VolumeOptions />}
             {plotType === 'point-cloud' && <PointOptions />}
             {(plotType === 'volume' || plotType === 'point-cloud') && <DimSlicer />}
-            {plotType != 'point-cloud' && <GlobalOptions />}
+            <GlobalOptions />
           </PopoverContent>
         </Popover>
       ) : (

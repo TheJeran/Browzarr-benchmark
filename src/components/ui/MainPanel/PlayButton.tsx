@@ -178,7 +178,7 @@ const PlayButton = () => {
           <PiPlayPauseFill className="size-8" />
         </Button>
       )}
-      <PlayInterFace visible={showOptions}/>
+      <PlayInterFace visible={(showOptions && enableCond)}/>
     </div>
   )
 }

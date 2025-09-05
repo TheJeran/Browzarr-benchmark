@@ -8,7 +8,7 @@ import { Button } from '../button';
 // import { CgDatabase } from "react-icons/cg";
 import { TbDatabasePlus } from "react-icons/tb";
 import LocalZarr from './LocalZarr';
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
@@ -51,6 +51,7 @@ const Dataset = ({setOpenVariables} : {setOpenVariables: React.Dispatch<React.Se
   const [showLocalInput, setShowLocalInput] = useState(false);
   const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
   const [activeOption, setActiveOption] = useState<string>('ESDC')
+  const [openDescription, setOpenDescription] = useState<boolean>(false)
   
   const { setInitStore, setVariable } = useGlobalStore(
     useShallow((state) => ({
@@ -69,7 +70,7 @@ const Dataset = ({setOpenVariables} : {setOpenVariables: React.Dispatch<React.Se
   }, []);
 
   return (
-    <Popover>
+    <Popover >
       <PopoverTrigger asChild>
         <div>
           <Tooltip delayDuration={500} >
@@ -159,10 +160,8 @@ const Dataset = ({setOpenVariables} : {setOpenVariables: React.Dispatch<React.Se
               setShowStoreInput((prev) => !prev);
             }}
           >
-          
             Remote
           </Button>
-          
           {showStoreInput && (
             <form
               className="mt-2 flex items-center gap-2"
@@ -180,24 +179,34 @@ const Dataset = ({setOpenVariables} : {setOpenVariables: React.Dispatch<React.Se
             </form>
           )}
         </div>
-        <div>
-          <Button
-            variant={activeOption === 'local' ? "default" : "ghost"}
-            className='cursor-pointer'
-            onClick={() => {
-              setShowLocalInput((prev) => !prev);
-              setShowStoreInput(false);
-              setActiveOption('local')
-            }}
-          >
-            Local
-          </Button>
-          {showLocalInput && (
-            <div className="mt-2">
-              <LocalZarr setShowLocal={setShowLocalInput} setOpenVariables={setOpenVariables} setInitStore={setInitStore} />
+        <Popover open={openDescription} onOpenChange={setOpenDescription} >
+          <PopoverAnchor> 
+            <div>
+              <Button
+                variant={activeOption === 'local' ? "default" : "ghost"}
+                className='cursor-pointer'
+                onClick={() => {
+                  setShowLocalInput((prev) => !prev);
+                  setShowStoreInput(false);
+                  setActiveOption('local')
+                }}
+              >
+                Local
+              </Button>
+              {showLocalInput && (
+                <div className="mt-2">
+                  <LocalZarr setShowLocal={setShowLocalInput} setOpenVariables={setOpenDescription} setInitStore={setInitStore} />
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </PopoverAnchor>
+          <PopoverContent 
+            className="flex flex-col items-start max-w-[300px] p-3 gap-3 w-auto mb-1"
+            side={'left'}
+          >
+            <DescriptionContent setOpenVariables={setOpenVariables} />
+          </PopoverContent>
+        </Popover>
       </PopoverContent>
     </Popover>
   );

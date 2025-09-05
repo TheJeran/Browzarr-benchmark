@@ -15,4 +15,8 @@ export const ErrorList = {
         title: "Failed to Fetch Zarr Store",    
         description: "There was an error fetching the Zarr store. Please check the store path and your network connection."
     },
+    dataType: {
+        title: "Unsupported Data Type",    
+        description: "The data type of the array is not supported. Please use arrays with Float[16|32|64] or (u)Int[8|16|32] data types."  
+    }
 }

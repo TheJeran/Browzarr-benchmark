@@ -56,7 +56,7 @@ const LocalZarr = ({setShowLocal, setOpenVariables, setInitStore}:LocalZarrType)
       gs.then(e=>{setCurrentStore(e)})
       setShowLocal(false)
       setOpenVariables(true)
-      setInitStore(`local_$${baseDir}`)
+      setInitStore(`local_${baseDir}`)
     } catch (error) {
       if (error instanceof Error) {
         console.log(`Error opening Zarr store: ${error.message}`);

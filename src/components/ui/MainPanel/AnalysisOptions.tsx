@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-const operations = ['Mean', 'Min', 'Max', 'StDev', 'CUMSUM', 'LinearSlope'];
+const operations = ['Mean', 'Min', 'Max', 'StDev', 'LinearSlope'];
 const kernelOperations = ['Mean', 'Min', 'Max', 'StDev', 'CUMSUM3D'];
 const multivariate2DOps = ['Correlate2D', 'TwoVarLinearSlope2D']
 
@@ -249,7 +249,7 @@ const AnalysisOptions = () => {
                             <div className='flex justify-around'>
                             Current
                               <Tooltip>
-                                <TooltipTrigger>
+                                <TooltipTrigger asChild>
                                   <BsFillQuestionCircleFill/>
                                 </TooltipTrigger>
                                 <TooltipContent>

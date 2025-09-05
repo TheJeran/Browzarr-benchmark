@@ -37,6 +37,9 @@ export function LandingHome() {
   })))
 
   useEffect(() => { // Update store if URL changes
+    if (initStore.startsWith('local')){ // Don't fetch store if local 
+      return
+    }
     const newStore = GetStore(initStore)
     setCurrentStore(newStore)
   }, [initStore, setCurrentStore])
@@ -46,7 +49,7 @@ export function LandingHome() {
   useEffect(() => {
     let isMounted = true;
 
-    GetTitleDescription(currentStore, initStore).then((result) => {
+    GetTitleDescription(currentStore).then((result) => {
       if (isMounted) setTitleDescription(result);
     });
 
@@ -57,7 +60,7 @@ export function LandingHome() {
     variables.then(e => setVariables(e))
 
     return () => { isMounted = false; };
-  }, [currentStore, initStore, setZMeta, setVariables, setTitleDescription])
+  }, [currentStore, setZMeta, setVariables, setTitleDescription])
 
   useEffect(() => { // Set maxtexture size to warn users if custom data is too big
     const renderer = new THREE.WebGLRenderer();
