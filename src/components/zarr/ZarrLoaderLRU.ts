@@ -111,7 +111,8 @@ export class ZarrDataset{
 		//Check if cached
 		this.variable = variable;
 		if (cache.has(is4D ? `${initStore}_${idx4D}_${variable}` : `${initStore}_${variable}`)){
-			const thisChunk = cache.get(is4D ? `${initStore}_${idx4D}_${variable}` : `${initStore}_${variable}`)
+			const cachedChunk = cache.get(is4D ? `${initStore}_${idx4D}_${variable}` : `${initStore}_${variable}`)
+			const thisChunk = {...cachedChunk}
 			if (thisChunk.compressed){
 				thisChunk.data = DecompressArray(thisChunk.data)
 			}
@@ -151,6 +152,8 @@ export class ZarrDataset{
 						scaling: scalingFactor,
 						compressed: compress
 					}
+					console.log(compress)
+					console.log(cacheChunk)
 					cache.set(is4D ? `${initStore}_${idx4D}_${variable}` : `${initStore}_${variable}`, cacheChunk)
 				}
 				setDownloading(false)
