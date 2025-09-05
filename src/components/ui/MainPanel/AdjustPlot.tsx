@@ -1,6 +1,6 @@
 "use client";
 import React, {useState, useEffect} from 'react'
-import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
+import { useAnalysisStore, useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import '../css/MainPanel.css'
 import { useShallow } from 'zustand/shallow';
 import { Slider as UISlider } from '@/components/ui/slider';
@@ -281,6 +281,10 @@ const GlobalOptions = () =>{
     setNanColor: state.setNanColor,
     setNanTransparency: state.setNanTransparency
   })))
+  const {analysisMode, axis} = useAnalysisStore(useShallow(state =>({
+    analysisMode: state.analysisMode,
+    axis: state.axis
+  })))
 
   return (
     <div className='grid gap-y-[5px] items-center w-50 text-center'>
@@ -299,15 +303,21 @@ const GlobalOptions = () =>{
               value={nanColor}
           onChange={e => setNanColor(e.target.value)}
           />
-      <Button variant="pink" size="sm" className="w-[100%] cursor-[pointer] mb-2 mt-2" onClick={() => setShowBorders(!showBorders)}>{showBorders ? "Hide Borders" : "Show Borders" }</Button>
-      {showBorders && <div>
-      <b>Border Color</b>
-      <input type="color"
-          className='w-[100%] cursor-pointer'
-              value={borderColor}
-          onChange={e => setBorderColor(e.target.value)}
-          />
-      </div>}
+
+      {!(analysisMode && axis != 0) && // Hide if Analysismode and Axis != 0
+      <>
+        <Button variant="pink" size="sm" className="w-[100%] cursor-[pointer] mb-2 mt-2" onClick={() => setShowBorders(!showBorders)}>{showBorders ? "Hide Borders" : "Show Borders" }</Button>
+        {showBorders && 
+          <div>
+          <b>Border Color</b>
+          <input type="color"
+              className='w-[100%] cursor-pointer'
+                  value={borderColor}
+              onChange={e => setBorderColor(e.target.value)}
+              />
+          </div>
+        }</>
+      }
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="pink" size="sm" className='w-[100%] cursor-pointer mb-2'>

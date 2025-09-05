@@ -112,9 +112,9 @@ export class ZarrDataset{
 		this.variable = variable;
 		if (cache.has(is4D ? `${initStore}_${idx4D}_${variable}` : `${initStore}_${variable}`)){
 			const cachedChunk = cache.get(is4D ? `${initStore}_${idx4D}_${variable}` : `${initStore}_${variable}`)
-			const thisChunk = {...cachedChunk}
+			const thisChunk = {...cachedChunk} // Without this copy the decompressed data overwrites the cached compressed data
 			if (thisChunk.compressed){
-				thisChunk.data = DecompressArray(thisChunk.data)
+				thisChunk.data = DecompressArray(thisChunk.data) // This was overwriting the cached compressed data
 			}
 			return thisChunk;
 		}
@@ -152,8 +152,6 @@ export class ZarrDataset{
 						scaling: scalingFactor,
 						compressed: compress
 					}
-					console.log(compress)
-					console.log(cacheChunk)
 					cache.set(is4D ? `${initStore}_${idx4D}_${variable}` : `${initStore}_${variable}`, cacheChunk)
 				}
 				setDownloading(false)

@@ -1,6 +1,6 @@
 "use client";
 import React, {useEffect, useState, useMemo} from 'react'
-import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
+import { useAnalysisStore, useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import * as THREE from 'three'
 import { useShallow } from 'zustand/shallow';
 import { useFrame } from '@react-three/fiber';
@@ -183,6 +183,10 @@ const CountryBorders = () => {
         showBorders: state.showBorders
 
     })))
+    const {analysisMode, axis} = useAnalysisStore(useShallow(state => ({
+        analysisMode: state.analysisMode,
+        axis: state.axis
+    })))
 
     const [spherize, setSpherize] = useState<boolean>(false)
 
@@ -217,7 +221,7 @@ const CountryBorders = () => {
     },[])
 
     return(
-        <group visible={showBorders && plotType != 'point-cloud'} position={spherize ? [0,0,0] : [0, 0, swapSides ? zRange[0] : zRange[1]]}>
+        <group visible={showBorders && plotType != 'point-cloud' && !(analysisMode && axis != 0)} position={spherize ? [0,0,0] : [0, 0, swapSides ? zRange[0] : zRange[1]]}>
         {coastLines && <Borders features={coastLines} />}
         {borders && <Borders features={borders} />}
         </group>
