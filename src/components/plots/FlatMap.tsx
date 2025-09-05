@@ -53,7 +53,7 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
     const lastUV = useRef<THREE.Vector2>(new THREE.Vector2(0,0))
     const rotateMap = analysisMode && axis == 2;
     const sampleArray = useMemo(()=> analysisMode ? analysisArray : GetCurrentArray(),[analysisMode, analysisArray])
-    const analysisDims = useMemo(()=>dimArrays.filter((_e,idx)=> idx != axis),[dimArrays,axis])
+    const analysisDims = useMemo(()=>dimArrays.length > 2 ? dimArrays.filter((_e,idx)=> idx != axis) : dimArrays,[dimArrays,axis])
     const shaderMaterial = useMemo(()=>new THREE.ShaderMaterial({
             glslVersion: THREE.GLSL3,
             uniforms:{
@@ -73,7 +73,7 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
     useEffect(()=>{
         geometry.dispose()
     },[geometry])
-
+    console.log(analysisDims)
     const eventRef = useRef<ThreeEvent<PointerEvent> | null>(null);
     const handleMove = useCallback((e: ThreeEvent<PointerEvent>) => {
       if (infoRef.current && e.uv) {
@@ -81,8 +81,8 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
         setLoc([e.clientX, e.clientY]);
         lastUV.current = e.uv;
         const { x, y } = e.uv;
-        const xSize = isFlat ? analysisMode ? analysisDims[1].length : dimArrays[1].length : dimArrays[2].length;
-        const ySize = isFlat ? analysisMode ? analysisDims[0].length : dimArrays[0].length : dimArrays[1].length;
+        const xSize = isFlat ? (analysisMode ? analysisDims[1].length : dimArrays[1].length) : dimArrays[2].length;
+        const ySize = isFlat ? (analysisMode ? analysisDims[0].length : dimArrays[0].length) : dimArrays[1].length;
         const xIdx = Math.round(x*xSize-.5)
         const yIdx = Math.round(y*ySize-.5)
         let dataIdx = xSize * yIdx + xIdx;

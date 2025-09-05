@@ -1,7 +1,7 @@
 "use cleint";
 
 import { useAnalysisStore, useGlobalStore, useImageExportStore, usePlotStore } from '@/utils/GlobalStates'
-import React, {useState, useMemo, useRef, useEffect} from 'react'
+import React, {useState, useMemo} from 'react'
 import { useShallow } from 'zustand/shallow'
 import { Text } from '@react-three/drei'
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
