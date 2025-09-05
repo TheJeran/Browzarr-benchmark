@@ -52,19 +52,35 @@ export class ZarrError extends Error {
 }
 
 export async function GetStore(storePath: string): Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>> | null>{
-		try {
+		if (storePath.startsWith('local')){
+			try {
+				const d_store = useZarrStore.getState().currentStore as Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>>>;
+				const gs = await d_store.then(store => zarr.open(store, {kind: 'group'}));
+				return gs;
+			} catch (error) {
+				if (storePath.slice(0,5) != 'local'){
+					useErrorStore.getState().setError('zarrFetch')
+					useGlobalStore.getState().setShowLoading(false)
+				}
+				throw new ZarrError(`Failed to initialize store at ${storePath}`, error);
+			}
+		}
+		else{
+			try {
 			const d_store = zarr.tryWithConsolidated(
 				new zarr.FetchStore(storePath)
 			);
 			const gs = await d_store.then(store => zarr.open(store, {kind: 'group'}));
 			return gs;
-		} catch (error) {
-			if (storePath.slice(0,5) != 'local'){
-				useErrorStore.getState().setError('zarrFetch')
-				useGlobalStore.getState().setShowLoading(false)
+			} catch (error) {
+				if (storePath.slice(0,5) != 'local'){
+					useErrorStore.getState().setError('zarrFetch')
+					useGlobalStore.getState().setShowLoading(false)
+				}
+				throw new ZarrError(`Failed to initialize store at ${storePath}`, error);
 			}
-			throw new ZarrError(`Failed to initialize store at ${storePath}`, error);
-		}    
+		}
+		
 }
 
 function CompressArray(array: Float16Array, level: number){
