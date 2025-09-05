@@ -249,7 +249,7 @@ const AnalysisOptions = () => {
                             <div className='flex justify-around'>
                             Current
                               <Tooltip>
-                                <TooltipTrigger>
+                                <TooltipTrigger asChild>
                                   <BsFillQuestionCircleFill/>
                                 </TooltipTrigger>
                                 <TooltipContent>

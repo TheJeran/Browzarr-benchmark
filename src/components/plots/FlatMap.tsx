@@ -45,7 +45,7 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
       analysisMode: state.analysisMode,
       analysisArray: state.analysisArray
     })))
-
+    
     const dataSource = texture.source.data
     const shapeRatio = useMemo(()=> dataSource.height/dataSource.width, [dataSource])
     const geometry = useMemo(()=>new THREE.PlaneGeometry(2,2*shapeRatio),[shapeRatio])
