@@ -40,6 +40,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "fflate": "^0.8.2",
+    "gsap": "^3.13.0",
     "js-colormaps-es": "^0.0.5",
     "lucide-react": "^0.503.0",
     "next": "15.4.3",
@@ -54,7 +55,7 @@
     "three-stdlib": "^2.36.0",
     "vaul": "^1.1.2",
     "webgpu-utils": "^1.11.0",
-    "zarrita": "^0.5.1",
+    "zarrita": "^0.5.3",
     "zustand": "^5.0.4"
   },
   "devDependencies": {
