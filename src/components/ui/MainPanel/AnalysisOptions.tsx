@@ -60,29 +60,31 @@ const AnalysisOptions = () => {
 
   const previousStore = useRef<string>(initStore)
   const [incompatible, setIncompatible] = useState(false); 
-  
+  const operation = "Convolution"
+  const kernelOperation = "StDev"
+  const kernelSize = 5;
+  const kernelDepth = 5;
   const {
     execute,
-    operation,
     useTwo,
-    kernelSize,
-    kernelDepth,
-    kernelOperation,
     axis,
     variable2,
     analysisMode,
     reverseDirection,
+    useCPU,
+    cpuTime,
+    gpuTime,
+    setUseCPU,
     setExecute,
     setAxis,
-    setOperation,
-    setUseTwo,
     setVariable2,
     setKernelSize,
     setKernelDepth,
-    setKernelOperation,
     setAnalysisMode,
     setReverseDirection,
-    setAnalysisStore
+    setAnalysisStore,
+    setCpuTime,
+    setGpuTime,
   } = useAnalysisStore(useShallow(state => ({
     execute: state.execute,
     operation: state.operation,
@@ -94,6 +96,10 @@ const AnalysisOptions = () => {
     variable2: state.variable2,
     analysisMode: state.analysisMode,
     reverseDirection: state.reverseDirection,
+    useCPU: state.useCPU,
+    cpuTime: state.cpuTime,
+    gpuTime: state.gpuTime,
+    setUseCPU: state.setUseCPU,
     setExecute: state.setExecute,
     setAxis: state.setAxis,
     setOperation: state.setOperation,
@@ -104,7 +110,9 @@ const AnalysisOptions = () => {
     setKernelOperation: state.setKernelOperation,
     setAnalysisMode: state.setAnalysisMode,
     setReverseDirection: state.setReverseDirection,
-    setAnalysisStore: state.setAnalysisStore
+    setAnalysisStore: state.setAnalysisStore,
+    setCpuTime: state.setCpuTime,
+    setGpuTime: state.setGpuTime
     })));
 
   const {reFetch, setReFetch} = useZarrStore(useShallow(state => ({
@@ -157,8 +165,6 @@ const AnalysisOptions = () => {
   },[isFlat])
 
   useEffect(()=>{
-    setKernelOperation("Default")
-    setOperation("Default")
     setAnalysisMode(false)
   },[variable])
 
@@ -225,18 +231,6 @@ const AnalysisOptions = () => {
               webGPUError
             ) : (
               <>
-                {!isFlat && 
-                  <Button
-                  className="cursor-pointer active:scale-[0.95]"
-                  disabled={incompatible}
-                  onClick={() => {
-                    setUseTwo(!useTwo);
-                    setOperation('Default');
-                  }}
-                >
-                  {useTwo ? 'Use One \n Variable' : 'Use Two Variables'}
-                </Button>}
-
                 <table style={{ textAlign: 'right' }}>
                   <tbody>
                     <tr>
@@ -309,54 +303,16 @@ const AnalysisOptions = () => {
                   <th>Operation</th>
                   {!useTwo && (
                     <td>
-                      <Select onValueChange={setOperation}>
+                      <Select >
                         <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
                           <SelectValue
-                            placeholder={operation === 'Default' ? 'Select...' : operation}
+                            placeholder={"Convolution"}
                           />
                         </SelectTrigger>
                         <SelectContent>
-
-                          {!isFlat &&
-                            <SelectGroup>
-                            <SelectLabel>Dimension Reduction</SelectLabel>
-                            {operations.map((op, idx) => (
-                              <SelectItem key={idx} value={op}>
-                                {op}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>}
                           <SelectGroup>
                             <SelectLabel>{isFlat ? '' : 'Three Dimensional'}</SelectLabel>
                             <SelectItem value="Convolution">Convolution</SelectItem>
-                            {!isFlat && <SelectItem value="CUMSUM3D">CUMSUM</SelectItem>}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </td>
-                  )}
-                  
-                  {useTwo && (
-                    <td>
-                      <Select onValueChange={setOperation}>
-                        <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
-                          <SelectValue
-                            placeholder={operation === 'Default' ? 'Select...' : operation}
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectLabel>Dimension Reduction</SelectLabel>
-                            <SelectItem value="Correlation2D">Correlation</SelectItem>
-                            <SelectItem value="TwoVarLinearSlope2D">Linear Slope</SelectItem>
-                            <SelectItem value="Covariance2D">Covariance</SelectItem>
-                          </SelectGroup>
-
-                          <SelectGroup>
-                            <SelectLabel>Three Dimensional</SelectLabel>
-                            <SelectItem value="Correlation3D">Correlation</SelectItem>
-                            <SelectItem value="TwoVarLinearSlope3D">Linear Slope</SelectItem>
-                            <SelectItem value="Covariance3D">Covariance</SelectItem>
                           </SelectGroup>
                         </SelectContent>
                       </Select>
@@ -403,26 +359,16 @@ const AnalysisOptions = () => {
                           <tr>
                           <th>Kernel Op.</th>
                           <td>
-                            <Select onValueChange={setKernelOperation}>
+                            <Select >
                               <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
                                 <SelectValue
-                                  placeholder={
-                                    kernelOperation === 'Default' ? 'Select...' : kernelOperation
-                                  }
+                                  placeholder={'StDev'}
                                 />
                               </SelectTrigger>
                               <SelectContent>
-                                {kernelOperations.map((kernelOp, idx) => {
-                                  if ( kernelOp == 'CUMSUM3D'){
-                                    return null;
-                                  }else{
-                                    return (
-                                    <SelectItem key={idx} value={kernelOp}>
-                                      {kernelOp}
+                                    <SelectItem key={'stdev'} value={'StDev'}>
+                                      StDev
                                     </SelectItem>
-                                    )
-                                  }              
-                                })}
                               </SelectContent>
                             </Select>
                           </td>
@@ -466,14 +412,22 @@ const AnalysisOptions = () => {
                     )}
                   </tbody>
                 </table>
-
+                <div className='grid grid-cols-2'>
+                    <label htmlFor="usecpu"> Use CPU </label>
+                    <input id='usecpu' type="checkbox" onChange={e=> setUseCPU(e.target.checked)} />
+                </div>
+                <div className='grid gap-2'>
+                  {cpuTime &&
+                    <div className='grid grid-cols-2'>
+                    <p>CPU Average: </p> <p><b>{`${cpuTime.toFixed(2)}s`}</b></p>
+                  </div>}
+                  {gpuTime &&
+                    <div className='grid grid-cols-2'>
+                    <p>GPU Average: </p> <p><b>{`${gpuTime.toFixed(2)}s`}</b></p>
+                  </div>}
+                </div>
                 <Button
                   className="cursor-pointer active:scale-[0.95]"
-                  disabled={
-                    operation === 'Default' ||
-                    (operation === 'Convolution' && kernelOperation === 'Default') ||
-                    (useTwo && variable2 === 'Default')
-                  }
                   onClick={() => {
                     setAxis(newDim)
                     setExecute(!execute);

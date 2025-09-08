@@ -334,6 +334,9 @@ type AnalysisState = {
   analysisArray: Uint8Array | Float32Array | Float16Array;
   reverseDirection: number;
   analysisStore: string;
+  useCPU: boolean;
+  cpuTime: number | null;
+  gpuTime: number | null;
 
   setAnalysisMode: (analysisMode: boolean) => void;
   setAxis: (axis: number) => void;
@@ -348,6 +351,9 @@ type AnalysisState = {
   setAnalysisArray: (analysisArray: Uint8Array | Float32Array | Float16Array) => void;
   setReverseDirection: (reverseDirection: number) => void;
   setAnalysisStore: (analysisStore: string) => void;
+  setUseCPU: (useCPU: boolean) => void;
+  setCpuTime: (cpuTime: number | null) => void;
+  setGpuTime: (gpuTime: number | null) => void;
 }
 
 export const useAnalysisStore = create<AnalysisState>((set) => ({
@@ -364,6 +370,12 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
   analysisArray: new Uint8Array(1),
   reverseDirection: 0,
   analysisStore: ESDC,
+  useCPU: false,
+  cpuTime: null,
+  gpuTime: null,
+
+  setCpuTime: (cpuTime) => set({ cpuTime }),
+  setGpuTime: (gpuTime) => set({ gpuTime }),
 
   setAnalysisMode: (analysisMode) => set({ analysisMode }),
   setAxis: (axis) => set({ axis }),
@@ -377,7 +389,8 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
   setKernelOperation: (kernelOperation) => set({ kernelOperation}),
   setAnalysisArray: (analysisArray) => set({ analysisArray }),
   setReverseDirection: (reverseDirection) => set( { reverseDirection} ),
-  setAnalysisStore: (analysisStore) => set({ analysisStore })
+  setAnalysisStore: (analysisStore) => set({ analysisStore }),
+  setUseCPU: (useCPU) => set({ useCPU }),
 }));
 
 type ZarrState = {

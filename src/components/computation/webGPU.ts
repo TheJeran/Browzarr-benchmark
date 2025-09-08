@@ -176,9 +176,8 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
     const workGroups = shape.map(e => Math.ceil(e/4)); //We assume the workgroups are 4 threads per dimension. We see how many of those 4 thread workgroups are needed for each dimension
 
     const shaders = hasF16 ? Shaders16 : Shaders32
-    const shaderKey = kernelOperations3D[operation as keyof typeof kernelOperations3D] as keyof typeof shaders;
-    const shader = shaders[shaderKey];
-    
+    const shader = shaders[operation as keyof typeof shaders];
+
     const computeModule = device.createShaderModule({
         label: 'convolution compute module',
         code:shader,
