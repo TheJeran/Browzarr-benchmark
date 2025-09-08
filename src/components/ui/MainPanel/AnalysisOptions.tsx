@@ -234,7 +234,6 @@ const AnalysisOptions = () => {
                 <table style={{ textAlign: 'right' }}>
                   <tbody>
                     <tr>
-                      
                       <th>Current Variable</th>
                       <td className="text-center w-[100%] align-middle justify-center content-center">
                         <div className='grid grid-cols-[65%_auto] w-[90%] mx-auto'>
