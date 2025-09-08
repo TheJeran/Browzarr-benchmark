@@ -41,14 +41,22 @@ const multiVariateOps = {
 
 export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, operation: string, ){
     const adapter = await navigator.gpu?.requestAdapter();
+    const maxSize = adapter?.limits.maxBufferSize;
+    const maxStorage = adapter?.limits.maxStorageBufferBindingSize;
     const hasF16 = adapter ? adapter.features.has("shader-f16") : false
-    const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"]}) : 
-    await adapter?.requestDevice();
-
+    const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
+        maxBufferSize: maxSize,
+        maxStorageBufferBindingSize: maxStorage}}) : 
+        await adapter?.requestDevice({requiredLimits: {
+            maxBufferSize: maxSize,
+            maxStorageBufferBindingSize: maxStorage 
+    }});
     if (!device) {
         Error('need a browser that supports WebGPU');
         return;
     }
+
+
     const {strides, shape} = dimInfo;
     const [zStride, yStride, xStride] = strides;
 
@@ -156,14 +164,15 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
 
 export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, operation: string, kernel: {kernelSize: number, kernelDepth: number}){
     const adapter = await navigator.gpu?.requestAdapter();
-    const maxSize = 2047483644; //Will probably remove this eventually
+    const maxSize = adapter?.limits.maxBufferSize;
+    const maxStorage = adapter?.limits.maxStorageBufferBindingSize;
     const hasF16 = adapter ? adapter.features.has("shader-f16") : false
     const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
         maxBufferSize: maxSize,
-        maxStorageBufferBindingSize: maxSize}}) : 
+        maxStorageBufferBindingSize: maxStorage}}) : 
         await adapter?.requestDevice({requiredLimits: {
             maxBufferSize: maxSize,
-            maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
+            maxStorageBufferBindingSize: maxStorage 
     }});
     if (!device) {
         Error('need a browser that supports WebGPU');
@@ -276,14 +285,15 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
 
 export async function Multivariate2D(firstArray: ArrayBufferView, secondArray: ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, operation:string){
     const adapter = await navigator.gpu?.requestAdapter();
-    const maxSize = 2047483644; //Will probably remove this eventually
+    const maxSize = adapter?.limits.maxBufferSize;
+    const maxStorage = adapter?.limits.maxStorageBufferBindingSize;
     const hasF16 = adapter ? adapter.features.has("shader-f16") : false
     const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
         maxBufferSize: maxSize,
-        maxStorageBufferBindingSize: maxSize}}) : 
+        maxStorageBufferBindingSize: maxStorage}}) : 
         await adapter?.requestDevice({requiredLimits: {
             maxBufferSize: maxSize,
-            maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
+            maxStorageBufferBindingSize: maxStorage 
     }});
     if (!device) {
         Error('need a browser that supports WebGPU');
@@ -404,14 +414,15 @@ export async function Multivariate2D(firstArray: ArrayBufferView, secondArray: A
 
 export async function Multivariate3D(firstArray: ArrayBufferView, secondArray: ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, kernel: {kernelSize: number, kernelDepth: number}, operation: string){
     const adapter = await navigator.gpu?.requestAdapter();
-    const maxSize = 2047483644; //Will probably remove this eventually
+    const maxSize = adapter?.limits.maxBufferSize;
+    const maxStorage = adapter?.limits.maxStorageBufferBindingSize;
     const hasF16 = adapter ? adapter.features.has("shader-f16") : false
     const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
         maxBufferSize: maxSize,
-        maxStorageBufferBindingSize: maxSize}}) : 
+        maxStorageBufferBindingSize: maxStorage}}) : 
         await adapter?.requestDevice({requiredLimits: {
             maxBufferSize: maxSize,
-            maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
+            maxStorageBufferBindingSize: maxStorage 
     }});
     if (!device) {
         Error('need a browser that supports WebGPU');
@@ -533,16 +544,16 @@ export async function Multivariate3D(firstArray: ArrayBufferView, secondArray: A
 
 export async function CUMSUM3D(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, reduceDim: number, reverse: number){
     const adapter = await navigator.gpu?.requestAdapter();
-    const maxSize = 2047483644; //Will probably remove this eventually
+    const maxSize = adapter?.limits.maxBufferSize;
+    const maxStorage = adapter?.limits.maxStorageBufferBindingSize;
     const hasF16 = adapter ? adapter.features.has("shader-f16") : false
     const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
         maxBufferSize: maxSize,
-        maxStorageBufferBindingSize: maxSize}}) : 
+        maxStorageBufferBindingSize: maxStorage}}) : 
         await adapter?.requestDevice({requiredLimits: {
             maxBufferSize: maxSize,
-            maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
+            maxStorageBufferBindingSize: maxStorage 
     }});
-
     if (!device) {
         Error('need a browser that supports WebGPU');
         return;
@@ -653,16 +664,16 @@ export async function CUMSUM3D(inputArray :  ArrayBufferView, dimInfo : {shape: 
 
 export async function Convolve2D(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, operation: string, kernelSize: number){
     const adapter = await navigator.gpu?.requestAdapter();
-    const maxSize = 2047483644; //Will probably remove this eventually
+    const maxSize = adapter?.limits.maxBufferSize;
+    const maxStorage = adapter?.limits.maxStorageBufferBindingSize;
     const hasF16 = adapter ? adapter.features.has("shader-f16") : false
     const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
         maxBufferSize: maxSize,
-        maxStorageBufferBindingSize: maxSize}}) : 
+        maxStorageBufferBindingSize: maxStorage}}) : 
         await adapter?.requestDevice({requiredLimits: {
             maxBufferSize: maxSize,
-            maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
-        }});
-
+            maxStorageBufferBindingSize: maxStorage 
+    }});
     if (!device) {
         Error('need a browser that supports WebGPU');
         return;

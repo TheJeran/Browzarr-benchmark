@@ -51,6 +51,7 @@ export class ZarrError extends Error {
     }
 }
 
+
 export async function GetStore(storePath: string): Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>> | null>{
 		try {
 			const d_store = zarr.tryWithConsolidated(
@@ -137,7 +138,14 @@ export class ZarrDataset{
 			let scalingFactor = null;
 			if (totalSize < 1e8 || !hasTimeChunks){ // Check if total is less than 100MB or no chunks along time
 				setDownloading(true)
-				chunk = is4D ? await zarr.get(outVar, [idx4D, null , null, null]) :  await zarr.get(outVar) ;
+				try{
+					chunk = is4D ? await zarr.get(outVar, [idx4D, null , null, null]) :  await zarr.get(outVar) ;
+				} catch (error) {
+					useErrorStore.getState().setError('zarrFetch')
+					useGlobalStore.getState().setShowLoading(false)
+					setDownloading(false)
+					throw new ZarrError(`Failed to fetch variable ${variable}`, error);
+				}
 				shape = is4D ? outVar.shape.slice(1) : outVar.shape;
 				setStrides(chunk.stride) // Need strides for the point cloud
 				if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
@@ -188,7 +196,16 @@ export class ZarrDataset{
 						iter ++;
 					}
 					else{
-						chunk = await zarr.get(outVar, is4D ? [idx4D , zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null] : [zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null])
+						try{
+							chunk = await zarr.get(outVar, is4D ? [idx4D , zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null] : [zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null])
+						} catch (error) {
+							useErrorStore.getState().setError('zarrFetch')
+							useGlobalStore.getState().setShowLoading(false)
+							setDownloading(false)
+							setProgress(0)
+							throw new ZarrError(`Failed to fetch chunk ${i} for variable ${variable}`, error);
+						}
+						
 						if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
 							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
 						} else {
