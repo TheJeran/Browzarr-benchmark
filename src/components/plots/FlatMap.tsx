@@ -97,7 +97,7 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
     <mesh 
       material={shaderMaterial} 
       geometry={geometry} 
-      scale={[1, flipY ? -1 : 1 , 1]}
+      scale={[((analysisMode && axis == 2) && flipY) ? -1:  1, flipY ? -1 : ((analysisMode && axis == 2) ? -1 : 1) , 1]}
       rotation={[0,0,rotateMap ? Math.PI/2 : 0]}
       onPointerEnter={()=>{setShowInfo(true); infoRef.current = true }}
       onPointerLeave={()=>{setShowInfo(false); infoRef.current = false }}
