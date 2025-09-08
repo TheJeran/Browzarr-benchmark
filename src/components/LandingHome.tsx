@@ -4,7 +4,7 @@ THREE.Cache.enabled = true;
 import { GetZarrMetadata, GetVariableNames, GetTitleDescription } from '@/components/zarr/GetMetadata';
 import { ZarrDataset, GetStore } from '@/components/zarr/ZarrLoaderLRU';
 import { useEffect, useMemo } from 'react';
-import { PlotArea, Plot } from '@/components/plots';
+import { PlotArea, Plot, LandingShapes } from '@/components/plots';
 import { MainPanel } from '@/components/ui';
 import { Metadata, Loading, Navbar, Error } from '@/components/ui';
 import { useGlobalStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates';
@@ -75,12 +75,12 @@ export function LandingHome() {
   return (
     <>
     <MainPanel/> 
-
+    {variable == 'Default' && <LandingShapes />}
     <Error />
     {!plotOn && <Navbar />}
     <Loading />
-
-    {variable === "Default" && <ScrollableLinksTable />}
+    
+    {/* {variable === "Default" && <ScrollableLinksTable />} */}
     {variable != "Default" && <Plot ZarrDS={ZarrDS} />}
     {metadata && <Metadata data={metadata} /> }
     {Object.keys(timeSeries).length >= 1 && <PlotArea />}
