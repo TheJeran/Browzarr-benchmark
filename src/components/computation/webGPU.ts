@@ -156,7 +156,7 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
 
 export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, operation: string, kernel: {kernelSize: number, kernelDepth: number}){
     const adapter = await navigator.gpu?.requestAdapter();
-    const maxSize = 2047483644; //Will probably remove this eventually
+    const maxSize = 2047483644/100; //Will probably remove this eventually
     const hasF16 = adapter ? adapter.features.has("shader-f16") : false
     const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
         maxBufferSize: maxSize,
@@ -176,7 +176,7 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
     const workGroups = shape.map(e => Math.ceil(e/4)); //We assume the workgroups are 4 threads per dimension. We see how many of those 4 thread workgroups are needed for each dimension
 
     const shaders = hasF16 ? Shaders16 : Shaders32
-    const shader = shaders[operation as keyof typeof shaders];
+    const shader = shaders["StDevConvolution" as keyof typeof shaders];
 
     const computeModule = device.createShaderModule({
         label: 'convolution compute module',

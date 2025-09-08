@@ -414,7 +414,7 @@ const AnalysisOptions = () => {
                 </table>
                 <div className='grid grid-cols-2'>
                     <label htmlFor="usecpu"> Use CPU </label>
-                    <input id='usecpu' type="checkbox" onChange={e=> setUseCPU(e.target.checked)} />
+                    <input id='usecpu' checked={useCPU} type="checkbox" onChange={e=> setUseCPU(e.target.checked)} />
                 </div>
                 <div className='grid gap-2'>
                   {cpuTime &&
