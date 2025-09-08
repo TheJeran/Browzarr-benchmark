@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useMemo, useRef, useEffect } from 'react';
-import { shaderMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 import { Canvas, extend, useFrame } from '@react-three/fiber';
 import gsap from 'gsap';
@@ -9,6 +8,9 @@ import { OrbitControls } from '@react-three/drei';
 import vertexShader from '@/components/textures/shaders/LandingVertex.glsl'
 import fragmentShader from '@/components/textures/shaders/LandingFrag.glsl'
 import './Plots.css';
+import { useGlobalStore } from '@/utils/GlobalStates';
+import { useShallow } from 'zustand/shallow';
+
 
 // Define the type for our custom shader material's uniforms
 type MorphMaterialType = THREE.ShaderMaterial & {
@@ -31,7 +33,9 @@ const MorphingPoints = () => {
   const materialRef = useRef<MorphMaterialType>(null);
   const pointsRef = useRef<THREE.Points>(null);
   const count = 1000; // Total number of points
-
+  const {colormap} = useGlobalStore(useShallow(state => ({
+    colormap: state.colormap
+  })))
   // Pre-calculate the point positions for each shape using useMemo for performance
   const { spherePositions, cubePositions, planePositions } = useMemo(() => {
     const spherePositions = new Float32Array(count * 3);
@@ -88,7 +92,8 @@ const MorphingPoints = () => {
       uSphereMix: {value: 1.0},
       uCubeMix: {value: 0.0},
       uPlaneMix: {value: 0.0},
-      uTime: {value: 0.0}
+      uTime: {value: 0.0},
+      cmap: { value: colormap}
     },
     vertexShader,
     fragmentShader
@@ -155,6 +160,12 @@ const MorphingPoints = () => {
         pointsRef.current.rotation.y += 0.001; // Slow rotation around Y-axis
       }
   });
+
+  useEffect(()=>{
+    if(materialRef.current){
+      materialRef.current.uniforms.cmap.value = colormap
+    }
+  },[colormap])
 
   return (
     <points ref={pointsRef} material={MorphMaterial}>
