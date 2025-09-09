@@ -52,7 +52,7 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
       blending: THREE.NormalBlending,
       depthWrite: false,
       side: THREE.BackSide,
-    }),[]);
+    }),[useFragOpt]);
         
   // Use geometry once, avoid recreating -- Using a sphere to avoid the weird angles you get with cube
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(2, 4), []);
