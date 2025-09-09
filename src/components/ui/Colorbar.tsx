@@ -109,8 +109,8 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
     },[newMin, newMax])
 
     useEffect(()=>{ // Update internal vals when global vals change
-        setNewMin(valueScales.minVal)
-        setNewMax(valueScales.maxVal)
+        setNewMin(TwoDecimals(valueScales.minVal))
+        setNewMax(TwoDecimals(valueScales.maxVal))
     },[valueScales])
 
     useEffect(() => {
@@ -125,6 +125,7 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
             }     
         }
     }, [colors]);
+
     return (
         <>
         <div className='colorbar' >
@@ -137,7 +138,7 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
                     width:`${String(newMin).length*8}px`,
                     transform:'translateX(-50%)',
                     textAlign:'right',
-                    minWidth:'25px'
+                    minWidth:'30px'
                 }}
                 value={TwoDecimals(newMin)} // Seem redundant except the first value may be a lot of decimals before changing
                 onChange={e=>setNewMin(TwoDecimals(parseFloat(e.target.value)))}
@@ -166,7 +167,7 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
                     width:`${String(newMax).length*8+1}px`,
                     transform:'translateX(-50%)',
                     textAlign:'right',
-                    minWidth:'25px'
+                    minWidth:'30px'
                 }}
                 value={TwoDecimals(newMax)}
                 onChange={e=>setNewMax(TwoDecimals(parseFloat(e.target.value)))}
