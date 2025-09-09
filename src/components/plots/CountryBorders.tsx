@@ -76,7 +76,17 @@ function Borders({features}:{features: any}){
                 trim: {value: !spherize},
             }
         }
-    ),[xRange, yRange, borderColor, spherize])
+    ),[])
+
+    useEffect(()=>{
+        if (lineShaderMat){
+            const uniforms = lineShaderMat.uniforms
+            uniforms.xBounds.value = new THREE.Vector2(xRange[0], xRange[1])
+            uniforms.yBounds.value = new THREE.Vector2(yRange[0]/shape.x, yRange[1]/shape.x)
+            uniforms.borderColor.value = new THREE.Color(borderColor)
+            uniforms.trim.value = !spherize
+        }
+    },[xRange, yRange, borderColor, spherize])
 
 
     const lineGeometries = useMemo(() => {

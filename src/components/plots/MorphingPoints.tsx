@@ -30,7 +30,6 @@ type MorphMaterialType = THREE.ShaderMaterial & {
 
 
 const MorphingPoints = () => {
-  const materialRef = useRef<MorphMaterialType>(null);
   const pointsRef = useRef<THREE.Points>(null);
   const count = 4096; // Total number of points
   const {colormap} = useGlobalStore(useShallow(state => ({
@@ -100,8 +99,8 @@ const MorphingPoints = () => {
   useEffect(() => {
     let tl: gsap.core.Timeline | null = null;
     
-    if (materialRef.current) {
-      const uniforms = materialRef.current.uniforms;
+    if (MorphMaterial) {
+      const uniforms = MorphMaterial.uniforms;
 
       // Create a GSAP timeline for the morphing animation
       tl = gsap.timeline({
@@ -151,8 +150,8 @@ const MorphingPoints = () => {
   
   // Update time uniform for the dynamic wave animation in the shader
   useFrame((state) => {
-      if(materialRef.current){
-          materialRef.current.uniforms.uTime.value = state.clock.getElapsedTime();
+      if(MorphMaterial){
+          MorphMaterial.uniforms.uTime.value = state.clock.getElapsedTime();
       }
       if (pointsRef.current) {
         pointsRef.current.rotation.y += 0.001; // Slow rotation around Y-axis
@@ -160,8 +159,8 @@ const MorphingPoints = () => {
   });
 
   useEffect(()=>{
-    if(materialRef.current){
-      materialRef.current.uniforms.cmap.value = colormap
+    if(MorphMaterial){
+      MorphMaterial.uniforms.cmap.value = colormap
     }
   },[colormap])
 
@@ -191,7 +190,6 @@ const MorphingPoints = () => {
           count={count}
         />
       </bufferGeometry>
-      <primitive  object={MorphMaterial}  ref={materialRef}/>
       {/* Use the custom morphMaterial */}
     </points>
   );
