@@ -9,7 +9,6 @@ import { MainPanel } from '@/components/ui';
 import { Metadata, Loading, Navbar, Error } from '@/components/ui';
 import { useGlobalStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
-import ScrollableLinksTable from './ui/VariablesTable';
 
 export function LandingHome() {
   const {
