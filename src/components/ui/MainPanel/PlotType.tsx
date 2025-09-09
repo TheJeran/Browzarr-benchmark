@@ -109,8 +109,8 @@ const PlotType = () => {
             if (isLargePointCloud){
               return <Tooltip open={true}>
                 <TooltipTrigger asChild>
-                  <div>
-                  {button}
+                  <div key={'pc-warning'}>
+                    {button}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side='left'>
