@@ -32,7 +32,7 @@ type MorphMaterialType = THREE.ShaderMaterial & {
 const MorphingPoints = () => {
   const materialRef = useRef<MorphMaterialType>(null);
   const pointsRef = useRef<THREE.Points>(null);
-  const count = 1000; // Total number of points
+  const count = 4096; // Total number of points
   const {colormap} = useGlobalStore(useShallow(state => ({
     colormap: state.colormap
   })))
@@ -57,27 +57,25 @@ const MorphingPoints = () => {
       spherePositions[i * 3 + 2] = z * 1.2;
     }
 
-    // --- Cube Positions (10x10x10 grid) ---
+    // --- Cube Positions (16x16x16 grid) ---
     let i = 0;
-    for (let x = 0; x < 10; x++) {
-      for (let y = 0; y < 10; y++) {
-        for (let z = 0; z < 10; z++) {
-          cubePositions[i * 3] = (x / 10 - 0.5) * 2;
-          cubePositions[i * 3 + 1] = (y / 10 - 0.5) * 2;
-          cubePositions[i * 3 + 2] = (z / 10 - 0.5) * 2;
+    for (let x = 0; x < 16; x++) {
+      for (let y = 0; y < 16; y++) {
+        for (let z = 0; z < 16; z++) {
+          cubePositions[i * 3] = (x / 16 - 0.5) * 2;
+          cubePositions[i * 3 + 1] = (y / 16 - 0.5) * 2;
+          cubePositions[i * 3 + 2] = (z / 16 - 0.5) * 2;
           i++;
         }
       }
     }
 
-    // --- Plane Positions (25x40 grid) ---
+    // --- Plane Positions (64x64 grid) ---
     i = 0;
-    const planeWidth = 2.5;
-    const planeHeight = 1.6;
-    for (let x = 0; x < 25; x++) {
-      for (let y = 0; y < 40; y++) {
-        planePositions[i * 3] = (x / 25 - 0.5) * planeWidth;
-        planePositions[i * 3 + 1] = (y / 40 - 0.5) * planeHeight;
+    for (let x = 0; x < 64; x++) {
+      for (let y = 0; y < 64; y++) {
+        planePositions[i * 3] = (x / 64 - 0.5) * 2.5 ;
+        planePositions[i * 3 + 1] = (y / 64 - 0.5) * 2.5 ;
         planePositions[i * 3 + 2] = 0;
         i++;
       }

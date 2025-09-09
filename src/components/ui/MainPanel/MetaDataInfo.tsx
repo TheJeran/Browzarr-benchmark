@@ -27,9 +27,17 @@ const formatBytes = (bytes: number): string => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
 }
 
+function ChunkIDs(chunkDepth: number, slice:[number, number | null], range:number){
+  const lowerChunk = Math.floor(slice[0]/chunkDepth)
+  const upperChunk = slice[1] ? Math.ceil(slice[1]/chunkDepth) : Math.ceil(range/chunkDepth)
+  const ids = []
+  for (let i = lowerChunk; i < upperChunk; i++){
+    ids.push(i)
+  }
+  return ids
+}
 
-
-const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setShowMeta: React.Dispatch<React.SetStateAction<boolean>>, noCard?: boolean }) => {
+const MetaDataInfo = ({ meta, setShowMeta, setOpenVariables }: { meta: any, setShowMeta: React.Dispatch<React.SetStateAction<boolean>>, setOpenVariables: React.Dispatch<React.SetStateAction<boolean>>  }) => {
   const {is4D, idx4D, variable, initStore, setIs4D, setIdx4D, setVariable} = useGlobalStore(useShallow(state => ({
     is4D: state.is4D,
     idx4D: state.idx4D,
@@ -39,10 +47,9 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
     setIdx4D: state.setIdx4D,
     setVariable: state.setVariable,
   })))
-  const setAnalysisMode = useAnalysisStore.getState().setAnalysisMode
   const {maxSize, setMaxSize} = useCacheStore.getState()
   const [cacheSize, setCacheSize] = useState(maxSize)
-  
+
   const { slice, reFetch, compress, setSlice, setReFetch, setCompress } = useZarrStore(useShallow(state => ({
     reFetch: state.reFetch,
     slice: state.slice,
@@ -56,11 +63,19 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
 
   const [tooBig, setTooBig] = useState(false)
   const [cached, setCached] = useState(false)
+  const [cachedChunks, setCachedChunks] = useState<string | null>(null)
 
   const totalSize = useMemo(() => meta.totalSize ? meta.totalSize : 0, [meta])
   const length = useMemo(() => meta.shape ? meta.shape.length == 4 ? meta.shape[1] : meta.shape[0] : 0, [meta])
   const is3D = useMemo(() => meta.shape ? meta.shape.length == 3 : false, [meta])
   const hasTimeChunks = is4D ? meta.shape[1]/meta.chunks[1] > 1 : meta.shape[0]/meta.chunks[0] > 1
+  const chunkIDs = useMemo(()=>{
+    if (hasTimeChunks){
+      const ids = ChunkIDs(meta.chunks[0], slice, is4D ? meta.shape[1] : meta.shape[0])
+      return ids;
+    } else { return ;}
+  },[slice, meta])
+
   const currentSize = useMemo(() => {
     if (is3D){
       const firstStep = slice[0] ? slice[0] : 0
@@ -83,210 +98,69 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
     }else{return 0;}
   }, [meta, slice])
 
-  const smallCache = useMemo(()=>currentSize/2 > cacheSize, [currentSize, cacheSize])
+  const cachedSize = useMemo(()=>{
+    const thisDtype = meta.dtype as string
+    if (thisDtype.includes("32")){
+      return currentSize / 2;
+    } else if (thisDtype.includes("64")){
+      return currentSize / 4;
+    } else if (thisDtype.includes("8")){
+      return currentSize * 2;
+    } else {
+      return currentSize;
+    }
+  },[currentSize, meta])
+
+  const smallCache = cachedSize > cacheSize
 
   useEffect(()=>{
     const this4D = meta.shape.length == 4;
     setIs4D(this4D);
-  })
-  useEffect(()=>{
-    setSlice([0,null]);
-    setCompress(false)
-    setIdx4D(null)
+  },[meta])
 
+  useEffect(()=>{
+    setSlice([0, null])
+  },[initStore])
+
+  useEffect(()=>{
+    setCompress(false)
+    setIdx4D(null);
+    setCachedChunks(null);
     if (cache.has(`${initStore}_${meta.name}`)){
-      setCached(true)
+      
+      setCached(true);
       return;
-    }else{
+    }else if (chunkIDs){
+      let accum = 0; 
+      for (const id of chunkIDs){
+        if (cache.has(`${initStore}_${meta.name}_chunk_${id}`)){
+          accum ++;
+        }
+      }
+      if ( accum > 0){
+        setCachedChunks(`${accum}/${chunkIDs.length}`)
+        setCached(true); 
+        return;
+      } else {
+        setCached(false)
+      }
+    } else {
       setCached(false)
     }
     const width = meta.shape[meta.shape.length-1]
     const height = meta.shape[meta.shape.length-2]
+
     if (width > maxTextureSize || height > maxTextureSize){
       setTooBig(true)
     }else{
       setTooBig(false)
     }
-  },[meta, maxTextureSize])
+  },[meta, maxTextureSize, chunkIDs])
 
   return (
       // Don't put any more work in the landing page version. Since it won't be visible in the future
     <> 
-      {noCard ? (
-        <div className="space-y-6">
-          {/* Header Section */}
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-foreground">Variable Information</h3>
-            <p className="text-sm text-muted-foreground">Detailed metadata and configuration options</p>
-          </div>
-
-          {/* Basic Info Section */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-foreground">Long Name</h4>
-              <p className="text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-md">
-                {meta.long_name}
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-foreground">Shape</h4>
-              <p className="text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-md font-mono">
-                [{formatArray(meta.shape)}]
-              </p>
-            </div>
-          </div>
-
-          {tooBig && 
-          <div className="flex items-center gap-2 p-2 bg-red-50 dark:bg-red-950/30 rounded-md border border-red-200 dark:border-red-800">
-            <div className="w-2 h-2 bg-red-500 rounded-full"/>
-            <span className="text-xs font-medium text-red-800 dark:text-red-200">
-              One or more of the dimensions in your dataset exceed this browsers maximum texture size: <b>{maxTextureSize}</b>
-            </span>
-          </div>
-          }
-
-          {/* 4D Dataset Section */}
-          {!tooBig &&
-          <>
-          {is4D && (
-            <div className="space-y-3 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100">4D Dataset Configuration</h4>
-              <p className="text-sm text-blue-700 dark:text-blue-300">
-                This is a Four-Dimensional Dataset. You must select an index along the first dimension.
-              </p>
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                  Select index (<b>0</b> to <b>{meta.shape[0]-1}</b>):
-                </label>
-                <Input 
-                  type="number" 
-                  min={0} 
-                  max={meta.shape[0]-1} 
-                  value={String(idx4D)} 
-                  onChange={e=>setIdx4D(parseInt(e.target.value))}
-                  className="max-w-32"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Data Range Section */}
-          {((is3D || idx4D != null) && !cached) && (
-            <div className="space-y-4">
-              {totalSize > 1e8 && hasTimeChunks && (
-                <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-orange-200 dark:border-orange-800">
-                  <h4 className="text-sm font-medium text-orange-900 dark:text-orange-100">Data Range Selection</h4>
-                  <p className="text-xs text-orange-800 dark:text-orange-200">
-                    Large dataset detected. Select a time range to reduce memory usage.
-                  </p>
-                  <div className="space-y-3">
-                    <SliderThumbs
-                      min={0}
-                      max={length}
-                      value={[slice[0] ? slice[0] : 0, slice[1] ? slice[1] : length]}
-                      step={1}
-                      onValueChange={(values: number[]) => setSlice([values[0], values[1]] as [number, number | null])}
-                    />
-                    <div className="flex justify-between items-center text-xs">
-                      <div className="space-y-1">
-                        <label className="font-medium"> Min: </label>
-                        <input 
-                          className='w-16 px-2 py-1 rounded border border-orange-300 dark:border-orange-600 bg-background text-foreground' 
-                          type="number" 
-                          value={slice[0]} 
-                          onChange={e=>setSlice([parseInt(e.target.value), slice[1]])}
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-medium"> Max: </label>
-                        <input 
-                          className='w-16 px-2 py-1 rounded border border-orange-300 dark:border-orange-600 bg-background text-foreground text-right' 
-                          type="number" 
-                          value={slice[1] ? slice[1] : length} 
-                          onChange={e=>setSlice([slice[0] , parseInt(e.target.value)])}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Memory Usage Section */}
-              <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border">
-                <h4 className="text-sm font-medium text-foreground">Memory Usage</h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Size:</span>
-                    <span className="text-sm font-medium">{formatBytes(currentSize)}</span>
-                  </div>
-                  
-                  <div className="mt-3">
-                    {currentSize < 1e8 && (
-                      <div className="flex items-center gap-2 p-2 bg-emerald-50 dark:bg-emerald-950/30 rounded-md border border-emerald-200 dark:border-emerald-800">
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full"/>
-                        <span className="text-xs font-medium text-emerald-800 dark:text-emerald-200">
-                          Selected data will fit in memory
-                        </span>
-                      </div>
-                    )}
-                    {currentSize > 1e8 && currentSize < 2e8 && (
-                      <div className="flex items-center gap-2 p-2 bg-orange-50 dark:bg-orange-950/30 rounded-md border border-orange-200 dark:border-orange-800">
-                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                        <span className="text-xs font-medium text-orange-800 dark:text-orange-200">
-                          Data may not fit in memory
-                        </span>
-                      </div>
-                    )}
-                    {currentSize > 2e8 && (
-                      <div className="flex items-center gap-2 p-2 bg-red-50 dark:bg-red-950/30 rounded-md border border-red-200 dark:border-red-800">
-                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                        <span className="text-xs font-medium text-red-800 dark:text-red-200">
-                          Data will not fit in memory
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {cached &&
-          <div>
-            This variable is already cached. 
-          </div>
-
-          }
-
-          {/* Action Button */}
-          <div className="flex justify-end pt-4 border-t border-border">
-            <Button
-              variant="pink"
-              size="sm"
-              className="cursor-pointer hover:scale-[1.02] transition-transform"
-              disabled={(is4D && idx4D == null)}
-              onClick={() => {
-                if (variable == meta.name){
-                  setReFetch(!reFetch)
-                }
-                else{
-                  setVariable(meta.name)
-                  setAnalysisMode(false)
-                  setReFetch(!reFetch)
-                }
-                setShowMeta(false)
-              }}
-            >
-              Plot Variable
-            </Button>
-          </div>
-          </>}
-
-        </div>
-        
-      ) : (
-        <Card className="meta-container max-w-sm md:max-w-md p-4 mb-4 border border-muted select-none">
+      <Card className="meta-container max-w-sm md:max-w-md p-4 mb-4 border border-muted select-none">
           <div className="meta-info">
             <b>Long Name</b> <br/>
             {`${meta.long_name}`}<br/>
@@ -314,7 +188,7 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
               </div>
             </>
             }
-            {((is3D || idx4D != null) && !cached) &&
+            {((is3D || idx4D != null) && !(cached && !cachedChunks)) &&
               <>
                 {totalSize > 1e8 && hasTimeChunks && (
                   <>
@@ -336,7 +210,14 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
                     </div>
                   </>
                 )}
-                <b>Total Size: </b>{formatBytes(currentSize)}<br />
+                <div className="grid gap-2">
+                  <div>
+                    <b>Raw Size: </b>{formatBytes(currentSize)}
+                  </div>
+                  <div>
+                    <b>Stored size: {compress ? "<" : null} </b>{formatBytes(cachedSize)}
+                  </div>
+                </div>
                 {currentSize > maxSize && (
                   <>
                   <div className={`flex items-center gap-2 p-2 ${smallCache ? "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800" : "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800"} rounded-md border`}>
@@ -370,34 +251,7 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
                   </div>
                   </>
                 )
-
                 }
-                {/* {currentSize < 1e8 && (
-                  <>
-                  <div className="flex items-center gap-2 p-2 bg-emerald-50 dark:bg-emerald-950/30 rounded-md border border-emerald-200 dark:border-emerald-800">
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full"/>
-                        <span className="text-xs font-medium text-emerald-800 dark:text-emerald-200">
-                          Selected data will fit in memory
-                        </span>
-                  </div>
-                  </>
-                )}
-                {currentSize > 1e8 && currentSize < 2e8 && (
-                  <div className="flex items-center gap-2 p-2 bg-orange-50 dark:bg-orange-950/30 rounded-md border border-orange-200 dark:border-orange-800">
-                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                      <span className="text-xs font-medium text-orange-800 dark:text-orange-200">
-                        Data may not fit in memory
-                      </span>
-                  </div>
-                )}
-                {currentSize > 2e8 && (
-                  <div className="flex items-center gap-2 p-2 bg-red-50 dark:bg-red-950/30 rounded-md border border-red-200 dark:border-red-800">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span className="text-xs font-medium text-red-800 dark:text-red-200">
-                      Data will not fit in memory
-                    </span>
-                  </div>
-                )} */}
                 <div className="grid grid-cols-[auto_40%] items-center gap-2 mt-2">
                   <div>
                   <label htmlFor="compress-data">Compress Data </label>
@@ -418,9 +272,11 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
           </div>
           {cached &&
           <div>
-            <b>This data is already cached. </b>
+            {cachedChunks ? 
+              <b>{cachedChunks} chunks already cached. </b> :
+              <b>This data is already cached. </b>
+            } 
           </div>
-
           }
           <Button
             variant="pink"
@@ -438,13 +294,13 @@ const MetaDataInfo = ({ meta, setShowMeta, noCard = false }: { meta: any, setSho
                 setReFetch(!reFetch)
               }
               setShowMeta(false)
+              setOpenVariables(false)
             }}
           >
             Plot
           </Button>
           
         </Card>
-      )}
     </>
   )
 }

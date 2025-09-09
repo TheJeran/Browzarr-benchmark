@@ -151,7 +151,17 @@ const VolumeOptions = ()=>{
           />
           Better
       </div>
-      <Button variant="pink" size="sm" className="w-[100%] cursor-[pointer] mb-2 mt-2" onClick={() => setUseFragOpt(!useFragOpt)}>{useFragOpt ? "Revert to Normal" : "Use Optimized Shader"}</Button>
+      <Tooltip delayDuration={500} >
+        <TooltipTrigger asChild>
+          <Button variant="pink" size="sm" className="w-[100%] cursor-[pointer] mb-2 mt-2" onClick={() => setUseFragOpt(!useFragOpt)}>
+            {useFragOpt ? "Revert to Normal" : "Use Optimized Shader"}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side='left'>
+          Enable this for better performance while navigating. Switch back for exports or still images. 
+        </TooltipContent>
+      </Tooltip>
+      
       <b>Transparency</b>
 
       <UISlider
