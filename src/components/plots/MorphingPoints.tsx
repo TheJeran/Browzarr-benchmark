@@ -30,9 +30,8 @@ type MorphMaterialType = THREE.ShaderMaterial & {
 
 
 const MorphingPoints = () => {
-  const materialRef = useRef<MorphMaterialType>(null);
   const pointsRef = useRef<THREE.Points>(null);
-  const count = 4096; // Total number of points
+  const count = 15625; // Total number of points
   const {colormap} = useGlobalStore(useShallow(state => ({
     colormap: state.colormap
   })))
@@ -58,24 +57,26 @@ const MorphingPoints = () => {
     }
 
     // --- Cube Positions (16x16x16 grid) ---
+    const cubRes = 25
     let i = 0;
-    for (let x = 0; x < 16; x++) {
-      for (let y = 0; y < 16; y++) {
-        for (let z = 0; z < 16; z++) {
-          cubePositions[i * 3] = (x / 16 - 0.5) * 2;
-          cubePositions[i * 3 + 1] = (y / 16 - 0.5) * 2;
-          cubePositions[i * 3 + 2] = (z / 16 - 0.5) * 2;
+    for (let x = 0; x < cubRes; x++) {
+      for (let y = 0; y < cubRes; y++) {
+        for (let z = 0; z < cubRes; z++) {
+          cubePositions[i * 3] = (x / cubRes - 0.5) * 2;
+          cubePositions[i * 3 + 1] = (y / cubRes - 0.5) * 2;
+          cubePositions[i * 3 + 2] = (z / cubRes - 0.5) * 2;
           i++;
         }
       }
     }
 
     // --- Plane Positions (64x64 grid) ---
+    const planeRes = 125
     i = 0;
-    for (let x = 0; x < 64; x++) {
-      for (let y = 0; y < 64; y++) {
-        planePositions[i * 3] = (x / 64 - 0.5) * 2.5 ;
-        planePositions[i * 3 + 1] = (y / 64 - 0.5) * 2.5 ;
+    for (let x = 0; x < planeRes; x++) {
+      for (let y = 0; y < planeRes; y++) {
+        planePositions[i * 3] = (x / planeRes - 0.5) * 2.5 ;
+        planePositions[i * 3 + 1] = (y / planeRes - 0.5) * 2.5 ;
         planePositions[i * 3 + 2] = 0;
         i++;
       }
@@ -100,8 +101,8 @@ const MorphingPoints = () => {
   useEffect(() => {
     let tl: gsap.core.Timeline | null = null;
     
-    if (materialRef.current) {
-      const uniforms = materialRef.current.uniforms;
+    if (MorphMaterial) {
+      const uniforms = MorphMaterial.uniforms;
 
       // Create a GSAP timeline for the morphing animation
       tl = gsap.timeline({
@@ -151,17 +152,18 @@ const MorphingPoints = () => {
   
   // Update time uniform for the dynamic wave animation in the shader
   useFrame((state) => {
-      if(materialRef.current){
-          materialRef.current.uniforms.uTime.value = state.clock.getElapsedTime();
+      if(MorphMaterial){
+          MorphMaterial.uniforms.uTime.value = state.clock.getElapsedTime();
       }
       if (pointsRef.current) {
         pointsRef.current.rotation.y += 0.001; // Slow rotation around Y-axis
+        pointsRef.current.rotation.x += 0.001;
       }
   });
 
   useEffect(()=>{
-    if(materialRef.current){
-      materialRef.current.uniforms.cmap.value = colormap
+    if(MorphMaterial){
+      MorphMaterial.uniforms.cmap.value = colormap
     }
   },[colormap])
 
@@ -191,7 +193,6 @@ const MorphingPoints = () => {
           count={count}
         />
       </bufferGeometry>
-      <primitive  object={MorphMaterial}  ref={materialRef}/>
       {/* Use the custom morphMaterial */}
     </points>
   );

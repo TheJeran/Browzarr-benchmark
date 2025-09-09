@@ -68,7 +68,20 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
             vertexShader: vertShader,
             fragmentShader: isFlat ? fragmentFlat : flatFrag3D,
             side: THREE.DoubleSide,
-        }),[cScale, cOffset, texture, colormap, animProg, nanColor, nanTransparency])
+        }),[])
+
+    useEffect(()=>{
+      if(shaderMaterial){
+        const uniforms = shaderMaterial.uniforms
+        uniforms.cOffset.value = cOffset;
+        uniforms.data.value = texture;
+        uniforms.cmap. value = colormap;
+        uniforms.animateProg.value =animProg;
+        uniforms.nanColor.value = new THREE.Color(nanColor);
+        uniforms.nanAlpha.value = 1 - nanTransparency;
+        uniforms.cScale.value = cScale;
+      }
+    },[cScale, cOffset, texture, colormap, animProg, nanColor, nanTransparency])
 
     useEffect(()=>{
         geometry.dispose()

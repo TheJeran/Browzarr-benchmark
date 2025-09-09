@@ -17,8 +17,8 @@ void main() {
     pos = mix(pos, aPlanePosition, uPlaneMix);
 
     // Add a slight sine wave animation to make it more dynamic
-    pos.y += sin(pos.x * 50.0 + uTime) * 0.005;
-    pos.x += cos(pos.y * 50.0 + uTime) * 0.005;
+    // pos.y += sin(pos.x * 50.0 + uTime) * 0.005;
+    // pos.x += cos(pos.y * 50.0 + uTime) * 0.005;
 
     float minBrightness = 0.2;
     float maxBrightness = 0.96;
@@ -40,6 +40,6 @@ void main() {
     gl_Position = projectedPosition;
 
     // Make points smaller as they are further away (perspective)
-    gl_PointSize = (30.0 / -viewPosition.z);
+    gl_PointSize = (15.0 / -viewPosition.z);
 }
 

@@ -252,8 +252,34 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       blending:THREE.NormalBlending,
       side:THREE.DoubleSide,
     })
-    ),[pointSize, colormap, cOffset, cScale, valueRange, scalePoints, scaleIntensity, pointIDs, stride, selectTS, animProg, timeScale, depthRatio, aspectRatio, xRange, yRange, zRange]);
+    ),[]);
 
+   useEffect(() => {
+    if (shaderMaterial) {
+      const uniforms = shaderMaterial.uniforms;
+      uniforms.pointSize.value = pointSize;
+      uniforms.cmap.value = colormap;
+      uniforms.cOffset.value = cOffset;
+      uniforms.cScale.value = cScale;
+      uniforms.valueRange.value.set(valueRange[0], valueRange[1]);
+      uniforms.scalePoints.value = scalePoints;
+      uniforms.scaleIntensity.value = scaleIntensity;
+      uniforms.startIDs.value = pointIDs;
+      uniforms.stride.value = stride;
+      uniforms.showTransect.value = selectTS;
+      uniforms.dimWidth.value = dimWidth;
+      uniforms.timeScale.value = timeScale;
+      uniforms.animateProg.value = animProg;
+      uniforms.depthRatio.value = depthRatio;
+      uniforms.flatBounds.value.set(
+        xRange[0], xRange[1], 
+        zRange[0] * depthRatio / 2, zRange[1] * depthRatio / 2
+      );
+      uniforms.vertBounds.value.set(
+        yRange[0] / aspectRatio, yRange[1] / aspectRatio
+      );
+    }
+  }, [pointSize, colormap, cOffset, cScale, valueRange, scalePoints, scaleIntensity, pointIDs, stride, selectTS, animProg, timeScale, depthRatio, aspectRatio, xRange, yRange, zRange]);
 
     return (
       <>
