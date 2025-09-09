@@ -58,24 +58,24 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(2, 4), []);
 
     useEffect(() => {
-    if (shaderMaterial) {
-      const uniforms = shaderMaterial.uniforms
-      uniforms.map.value = volTexture;
-      uniforms.cmap.value = colormap;
-      uniforms.cOffset.value = cOffset;
-      uniforms.cScale.value = cScale;
-      uniforms.threshold.value.set(valueRange[0], valueRange[1]);
-      uniforms.scale.value = shape;
-      uniforms.flatBounds.value.set(-xRange[1], -xRange[0], zRange[0], zRange[1]);
-      uniforms.vertBounds.value.set(yRange[0] * aspectRatio, yRange[1] * aspectRatio);
-      uniforms.steps.value = quality;
-      uniforms.animateProg.value = animProg;
-      uniforms.transparency.value = transparency;
-      uniforms.nanAlpha.value = 1 - nanTransparency;
-      uniforms.nanColor.value.set(nanColor);
-      invalidate() // Needed because Won't trigger re-render if camera is stationary. 
-    }
-  }, [volTexture, shape, colormap, cOffset, cScale, valueRange, xRange, yRange, zRange, aspectRatio, quality, animProg, transparency, nanTransparency, nanColor]);
+      if (shaderMaterial) {
+        const uniforms = shaderMaterial.uniforms
+        uniforms.map.value = volTexture;
+        uniforms.cmap.value = colormap;
+        uniforms.cOffset.value = cOffset;
+        uniforms.cScale.value = cScale;
+        uniforms.threshold.value.set(valueRange[0], valueRange[1]);
+        uniforms.scale.value = shape;
+        uniforms.flatBounds.value.set(-xRange[1], -xRange[0], zRange[0], zRange[1]);
+        uniforms.vertBounds.value.set(yRange[0] * aspectRatio, yRange[1] * aspectRatio);
+        uniforms.steps.value = quality;
+        uniforms.animateProg.value = animProg;
+        uniforms.transparency.value = transparency;
+        uniforms.nanAlpha.value = 1 - nanTransparency;
+        uniforms.nanColor.value.set(nanColor);
+        invalidate() // Needed because Won't trigger re-render if camera is stationary. 
+      }
+    }, [volTexture, shape, colormap, cOffset, cScale, valueRange, xRange, yRange, zRange, aspectRatio, quality, animProg, transparency, nanTransparency, nanColor]);
   
   return (
     <>
