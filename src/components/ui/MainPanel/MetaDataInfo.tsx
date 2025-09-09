@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect } from "react"
 import { useAnalysisStore, useCacheStore, useGlobalStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates'
 import { useShallow } from 'zustand/shallow'
 import { SliderThumbs } from "@/components/ui/SliderThumbs"
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "../input"
 import { BsFillQuestionCircleFill } from "react-icons/bs";
@@ -159,149 +158,147 @@ const MetaDataInfo = ({ meta, setShowMeta, setOpenVariables }: { meta: any, setS
 
   return (
       // Don't put any more work in the landing page version. Since it won't be visible in the future
+      // The logic here was to just get divs to be used later in a Card or Dialog component!
     <> 
-      <Card className="meta-container max-w-sm md:max-w-md p-4 mb-4 border border-muted select-none">
-          <div className="meta-info">
-            <b>Long Name</b> <br/>
-            {`${meta.long_name}`}<br/>
-            <br/>
-            <b>Shape</b><br/> 
-            {`[${formatArray(meta.shape)}]`}<br/>
-            <br/>
-            {tooBig && 
-            <div className="bg-[#FFBEB388] rounded-md p-1">
-              <span className="text-xs font-medium text-red-800 dark:text-red-200">
-                One or more of the dimensions in your dataset exceed this browsers maximum texture size: <b>{maxTextureSize}</b>
-              </span>
-            </div>
-            }
-            {!tooBig && 
-            <>
-            {is4D &&
-            <>
-              <div>
-                <p>
-                This is Four-Dimensional Dataset. You must select an index along the first dimension. <br/>
-                Please select an index from <b>0</b> to <b>{meta.shape[0]-1}</b>
-                </p>
-                <Input type="number" min={0} max={meta.shape[0]-1} value={String(idx4D)} onChange={e=>setIdx4D(parseInt(e.target.value))}/>
-              </div>
-            </>
-            }
-            {((is3D || idx4D != null) && !(cached && !cachedChunks)) &&
-              <>
-                {totalSize > 1e8 && hasTimeChunks && (
-                  <>
-                    <div className="flex justify-center">
-                      <b>Select Data Range</b>
-                    </div>
-                    <div className="w-full flex flex-col justify-between">
-                      <SliderThumbs
-                        min={0}
-                        max={length}
-                        value={[slice[0] ? slice[0] : 0, slice[1] ? slice[1] : length]}
-                        step={1}
-                        onValueChange={(values: number[]) => setSlice([values[0], values[1]] as [number, number | null])}
-                      />
-                      <div className="flex justify-between text-xs mt-4">
-                        <span>Min: <br /> <input className='w-[50px]' type="number" value={slice[0]} onChange={e=>setSlice([parseInt(e.target.value), slice[1]])}/></span>
-                        <span>Max: <br /> <input className='w-[50px] text-right' type="number" value={slice[1] ? slice[1] : length} onChange={e=>setSlice([slice[0] , parseInt(e.target.value)])}/></span>
-                      </div>
-                    </div>
-                  </>
-                )}
-                <div className="grid gap-2">
-                  <div>
-                    <b>Raw Size: </b>{formatBytes(currentSize)}
-                  </div>
-                  <div>
-                    <b>Stored size: {compress ? "<" : null} </b>{formatBytes(cachedSize)}
-                  </div>
-                </div>
-                {currentSize > maxSize && (
-                  <>
-                  <div className={`flex items-center gap-2 p-2 ${smallCache ? "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800" : "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800"} rounded-md border`}>
-                        <div className={`w-2 h-2 ${smallCache ? "bg-red-500" : "bg-emerald-500"} rounded-full`}></div>
-                        <span className={`text-xs font-medium ${smallCache ? "text-red-800 dark:text-red-200" : "text-emerald-800 dark:text-emerald-200"}`}>
-                          {smallCache ? "Selection won't fit in Cache" : "Data Will Fit"}
-                        </span>                  
-                        </div>
-                        <div className="">
-                          Decrease selection or Increase cache size <br/>
-                          <div className="flex justify-center">
-                            <p>Expand Cache: <b>{cacheSize/(1024*1024)}MB</b>
-                              <Tooltip>
-                                <TooltipTrigger>
-                                <BsFillQuestionCircleFill/>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  Increasing this too far can cause crashes. Mobile users beware 
-                                </TooltipContent>
-                              </Tooltip>
-                            </p>
-                          </div>
-                          
-                          <SliderThumbs 
-                            id="newCache-size"
-                            min={0}
-                            max={1000}
-                            step={10}
-                            onValueChange={e=>setCacheSize(maxSize+e[0]*(1024*1024))}
-                        />
-                  </div>
-                  </>
-                )
-                }
-                <div className="grid grid-cols-[auto_40%] items-center gap-2 mt-2">
-                  <div>
-                  <label htmlFor="compress-data">Compress Data </label>
-                  <Tooltip>
-                    <TooltipTrigger>
-                     <BsFillQuestionCircleFill/>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Compress data to preserve memory at the expense of slightly longer load times
-                    </TooltipContent>
-                  </Tooltip>
-                  </div>
-                  
-                  <Input className="w-[50px]" type="checkbox" id="compress-data" checked={compress} onChange={e=>setCompress(e.target.checked)}/>
-                </div>
-              </>}
-          </>}
-          </div>
-          {cached &&
+      <div className="meta-info">
+        <b>Long Name</b> <br/>
+        {`${meta.long_name}`}<br/>
+        <br/>
+        <b>Shape</b><br/> 
+        {`[${formatArray(meta.shape)}]`}<br/>
+        <br/>
+        {tooBig && 
+        <div className="bg-[#FFBEB388] rounded-md p-1">
+          <span className="text-xs font-medium text-red-800 dark:text-red-200">
+            One or more of the dimensions in your dataset exceed this browsers maximum texture size: <b>{maxTextureSize}</b>
+          </span>
+        </div>
+        }
+        {!tooBig && 
+        <>
+        {is4D &&
+        <>
           <div>
-            {cachedChunks ? 
-              <b>{cachedChunks} chunks already cached. </b> :
-              <b>This data is already cached. </b>
-            } 
+            <p>
+            This is Four-Dimensional Dataset. You must select an index along the first dimension. <br/>
+            Please select an index from <b>0</b> to <b>{meta.shape[0]-1}</b>
+            </p>
+            <Input type="number" min={0} max={meta.shape[0]-1} value={String(idx4D)} onChange={e=>setIdx4D(parseInt(e.target.value))}/>
           </div>
+        </>
+        }
+        {((is3D || idx4D != null) && !(cached && !cachedChunks)) &&
+          <>
+            {totalSize > 1e8 && hasTimeChunks && (
+              <>
+                <div className="flex justify-center">
+                  <b>Select Data Range</b>
+                </div>
+                <div className="w-full flex flex-col justify-between">
+                  <SliderThumbs
+                    min={0}
+                    max={length}
+                    value={[slice[0] ? slice[0] : 0, slice[1] ? slice[1] : length]}
+                    step={1}
+                    onValueChange={(values: number[]) => setSlice([values[0], values[1]] as [number, number | null])}
+                  />
+                  <div className="flex justify-between text-xs mt-4">
+                    <span>Min: <br /> <input className='w-[50px]' type="number" value={slice[0]} onChange={e=>setSlice([parseInt(e.target.value), slice[1]])}/></span>
+                    <span>Max: <br /> <input className='w-[50px] text-right' type="number" value={slice[1] ? slice[1] : length} onChange={e=>setSlice([slice[0] , parseInt(e.target.value)])}/></span>
+                  </div>
+                </div>
+              </>
+            )}
+            <div className="grid gap-2">
+              <div>
+                <b>Raw Size: </b>{formatBytes(currentSize)}
+              </div>
+              <div>
+                <b>Stored size: {compress ? "<" : null} </b>{formatBytes(cachedSize)}
+              </div>
+            </div>
+            {currentSize > maxSize && (
+              <>
+              <div className={`flex items-center gap-2 p-2 ${smallCache ? "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800" : "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800"} rounded-md border`}>
+                    <div className={`w-2 h-2 ${smallCache ? "bg-red-500" : "bg-emerald-500"} rounded-full`}></div>
+                    <span className={`text-xs font-medium ${smallCache ? "text-red-800 dark:text-red-200" : "text-emerald-800 dark:text-emerald-200"}`}>
+                      {smallCache ? "Selection won't fit in Cache" : "Data Will Fit"}
+                    </span>                  
+                    </div>
+                    <div className="">
+                      Decrease selection or Increase cache size <br/>
+                      <div className="flex justify-center">
+                        <p>Expand Cache: <b>{cacheSize/(1024*1024)}MB</b>
+                          <Tooltip>
+                            <TooltipTrigger>
+                            <BsFillQuestionCircleFill/>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              Increasing this too far can cause crashes. Mobile users beware 
+                            </TooltipContent>
+                          </Tooltip>
+                        </p>
+                      </div>
+                      
+                      <SliderThumbs 
+                        id="newCache-size"
+                        min={0}
+                        max={1000}
+                        step={10}
+                        onValueChange={e=>setCacheSize(maxSize+e[0]*(1024*1024))}
+                    />
+              </div>
+              </>
+            )
+            }
+            <div className="grid grid-cols-[auto_40%] items-center gap-2 mt-2">
+              <div>
+              <label htmlFor="compress-data">Compress Data </label>
+              <Tooltip>
+                <TooltipTrigger>
+                  <BsFillQuestionCircleFill/>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-[min(100%,16rem)] break-words whitespace-normal">
+                  Compress data to preserve memory at the expense of slightly longer load times
+                </TooltipContent>
+              </Tooltip>
+              </div>
+              
+              <Input className="w-[50px]" type="checkbox" id="compress-data" checked={compress} onChange={e=>setCompress(e.target.checked)}/>
+            </div>
+          </>}
+      </>}
+      </div>
+      {cached &&
+      <div>
+        {cachedChunks ? 
+          <b>{cachedChunks} chunks already cached. </b> :
+          <b>This data is already cached. </b>
+        } 
+      </div>
+      }
+      <Button
+        variant="pink"
+        size="sm"
+        
+        className="cursor-pointer hover:scale-[1.05]"
+        disabled={((is4D && idx4D == null) || tooBig || smallCache)}
+        onClick={() => {
+          if (variable == meta.name){
+            setReFetch(!reFetch)
           }
-          <Button
-            variant="pink"
-            size="sm"
-            
-            className="cursor-pointer hover:scale-[1.05]"
-            disabled={((is4D && idx4D == null) || tooBig || smallCache)}
-            onClick={() => {
-              if (variable == meta.name){
-                setReFetch(!reFetch)
-              }
-              else{
-                setMaxSize(cacheSize)
-                setVariable(meta.name)
-                setReFetch(!reFetch)
-              }
-              setShowMeta(false)
-              setOpenVariables(false)
-            }}
-          >
-            Plot
-          </Button>
-          
-        </Card>
-    </>
+          else{
+            setMaxSize(cacheSize)
+            setVariable(meta.name)
+            setReFetch(!reFetch)
+          }
+          setShowMeta(false)
+          setOpenVariables(false)
+        }}
+      >
+      Plot
+      </Button>
+  </>
   )
 }
 

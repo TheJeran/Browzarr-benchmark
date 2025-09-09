@@ -42,8 +42,8 @@
     "fflate": "^0.8.2",
     "gsap": "^3.13.0",
     "js-colormaps-es": "^0.0.5",
-    "lucide-react": "^0.503.0",
-    "next": "15.4.3",
+    "lucide-react": "^0.543.0",
+    "next": "15.5.2",
     "next-themes": "^0.4.6",
     "radix-ui": "latest",
     "react": "^19.0.0",
@@ -56,7 +56,7 @@
     "vaul": "^1.1.2",
     "webgpu-utils": "^1.11.0",
     "zarrita": "^0.5.3",
-    "zustand": "^5.0.4"
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
