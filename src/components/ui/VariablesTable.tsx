@@ -90,13 +90,12 @@ export default function VariablesTable() {
                                 {variable}
                               </DialogTitle>
                             <div className="mt-4">
-                              {selectedMeta && (
+                              {/* {selectedMeta && (
                                 <MetaDataInfo
                                   meta={selectedMeta}
                                   setShowMeta={setShowMetaDialog}
-                                  noCard={true}
                                 />
-                              )}
+                              )} */}
                             </div>
                           </DialogContent>
                         </Dialog>
