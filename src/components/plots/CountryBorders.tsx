@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { useShallow } from 'zustand/shallow';
 import { useFrame } from '@react-three/fiber';
 import {vertexShader, bordersFrag} from '../textures/shaders'
+import { invalidate } from '@react-three/fiber';
 
 function Reproject([lon, lat] : [number, number], lonBounds: [number, number], latBounds: [number, number]){
     let newLon = (lon-lonBounds[0])/(lonBounds[1]-lonBounds[0]);
@@ -85,9 +86,9 @@ function Borders({features}:{features: any}){
             uniforms.yBounds.value = new THREE.Vector2(yRange[0]/shape.x, yRange[1]/shape.x)
             uniforms.borderColor.value = new THREE.Color(borderColor)
             uniforms.trim.value = !spherize
+            invalidate()
         }
     },[xRange, yRange, borderColor, spherize])
-
 
     const lineGeometries = useMemo(() => {
     return features.flatMap((feature: any, i: number) => {
