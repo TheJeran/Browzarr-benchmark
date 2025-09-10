@@ -81,7 +81,28 @@ const ThickLine = ({height, xScale, yScale, pointSetters} : ThickLineProps) => {
                 depthWrite: false,
                 })
           })
-          return materialObj},[colormap,lineWidth,xScale,yScale,window.innerWidth, window.innerHeight, useLineColor, lineColor, camera.zoom, useCustomColor, timeSeries])
+          return materialObj},[timeSeries])
+
+  useEffect(()=>{
+    if (Object.values(materials)){
+      for (const material of Object.values(materials)){
+        const uniforms = material.uniforms
+        uniforms.cmap.value = colormap
+        uniforms.xScale.value = xScale
+        uniforms.yScale.value = yScale
+        uniforms.aspect.value = window.innerWidth / window.innerHeight
+        uniforms.thickness.value =lineWidth
+        uniforms.miter.value = 1
+        uniforms.useLineColor.value = useCustomColor
+        uniforms.useMapColors.value = useLineColor
+        uniforms.userColor.value = new THREE.Color(lineColor)
+        uniforms.zoom.value = camera.zoom
+        invalidate()
+      }
+    }
+  },[colormap,lineWidth,xScale,yScale,window.innerWidth, window.innerHeight, useLineColor, lineColor, camera.zoom, useCustomColor,])
+
+
   const viewWidth = useMemo(()=>window.innerWidth,[window.innerWidth])
   const viewHeight = useMemo(()=>window.innerHeight - height, [window.innerWidth, height])
 

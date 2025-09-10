@@ -163,41 +163,29 @@ const PlayButton = () => {
     },[reFetch])
     
   return (
-    <div>
-      {enableCond ? (
-        <Tooltip delayDuration={500} >
-          <TooltipTrigger asChild>
-            <div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-10 cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
-                onClick={() => {if (cond){setShowOptions(x=>!x)}}}
-              >
-                <PiPlayPauseFill className="size-8" />
-              </Button>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent side="left" align="start" className="flex flex-col">
-            <span>Animation controls</span>
-          </TooltipContent>
-        </Tooltip>
-      ) : (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-10"
-          disabled
-          style={{
-            color: 'var(--text-disabled)',
-            transform: 'scale(1)',
-          }}
-        >
-          <PiPlayPauseFill className="size-8" />
-        </Button>
-      )}
+    <>
+      <Tooltip delayDuration={500} >
+        <TooltipTrigger asChild>
+          <div style={!enableCond ? { pointerEvents: 'none' } : {}}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-10 cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
+              style={{
+                color: enableCond ? '' : 'var(--text-disabled)'
+              }}
+              onClick={() => {if (cond){setShowOptions(x=>!x)}}}
+            >
+              <PiPlayPauseFill className="size-8" />
+            </Button>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="left" align="start" className="flex flex-col">
+          <span>Animation controls</span>
+        </TooltipContent>
+      </Tooltip>
       <PlayInterFace visible={(showOptions && enableCond)}/>
-    </div>
+    </>
   )
 }
 
