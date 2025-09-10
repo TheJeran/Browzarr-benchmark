@@ -187,7 +187,7 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
                 {`${variable} [ ${units} ]`}
             </p>
         {(cScale != 1 || cOffset != 0) && <RxReset size={25} style={{position:'absolute', top:'-25px', cursor:'pointer'}} 
-            onClick={()=>{setNewMin(TwoDecimals(valueScales.minVal)); setNewMax(TwoDecimals(valueScales.maxVal))}}
+            onClick={()=>{setNewMin(origMin); setNewMax(origMax)}}
         />}
         <div
             style={{
