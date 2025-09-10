@@ -14,6 +14,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { parseLoc } from '@/utils/HelperFuncs';
 
 function DeNorm(val : number, min : number, max : number){
     const range = max-min;
@@ -25,13 +26,14 @@ function Norm(val : number, min : number, max : number){
     return (val-min)/range;
 }
 
-const MinMaxSlider = React.memo(function MinMaxSlider({range, setRange, valueScales, min=-1, array} : 
+const MinMaxSlider = React.memo(function MinMaxSlider({range, setRange, valueScales, min=-1, array, units} : 
     {
         range : number[], 
         setRange : (value: number[]) => void, 
         valueScales : {minVal : number, maxVal  : number},
         min?: number,
-        array?: number[]
+        array?: number[],
+        units?: string
     }){
         let {minVal, maxVal} = valueScales;
         minVal = Number(minVal)
@@ -61,8 +63,8 @@ const MinMaxSlider = React.memo(function MinMaxSlider({range, setRange, valueSca
 
         {/* Min/Max labels */}
             <div className="flex justify-between text-xs mt-2 mb-2">
-                <span>Min: {trueMin}</span>
-                <span>Max: {trueMax}</span>
+                <span>Min: {parseLoc(trueMin, units)}</span>
+                <span>Max: {parseLoc(trueMax, units)}</span>
             </div>
         </div>
 
@@ -83,9 +85,19 @@ const DimSlicer = () =>{
 
       const defaultScales = {minVal: 0, maxVal: 0} //This is fed into MinMax as it is required but overwritten if an array is present
   
-      const {valueScales, dimArrays} = useGlobalStore(useShallow(state => ({valueScales : state.valueScales, dimArrays : state.dimArrays, isFlat: state.isFlat})))
+      const {valueScales, dimArrays, dimNames, dimUnits, is4D} = useGlobalStore(useShallow(state => ({
+        valueScales : state.valueScales, 
+        dimArrays : state.dimArrays, 
+        dimNames: state.dimNames,
+        dimUnits: state.dimUnits,
+        is4D: state.is4D
+      })))
 
+      const theseDims = is4D ? dimNames.slice(1) : dimNames
+      const theseUnits = is4D ? dimUnits.slice(1) : dimUnits
   return (
+    <>
+    
     <div className="flex flex-col gap-6">
       <div className="flex flex-col items-center w-[200px] gap-4">
         <b>Value Cropping</b>
@@ -99,27 +111,42 @@ const DimSlicer = () =>{
 
       <div className="flex flex-col items-center w-[200px] gap-4 -mt-4">
         <b>Spatial Cropping</b>
-        <MinMaxSlider 
-          range={xRange} 
-          setRange={setXRange} 
-          valueScales={defaultScales} 
-          array={dimArrays[2]} 
-        />
-        <MinMaxSlider 
-          range={yRange} 
-          setRange={setYRange} 
-          valueScales={defaultScales} 
-          array={dimArrays[1]} 
-        />
-        <MinMaxSlider 
-          range={zRange} 
-          setRange={setZRange} 
-          valueScales={defaultScales} 
-          array={dimArrays[0]} 
-        />
+        <div className='grid w-[100%] gap-4'>
+          <div className='grid w-[100%] place-items-center'>
+            <h2>{theseDims[2]}</h2>
+            <MinMaxSlider 
+              range={xRange} 
+              setRange={setXRange} 
+              valueScales={defaultScales} 
+              array={dimArrays[2]} 
+              units={theseUnits[2]}
+            />
+          </div>
+          <div className='grid w-[100%] place-items-center'>
+            <h2>{theseDims[1]}</h2>
+            <MinMaxSlider 
+            range={yRange} 
+            setRange={setYRange} 
+            valueScales={defaultScales} 
+            array={dimArrays[1]} 
+            units={theseUnits[1]}
+            />
+          </div>
+          <div className='grid w-[100%] place-items-center'>
+            <h2>{theseDims[0]}</h2>
+            <MinMaxSlider 
+              range={zRange} 
+              setRange={setZRange} 
+              valueScales={defaultScales} 
+              array={dimArrays[0]} 
+              units={theseUnits[0]}
+            />
+          </div>
+        </div>
       </div>
     </div>
-
+    <div className="border-t border-gray-300 w-full my-4" />
+    </>
   )
 }
 
@@ -137,6 +164,8 @@ const VolumeOptions = ()=>{
           setNanColor: state.setNanColor
       })))
   return(
+    <>
+    
     <div className='grid gap-y-[5px] items-center w-50 text-center'>
       <b>Quality</b>
       <div className='w-full flex justify-between text-xs items-center gap-2'>
@@ -173,6 +202,8 @@ const VolumeOptions = ()=>{
           onValueChange={(vals:number[]) => setTransparency(vals[0])}
           />
     </div>
+    <div className="border-t border-gray-300 w-full my-4" />
+    </>
   )
 }
 
@@ -193,6 +224,8 @@ const PointOptions = () =>{
       })))
 
   return(
+    <>
+    
     <div className='flex-column items-center w-50 text-center'>
           <b>Point Size</b>
           <UISlider
@@ -224,6 +257,8 @@ const PointOptions = () =>{
         onValueChange={(vals:number[]) => setTimeScale(vals[0])}
         />
     </div>
+    <div className="border-t border-gray-300 w-full my-4" />
+    </>
   )
 }
 
@@ -246,6 +281,8 @@ const SpatialExtent = () =>{
   return (
     <div className='grid gap-2 mb-4 justify-items-center '>
       <h1>Spatial Extent</h1>
+      <div className="border-t border-gray-300 w-full" />
+      
       <div className='flex justify-between'>
         <div className='flex-col justify-items-center'>
           <h2>Min Lon</h2>
@@ -374,56 +411,45 @@ const AdjustPlot = () => {
   const enableCond = (plotOn)
   return (
     <>
-      {enableCond ? (
-        <Popover>
-          <PopoverTrigger asChild>
-            <div>
-              <Tooltip delayDuration={500} >
-                <TooltipTrigger asChild>
-                  <div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-10 cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
-                    >
-                      <LuSettings className="size-8" />
-                    </Button>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="left" align="start">
-                  <span>Plot Settings</span>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          </PopoverTrigger>
-          <PopoverContent
-            side={isMobile ? 'top' : 'left'}
-            className={`overflow-y-auto w-[240px] mt-2 mr-1 ${
-              isMobile 
-                ? 'max-h-[80vh] mb-1' 
-                : 'max-h-[70vh]'
-            }`}
-          >
-            {plotType === 'volume' && <VolumeOptions />}
-            {plotType === 'point-cloud' && <PointOptions />}
-            {(plotType === 'volume' || plotType === 'point-cloud') && <DimSlicer />}
-            <GlobalOptions />
-          </PopoverContent>
-        </Popover>
-      ) : (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-10"
-          disabled
-          style={{
-            color: 'var(--text-disabled)',
-            transform: 'scale(1)'
-          }}
+      <Popover>
+        <PopoverTrigger asChild>
+          <div style={enableCond ? {} : { pointerEvents: 'none' } }>
+            <Tooltip delayDuration={500} >
+              <TooltipTrigger asChild>
+                <div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-10 cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
+                    style={{
+                      color: enableCond ? '' : 'var(--text-disabled)'
+                    }}
+                  >
+                    <LuSettings className="size-8" />
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="left" align="start">
+                <span>Plot Settings</span>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </PopoverTrigger>
+        <PopoverContent
+          side={isMobile ? 'top' : 'left'}
+          className={`overflow-y-auto w-[240px] mt-2 mr-1 ${
+            isMobile 
+              ? 'max-h-[80vh] mb-1' 
+              : 'max-h-[70vh]'
+          }`}
         >
-          <LuSettings className="size-8" />
-        </Button>
-      )}
+          {plotType === 'volume' && <VolumeOptions />}
+          {plotType === 'point-cloud' && <PointOptions />}
+
+          {(plotType === 'volume' || plotType === 'point-cloud') && <DimSlicer />}
+          <GlobalOptions />
+        </PopoverContent>
+      </Popover>
     </>
   )
 }

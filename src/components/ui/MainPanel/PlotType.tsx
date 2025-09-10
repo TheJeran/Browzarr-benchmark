@@ -29,7 +29,10 @@ const PlotType = () => {
     plotType: state.plotType,
     setPlotType: state.setPlotType
   })))
-  const isFlat = useGlobalStore(state => state.isFlat)
+  const {isFlat, variable} = useGlobalStore(useShallow(state => ({
+    isFlat: state.isFlat,
+    variable: state.variable
+  })))
   // Responsive popover side
   const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
   const {dataShape, is4D} = useGlobalStore(useShallow(state => ({
@@ -53,11 +56,12 @@ const PlotType = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <div>
+    <Popover >
+      <PopoverTrigger asChild >
+        <div
+          style={variable === 'Default' ? { pointerEvents: 'none' } : {}} // Since disabled from PopoverTrigger isn't used by div we just set it here isntead
+        >
           <Tooltip delayDuration={500} >
             <TooltipTrigger asChild>
               <div>
@@ -67,6 +71,9 @@ const PlotType = () => {
                 className='cursor-pointer hover:scale-90 transition-transform duration-100 ease-out'
                 tabIndex={0}
                 aria-label="Select plot type"
+                style={{
+                color: variable == 'Default' ? 'var(--text-disabled)' :''
+              }}
               >
                 {plotIcons[plotType as keyof typeof plotIcons]}
               </Button>
@@ -98,7 +105,7 @@ const PlotType = () => {
             key={val}
             variant={plotType === val ? "default" : "ghost"}
             className={`mb-2 w-12 h-12 flex items-center ${isLargePointCloud ? 'bg-amber-400 hover:bg-amber-200' : null} cursor-pointer justify-center transform transition-transform duration-100 ease-out hover:scale-90`}
-              onClick={() => {
+            onClick={() => {
               setPlotType(val);
             }}
             aria-label={`Select ${val}`}

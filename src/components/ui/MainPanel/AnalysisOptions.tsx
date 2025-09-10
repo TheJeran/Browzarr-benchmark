@@ -35,7 +35,7 @@ const webGPUError = (
       WebGPU is not supported or enabled in your current browser. This feature is required for GPU-accelerated computing.
     </p>
 
-    <div className="bg-white bg-opacity-15 rounded-xl border border-white border-opacity-20">
+    <div className="bg-[--card] bg-opacity-15 rounded-xl border border-[--secondary] p-3 border-opacity-20">
       <h3 className="m-0 mb-4 text-lg font-semibold">Try These Solutions:</h3>
       <ul className="suggestion-list">
         <li>Switch to a Chrome-based browser (Chrome, Edge, Brave)</li>
@@ -189,317 +189,305 @@ const AnalysisOptions = () => {
 
   return (
     <>
-      {plotOn ? (
-        <Popover>
-          <PopoverTrigger asChild>
-            <div>
-              <Tooltip delayDuration={500}>
-                <TooltipTrigger asChild>
-                  <div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-10 cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
-                  >
-                    <PiMathOperationsBold className="size-8"/>
-                  </Button>
-                  </div>
-                </TooltipTrigger>
-                {popoverSide === "left" ? (
-                  <TooltipContent side="left" align="start">
-                    <span>Apply operations</span>
-                  </TooltipContent>
-                ) : (
-                  <TooltipContent side="top" align="center">
-                    <span>Apply operations</span>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </div>
-          </PopoverTrigger>
-          <PopoverContent
-            side={popoverSide}
-            className="analysis-info select-none"
-            >
-            {showError ? (
-              webGPUError
-            ) : (
-              <>
-                {!isFlat && 
-                  <Button
-                  className="cursor-pointer active:scale-[0.95]"
-                  disabled={incompatible}
-                  onClick={() => {
-                    setUseTwo(!useTwo);
-                    setOperation('Default');
-                  }}
+      <Popover>
+        <PopoverTrigger asChild>
+          <div style={plotOn ? {} : { pointerEvents: 'none' } }>
+            <Tooltip delayDuration={500}>
+              <TooltipTrigger asChild>
+                <div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-10 cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
+                  style={{
+                      color: plotOn ? '' : 'var(--text-disabled)'
+                    }}
                 >
-                  {useTwo ? 'Use One \n Variable' : 'Use Two Variables'}
-                </Button>}
+                  <PiMathOperationsBold className="size-8"/>
+                </Button>
+                </div>
+              </TooltipTrigger>
+              {popoverSide === "left" ? (
+                <TooltipContent side="left" align="start">
+                  <span>Apply operations</span>
+                </TooltipContent>
+              ) : (
+                <TooltipContent side="top" align="center">
+                  <span>Apply operations</span>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </div>
+        </PopoverTrigger>
+        <PopoverContent
+          side={popoverSide}
+          className="analysis-info select-none"
+          >
+          {showError ? (
+            webGPUError
+          ) : (
+            <>
+              {!isFlat && 
+                <Button
+                className="cursor-pointer active:scale-[0.95]"
+                disabled={incompatible}
+                onClick={() => {
+                  setUseTwo(!useTwo);
+                  setOperation('Default');
+                }}
+              >
+                {useTwo ? 'Use One \n Variable' : 'Use Two Variables'}
+              </Button>}
 
-                <table style={{ textAlign: 'right' }}>
-                  <tbody>
-                    <tr>
-                      
-                      <th>Current Variable</th>
-                      <td className="text-center w-[100%] align-middle justify-center content-center">
-                        <div className='grid grid-cols-[65%_auto] w-[90%] mx-auto'>
-                          {analysisMode &&
-                          <div className='rounded-[6px] self-center mx-2 relative border border-gray-150 py-[5px] px-1 bg-[#f8f8f8]'>
-                            <div className='flex justify-around'>
-                            Current
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <BsFillQuestionCircleFill/>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  Operations will be applied to the newly generated data. 
-                                </TooltipContent>
-                              </Tooltip>
-                            </div>
-                            
-                          </div>}
-                          <button 
-                            className={`rounded-[6px] self-center ${analysisMode ? null : 'col-span-2'} w-[100%] pl-2 relative border border-gray-150 py-[5px] ${analysisMode ?'hover:scale-[0.95]' : ''} transition-[0.2s]`}
-                            style={{
-                              cursor: analysisMode ? 'pointer' : '',
-                              background: analysisMode ? '#b6d1ddff' : '#f8f8f8',
-                            }}
-                            disabled={!analysisMode}
-                            onClick={e=>{setReFetch(!reFetch);setAnalysisMode(false)}}
-                          >
-                            {analysisMode && <CiUndo 
-                              size={20}
-                              style={{
-                                position:'absolute',
-                                left:'0%',
-                                top:'10%'
-                              }}
-                            />}
-                            {analysisMode ? 'Reset' : variable}
-                          </button>
-                        </div>
-                  </td>
-                </tr>
-                {useTwo && <>
-                <tr>
-                  <th>Second Variable</th>
-                  <td>
-                      <Select onValueChange={setVariable2}>
-                        <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
-                          <SelectValue placeholder={variable2 == 'Default' ? "Select..." : variable2} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {variables.map((iVar, idx) => { //Dont allow correlation of two variables
-                            if (iVar == variable){
-                              return null;
-                            }
-                            return (
-                            <SelectItem key={idx} value={iVar}>
-                              {iVar}
-                            </SelectItem>)
-                        })}
-                        </SelectContent>
-                      </Select>
-                  </td>
-                </tr>
-                </>}
-                
-                <tr>
-                  <th>Operation</th>
-                  {!useTwo && (
-                    <td>
-                      <Select onValueChange={setOperation}>
-                        <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
-                          <SelectValue
-                            placeholder={operation === 'Default' ? 'Select...' : operation}
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-
-                          {!isFlat &&
-                            <SelectGroup>
-                            <SelectLabel>Dimension Reduction</SelectLabel>
-                            {operations.map((op, idx) => (
-                              <SelectItem key={idx} value={op}>
-                                {op}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>}
-                          <SelectGroup>
-                            <SelectLabel>{isFlat ? '' : 'Three Dimensional'}</SelectLabel>
-                            <SelectItem value="Convolution">Convolution</SelectItem>
-                            {!isFlat && <SelectItem value="CUMSUM3D">CUMSUM</SelectItem>}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </td>
-                  )}
-                  
-                  {useTwo && (
-                    <td>
-                      <Select onValueChange={setOperation}>
-                        <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
-                          <SelectValue
-                            placeholder={operation === 'Default' ? 'Select...' : operation}
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectLabel>Dimension Reduction</SelectLabel>
-                            <SelectItem value="Correlation2D">Correlation</SelectItem>
-                            <SelectItem value="TwoVarLinearSlope2D">Linear Slope</SelectItem>
-                            <SelectItem value="Covariance2D">Covariance</SelectItem>
-                          </SelectGroup>
-
-                          <SelectGroup>
-                            <SelectLabel>Three Dimensional</SelectLabel>
-                            <SelectItem value="Correlation3D">Correlation</SelectItem>
-                            <SelectItem value="TwoVarLinearSlope3D">Linear Slope</SelectItem>
-                            <SelectItem value="Covariance3D">Covariance</SelectItem>
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </td>
-                  )}
-                </tr>
-                    {!['Convolution', 'Correlation3D', 'Default', 'Covariance3D', 'TwoVarLinearSlope3D'].includes(operation) && //Hide if NOT in left arrays
-                        (
-                        <tr>
-                          <th>Axis</th>
-                          <td style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            <Select onValueChange={e => setNewDim(parseInt(e))}>
-                              <SelectTrigger style={{ width: ['CUMSUM3D', 'LinearSlope'].includes(operation) ? '50%' : '175px', marginLeft: '10px' }}>
-                                <SelectValue placeholder={dimNames[newDim]} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {dimNames.map((dimName, idx) => (
-                                  <SelectItem key={idx} value={String(idx)}>
-                                    {dimName}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            {['CUMSUM3D'].includes(operation) &&
-                            <Tooltip delayDuration={300}>
+              <table style={{ textAlign: 'right' }}>
+                <tbody>
+                  <tr>
+                    
+                    <th>Current Variable</th>
+                    <td className="text-center w-[100%] align-middle justify-center content-center">
+                      <div className='grid grid-cols-[65%_auto] w-[90%] mx-auto'>
+                        {analysisMode &&
+                        <div className='rounded-[6px] self-center mx-2 relative border border-gray-150 py-[5px] px-1 bg-[#f8f8f8]'>
+                          <div className='flex justify-around'>
+                          Current
+                            <Tooltip>
                               <TooltipTrigger asChild>
-                                <div style={{width:'50%', display:'flex', alignItems:'center'}}>
-                                  <label htmlFor="reverse-axis" style={{textAlign:'left', marginRight: '-20px',  marginLeft: '-10px' }}>Rev.</label>
-                                  <Input id='reverse-axis' type='checkbox' checked={reverseDirection == 1} onChange={e=> {setReverseDirection(e.target.checked ? 1 : 0)}}/>
-                                </div>
+                                <BsFillQuestionCircleFill/>
                               </TooltipTrigger>
-                              <TooltipContent side='bottom'>
-                                Reverse the direction of the operation along the axis
+                              <TooltipContent>
+                                Operations will be applied to the newly generated data. 
                               </TooltipContent>
                             </Tooltip>
-                            }
-                          </td>
-                        </tr>
-                      )}
-                    {['Convolution' ,'Correlation3D', 'Covariance3D', 'TwoVarLinearSlope3D'].includes(operation) && ( //Show if IN left arrays
-                      <>
+                          </div>
+                          
+                        </div>}
+                        <button 
+                          className={`rounded-[6px] self-center ${analysisMode ? null : 'col-span-2'} w-[100%] pl-2 relative border border-gray-150 py-[5px] ${analysisMode ?'hover:scale-[0.95]' : ''} transition-[0.2s]`}
+                          style={{
+                            cursor: analysisMode ? 'pointer' : '',
+                            background: analysisMode ? '#b6d1ddff' : '#f8f8f8',
+                          }}
+                          disabled={!analysisMode}
+                          onClick={e=>{setReFetch(!reFetch);setAnalysisMode(false)}}
+                        >
+                          {analysisMode && <CiUndo 
+                            size={20}
+                            style={{
+                              position:'absolute',
+                              left:'0%',
+                              top:'10%'
+                            }}
+                          />}
+                          {analysisMode ? 'Reset' : variable}
+                        </button>
+                      </div>
+                </td>
+              </tr>
+              {useTwo && <>
+              <tr>
+                <th>Second Variable</th>
+                <td>
+                    <Select onValueChange={setVariable2}>
+                      <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
+                        <SelectValue placeholder={variable2 == 'Default' ? "Select..." : variable2} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {variables.map((iVar, idx) => { //Dont allow correlation of two variables
+                          if (iVar == variable){
+                            return null;
+                          }
+                          return (
+                          <SelectItem key={idx} value={iVar}>
+                            {iVar}
+                          </SelectItem>)
+                      })}
+                      </SelectContent>
+                    </Select>
+                </td>
+              </tr>
+              </>}
+              
+              <tr>
+                <th>Operation</th>
+                {!useTwo && (
+                  <td>
+                    <Select onValueChange={setOperation}>
+                      <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
+                        <SelectValue
+                          placeholder={operation === 'Default' ? 'Select...' : operation}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
 
-                        {operation == 'Convolution' &&
-                          <tr>
-                          <th>Kernel Op.</th>
-                          <td>
-                            <Select onValueChange={setKernelOperation}>
-                              <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
-                                <SelectValue
-                                  placeholder={
-                                    kernelOperation === 'Default' ? 'Select...' : kernelOperation
-                                  }
-                                />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {kernelOperations.map((kernelOp, idx) => {
-                                  if ( kernelOp == 'CUMSUM3D'){
-                                    return null;
-                                  }else{
-                                    return (
-                                    <SelectItem key={idx} value={kernelOp}>
-                                      {kernelOp}
-                                    </SelectItem>
-                                    )
-                                  }              
-                                })}
-                              </SelectContent>
-                            </Select>
-                          </td>
-                        </tr>}
-                        <tr>
-                          <th style={{padding:'0px 12px'}}>Kernel Size</th>
-                          <td>
-                            <table style={{ width: '100%', tableLayout: 'fixed' }}>
-                              <tbody>
-                                {!isFlat &&<tr>
-                                  <td style={{ textAlign: 'center' }}>Size</td>
-                                   <td style={{ textAlign: 'center' }}>Depth</td>
-                                </tr>}
-                                <tr>
-                                  <td style={{ textAlign: 'center', padding:'0px 12px'}}>
-                                    <Input type='number' min='1' step='2' value={String(kernelSize)} 
-                                      onChange={e=>setKernelSize(parseInt(e.target.value))}
-                                      onBlur={e=>setKernelSize(HandleKernelNums(e.target.value))}
-                                    />
-                                  </td>
-                                  {!isFlat &&
-                                    <td  style={{ textAlign: 'center', padding:'0px 12px' }}>
-                                    <Input type='number' min='1' step='2' value={String(kernelDepth)} 
-                                      onChange={e=>setKernelDepth(parseInt(e.target.value))}
-                                      onBlur={e=>setKernelDepth(HandleKernelNums(e.target.value))}
-                                    />
-                                  </td>}
-                                </tr>
-                              </tbody>
-                            </table>
-                          </td>
-                        </tr>
-                        <tr >
-                          <td/>
-                          <th >
-                                <KernelVisualizer size={Math.min(kernelSize,15)} depth={Math.min(kernelDepth, 15)} />
-                          </th>
-                        </tr>
-                        
-                      </>
+                        {!isFlat &&
+                          <SelectGroup>
+                          <SelectLabel>Dimension Reduction</SelectLabel>
+                          {operations.map((op, idx) => (
+                            <SelectItem key={idx} value={op}>
+                              {op}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>}
+                        <SelectGroup>
+                          <SelectLabel>{isFlat ? '' : 'Three Dimensional'}</SelectLabel>
+                          <SelectItem value="Convolution">Convolution</SelectItem>
+                          {!isFlat && <SelectItem value="CUMSUM3D">CUMSUM</SelectItem>}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </td>
+                )}
+                
+                {useTwo && (
+                  <td>
+                    <Select onValueChange={setOperation}>
+                      <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
+                        <SelectValue
+                          placeholder={operation === 'Default' ? 'Select...' : operation}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Dimension Reduction</SelectLabel>
+                          <SelectItem value="Correlation2D">Correlation</SelectItem>
+                          <SelectItem value="TwoVarLinearSlope2D">Linear Slope</SelectItem>
+                          <SelectItem value="Covariance2D">Covariance</SelectItem>
+                        </SelectGroup>
+
+                        <SelectGroup>
+                          <SelectLabel>Three Dimensional</SelectLabel>
+                          <SelectItem value="Correlation3D">Correlation</SelectItem>
+                          <SelectItem value="TwoVarLinearSlope3D">Linear Slope</SelectItem>
+                          <SelectItem value="Covariance3D">Covariance</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </td>
+                )}
+              </tr>
+                  {!['Convolution', 'Correlation3D', 'Default', 'Covariance3D', 'TwoVarLinearSlope3D'].includes(operation) && //Hide if NOT in left arrays
+                      (
+                      <tr>
+                        <th>Axis</th>
+                        <td style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                          <Select onValueChange={e => setNewDim(parseInt(e))}>
+                            <SelectTrigger style={{ width: ['CUMSUM3D', 'LinearSlope'].includes(operation) ? '50%' : '175px', marginLeft: '10px' }}>
+                              <SelectValue placeholder={dimNames[newDim]} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {dimNames.map((dimName, idx) => (
+                                <SelectItem key={idx} value={String(idx)}>
+                                  {dimName}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {['CUMSUM3D'].includes(operation) &&
+                          <Tooltip delayDuration={300}>
+                            <TooltipTrigger asChild>
+                              <div style={{width:'50%', display:'flex', alignItems:'center'}}>
+                                <label htmlFor="reverse-axis" style={{textAlign:'left', marginRight: '-20px',  marginLeft: '-10px' }}>Rev.</label>
+                                <Input id='reverse-axis' type='checkbox' checked={reverseDirection == 1} onChange={e=> {setReverseDirection(e.target.checked ? 1 : 0)}}/>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side='bottom'>
+                              Reverse the direction of the operation along the axis
+                            </TooltipContent>
+                          </Tooltip>
+                          }
+                        </td>
+                      </tr>
                     )}
-                  </tbody>
-                </table>
+                  {['Convolution' ,'Correlation3D', 'Covariance3D', 'TwoVarLinearSlope3D'].includes(operation) && ( //Show if IN left arrays
+                    <>
 
-                <Button
-                  className="cursor-pointer active:scale-[0.95]"
-                  disabled={
-                    operation === 'Default' ||
-                    (operation === 'Convolution' && kernelOperation === 'Default') ||
-                    (useTwo && variable2 === 'Default')
-                  }
-                  onClick={() => {
-                    setAxis(newDim)
-                    setExecute(!execute);
-                    setTimeSeries({});
-                  }}
-                >
-                  Execute
-                </Button>
-              </>
-            )}
-          </PopoverContent>
-        </Popover>
-      ) : (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-10"
-          disabled
-          style={{
-            color: 'var(--text-disabled)',
-            transform: 'scale(1)'
-          }}
-        >
-          <PiMathOperationsBold className="size-8"/>
-        </Button>
-      )}
+                      {operation == 'Convolution' &&
+                        <tr>
+                        <th>Kernel Op.</th>
+                        <td>
+                          <Select onValueChange={setKernelOperation}>
+                            <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
+                              <SelectValue
+                                placeholder={
+                                  kernelOperation === 'Default' ? 'Select...' : kernelOperation
+                                }
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {kernelOperations.map((kernelOp, idx) => {
+                                if ( kernelOp == 'CUMSUM3D'){
+                                  return null;
+                                }else{
+                                  return (
+                                  <SelectItem key={idx} value={kernelOp}>
+                                    {kernelOp}
+                                  </SelectItem>
+                                  )
+                                }              
+                              })}
+                            </SelectContent>
+                          </Select>
+                        </td>
+                      </tr>}
+                      <tr>
+                        <th style={{padding:'0px 12px'}}>Kernel Size</th>
+                        <td>
+                          <table style={{ width: '100%', tableLayout: 'fixed' }}>
+                            <tbody>
+                              {!isFlat &&<tr>
+                                <td style={{ textAlign: 'center' }}>Size</td>
+                                  <td style={{ textAlign: 'center' }}>Depth</td>
+                              </tr>}
+                              <tr>
+                                <td style={{ textAlign: 'center', padding:'0px 12px'}}>
+                                  <Input type='number' min='1' step='2' value={String(kernelSize)} 
+                                    onChange={e=>setKernelSize(parseInt(e.target.value))}
+                                    onBlur={e=>setKernelSize(HandleKernelNums(e.target.value))}
+                                  />
+                                </td>
+                                {!isFlat &&
+                                  <td  style={{ textAlign: 'center', padding:'0px 12px' }}>
+                                  <Input type='number' min='1' step='2' value={String(kernelDepth)} 
+                                    onChange={e=>setKernelDepth(parseInt(e.target.value))}
+                                    onBlur={e=>setKernelDepth(HandleKernelNums(e.target.value))}
+                                  />
+                                </td>}
+                              </tr>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr >
+                        <td/>
+                        <th >
+                              <KernelVisualizer size={Math.min(kernelSize,15)} depth={Math.min(kernelDepth, 15)} />
+                        </th>
+                      </tr>
+                      
+                    </>
+                  )}
+                </tbody>
+              </table>
+
+              <Button
+                className="cursor-pointer active:scale-[0.95]"
+                disabled={
+                  operation === 'Default' ||
+                  (operation === 'Convolution' && kernelOperation === 'Default') ||
+                  (useTwo && variable2 === 'Default')
+                }
+                onClick={() => {
+                  setAxis(newDim)
+                  setExecute(!execute);
+                  setTimeSeries({});
+                }}
+              >
+                Execute
+              </Button>
+            </>
+          )}
+        </PopoverContent>
+      </Popover>
     </>
   );
 };
