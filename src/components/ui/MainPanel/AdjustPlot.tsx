@@ -300,19 +300,18 @@ const PointOptions = () =>{
 
 const SpatialExtent = () =>{
 
-  const {lonExtent, latExtent, lonResolution, latResolution, 
+  const {lonExtent, latExtent, lonResolution, latResolution, originalExtent,
         setLonExtent, setLatExtent, setLonResolution, setLatResolution} = usePlotStore(useShallow(state => ({
     lonExtent: state.lonExtent,
     latExtent: state.latExtent,
     lonResolution: state.lonResolution,
     latResolution: state.latResolution,
+    originalExtent: state.originalExtent,
     setLonExtent: state.setLonExtent,
     setLatExtent: state.setLatExtent,
     setLonResolution: state.setLonResolution,
     setLatResolution: state.setLatResolution
   })))
-
-
   return (
     <div className='grid gap-2 mb-4 justify-items-center '>
       <h1>Spatial Extent</h1>
@@ -348,6 +347,17 @@ const SpatialExtent = () =>{
           <Input value={latResolution} onChange={e=>setLatResolution(parseFloat(e.target.value))} type='number'/>
         </div>
       </div>
+      
+      <Button variant='pink'
+        disabled={
+          originalExtent.toArray().slice(0,2).every((val, idx) => val == lonExtent[idx]) &&
+          originalExtent.toArray().slice(2).every((val, idx) => val == latExtent[idx])
+        }
+        onClick={e=>{
+          setLonExtent([originalExtent.x, originalExtent.y])
+          setLatExtent([originalExtent.z, originalExtent.w])
+        }}
+      > Reset Extent </Button>
     </div>
   )
 }
