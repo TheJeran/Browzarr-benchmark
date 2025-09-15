@@ -155,14 +155,15 @@ export async function DataReduction(inputArray : ArrayBufferView, dimInfo : {sha
 
 export async function BufferCopy(inputArray :  ArrayBufferView, shape: number[]){
     const adapter = await navigator.gpu?.requestAdapter();
-    const maxSize = 2047483644; //Will probably remove this eventually
+    const maxSize = adapter?.limits.maxBufferSize;
+    const maxStorage = adapter?.limits.maxStorageBufferBindingSize;
     const hasF16 = adapter ? adapter.features.has("shader-f16") : false
     const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
         maxBufferSize: maxSize,
-        maxStorageBufferBindingSize: maxSize}}) : 
+        maxStorageBufferBindingSize: maxStorage}}) : 
         await adapter?.requestDevice({requiredLimits: {
             maxBufferSize: maxSize,
-            maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
+            maxStorageBufferBindingSize: maxStorage 
     }});
     if (!device) {
         Error('need a browser that supports WebGPU');
@@ -273,14 +274,15 @@ export async function BufferCopy(inputArray :  ArrayBufferView, shape: number[])
 
 export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, operation: string, kernel: {kernelSize: number, kernelDepth: number}){
     const adapter = await navigator.gpu?.requestAdapter();
-    const maxSize = 2047483644; //Will probably remove this eventually
+    const maxSize = adapter?.limits.maxBufferSize;
+    const maxStorage = adapter?.limits.maxStorageBufferBindingSize;
     const hasF16 = adapter ? adapter.features.has("shader-f16") : false
     const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
         maxBufferSize: maxSize,
-        maxStorageBufferBindingSize: maxSize}}) : 
+        maxStorageBufferBindingSize: maxStorage}}) : 
         await adapter?.requestDevice({requiredLimits: {
             maxBufferSize: maxSize,
-            maxStorageBufferBindingSize: maxSize // optional, if you're binding large buffers
+            maxStorageBufferBindingSize: maxStorage 
     }});
     if (!device) {
         Error('need a browser that supports WebGPU');
