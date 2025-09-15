@@ -98,14 +98,15 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
           setPlotOn: state.setPlotOn,
           setShowLoading: state.setShowLoading  
         }
-        )))
-    const {colormap, variable, isFlat, metadata, valueScales, is4D, setIsFlat} = useGlobalStore(useShallow(state=>({
+    )))
+    const {colormap, variable, isFlat, metadata, valueScales, is4D, trimExtremes, setIsFlat} = useGlobalStore(useShallow(state=>({
       colormap: state.colormap, 
       variable: state.variable, 
       isFlat: state.isFlat, 
       metadata: state.metadata, 
       valueScales: state.valueScales,
       is4D: state.is4D,
+      trimExtremes: state.trimExtremes,
       setIsFlat: state.setIsFlat, 
     })))
 
@@ -134,8 +135,20 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
       setShow(false)
       try{
         ZarrDS.GetArray(variable, slice).then((result) => {
+        const data = result.data;
+        if (trimExtremes) {
+          console.log("Noice")
+          const mean = data.reduce((sum: number, val: number) => sum + val, 0) / data.length;
+          const variance = data.reduce((sum: number, val: number) => sum + Math.pow(val - mean, 2), 0) / data.length;
+          const stdDev = Math.sqrt(variance);
+          for (let i = 0; i < data.length; i++) {
+            if (Math.abs(data[i] - mean) > 2 * stdDev) {
+              data[i] = NaN;
+            }
+          }
+        }
         const [texture, scaling] = ArrayToTexture({
-          data: result.data,
+          data,
           shape: result.shape
         })
         if (texture instanceof THREE.DataTexture || texture instanceof THREE.Data3DTexture) {

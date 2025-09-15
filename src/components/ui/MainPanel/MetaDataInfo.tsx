@@ -37,14 +37,16 @@ function ChunkIDs(chunkDepth: number, slice:[number, number | null], range:numbe
 }
 
 const MetaDataInfo = ({ meta, setShowMeta, setOpenVariables }: { meta: any, setShowMeta: React.Dispatch<React.SetStateAction<boolean>>, setOpenVariables: React.Dispatch<React.SetStateAction<boolean>>  }) => {
-  const {is4D, idx4D, variable, initStore, setIs4D, setIdx4D, setVariable} = useGlobalStore(useShallow(state => ({
+  const {is4D, idx4D, variable, initStore, trimExtremes, setIs4D, setIdx4D, setVariable, setTrimExtremes} = useGlobalStore(useShallow(state => ({
     is4D: state.is4D,
     idx4D: state.idx4D,
     variable: state.variable,
     initStore: state.initStore,
+    trimExtremes: state.trimExtremes,
     setIs4D: state.setIs4D,
     setIdx4D: state.setIdx4D,
     setVariable: state.setVariable,
+    setTrimExtremes: state.setTrimExtremes
   })))
   const {maxSize, setMaxSize} = useCacheStore.getState()
   const [cacheSize, setCacheSize] = useState(maxSize)
@@ -265,6 +267,20 @@ const MetaDataInfo = ({ meta, setShowMeta, setOpenVariables }: { meta: any, setS
               </div>
               
               <Input className="w-[50px]" type="checkbox" id="compress-data" checked={compress} onChange={e=>setCompress(e.target.checked)}/>
+            </div>
+            <div className="grid grid-cols-[auto_40%] items-center gap-2 mt-2">
+              <div>
+              <label htmlFor="compress-data">Trim Extremes </label>
+              <Tooltip>
+                <TooltipTrigger>
+                  <BsFillQuestionCircleFill/>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-[min(100%,16rem)] break-words whitespace-normal">
+                  {"Remove extreme values from datasets with high variability. This will produce a more rounded visualization"}
+                </TooltipContent>
+              </Tooltip>
+              </div>
+              <Input className="w-[50px]" type="checkbox" id="compress-data" checked={trimExtremes} onChange={e=>setTrimExtremes(e.target.checked)}/>
             </div>
           </>}
       </>}
