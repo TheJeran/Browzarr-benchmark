@@ -188,43 +188,15 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
     }, [texture]);
     const aspectRatio = useMemo(()=>width/height,[width,height]);
     const depthRatio = useMemo(()=>depth/height,[depth,height]);
-
-    const { positions, values } = useMemo(() => {
-      let positions;
-      try{
-        positions = new Float32Array(depth*height*width*3);
-      }catch{
-        setError('oom') // Set out of memeory error
-        return {positions: [], values: []};
-      }
-      const values = new Uint8Array(depth*height*width);
-      //Generate grid points based on texture shape
-      for (let z = 0; z < depth; z++) {
-        for (let y = 0; y < height; y++) {
-          for (let x = 0; x < width; x++) {
-            const index = x + y * width + z * width * height;
-            const value = (data as number[])[index] || 0;
-              // Normalize coordinates acceptable range
-            const px = ((x / (width - 1)) - 0.5) ; 
-            const py = ((y / (height - 1)) - 0.5)/aspectRatio;
-            const pz = ((z / (depth - 1)) - 0.5) * depthRatio ;
-            const posIdx = index*3;
-            positions[posIdx] = px * 2;
-            positions[posIdx + 1] = py *2 ;
-            positions[posIdx + 2] = pz ;
-            values[index] = value;
-          }
-        }
-      }
-      return { positions, values };
-    }, [data, width, height, depth]);
     // Create buffer geometry
     const geometry = useMemo(() => {
       const geom = new THREE.BufferGeometry();
-      geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-      geom.setAttribute('value', new THREE.Float32BufferAttribute(values, 1));
+      geom.setAttribute('value', new THREE.Uint8BufferAttribute(data as number[], 1));
+
+      const positions = new Uint8Array(depth * height * width * 3); 
+      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3, true));
       return geom;
-    }, [positions, values]);
+    }, [data]);
     const shaderMaterial = useMemo(()=> (new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3,
       uniforms: {
@@ -242,6 +214,8 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
         timeScale: {value: timeScale},
         animateProg: {value: animProg},
         depthRatio: {value: depthRatio},
+        aspectRatio: {value: aspectRatio},
+        shape: {value: new THREE.Vector3(depth, height, width)},
         flatBounds:{value: new THREE.Vector4(xRange[0], xRange[1], zRange[0]*depthRatio/2, zRange[1]*depthRatio/2)},
         vertBounds:{value: new THREE.Vector2(yRange[0]/aspectRatio, yRange[1]/aspectRatio)},
       },
@@ -253,7 +227,7 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       side:THREE.DoubleSide,
     })
     ),[]);
-
+    console.log(geometry)
    useEffect(() => {
     if (shaderMaterial) {
       const uniforms = shaderMaterial.uniforms;
