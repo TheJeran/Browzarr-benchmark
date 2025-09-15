@@ -21,6 +21,8 @@ uniform float animateProg;
 uniform float transparency;
 uniform float nanAlpha;
 uniform vec3 nanColor;
+uniform float opacityMag;
+uniform bool useClipScale;
 
 
 vec2 hitBox(vec3 orig, vec3 dir) {
@@ -84,7 +86,13 @@ void main() {
                 float sampLoc = (d - 0.5)*cScale + 0.5;
                 sampLoc = min(sampLoc+cOffset,0.99);
                 vec4 col = texture(cmap, vec2(sampLoc, 0.5));
-                float alpha = pow(max(sampLoc, 0.001), transparency);
+                float alpha;
+                if (useClipScale){
+                    float normalizedOpacity = clamp((sampLoc - threshold.x) / (threshold.y - threshold.x), 0.0, 1.0);
+                    alpha = pow(max(normalizedOpacity, 0.001), transparency*opacityMag);
+                } else {
+                    alpha = pow(max(sampLoc, 0.001), transparency*opacityMag);
+                }
                 accumColor.rgb += (1.0 - alphaAcc) * alpha * col.rgb;
                 alphaAcc += alpha * (1.0 - alphaAcc);
             }      

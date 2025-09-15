@@ -14,7 +14,21 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
 
     const {shape, colormap, flipY} = useGlobalStore(useShallow(state=>({shape:state.shape, colormap:state.colormap, flipY:state.flipY}))) //We have to useShallow when returning an object instead of a state. I don't fully know the logic yet
 
-    const {valueRange, xRange, yRange, zRange, quality, animProg, cScale, cOffset, useFragOpt, transparency, nanTransparency, nanColor} = usePlotStore(useShallow(state => ({
+    const {
+      valueRange, 
+      xRange, 
+      yRange, 
+      zRange, 
+      quality, 
+      animProg, 
+      cScale, 
+      cOffset, 
+      useFragOpt, 
+      transparency, 
+      nanTransparency, 
+      nanColor,
+      vTransferRange,
+      vTransferScale} = usePlotStore(useShallow(state => ({
       valueRange: state.valueRange,
       xRange: state.xRange,
       yRange: state.yRange,
@@ -26,9 +40,12 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
       useFragOpt: state.useFragOpt,
       transparency: state.transparency,
       nanTransparency: state.nanTransparency,
-      nanColor: state.nanColor
+      nanColor: state.nanColor,
+      vTransferRange: state.vTransferRange,
+      vTransferScale: state.vTransferScale
     })))
     const aspectRatio = shape.y/shape.x
+
     const shaderMaterial = useMemo(()=>new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3,
       uniforms: {
@@ -43,6 +60,8 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
           steps: { value: quality },
           animateProg: {value: animProg},
           transparency: {value: transparency},
+          opacityMag: {value: vTransferScale},
+          useClipScale: {value: vTransferRange},
           nanAlpha: {value: 1-nanTransparency},
           nanColor: {value: new THREE.Color(nanColor)}
       },
@@ -56,7 +75,6 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
         
   // Use geometry once, avoid recreating -- Using a sphere to avoid the weird angles you get with cube
     const geometry = useMemo(() => new THREE.IcosahedronGeometry(2, 4), []);
-
     useEffect(() => {
       if (shaderMaterial) {
         const uniforms = shaderMaterial.uniforms
@@ -73,9 +91,11 @@ export const DataCube = ({ volTexture }: DataCubeProps ) => {
         uniforms.transparency.value = transparency;
         uniforms.nanAlpha.value = 1 - nanTransparency;
         uniforms.nanColor.value.set(nanColor);
+        uniforms.opacityMag.value = vTransferScale;
+        uniforms.useClipScale.value = vTransferRange;
         invalidate() // Needed because Won't trigger re-render if camera is stationary. 
       }
-    }, [volTexture, shape, colormap, cOffset, cScale, valueRange, xRange, yRange, zRange, aspectRatio, quality, animProg, transparency, nanTransparency, nanColor]);
+    }, [volTexture, shape, colormap, cOffset, cScale, valueRange, xRange, yRange, zRange, aspectRatio, quality, animProg, transparency, nanTransparency, nanColor, vTransferScale, vTransferRange]);
   
   return (
     <>
