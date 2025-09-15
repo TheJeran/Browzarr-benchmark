@@ -15,6 +15,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { parseLoc } from '@/utils/HelperFuncs';
+import { BsFillQuestionCircleFill } from "react-icons/bs";
+
 
 function DeNorm(val : number, min : number, max : number){
     const range = max-min;
@@ -109,9 +111,9 @@ const DimSlicer = () =>{
         />
       </div>
 
-      <div className="flex flex-col items-center w-[200px] gap-4 -mt-4">
+      <div className="flex flex-col items-center w-[200px] gap-2 -mt-4">
         <b>Spatial Cropping</b>
-        <div className='grid w-[100%] gap-4'>
+        <div className='grid w-[100%]'>
           <div className='grid w-[100%] place-items-center'>
             <h2>{theseDims[2]}</h2>
             <MinMaxSlider 
@@ -151,17 +153,21 @@ const DimSlicer = () =>{
 }
 
 const VolumeOptions = ()=>{
-  const { useFragOpt, quality, transparency, nanTransparency, nanColor, setQuality, setUseFragOpt, setTransparency, setNanTransparency, setNanColor} = usePlotStore(useShallow(state => ({
+  const { useFragOpt, quality, transparency, vTransferRange, vTransferScale, setQuality, setUseFragOpt, setTransparency, setVTransferRange, setVTransferScale} = usePlotStore(useShallow(state => ({
           useFragOpt: state.useFragOpt,
           quality: state.quality,
           transparency: state.transparency,
           nanTransparency: state.nanTransparency,
           nanColor: state.nanColor,
+          vTransferRange: state.vTransferRange,
+          vTransferScale: state.vTransferScale,
           setQuality: state.setQuality,
           setUseFragOpt: state.setUseFragOpt,
           setTransparency: state.setTransparency,
           setNanTransparency: state.setNanTransparency,
-          setNanColor: state.setNanColor
+          setNanColor: state.setNanColor,
+          setVTransferRange: state.setVTransferRange,
+          setVTransferScale: state.setVTransferScale
       })))
   return(
     <>
@@ -192,7 +198,6 @@ const VolumeOptions = ()=>{
       </Tooltip>
       
       <b>Transparency</b>
-
       <UISlider
               min={0}
               max={10}
@@ -200,8 +205,38 @@ const VolumeOptions = ()=>{
               value={[transparency]}
               className='w-full mb-2'
           onValueChange={(vals:number[]) => setTransparency(vals[0])}
-          />
+      />
+      <div className='grid grid-cols-[auto_60px] items-center text-left'>
+        <h1><span>Transparency Scale </span> 
+        <Tooltip>
+          <TooltipTrigger>
+            <BsFillQuestionCircleFill/>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-60 break-words whitespace-normal">
+            This is the raised power for transparency. Higher values "Squash" lower values while lower values help bring them out. 1 is linear.  
+          </TooltipContent>
+        </Tooltip>
+        </h1>
+        <Input type='number' value={vTransferScale} step={0.1} min={0} onChange={e => setVTransferScale(parseFloat(e.target.value))} />
+      </div>
+      <div className="grid grid-cols-[auto_20%] items-center gap-2 mt-2 text-left">
+        <label htmlFor="compress-data"> 
+          <h1> <span>Scale by clip </span> 
+            <Tooltip>
+              <TooltipTrigger>
+                <BsFillQuestionCircleFill/>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-60 break-words whitespace-normal">
+                Transparency is scaled from dataset minimum to maximum. Lower values are more transparent. When enabled - transparency scales based on the cropped values below. 
+              </TooltipContent>
+            </Tooltip>
+          </h1> 
+        </label>
+        <Input className='h-5' type="checkbox" id="compress-data" checked={vTransferRange} onChange={e=>setVTransferRange(e.target.checked)}/>
+      </div>
+      
     </div>
+
     <div className="border-t border-gray-300 w-full my-4" />
     </>
   )
