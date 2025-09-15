@@ -213,7 +213,7 @@ const VolumeOptions = ()=>{
             <BsFillQuestionCircleFill/>
           </TooltipTrigger>
           <TooltipContent className="max-w-60 break-words whitespace-normal">
-            This is the raised power for transparency. Higher values "Squash" lower values while lower values help bring them out. 1 is linear.  
+            {`This is the raised power for transparency. Higher values "Squash" lower values while lower values help bring them out. 1 is linear.`}  
           </TooltipContent>
         </Tooltip>
         </h1>
