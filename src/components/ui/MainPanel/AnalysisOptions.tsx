@@ -74,6 +74,7 @@ const AnalysisOptions = () => {
     useCPU,
     cpuTime,
     gpuTime,
+    bufferSpeed,
     setUseCPU,
     setExecute,
     setAxis,
@@ -83,7 +84,7 @@ const AnalysisOptions = () => {
     setAnalysisMode,
     setReverseDirection,
     setAnalysisStore,
-    setCpuTime,
+    setGetBufferSpeed,
     setGpuTime,
   } = useAnalysisStore(useShallow(state => ({
     execute: state.execute,
@@ -99,6 +100,7 @@ const AnalysisOptions = () => {
     useCPU: state.useCPU,
     cpuTime: state.cpuTime,
     gpuTime: state.gpuTime,
+    bufferSpeed: state.bufferSpeed,
     setUseCPU: state.setUseCPU,
     setExecute: state.setExecute,
     setAxis: state.setAxis,
@@ -112,7 +114,8 @@ const AnalysisOptions = () => {
     setReverseDirection: state.setReverseDirection,
     setAnalysisStore: state.setAnalysisStore,
     setCpuTime: state.setCpuTime,
-    setGpuTime: state.setGpuTime
+    setGpuTime: state.setGpuTime,
+    setGetBufferSpeed: state.setGetBufferSpeed
     })));
 
   const {reFetch, setReFetch} = useZarrStore(useShallow(state => ({
@@ -418,22 +421,39 @@ const AnalysisOptions = () => {
                 <div className='grid gap-2'>
                   {cpuTime &&
                     <div className='grid grid-cols-2'>
-                    <p>CPU Average: </p> <p><b>{`${cpuTime.toFixed(2)}s`}</b></p>
+                    <p>CPU Average: </p> <p><b>{`${cpuTime.toFixed(3)}s`}</b></p>
                   </div>}
                   {gpuTime &&
                     <div className='grid grid-cols-2'>
-                    <p>GPU Average: </p> <p><b>{`${gpuTime.toFixed(2)}s`}</b></p>
+                    <p>GPU Average: </p> <p><b>{`${gpuTime.toFixed(3)}s`}</b></p>
                   </div>}
+                  {bufferSpeed &&
+                    <div className='grid grid-cols-2'>
+                    <p>Buffer Average: </p> <p><b>{`${bufferSpeed.toFixed(3)}s`}</b></p>
+                  </div>
+                  }
                 </div>
                 <Button
                   className="cursor-pointer active:scale-[0.95]"
                   onClick={() => {
                     setAxis(newDim)
+                    setGetBufferSpeed(false);
                     setExecute(!execute);
                     setTimeSeries({});
                   }}
                 >
                   Execute
+                </Button>
+                <Button
+                  className="cursor-pointer active:scale-[0.95]"
+                  onClick={() => {
+                    setAxis(newDim)
+                    setGetBufferSpeed(true);
+                    setExecute(!execute);
+                    setTimeSeries({});
+                  }}
+                >
+                  Check Buffer Speed
                 </Button>
               </>
             )}

@@ -47,3 +47,4 @@ package-lock.json
 .qodo
 *.sh
 pnpm-lock.yaml
+certificates

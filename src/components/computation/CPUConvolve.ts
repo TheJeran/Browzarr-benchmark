@@ -9,7 +9,7 @@ interface Params {
     kernelDepth: number;
 }
 
-export default function CPUConvolve(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, kernel: {kernelSize: number, kernelDepth: number}){
+export default async function CPUConvolve(inputArray :  ArrayBufferView, dimInfo : {shape: number[], strides: number[]}, kernel: {kernelSize: number, kernelDepth: number}){
     const {kernelDepth, kernelSize} = kernel;
     const {strides, shape} = dimInfo;
     const outputSize = shape[0] * shape[1] * shape[2];
