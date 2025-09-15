@@ -18,5 +18,5 @@ export {
     flatSphereFrag,
     bordersFrag,
     fragmentFlat,
-    flatFrag3D
+    flatFrag3D,
 }

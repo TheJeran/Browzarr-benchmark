@@ -10,7 +10,6 @@ uniform float cOffset;
 uniform bool showTransect;
 
 void main() {
-
     float sampLoc = vValue == 1. ? vValue : (vValue - 0.5)*cScale + 0.5;
     sampLoc = vValue == 1. ? vValue : min(sampLoc+cOffset,0.99);
     vec4 color = texture(cmap, vec2(sampLoc, 0.5));
@@ -22,5 +21,4 @@ void main() {
     else{
         Color = color;
     }
-    Color = vec4(1.0, 0.0, 0.0, 1.0);
 }

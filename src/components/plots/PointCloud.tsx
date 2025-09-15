@@ -7,6 +7,7 @@ import { useShallow } from 'zustand/shallow';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
 import { parseUVCoords, getUnitAxis, GetTimeSeries, GetCurrentArray } from '@/utils/HelperFuncs';
 import { evaluate_cmap } from 'js-colormaps-es';
+
 interface PCProps {
   texture: THREE.Data3DTexture | THREE.DataTexture | null,
   colormap: THREE.DataTexture
@@ -192,11 +193,11 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
     const geometry = useMemo(() => {
       const geom = new THREE.BufferGeometry();
       geom.setAttribute('value', new THREE.Uint8BufferAttribute(data as number[], 1));
-
-      const positions = new Uint8Array(depth * height * width * 3); 
-      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3, true));
+      const arrayLength = depth * height * width ;
+      geom.setDrawRange(0, arrayLength); // This is used to tell it how many data points are needed since we aren't giving it positions.
       return geom;
     }, [data]);
+
     const shaderMaterial = useMemo(()=> (new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3,
       uniforms: {
@@ -222,12 +223,13 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       vertexShader:pointVert,
       fragmentShader:pointFrag,
       depthWrite: true,
+      depthTest: true,
       transparent: true,
       blending:THREE.NormalBlending,
       side:THREE.DoubleSide,
     })
     ),[]);
-    console.log(geometry)
+
    useEffect(() => {
     if (shaderMaterial) {
       const uniforms = shaderMaterial.uniforms;
@@ -257,8 +259,9 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
 
     return (
       <>
-      <mesh scale={[1,flipY ? -1:1, 1]}>
-        <points geometry={geometry} material={shaderMaterial} />
+      <mesh scale={[1,flipY ? -1:1, 1]} >
+
+        <points geometry={geometry} material={shaderMaterial} frustumCulled={false}/>
       </mesh>
       <MappingCube dimensions={{width,height,depth}} ZarrDS={ZarrDS} setters={{setPoints:setPointsObj, setStride, setDimWidth}}/>
       </>

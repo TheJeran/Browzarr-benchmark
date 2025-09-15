@@ -1,4 +1,4 @@
-attribute int value;
+attribute float value;
 
 out float vValue;
 
@@ -57,43 +57,42 @@ vec3 computePosition(int vertexID) {
 void main() {
     vValue = float(value)/255.;
     vec3 scaledPos = computePosition(gl_VertexID);
-    gl_PointSize = 10.;
 
-    gl_Position = vec4(0.0, 0.1, 0.1, 1.0);
-    // scaledPos.z += depthRatio/2.;
-    // scaledPos.z = mod(scaledPos.z + animateProg*depthRatio, depthRatio);
-    // scaledPos.z -= depthRatio/2.;
+    scaledPos.z += depthRatio/2.;
+    scaledPos.z = mod(scaledPos.z + animateProg*depthRatio, depthRatio);
+    scaledPos.z -= depthRatio/2.;
 
-    // scaledPos.z *= timeScale;
-    // gl_Position = projectionMatrix * modelViewMatrix * vec4(scaledPos, 1.0);
-    // float pointScale = pointSize/gl_Position.w;
-    // pointScale = scalePoints ? pointScale*pow(vValue,scaleIntensity) : pointScale;
+    scaledPos.z *= timeScale;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(scaledPos, 1.0);
 
-    // bool isValid = isValidPoint();
-    // highlight = isValid ? 1 : 0;
+    float pointScale = pointSize/gl_Position.w;
+    pointScale = scalePoints ? pointScale*pow(vValue,scaleIntensity) : pointScale;
+
+    bool isValid = isValidPoint();
+    highlight = isValid ? 1 : 0;
     
-    // if (value == 255 || (pointScale*gl_Position.w < 0.75 && scalePoints)){ //Hide points that are invisible or get too small when scalled
-    //     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
-    // }
+    if (value == 255. || (pointScale*gl_Position.w < 0.75 && scalePoints)){ //Hide points that are invisible or get too small when scalled
+        gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    }
 
-    // if (vValue < valueRange.x || vValue > valueRange.y){ //Hide points that are outside of value range
-    //     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
-    // }
+    if (vValue < valueRange.x || vValue > valueRange.y){ //Hide points that are outside of value range
+        gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    }
 
-    // vec2 scaledZBounds = vec2(flatBounds.z,  flatBounds.w) * vec2(timeScale);
-    // bool xCheck = scaledPos.x < flatBounds.x || scaledPos.x > flatBounds.y;
-    // bool zCheck = scaledPos.z < scaledZBounds.x || scaledPos.z > scaledZBounds.y;
-    // bool yCheck = scaledPos.y < vertBounds.x || scaledPos.y> vertBounds.y;
+    vec2 scaledZBounds = vec2(flatBounds.z,  flatBounds.w) * vec2(timeScale);
+    bool xCheck = scaledPos.x < flatBounds.x || scaledPos.x > flatBounds.y;
+    bool zCheck = scaledPos.z < scaledZBounds.x || scaledPos.z > scaledZBounds.y;
+    bool yCheck = scaledPos.y < vertBounds.x || scaledPos.y> vertBounds.y;
 
-    // if (xCheck || zCheck || yCheck){ //Hide points that are clipped
-    //     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
-    // }
+    if (xCheck || zCheck || yCheck){ //Hide points that are clipped
+        gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    }
     
-    // if (showTransect){
-    //     gl_PointSize = isValid ? max(pointScale*5. , pointScale+80./gl_Position.w) : pointScale;
-    // }
-    // else{
-    //     gl_PointSize =  pointScale;
-    // }
+    if (showTransect){
+        gl_PointSize = isValid ? max(pointScale*5. , pointScale+80./gl_Position.w) : pointScale;
+    }
+    else{
+        gl_PointSize =  pointScale;
+    }
 
 }
