@@ -224,7 +224,7 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       fragmentShader:pointFrag,
       depthWrite: true,
       depthTest: true,
-      transparent: true,
+      transparent: false,
       blending:THREE.NormalBlending,
       side:THREE.DoubleSide,
     })
