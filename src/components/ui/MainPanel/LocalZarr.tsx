@@ -24,7 +24,7 @@ const LocalZarr = ({setShowLocal, setOpenVariables, setInitStore}:LocalZarrType)
       // useErrorStore.getState().setError('filecount')
     }
     // Create a Map to hold the Zarr store data
-    const store = new Map<string, Promise<ArrayBuffer>>();
+    const fileMap = new Map<string, File>();
 
     // The base directory name will be the first part of the relative path
     const baseDir = files[0].webkitRelativePath.split('/')[0];
@@ -34,14 +34,15 @@ const LocalZarr = ({setShowLocal, setOpenVariables, setInitStore}:LocalZarrType)
       // We need to remove the base directory from the path for zarrita
       const relativePath = file.webkitRelativePath.substring(baseDir.length + 1);
       if (relativePath) {
-        store.set('/' + relativePath, file.arrayBuffer()); // Zarrita looks for a leading slash before variables. Need to add it back
+        fileMap.set('/' + relativePath, file); // Zarrita looks for a leading slash before variables. Need to add it back
       }
     }
 
     // Create a custom zarrita store from the Map
     const customStore: zarr.AsyncReadable<any> = {
       async get(key: string) {
-        const buffer = await store.get(key);
+        const file = fileMap.get(key)
+        const buffer = await file?.arrayBuffer();
         return buffer ? new Uint8Array(buffer) : undefined;
       }
     };
