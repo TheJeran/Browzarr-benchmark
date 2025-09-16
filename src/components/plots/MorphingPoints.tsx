@@ -2,13 +2,12 @@
 
 import React, { useMemo, useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import { Canvas, extend, useFrame } from '@react-three/fiber';
+import { Canvas, extend, useFrame, useThree } from '@react-three/fiber';
 import gsap from 'gsap';
-import { OrbitControls } from '@react-three/drei';
 import vertexShader from '@/components/textures/shaders/LandingVertex.glsl'
 import fragmentShader from '@/components/textures/shaders/LandingFrag.glsl'
 import './Plots.css';
-import { useGlobalStore } from '@/utils/GlobalStates';
+import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 
 
@@ -32,6 +31,20 @@ type MorphMaterialType = THREE.ShaderMaterial & {
 const MorphingPoints = () => {
   const pointsRef = useRef<THREE.Points>(null);
   const count = 15625; // Total number of points
+  const {gl} = useThree();
+  const { setMaxTextureSize, setMax3DTextureSize } = usePlotStore(useShallow(state => ({
+    setMaxTextureSize: state.setMaxTextureSize,
+    setMax3DTextureSize: state.setMax3DTextureSize
+  })))
+
+  useEffect(()=>{
+    const context = gl.getContext()
+    //@ts-expect-error This parameter does exist
+    setMax3DTextureSize(context.getParameter(context.MAX_3D_TEXTURE_SIZE))
+    setMaxTextureSize(context.getParameter(context.MAX_TEXTURE_SIZE))
+  },[])
+
+
   const {colormap} = useGlobalStore(useShallow(state => ({
     colormap: state.colormap
   })))

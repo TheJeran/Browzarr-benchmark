@@ -58,7 +58,7 @@ const MetaDataInfo = ({ meta, setShowMeta, setOpenVariables }: { meta: any, setS
     setCompress: state.setCompress
   })))
   const cache = useCacheStore(state => state.cache)
-  const {maxTextureSize} = usePlotStore(useShallow(state => ({maxTextureSize: state.maxTextureSize})))
+  const {maxTextureSize, max3DTextureSize} = usePlotStore(useShallow(state => ({maxTextureSize: state.maxTextureSize, max3DTextureSize: state.max3DTextureSize})))
 
   const [tooBig, setTooBig] = useState(false)
   const [cached, setCached] = useState(false)
@@ -121,6 +121,7 @@ const MetaDataInfo = ({ meta, setShowMeta, setOpenVariables }: { meta: any, setS
     setSlice([0, null])
   },[initStore])
 
+  const isFlat = meta.shape.length == 2
   useEffect(()=>{
     setCompress(false)
     setIdx4D(null);
@@ -149,11 +150,20 @@ const MetaDataInfo = ({ meta, setShowMeta, setOpenVariables }: { meta: any, setS
     const width = meta.shape[meta.shape.length-1]
     const height = meta.shape[meta.shape.length-2]
 
-    if (width > maxTextureSize || height > maxTextureSize){
-      setTooBig(true)
-    }else{
-      setTooBig(false)
+    if (isFlat){
+      if (width > maxTextureSize || height > maxTextureSize){
+        setTooBig(true)
+      }else{
+        setTooBig(false)
+      }
+    } else{
+      if (width > max3DTextureSize || height > max3DTextureSize){
+        setTooBig(true)
+      }else{
+        setTooBig(false)
+      }
     }
+    
   },[meta, maxTextureSize, chunkIDs])
 
   return (
@@ -170,7 +180,7 @@ const MetaDataInfo = ({ meta, setShowMeta, setOpenVariables }: { meta: any, setS
         {tooBig && 
         <div className="bg-[#FFBEB388] rounded-md p-1">
           <span className="text-xs font-medium text-red-800 dark:text-red-200">
-            One or more of the dimensions in your dataset exceed this browsers maximum texture size: <b>{maxTextureSize}</b>
+            One or more of the dimensions in your dataset exceed this browsers maximum texture size: <b>{isFlat ? maxTextureSize : max3DTextureSize}</b>
           </span>
         </div>
         }

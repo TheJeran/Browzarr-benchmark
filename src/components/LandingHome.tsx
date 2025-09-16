@@ -7,7 +7,7 @@ import { useEffect, useMemo } from 'react';
 import { PlotArea, Plot, LandingShapes } from '@/components/plots';
 import { MainPanel } from '@/components/ui';
 import { Metadata, Loading, Navbar, Error } from '@/components/ui';
-import { useGlobalStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates';
+import { useGlobalStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 
 export function LandingHome() {
@@ -26,9 +26,7 @@ export function LandingHome() {
     setTitleDescription: state.setTitleDescription,
   })))
 
-  const { setMaxTextureSize } = usePlotStore(useShallow(state => ({
-    setMaxTextureSize: state.setMaxTextureSize
-  })))
+  
 
   const { currentStore, setCurrentStore } = useZarrStore(useShallow(state => ({
     currentStore: state.currentStore,
@@ -60,15 +58,6 @@ export function LandingHome() {
 
     return () => { isMounted = false; };
   }, [currentStore, setZMeta, setVariables, setTitleDescription])
-
-  useEffect(() => { // Set maxtexture size to warn users if custom data is too big
-    const renderer = new THREE.WebGLRenderer();
-    const gl = renderer.getContext();
-    setMaxTextureSize(gl.getParameter(gl.MAX_TEXTURE_SIZE))
-    return () => {
-    renderer.dispose();
-  };
-  },[setMaxTextureSize])
 
 
   return (
