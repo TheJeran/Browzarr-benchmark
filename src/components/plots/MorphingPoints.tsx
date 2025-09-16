@@ -32,14 +32,16 @@ const MorphingPoints = () => {
   const pointsRef = useRef<THREE.Points>(null);
   const count = 15625; // Total number of points
   const {gl} = useThree();
-  const { setMaxTextureSize } = usePlotStore(useShallow(state => ({
-    setMaxTextureSize: state.setMaxTextureSize
+  const { setMaxTextureSize, setMax3DTextureSize } = usePlotStore(useShallow(state => ({
+    setMaxTextureSize: state.setMaxTextureSize,
+    setMax3DTextureSize: state.setMax3DTextureSize
   })))
 
   useEffect(()=>{
     const context = gl.getContext()
     //@ts-expect-error This parameter does exist
-    setMaxTextureSize(context.getParameter(context.MAX_3D_TEXTURE_SIZE))
+    setMax3DTextureSize(context.getParameter(context.MAX_3D_TEXTURE_SIZE))
+    setMaxTextureSize(context.getParameter(context.MAX_TEXTURE_SIZE))
   },[])
 
 

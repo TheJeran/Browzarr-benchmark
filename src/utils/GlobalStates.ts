@@ -195,6 +195,7 @@ type PlotState ={
   latResolution: number;
   colorIdx: number;
   maxTextureSize: number;
+  max3DTextureSize: number;
   vTransferRange: boolean;
   vTransferScale: number;
 
@@ -239,6 +240,7 @@ type PlotState ={
   incrementColorIdx: () => void;
   getColorIdx: () => number;
   setMaxTextureSize: (maxTextureSize: number) => void;
+  setMax3DTextureSize: (max3DTextureSize: number) => void;
   setVTransferRange: (vTransferRange: boolean) => void;
   setVTransferScale: (vTransferScale: number) => void;
 }
@@ -283,6 +285,7 @@ export const usePlotStore = create<PlotState>((set, get) => ({
   latResolution: 1,
   colorIdx: 0,
   maxTextureSize: 2048,
+  max3DTextureSize: 2048,
   vTransferRange: false,
   vTransferScale: 1,
 
@@ -329,7 +332,8 @@ export const usePlotStore = create<PlotState>((set, get) => ({
     colorIdx: (state.colorIdx + 1) % 10 
   })),
   getColorIdx: () => get().colorIdx,
-  setMaxTextureSize: (maxTextureSize) => set({ maxTextureSize })
+  setMaxTextureSize: (maxTextureSize) => set({ maxTextureSize }),
+  setMax3DTextureSize: (max3DTextureSize) => set({ max3DTextureSize }),
 }))
 
 
