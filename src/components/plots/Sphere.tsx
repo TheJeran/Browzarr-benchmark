@@ -137,8 +137,9 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
 
         })
         return shader
-    },[])
-
+    },[isFlat])
+    const backMaterial = shaderMaterial.clone()
+    backMaterial.side = THREE.BackSide;
     useEffect(()=>{
       if (shaderMaterial){
         const uniforms = shaderMaterial.uniforms;
@@ -154,9 +155,22 @@ export const Sphere = ({texture, ZarrDS} : {texture: THREE.Data3DTexture | THREE
         uniforms.nanColor.value =  new THREE.Color(nanColor)
         uniforms.nanAlpha.value =  1 - nanTransparency
       }
+      if (backMaterial){
+        const uniforms = backMaterial.uniforms;
+        uniforms.map. value =  texture 
+        uniforms.selectTS.value =  selectTS
+        uniforms.selectBounds.value =  bounds
+        uniforms.cmap.value =  colormap
+        uniforms.cOffset.value =  cOffset
+        uniforms.cScale.value =  cScale
+        uniforms.animateProg.value =  animProg
+        uniforms.latBounds.value =  new THREE.Vector2(deg2rad(latBounds[0]), deg2rad(latBounds[1]))
+        uniforms.lonBounds.value =  new THREE.Vector2(deg2rad(lonBounds[0]), deg2rad(lonBounds[1]))
+        uniforms.nanColor.value =  new THREE.Color(nanColor)
+        uniforms.nanAlpha.value =  1 - nanTransparency
+      }
     },[texture, animProg, colormap, cOffset, cScale, animate, bounds, selectTS, lonBounds, latBounds, nanColor, nanTransparency])
-    const backMaterial = shaderMaterial.clone()
-    backMaterial.side = THREE.BackSide;
+    
     
     function HandleTimeSeries(event: THREE.Intersection){
         const point = event.point.normalize();
