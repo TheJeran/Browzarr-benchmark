@@ -247,7 +247,7 @@ const AnalysisOptions = () => {
                     <td className="text-center w-[100%] align-middle justify-center content-center">
                       <div className='grid grid-cols-[65%_auto] w-[90%] mx-auto'>
                         {analysisMode &&
-                        <div className='rounded-[6px] self-center mx-2 relative border border-gray-150 py-[5px] px-1 bg-[#f8f8f8]'>
+                        <div className='rounded-[6px] self-center mx-2 relative border border-gray-150 py-[5px] px-1'>
                           <div className='flex justify-around'>
                           Current
                             <Tooltip>
@@ -265,7 +265,6 @@ const AnalysisOptions = () => {
                           className={`rounded-[6px] self-center ${analysisMode ? null : 'col-span-2'} w-[100%] pl-2 relative border border-gray-150 py-[5px] ${analysisMode ?'hover:scale-[0.95]' : ''} transition-[0.2s]`}
                           style={{
                             cursor: analysisMode ? 'pointer' : '',
-                            background: analysisMode ? '#b6d1ddff' : '#f8f8f8',
                           }}
                           disabled={!analysisMode}
                           onClick={e=>{setReFetch(!reFetch);setAnalysisMode(false)}}
@@ -288,7 +287,7 @@ const AnalysisOptions = () => {
                 <th>Second Variable</th>
                 <td>
                     <Select onValueChange={setVariable2}>
-                      <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
+                      <SelectTrigger style={{ width: '175px', marginLeft: '18px' }}>
                         <SelectValue placeholder={variable2 == 'Default' ? "Select..." : variable2} />
                       </SelectTrigger>
                       <SelectContent>
@@ -312,7 +311,7 @@ const AnalysisOptions = () => {
                 {!useTwo && (
                   <td>
                     <Select onValueChange={setOperation}>
-                      <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
+                      <SelectTrigger style={{ width: '175px', marginLeft: '18px' }}>
                         <SelectValue
                           placeholder={operation === 'Default' ? 'Select...' : operation}
                         />
@@ -341,7 +340,7 @@ const AnalysisOptions = () => {
                 {useTwo && (
                   <td>
                     <Select onValueChange={setOperation}>
-                      <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
+                      <SelectTrigger style={{ width: '175px', marginLeft: '18px' }}>
                         <SelectValue
                           placeholder={operation === 'Default' ? 'Select...' : operation}
                         />
@@ -371,7 +370,7 @@ const AnalysisOptions = () => {
                         <th>Axis</th>
                         <td style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                           <Select onValueChange={e => setNewDim(parseInt(e))}>
-                            <SelectTrigger style={{ width: ['CUMSUM3D', 'LinearSlope'].includes(operation) ? '50%' : '175px', marginLeft: '10px' }}>
+                            <SelectTrigger style={{ width: ['CUMSUM3D', 'LinearSlope'].includes(operation) ? '50%' : '175px', marginLeft: '18px' }}>
                               <SelectValue placeholder={dimNames[newDim]} />
                             </SelectTrigger>
                             <SelectContent>
@@ -406,7 +405,7 @@ const AnalysisOptions = () => {
                         <th>Kernel Op.</th>
                         <td>
                           <Select onValueChange={setKernelOperation}>
-                            <SelectTrigger style={{ width: '175px', marginLeft: '10px' }}>
+                            <SelectTrigger style={{ width: '175px', marginLeft: '18px' }}>
                               <SelectValue
                                 placeholder={
                                   kernelOperation === 'Default' ? 'Select...' : kernelOperation
