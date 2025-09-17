@@ -77,8 +77,7 @@ const PlayInterFace = ({visible}:{visible : boolean}) =>{
     },[reFetch])
 
     return (
-        <div style={{ display: visible ? '' : 'none' }}>
-          <Card className='play-interface py-1'>
+          <Card className='play-interface py-1' style={{ display: visible ? '' : 'none' }}>
             <CardContent className='flex flex-col gap-1 w-full h-full px-1 py-1'>
               <div className='text-xs sm:text-sm text-center'>
                 {currentLabel}
@@ -139,7 +138,6 @@ const PlayInterFace = ({visible}:{visible : boolean}) =>{
               </div>
             </CardContent>
           </Card>
-        </div>
       )      
 }
 
