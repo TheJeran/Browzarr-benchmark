@@ -33,7 +33,6 @@ const PlayInterFace = ({visible}:{visible : boolean}) =>{
       reFetch: state.reFetch
     })))
     const timeLength = useMemo(()=>dimArrays[0].length,[dimArrays])
-    const [timeStep, setTimeStep] = useState(0)
     
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const previousVal = useRef<number>(0)
@@ -68,7 +67,7 @@ const PlayInterFace = ({visible}:{visible : boolean}) =>{
         
     }, [animate, fps]);
 
-    const currentLabel = parseLoc(dimArrays[0][timeStep], dimUnits[0], true)
+    const currentLabel = parseLoc(dimArrays[0][Math.round(animProg * (timeLength))], dimUnits[0], true)
     const firstLabel = parseLoc(dimArrays[0][0], dimUnits[0], true)
     const lastLabel = parseLoc(dimArrays[0][timeLength-1], dimUnits[0], true)
 
@@ -78,8 +77,7 @@ const PlayInterFace = ({visible}:{visible : boolean}) =>{
     },[reFetch])
 
     return (
-        <div style={{ display: visible ? '' : 'none' }}>
-          <Card className='play-interface py-1'>
+          <Card className='play-interface py-1' style={{ display: visible ? '' : 'none' }}>
             <CardContent className='flex flex-col gap-1 w-full h-full px-1 py-1'>
               <div className='text-xs sm:text-sm text-center'>
                 {currentLabel}
@@ -94,8 +92,7 @@ const PlayInterFace = ({visible}:{visible : boolean}) =>{
                   className='flex-1'
                   onValueChange={(vals: number[])=>{
                     const v = Array.isArray(vals) ? vals[0] : 0;
-                    setTimeStep(v)
-                    setAnimProg(v / (timeLength-1));
+                    setAnimProg(v / (timeLength));
                   }}
                 />
                 <span className='text-xs'>{lastLabel}</span>
@@ -141,7 +138,6 @@ const PlayInterFace = ({visible}:{visible : boolean}) =>{
               </div>
             </CardContent>
           </Card>
-        </div>
       )      
 }
 
