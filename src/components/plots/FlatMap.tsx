@@ -68,7 +68,7 @@ const FlatMap = ({texture, infoSetters} : {texture : THREE.DataTexture | THREE.D
             vertexShader: vertShader,
             fragmentShader: isFlat ? fragmentFlat : flatFrag3D,
             side: THREE.DoubleSide,
-        }),[])
+        }),[isFlat])
 
     useEffect(()=>{
       if(shaderMaterial){

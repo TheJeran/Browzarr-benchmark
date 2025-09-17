@@ -126,6 +126,7 @@ export class ZarrDataset{
 			if (thisChunk.compressed){
 				thisChunk.data = DecompressArray(thisChunk.data)
 			}
+			setStrides(thisChunk.stride)
 			return thisChunk;
 		}
 

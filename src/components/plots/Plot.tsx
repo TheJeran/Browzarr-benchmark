@@ -210,7 +210,6 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
     coords,
     val
   }),[])
-  
   const Nav = useMemo(()=>Navbar,[])
   return (
     <div className='main-canvas'
@@ -246,7 +245,7 @@ const Plot = ({ZarrDS}:{ZarrDS: ZarrDataset}) => {
       </Canvas>
       </>}
 
-        {(isFlat || plotType == "flat") && <>
+        {(isFlat || (!isFlat && plotType == "flat")) && <>
         <Canvas id='main-canvas' camera={{ position: [0,0,5], zoom: 1000 }}
         orthographic frameloop="demand"
         >
