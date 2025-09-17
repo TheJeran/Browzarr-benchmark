@@ -51,21 +51,31 @@ export class ZarrError extends Error {
     }
 }
 
+const maxRetries = 10;
+const retryDelay = 500; // 0.5 seconds in milliseconds
 
-export async function GetStore(storePath: string): Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>> | null>{
-		try {
-			const d_store = zarr.tryWithConsolidated(
-				new zarr.FetchStore(storePath)
-			);
-			const gs = await d_store.then(store => zarr.open(store, {kind: 'group'}));
-			return gs;
-		} catch (error) {
-			if (storePath.slice(0,5) != 'local'){
-				useErrorStore.getState().setError('zarrFetch')
-				useGlobalStore.getState().setShowLoading(false)
+export async function GetStore(storePath: string): Promise<zarr.Group<zarr.FetchStore | zarr.Listable<zarr.FetchStore>> | undefined>{
+		for (let attempt = 0; attempt <= maxRetries; attempt++) {
+			try {
+				const d_store = zarr.tryWithConsolidated(
+					new zarr.FetchStore(storePath)
+				);
+				const gs = await d_store.then(store => zarr.open(store, {kind: 'group'}));
+				return gs;
+			} catch (error) {
+				// If this is the final attempt, handle the error
+				if (attempt === maxRetries) {
+					if (storePath.slice(0,5) != 'local'){
+						useErrorStore.getState().setError('zarrFetch')
+						useGlobalStore.getState().setShowLoading(false)
+					}
+					throw new ZarrError(`Failed to initialize store at ${storePath}`, error);
+				}
+				
+				// Wait before retrying (except on the last attempt which we've already handled above)
+				await new Promise(resolve => setTimeout(resolve, retryDelay));
 			}
-			throw new ZarrError(`Failed to initialize store at ${storePath}`, error);
-		}    
+		}
 }
 
 function CompressArray(array: Float16Array, level: number){
@@ -138,13 +148,25 @@ export class ZarrDataset{
 			let scalingFactor = null;
 			if (totalSize < 1e8 || !hasTimeChunks){ // Check if total is less than 100MB or no chunks along time
 				setDownloading(true)
-				try{
-					chunk = is4D ? await zarr.get(outVar, [idx4D, null , null, null]) :  await zarr.get(outVar) ;
-				} catch (error) {
-					useErrorStore.getState().setError('zarrFetch')
-					useGlobalStore.getState().setShowLoading(false)
-					setDownloading(false)
-					throw new ZarrError(`Failed to fetch variable ${variable}`, error);
+				for (let attempt = 0; attempt <= maxRetries; attempt++) {
+					try {
+						chunk = is4D ? await zarr.get(outVar, [idx4D, null , null, null]) :  await zarr.get(outVar);
+						break; // If successful, exit the loop
+					} catch (error) {
+						// If this is the final attempt, handle the error
+						if (attempt === maxRetries) {
+							useErrorStore.getState().setError('zarrFetch')
+							useGlobalStore.getState().setShowLoading(false)
+							setDownloading(false)
+							throw new ZarrError(`Failed to fetch variable ${variable}`, error);
+						}
+						
+						// Wait before retrying (except on the last attempt which we've already handled above)
+						await new Promise(resolve => setTimeout(resolve, retryDelay));
+					}
+				}
+				if (!chunk) {
+					throw new Error('Unexpected: chunk was not assigned'); // This is redundant but satisfies TypeScript
 				}
 				shape = is4D ? outVar.shape.slice(1) : outVar.shape;
 				setStrides(chunk.stride) // Need strides for the point cloud
@@ -196,47 +218,57 @@ export class ZarrDataset{
 						iter ++;
 					}
 					else{
-						try{
-							chunk = await zarr.get(outVar, is4D ? [idx4D , zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null] : [zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null])
-						} catch (error) {
-							useErrorStore.getState().setError('zarrFetch')
-							useGlobalStore.getState().setShowLoading(false)
-							setDownloading(false)
-							setProgress(0)
-							throw new ZarrError(`Failed to fetch chunk ${i} for variable ${variable}`, error);
-						}
-						
+						// Download Chunk
+						for (let attempt = 0; attempt <= maxRetries; attempt++) {
+							try {
+								chunk = await zarr.get(outVar, is4D ? [idx4D , zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null] : [zarr.slice(i*chunkShape[0], (i+1)*chunkShape[0]), null, null])
+								break; // If successful, exit the loop
+							} catch (error) {
+								// If this is the final attempt, handle the error
+								if (attempt === maxRetries) {
+									useErrorStore.getState().setError('zarrFetch')
+									useGlobalStore.getState().setShowLoading(false)
+									setDownloading(false)
+									setProgress(0)
+									throw new ZarrError(`Failed to fetch chunk ${i} for variable ${variable}`, error);
+								}
+								
+								// Wait before retrying (except on the last attempt which we've already handled above)
+								await new Promise(resolve => setTimeout(resolve, retryDelay));
+							}
+						}	
 						if (chunk.data instanceof BigInt64Array || chunk.data instanceof BigUint64Array) {
 							throw new Error("BigInt arrays are not supported for conversion to Float32Array.");
-						} else {
-							const [chunkF16, newScalingFactor] = ToFloat16(chunk.data as Float32Array, scalingFactor)
-							if (newScalingFactor != null && newScalingFactor != scalingFactor){ // If the scalingFactor has changed, need to rescale main array
-								if (scalingFactor == null || newScalingFactor > scalingFactor){ 
-									const thisScaling = scalingFactor ? newScalingFactor - scalingFactor : newScalingFactor
-									RescaleArray(typedArray, thisScaling)
-									scalingFactor = newScalingFactor
-									for (const id of rescaleIDs){ // Set new scalingFactor on the chunks
-										const tempName = replaceChunkNumber(cacheName, id)
-										const tempChunk = cache.get(tempName)
-										tempChunk.scaling = scalingFactor
-										cache.set(tempName, tempChunk)
-									}
+						} 
+						const [chunkF16, newScalingFactor] = ToFloat16(chunk.data as Float32Array, scalingFactor)
+						if (newScalingFactor != null && newScalingFactor != scalingFactor){ // If the scalingFactor has changed, need to rescale main array
+							if (scalingFactor == null || newScalingFactor > scalingFactor){ 
+								const thisScaling = scalingFactor ? newScalingFactor - scalingFactor : newScalingFactor
+								RescaleArray(typedArray, thisScaling)
+								scalingFactor = newScalingFactor
+								for (const id of rescaleIDs){ // Set new scalingFactor on the chunks
+									const tempName = replaceChunkNumber(cacheName, id)
+									const tempChunk = cache.get(tempName)
+									tempChunk.scaling = scalingFactor
+									RescaleArray(tempChunk.data, thisScaling)
+									cache.set(tempName, tempChunk)
 								}
 							}
-							typedArray.set(chunkF16,accum)
-							const cacheChunk = {
-								data: compress ? CompressArray(chunkF16, 7) : chunkF16,
-								shape: chunk.shape,
-								stride: chunk.stride,
-								scaling: scalingFactor,
-								compressed: compress
-							}
-							cache.set(cacheName,cacheChunk)
-							accum += chunk.data.length;
-							setStrides(chunk.stride)
-							setProgress(Math.round(iter/chunkCount*100)) // Progress Bar
-							iter ++;
 						}
+						typedArray.set(chunkF16,accum)
+						const cacheChunk = {
+							data: compress ? CompressArray(chunkF16, 7) : chunkF16,
+							shape: chunk.shape,
+							stride: chunk.stride,
+							scaling: scalingFactor,
+							compressed: compress
+						}
+						cache.set(cacheName,cacheChunk)
+						accum += chunk.data.length;
+						setStrides(chunk.stride)
+						setProgress(Math.round(iter/chunkCount*100)) // Progress Bar
+						iter ++;
+						
 						rescaleIDs.push(i)
 					}
 				}
