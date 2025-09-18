@@ -43,7 +43,7 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
   const [zResolution, setZResolution] = useState<number>(7)
 
   const isPC = useMemo(()=>plotType == 'point-cloud',[plotType])
-  const [depth, height, width] = dataShape;
+  const globalScale = isPC ? dataShape[2]/500 : 1
 
   const depthRatio = useMemo(()=>dataShape[0]/dataShape[1]*timeScale/2,[dataShape, timeScale]);
   const shapeRatio = useMemo(()=>shape.y/shape.x, [shape])
@@ -56,22 +56,23 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
   },[secondaryColor])
 
   const lineMat = useMemo(()=>new LineMaterial({color: colorHex ? colorHex : 0, linewidth: 2.0}),[colorHex])
-  const tickLength = 0.05;
+  const tickLength = 0.05*globalScale;
 
   const xLine = useMemo(()=> {
-    const geom = new LineSegmentsGeometry().setPositions([(isPC ? xRange[0]*width/500-tickLength/2 : xRange[0]-tickLength/2), 0, 0, (isPC ? xRange[1]*width/500+tickLength/2 :xRange[1]+tickLength/2), 0, 0]);
-    return new LineSegments2(geom, lineMat)},[xRange, lineMat])
+    const geom = new LineSegmentsGeometry().setPositions([xRange[0]*globalScale-tickLength/2, 0, 0, xRange[1]*globalScale+tickLength/2, 0, 0]);
+    return new LineSegments2(geom, lineMat)},[xRange, lineMat, globalScale])
+
   const yLine = useMemo(() =>{
-    const geom = new LineSegmentsGeometry().setPositions([0, isPC ? yRange[0]*height/500 : yRange[0]*shapeRatio, 0, 0, isPC ? yRange[1]*height/500+tickLength/2 : yRange[1]*shapeRatio+tickLength/2, 0]);
-    return new LineSegments2(geom, lineMat)},[yRange, shapeRatio, lineMat])
+    const geom = new LineSegmentsGeometry().setPositions([0, yRange[0]*shapeRatio*globalScale, 0, 0, yRange[1]*shapeRatio*globalScale+tickLength/2, 0]);
+    return new LineSegments2(geom, lineMat)},[yRange, shapeRatio, lineMat, globalScale])
 
   const zLine = useMemo(()=> {
-    const geom = new LineSegmentsGeometry().setPositions([0, 0, isPC ? zRange[0]*depth/1000-tickLength/2 : zRange[0]-tickLength/2, 0, 0, isPC ? zRange[1]*depth/1000+tickLength/2 : zRange[1]+tickLength/2]);
-    return new LineSegments2(geom, lineMat)},[zRange, depthRatio, isPC, lineMat])
+    const geom = new LineSegmentsGeometry().setPositions([0, 0, isPC ? zRange[0]*globalScale/2*depthRatio-tickLength/2 : zRange[0]-tickLength/2, 0, 0, isPC ? zRange[1]*globalScale/2*depthRatio+tickLength/2 : zRange[1]+tickLength/2]);
+    return new LineSegments2(geom, lineMat)},[zRange, depthRatio, isPC, lineMat, globalScale])
 
   const tickLine = useMemo(()=> {
-    const geom = new LineSegmentsGeometry().setPositions([0, 0, 0, 0, 0, .05]);
-    return new LineSegments2(geom, lineMat)},[lineMat])
+    const geom = new LineSegmentsGeometry().setPositions([0, 0, 0, 0, 0, tickLength]);
+    return new LineSegments2(geom, lineMat)},[lineMat, globalScale])
 
   const xDimScale = xResolution/(xResolution-1)
   const xValDelta = 1/(xResolution-1)
@@ -79,38 +80,37 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
   const yValDelta = 1/(yResolution-1)
   const zDimScale = zResolution/(zResolution-1)
   const zValDelta = 1/(zResolution-1)
-
   return (
     <group visible={plotType != 'sphere' && plotType != 'flat' && !hideAxis}>
     {/* Horizontal Group */}
-    <group position={[0, isPC ? yRange[0]*height/500 : shapeRatio*yRange[0], 0]}  >
+    <group position={[0, isPC ? shapeRatio*globalScale*yRange[0] : shapeRatio*yRange[0], 0]}  >
       {/* X Group */}
-      <group position={[0, 0, flipX ? isPC ? zRange[0]*depth/1000-tickLength/2 : zRange[0]-tickLength/2 : isPC ? zRange[1]*depth/1000 +tickLength/2 : zRange[1]+tickLength/2]} rotation={[flipDown ? flipX ? -Math.PI/2 : Math.PI/2 : 0, 0, 0]}> 
+      <group position={[0, 0, flipX ? isPC ? zRange[0]*depthRatio*(globalScale/2)-tickLength/2 : zRange[0]-tickLength/2 : isPC ? zRange[1] * (globalScale/2) * depthRatio +tickLength/2 : zRange[1]+tickLength/2]} rotation={[flipDown ? flipX ? -Math.PI/2 : Math.PI/2 : 0, 0, 0]}> 
         <primitive key={'xLine'} object={xLine} />
         {Array(xResolution).fill(null).map((_val,idx)=>(
           (((xRange[0] + 1)/2) <= (idx*xDimScale)/xResolution &&
            ((xRange[1] + 1)/2) >= (idx*xDimScale)/xResolution)
            &&          
-          <group key={`xGroup_${idx}`} position={[isPC ? -width/500 + idx*width/(xResolution-1)/250 : -1 + idx*xDimScale/(xResolution/2), 0, 0]}>
+          <group key={`xGroup_${idx}`} position={[isPC ? -globalScale + idx*xDimScale/(xResolution/2)*globalScale : -1 + idx*xDimScale/(xResolution/2), 0, 0]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, flipX ? Math.PI : 0, 0]} />
             <Text 
               key={`textX_${idx}`}
               anchorX={idx == 0 ? (flipX ? 'right' : 'left') : idx == xResolution-1 ? (flipX ? 'left' : 'right') : 'center'}
               anchorY={'top'} 
-              fontSize={0.05} 
+              fontSize={0.05*globalScale} 
               color={colorHex}
               material-depthTest={false}
               rotation={[-Math.PI/2, 0, flipX ? Math.PI : 0]}
-              position={[0, 0, flipX ? -0.05 :.05]}
+              position={[0, 0, flipX ? -0.05*globalScale :.05*globalScale]}
             >{parseLoc(dimArrays[2][Math.floor((dimLengths[2]-1)*idx*xValDelta)],dimUnits[2])}</Text>
           </group>
         ))}
-        <group rotation={[-Math.PI/2, 0, flipX ? Math.PI : 0]} position={[(xRange[0]+xRange[1])/2, 0, flipX ? -0.2 :.2]}>
+        <group rotation={[-Math.PI/2, 0, flipX ? Math.PI : 0]} position={[(xRange[0]+xRange[1])/2*globalScale, 0, flipX ? -0.2*globalScale :.2*globalScale]}>
           <Text 
             key={'xTitle'}
             anchorX={'center'}
             anchorY={'top'} 
-            fontSize={0.1} 
+            fontSize={0.1*globalScale} 
             color={colorHex}
             material-depthTest={false}
           >{dimNames[2]}</Text>
@@ -120,10 +120,10 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
               key={'xAdd'}
               anchorX={'center'}
               anchorY={'middle'} 
-              fontSize={0.2} 
+              fontSize={0.2*globalScale} 
               color={colorHex}
               material-depthTest={false}
-              position={[.2, -0.2, 0]}
+              position={[.2*globalScale, -0.2*globalScale, 0]}
               onClick={e=>setXResolution(x=> Math.min(x+1,20))}
               onPointerEnter={e=>document.body.style.cursor = 'pointer'}
               onPointerLeave={e=>document.body.style.cursor = 'default'}
@@ -135,10 +135,10 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
               key={'xSub'}
               anchorX={'center'}
               anchorY={'middle'} 
-              fontSize={0.2} 
+              fontSize={0.2*globalScale} 
               color={colorHex}
               material-depthTest={false}
-              position={[-.2, -0.2, 0]}
+              position={[-.2*globalScale, -0.2*globalScale, 0]}
               onClick={e=>setXResolution(x=> Math.max(x-1,1))}
               onPointerEnter={e=>document.body.style.cursor = 'pointer'}
               onPointerLeave={e=>document.body.style.cursor = 'default'}
@@ -149,32 +149,32 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
         </group>
       </group>
       {/* Z Group */}
-      <group position={[flipY ? xRange[1] + tickLength/2: xRange[0] - tickLength/2, 0, 0]} rotation={[0, 0, flipDown ? flipY ? -Math.PI/2 : Math.PI/2 : 0]}>
+      <group position={[flipY ? xRange[1]*globalScale + tickLength/2: xRange[0]*globalScale - tickLength/2, 0, 0]} rotation={[0, 0, flipDown ? flipY ? -Math.PI/2 : Math.PI/2 : 0]}>
         <primitive key={'zLine'} object={zLine} />
         {Array(zResolution).fill(null).map((_val,idx)=>(
           (((zRange[0] + 1)/2) <= (idx*zDimScale)/zResolution  &&
           ((zRange[1] + 1)/2) >= (idx*zDimScale)/zResolution )
           && 
-          <group key={`zGroup_${idx}`} position={[0, 0, isPC ? -depthRatio + idx*zDimScale/(zResolution/2)*depthRatio : -1 + idx*zDimScale/(zResolution/2)]}>
+          <group key={`zGroup_${idx}`} position={[0, 0, isPC ? -depthRatio*globalScale/2 + idx*zDimScale/(zResolution/2)*depthRatio*(globalScale/2) : -1 + idx*zDimScale/(zResolution/2)]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, flipY ? Math.PI/2 : -Math.PI/2 , 0]} />
             <Text 
               key={`textY_${idx}`}
               anchorX={idx == 0 ? (flipY ? 'right' : 'left') : idx == zResolution-1 ? (flipY ? 'left' : 'right') : 'center'}
               anchorY={'top'} 
-              fontSize={0.04} 
+              fontSize={0.04*globalScale} 
               color={colorHex}
               material-depthTest={false}
               rotation={[-Math.PI/2, 0, flipY ? Math.PI/2 : -Math.PI/2]}
-              position={[flipY ? 0.05 :-0.05, 0, 0]}
+              position={[flipY ? 0.05*globalScale :-0.05*globalScale, 0, 0]}
             >{parseLoc(dimArrays[0][(Math.floor((dimLengths[0]-1)*idx*zValDelta)+Math.floor(dimLengths[0]*animProg))%dimLengths[0]],dimUnits[0])}</Text>
           </group>
         ))}
-        <group rotation={[-Math.PI/2, 0, flipY ? Math.PI/2 : -Math.PI/2]} position={[flipY ? 0.2 : -0.2, 0, isPC ? (zRange[0]+zRange[1])/2*depthRatio : (zRange[0]+zRange[1])/2]}>
+        <group rotation={[-Math.PI/2, 0, flipY ? Math.PI/2 : -Math.PI/2]} position={[flipY ? 0.2*globalScale : -0.2*globalScale, 0, isPC ? (zRange[0]+zRange[1])/2*depthRatio*(globalScale/2) : (zRange[0]+zRange[1])/2]}>
           <Text 
             key={'zTitle'}
             anchorX={'center'}
             anchorY={'top'} 
-            fontSize={0.1} 
+            fontSize={0.1*globalScale} 
             color={colorHex}
             material-depthTest={false}
           >{dimNames[0]}</Text>
@@ -184,10 +184,10 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
               key={'zAdd'}
               anchorX={'center'}
               anchorY={'middle'} 
-              fontSize={0.2} 
+              fontSize={0.2*globalScale} 
               color={colorHex}
               material-depthTest={false}
-              position={[.2, -.2, 0]}
+              position={[.2*globalScale, -.2*globalScale, 0]}
               onClick={e=>setZResolution(x=> Math.min(x+1,20))}
               onPointerEnter={e=>document.body.style.cursor = 'pointer'}
               onPointerLeave={e=>document.body.style.cursor = 'default'}
@@ -199,10 +199,10 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
               key={'zSub'}
               anchorX={'center'}
               anchorY={'middle'} 
-              fontSize={0.2} 
+              fontSize={0.2*globalScale} 
               color={colorHex}
               material-depthTest={false}
-              position={[-.2, -.2, 0]}
+              position={[-.2*globalScale, -.2*globalScale, 0]}
               onClick={e=>setZResolution(x=> Math.max(x-1,1))}
               onPointerEnter={e=>document.body.style.cursor = 'pointer'}
               onPointerLeave={e=>document.body.style.cursor = 'default'}
@@ -214,32 +214,32 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
       </group>
     </group>
     {/* Vertical Group */}
-    <group position={[flipY ? xRange[0] - tickLength/2 : xRange[1] + tickLength/2, 0, flipX ? isPC ? zRange[0]*depthRatio - tickLength/2 : zRange[0] - tickLength/2 : isPC ? zRange[1]*depthRatio + tickLength/2 : zRange[1] +tickLength/2]}> 
+    <group position={[flipY ? xRange[0]*globalScale - tickLength/2 : xRange[1]*globalScale + tickLength/2, 0, flipX ? isPC ? zRange[0]*depthRatio*(globalScale/2) - tickLength/2 : zRange[0] - tickLength/2 : isPC ? zRange[1]*depthRatio*(globalScale/2) + tickLength/2 : zRange[1] +tickLength/2]}> 
       <primitive key={'yLine'} object={yLine} />
       {Array(yResolution).fill(null).map((_val,idx)=>(
            (((yRange[0] + 1)/2) <= (idx*yDimScale)/yResolution &&
            ((yRange[1] + 1)/2) >= (idx*yDimScale)/yResolution)
            &&       
-          <group key={`yGroup_${idx}`} position={[0, -shape.y/2 + idx*yDimScale/(yResolution/2)*shapeRatio, 0]}>
+          <group key={`yGroup_${idx}`} position={[0, isPC ?  (-shape.y/2*globalScale + idx*yDimScale/(yResolution/2)*shapeRatio*globalScale) : -shape.y/2 + idx*yDimScale/(yResolution/2)*shapeRatio, 0]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, flipY ? -Math.PI/2 :Math.PI/2 , 0]} />
             <Text 
               key={`text_${idx}`}
               anchorX={flipY ? flipX ? 'left' : 'right' : flipX ? 'right' : 'left'}
               anchorY={'middle'} 
-              fontSize={0.05} 
+              fontSize={0.05*globalScale} 
               color={colorHex}
               material-depthTest={false}
               rotation={[0, flipX ? Math.PI : 0, 0]}
-              position={[flipY ? -0.07 : 0.07, 0, 0]}
+              position={[flipY ? -0.07*globalScale : 0.07*globalScale, 0, 0]}
             >{parseLoc(dimArrays[1][Math.floor((dimLengths[1]-1)*idx*yValDelta)],dimUnits[1])}</Text>
           </group>
         ))}
-        <group rotation={[0, flipX ? Math.PI : 0 , 0]} position={[flipY ? -0.25 : 0.25, (yRange[0]+yRange[1])/2*shapeRatio, 0]}>
+        <group rotation={[0, flipX ? Math.PI : 0 , 0]} position={[flipY ? -0.25*globalScale : 0.25*globalScale, (yRange[0]+yRange[1])/2*shapeRatio*globalScale, 0]}>
           <Text 
             key={'yTitle'}
             anchorX={flipY ? flipX ? 'left' : 'right' : flipX ? 'right' : 'left'}
             anchorY={'middle'} 
-            fontSize={0.1} 
+            fontSize={0.1*globalScale} 
             color={colorHex}
             material-depthTest={false}
           >{dimNames[1]}</Text>
@@ -249,10 +249,10 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
               key={'zAdd'}
               anchorX={'center'}
               anchorY={'middle'} 
-              fontSize={0.2} 
+              fontSize={0.2*globalScale} 
               color={colorHex}
               material-depthTest={false}
-              position={[ flipY == flipX ? 0.2 : -0.2, 0.2, 0]}
+              position={[ flipY == flipX ? 0.2*globalScale : -0.2*globalScale, 0.2*globalScale, 0]}
               onClick={e=>setYResolution(x=> Math.min(x+1,20))}
               onPointerEnter={e=>document.body.style.cursor = 'pointer'}
               onPointerLeave={e=>document.body.style.cursor = 'default'}
@@ -264,10 +264,10 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
               key={'zSub'}
               anchorX={'center'}
               anchorY={'middle'} 
-              fontSize={0.2} 
+              fontSize={0.2*globalScale} 
               color={colorHex}
               material-depthTest={false}
-              position={[flipY == flipX ? 0.2 : -0.2, -0.2, 0]}
+              position={[flipY == flipX ? 0.2*globalScale : -0.2*globalScale, -0.2*globalScale, 0]}
               onClick={e=>setYResolution(x=> Math.max(x-1,1))}
               onPointerEnter={e=>document.body.style.cursor = 'pointer'}
               onPointerLeave={e=>document.body.style.cursor = 'default'}
