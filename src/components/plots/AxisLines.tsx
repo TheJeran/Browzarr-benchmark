@@ -43,6 +43,7 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
   const [zResolution, setZResolution] = useState<number>(7)
 
   const isPC = useMemo(()=>plotType == 'point-cloud',[plotType])
+  const [depth, height, width] = dataShape;
 
   const depthRatio = useMemo(()=>dataShape[0]/dataShape[1]*timeScale/2,[dataShape, timeScale]);
   const shapeRatio = useMemo(()=>shape.y/shape.x, [shape])
@@ -58,15 +59,15 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
   const tickLength = 0.05;
 
   const xLine = useMemo(()=> {
-    const geom = new LineSegmentsGeometry().setPositions([(xRange[0]-tickLength/2), 0, 0, (xRange[1]+tickLength/2), 0, 0]);
+    const geom = new LineSegmentsGeometry().setPositions([(isPC ? xRange[0]*width/1000-tickLength/2 : xRange[0]-tickLength/2), 0, 0, (isPC ? xRange[1]*width/1000+tickLength/2 :xRange[1]+tickLength/2), 0, 0]);
     return new LineSegments2(geom, lineMat)},[xRange, lineMat])
 
   const yLine = useMemo(() =>{
-    const geom = new LineSegmentsGeometry().setPositions([0, yRange[0]*shapeRatio, 0, 0, yRange[1]*shapeRatio+tickLength/2, 0]);
+    const geom = new LineSegmentsGeometry().setPositions([0, isPC ? yRange[0]*height/1000 : yRange[0], 0, 0, isPC ? yRange[1]*height/1000+tickLength/2 : yRange[1]+tickLength/2, 0]);
     return new LineSegments2(geom, lineMat)},[yRange, shapeRatio, lineMat])
 
   const zLine = useMemo(()=> {
-    const geom = new LineSegmentsGeometry().setPositions([0, 0, isPC ? zRange[0]*depthRatio-tickLength/2 : zRange[0]-tickLength/2, 0, 0, isPC ? zRange[1]*depthRatio+tickLength/2 : zRange[1]+tickLength/2]);
+    const geom = new LineSegmentsGeometry().setPositions([0, 0, isPC ? zRange[0]*depth/1000-tickLength/2 : zRange[0]-tickLength/2, 0, 0, isPC ? zRange[1]*depth/1000+tickLength/2 : zRange[1]+tickLength/2]);
     return new LineSegments2(geom, lineMat)},[zRange, depthRatio, isPC, lineMat])
 
   const tickLine = useMemo(()=> {

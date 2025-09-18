@@ -47,9 +47,9 @@ vec3 computePosition(int vertexID) {
     int y = (vertexID % sliceSize) / width;
     int x = vertexID % width;
 
-    float px = (float(x) / float(width - 1)) - 0.5;
-    float py = ((float(y) / float(height - 1)) - 0.5) / aspectRatio;
-    float pz = ((float(z) / float(depth - 1)) - 0.5) * depthRatio;
+    float px = (float(x) - (float(width)/2.)) / 500.;
+    float py = (float(y) - (float(height)/2.)) / 500.;
+    float pz = (float(z) - (float(depth )/2.)) /500.;
 
     return vec3(px * 2.0, py * 2.0, pz);
 }
