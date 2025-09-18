@@ -280,16 +280,12 @@ export async function Convolve(inputArray :  ArrayBufferView, dimInfo : {shape: 
     const adapter = await navigator.gpu?.requestAdapter();
     const maxSize = adapter?.limits.maxBufferSize;
     const maxStorage = adapter?.limits.maxStorageBufferBindingSize;
-    const maxSize = adapter?.limits.maxBufferSize;
-    const maxStorage = adapter?.limits.maxStorageBufferBindingSize;
     const hasF16 = adapter ? adapter.features.has("shader-f16") : false
     const device = hasF16 ? await adapter?.requestDevice({requiredFeatures: ["shader-f16"], requiredLimits: {
         maxBufferSize: maxSize,
         maxStorageBufferBindingSize: maxStorage}}) : 
-        maxStorageBufferBindingSize: maxStorage}}) : 
         await adapter?.requestDevice({requiredLimits: {
             maxBufferSize: maxSize,
-            maxStorageBufferBindingSize: maxStorage 
             maxStorageBufferBindingSize: maxStorage 
     }});
     if (!device) {
