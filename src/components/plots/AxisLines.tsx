@@ -59,11 +59,10 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
   const tickLength = 0.05;
 
   const xLine = useMemo(()=> {
-    const geom = new LineSegmentsGeometry().setPositions([(isPC ? xRange[0]*width/1000-tickLength/2 : xRange[0]-tickLength/2), 0, 0, (isPC ? xRange[1]*width/1000+tickLength/2 :xRange[1]+tickLength/2), 0, 0]);
+    const geom = new LineSegmentsGeometry().setPositions([(isPC ? xRange[0]*width/500-tickLength/2 : xRange[0]-tickLength/2), 0, 0, (isPC ? xRange[1]*width/500+tickLength/2 :xRange[1]+tickLength/2), 0, 0]);
     return new LineSegments2(geom, lineMat)},[xRange, lineMat])
-
   const yLine = useMemo(() =>{
-    const geom = new LineSegmentsGeometry().setPositions([0, isPC ? yRange[0]*height/1000 : yRange[0], 0, 0, isPC ? yRange[1]*height/1000+tickLength/2 : yRange[1]+tickLength/2, 0]);
+    const geom = new LineSegmentsGeometry().setPositions([0, isPC ? yRange[0]*height/500 : yRange[0]*shapeRatio, 0, 0, isPC ? yRange[1]*height/500+tickLength/2 : yRange[1]*shapeRatio+tickLength/2, 0]);
     return new LineSegments2(geom, lineMat)},[yRange, shapeRatio, lineMat])
 
   const zLine = useMemo(()=> {
@@ -80,18 +79,19 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
   const yValDelta = 1/(yResolution-1)
   const zDimScale = zResolution/(zResolution-1)
   const zValDelta = 1/(zResolution-1)
+
   return (
     <group visible={plotType != 'sphere' && plotType != 'flat' && !hideAxis}>
     {/* Horizontal Group */}
-    <group position={[0, shapeRatio*yRange[0], 0]}  >
+    <group position={[0, isPC ? yRange[0]*height/500 : shapeRatio*yRange[0], 0]}  >
       {/* X Group */}
-      <group position={[0, 0, flipX ? isPC ? zRange[0]*depthRatio-tickLength/2 : zRange[0]-tickLength/2 : isPC ? zRange[1] * depthRatio +tickLength/2 : zRange[1]+tickLength/2]} rotation={[flipDown ? flipX ? -Math.PI/2 : Math.PI/2 : 0, 0, 0]}> 
+      <group position={[0, 0, flipX ? isPC ? zRange[0]*depth/1000-tickLength/2 : zRange[0]-tickLength/2 : isPC ? zRange[1]*depth/1000 +tickLength/2 : zRange[1]+tickLength/2]} rotation={[flipDown ? flipX ? -Math.PI/2 : Math.PI/2 : 0, 0, 0]}> 
         <primitive key={'xLine'} object={xLine} />
         {Array(xResolution).fill(null).map((_val,idx)=>(
           (((xRange[0] + 1)/2) <= (idx*xDimScale)/xResolution &&
            ((xRange[1] + 1)/2) >= (idx*xDimScale)/xResolution)
            &&          
-          <group key={`xGroup_${idx}`} position={[-1 + idx*xDimScale/(xResolution/2), 0, 0]}>
+          <group key={`xGroup_${idx}`} position={[isPC ? -width/500 + idx*width/(xResolution-1)/250 : -1 + idx*xDimScale/(xResolution/2), 0, 0]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, flipX ? Math.PI : 0, 0]} />
             <Text 
               key={`textX_${idx}`}
