@@ -35,7 +35,7 @@ const webGPUError = (
       WebGPU is not supported or enabled in your current browser. This feature is required for GPU-accelerated computing.
     </p>
 
-    <div className="bg-white bg-opacity-15 rounded-xl border border-white border-opacity-20">
+    <div className="bg-[--card] bg-opacity-15 rounded-xl border border-[--secondary] p-3 border-opacity-20">
       <h3 className="m-0 mb-4 text-lg font-semibold">Try These Solutions:</h3>
       <ul className="suggestion-list">
         <li>Switch to a Chrome-based browser (Chrome, Edge, Brave)</li>

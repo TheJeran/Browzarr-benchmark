@@ -1,5 +1,5 @@
 "use client";
-import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates'
+import { useGlobalStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates'
 import React, {useEffect, useMemo, useState, useRef} from 'react'
 import { useShallow } from 'zustand/shallow'
 import '../css/MainPanel.css'
@@ -26,10 +26,13 @@ const PlayInterFace = ({visible}:{visible : boolean}) =>{
     const {dimArrays, dimNames, dimUnits} = useGlobalStore(useShallow(state => ({
         dimArrays: state.dimArrays,
         dimNames: state.dimNames,
-        dimUnits: state.dimUnits 
+        dimUnits: state.dimUnits,
+    })))
+
+    const {reFetch} = useZarrStore(useShallow(state =>({
+      reFetch: state.reFetch
     })))
     const timeLength = useMemo(()=>dimArrays[0].length,[dimArrays])
-    const [timeStep, setTimeStep] = useState(0)
     
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const previousVal = useRef<number>(0)
@@ -64,13 +67,17 @@ const PlayInterFace = ({visible}:{visible : boolean}) =>{
         
     }, [animate, fps]);
 
-    const currentLabel = parseLoc(dimArrays[0][timeStep], dimUnits[0], true)
+    const currentLabel = parseLoc(dimArrays[0][Math.round(animProg * (timeLength))], dimUnits[0], true)
     const firstLabel = parseLoc(dimArrays[0][0], dimUnits[0], true)
     const lastLabel = parseLoc(dimArrays[0][timeLength-1], dimUnits[0], true)
 
+    useEffect(()=>{
+      setAnimate(false)
+      setAnimProg(0)
+    },[reFetch])
+
     return (
-        <div style={{ display: visible ? '' : 'none' }}>
-          <Card className='play-interface py-1'>
+          <Card className='play-interface py-1' style={{ display: visible ? '' : 'none' }}>
             <CardContent className='flex flex-col gap-1 w-full h-full px-1 py-1'>
               <div className='text-xs sm:text-sm text-center'>
                 {currentLabel}
@@ -85,8 +92,7 @@ const PlayInterFace = ({visible}:{visible : boolean}) =>{
                   className='flex-1'
                   onValueChange={(vals: number[])=>{
                     const v = Array.isArray(vals) ? vals[0] : 0;
-                    setTimeStep(v)
-                    setAnimProg(v / (timeLength-1));
+                    setAnimProg(v / (timeLength));
                   }}
                 />
                 <span className='text-xs'>{lastLabel}</span>
@@ -132,54 +138,50 @@ const PlayInterFace = ({visible}:{visible : boolean}) =>{
               </div>
             </CardContent>
           </Card>
-        </div>
       )      
 }
 
 const PlayButton = () => {
     const {isFlat, plotOn} = useGlobalStore(useShallow(state => ({
         isFlat: state.isFlat,
-        plotOn: state.plotOn
+        plotOn: state.plotOn,
     })))
+    const {reFetch} = useZarrStore(useShallow(state =>({
+      reFetch: state.reFetch
+    })))
+
     const [showOptions, setShowOptions] = useState<boolean>(false)
     const cond = useMemo(()=>!isFlat && plotOn, [isFlat,plotOn])
     const enableCond = (!isFlat && plotOn)
+
+    useEffect(()=>{
+      setShowOptions(false)
+    },[reFetch])
+    
   return (
-    <div>
-      {enableCond ? (
-        <Tooltip delayDuration={500} >
-          <TooltipTrigger asChild>
-            <div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-10 cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
-                onClick={() => {if (cond){setShowOptions(x=>!x)}}}
-              >
-                <PiPlayPauseFill className="size-8" />
-              </Button>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent side="left" align="start" className="flex flex-col">
-            <span>Animation controls</span>
-          </TooltipContent>
-        </Tooltip>
-      ) : (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-10"
-          disabled
-          style={{
-            color: 'var(--text-disabled)',
-            transform: 'scale(1)',
-          }}
-        >
-          <PiPlayPauseFill className="size-8" />
-        </Button>
-      )}
+    <>
+      <Tooltip delayDuration={500} >
+        <TooltipTrigger asChild>
+          <div style={!enableCond ? { pointerEvents: 'none' } : {}}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-10 cursor-pointer hover:scale-90 transition-transform duration-100 ease-out"
+              style={{
+                color: enableCond ? '' : 'var(--text-disabled)'
+              }}
+              onClick={() => {if (cond){setShowOptions(x=>!x)}}}
+            >
+              <PiPlayPauseFill className="size-8" />
+            </Button>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="left" align="start" className="flex flex-col">
+          <span>Animation controls</span>
+        </TooltipContent>
+      </Tooltip>
       <PlayInterFace visible={(showOptions && enableCond)}/>
-    </div>
+    </>
   )
 }
 

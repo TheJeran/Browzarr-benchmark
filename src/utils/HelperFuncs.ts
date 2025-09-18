@@ -146,14 +146,11 @@ export function linspace(start: number, stop: number, num: number): number[] {
 
 export function ParseExtent(dimUnits: string[], dimArrays: number[][]){
 
-  const setLonExtent = usePlotStore.getState().setLonExtent;
-  const setLatExtent = usePlotStore.getState().setLatExtent;
-  const setLonResolution = usePlotStore.getState().setLonResolution;
-  const setLatResolution = usePlotStore.getState().setLatResolution;
-
+  const {setLonExtent, setLatExtent, setLonResolution, setLatResolution, setOriginalExtent } = usePlotStore.getState();
   const tempUnits = dimUnits.length > 2 ? dimUnits.slice(1) : dimUnits;
   let tryParse = false;
   for (const unit of tempUnits){
+    if (!unit) continue;
     if (unit.match(/(degree|degrees|deg|°)/i)){
       tryParse = true;
       break;
@@ -174,6 +171,7 @@ export function ParseExtent(dimUnits: string[], dimArrays: number[][]){
     const lonRes = Math.abs(tempArrs[1][1] - tempArrs[1][0])
     setLonResolution(lonRes)
     setLatResolution(latRes)
+    setOriginalExtent(new THREE.Vector4(minLon, maxLon, minLat, maxLat))
   }
   else{
     setLonExtent([-180,180])

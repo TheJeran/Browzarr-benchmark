@@ -190,10 +190,15 @@ type PlotState ={
   borderColor: string;
   lonExtent: [number, number];
   latExtent: [number, number];
+  originalExtent: THREE.Vector4;
   lonResolution: number;
   latResolution: number;
   colorIdx: number;
   maxTextureSize: number;
+  max3DTextureSize: number;
+  vTransferRange: boolean;
+  vTransferScale: number;
+
 
   setQuality: (quality: number) => void;
   setTimeScale: (timeScale : number) =>void;
@@ -229,15 +234,19 @@ type PlotState ={
   setBorderColor: (borderColor: string) => void;
   setLonExtent: (lonExtent: [number, number]) => void;
   setLatExtent: (latExtent: [number, number]) => void;
+  setOriginalExtent: (originalExtent: THREE.Vector4) => void;
   setLonResolution: (lonResolution: number) => void;
   setLatResolution: (latResolution: number) => void;
   incrementColorIdx: () => void;
   getColorIdx: () => number;
   setMaxTextureSize: (maxTextureSize: number) => void;
+  setMax3DTextureSize: (max3DTextureSize: number) => void;
+  setVTransferRange: (vTransferRange: boolean) => void;
+  setVTransferScale: (vTransferScale: number) => void;
 }
 
 export const usePlotStore = create<PlotState>((set, get) => ({
-  plotType: "sphere", 
+  plotType: "volume", 
   pointSize: 5,
   scalePoints: false,
   scaleIntensity: 1,
@@ -271,11 +280,17 @@ export const usePlotStore = create<PlotState>((set, get) => ({
   borderColor: "#000000",
   lonExtent: [-180, 180],
   latExtent: [-90, 90],
+  originalExtent: new THREE.Vector4(-180, 180, -90, 90),
   lonResolution: 1,
   latResolution: 1,
   colorIdx: 0,
   maxTextureSize: 2048,
+  max3DTextureSize: 2048,
+  vTransferRange: false,
+  vTransferScale: 1,
 
+  setVTransferRange: (vTransferRange) => set({ vTransferRange }),
+  setVTransferScale: (vTransferScale) => set({ vTransferScale }),
   setQuality: (quality) => set({ quality }),
   setTimeScale: (timeScale) => set({ timeScale }),
   setValueRange: (valueRange) => set({ valueRange }),
@@ -310,13 +325,15 @@ export const usePlotStore = create<PlotState>((set, get) => ({
   setBorderColor: (borderColor) => set({ borderColor }),
   setLonExtent: (lonExtent) => set({ lonExtent }),
   setLatExtent: (latExtent) => set({ latExtent }),
+  setOriginalExtent: (originalExtent) => set({ originalExtent }),
   setLonResolution: (lonResolution) => set({ lonResolution }),
   setLatResolution: (latResolution) => set({ latResolution }),
   incrementColorIdx: () => set(state => ({ 
     colorIdx: (state.colorIdx + 1) % 10 
   })),
   getColorIdx: () => get().colorIdx,
-  setMaxTextureSize: (maxTextureSize) => set({ maxTextureSize })
+  setMaxTextureSize: (maxTextureSize) => set({ maxTextureSize }),
+  setMax3DTextureSize: (max3DTextureSize) => set({ max3DTextureSize }),
 }))
 
 

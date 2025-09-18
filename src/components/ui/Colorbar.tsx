@@ -29,11 +29,15 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const scaling = useRef<boolean>(false)
     const prevPos = useRef<{ x: number | null; y: number | null }>({ x: null, y: null });
-    const range = useMemo(()=>valueScales.maxVal - valueScales.minVal,[valueScales])
-    const mean = useMemo(()=>(valueScales.maxVal + valueScales.minVal)/2,[valueScales])
+    const {origMin, origMax} = useMemo(()=>({
+        origMin: TwoDecimals(valueScales.minVal),
+        origMax: TwoDecimals(valueScales.maxVal)
+    }),[valueScales])
+    const range = origMax - origMin
+
     const [tickCount, setTickCount] = useState<number>(5)
-    const [newMin, setNewMin] = useState(Math.round(valueScales.minVal*100)/100)
-    const [newMax, setNewMax] = useState(Math.round(valueScales.maxVal*100)/100)
+    const [newMin, setNewMin] = useState(origMin)
+    const [newMax, setNewMax] = useState(origMax)
     const prevVals = useRef<{ min: number | null; max: number | null }>({ min: null, max: null });
 
     const colors = useMemo(()=>{
@@ -102,16 +106,16 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
     useEffect(()=>{
         const newRange = (newMax - newMin)
         const scale = range/newRange;
-        const offset = -(newMin - valueScales.minVal)/(newMax - newMin)
+        const offset = -(newMin - origMin)/(newMax - newMin)
         setCOffset(offset)
         setCScale(scale)
 
     },[newMin, newMax])
 
     useEffect(()=>{ // Update internal vals when global vals change
-        setNewMin(valueScales.minVal)
-        setNewMax(valueScales.maxVal)
-    },[valueScales])
+        setNewMin(origMin)
+        setNewMax(origMax)
+    },[origMax, origMin])
 
     useEffect(() => {
         if (canvasRef.current) {
@@ -125,6 +129,7 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
             }     
         }
     }, [colors]);
+
     return (
         <>
         <div className='colorbar' >
@@ -137,9 +142,9 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
                     width:`${String(newMin).length*8}px`,
                     transform:'translateX(-50%)',
                     textAlign:'right',
-                    minWidth:'25px'
+                    minWidth:'30px'
                 }}
-                value={TwoDecimals(newMin)} // Seem redundant except the first value may be a lot of decimals before changing
+                value={newMin} 
                 onChange={e=>setNewMin(TwoDecimals(parseFloat(e.target.value)))}
             />
             {Array.from({length: tickCount}).map((_val,idx)=>{
@@ -163,12 +168,12 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
                     left: `100%`,
                     top:'100%',
                     position:'absolute',
-                    width:`${String(newMax).length*8+1}px`,
+                    width:`${String(newMax).length*9+1}px`,
                     transform:'translateX(-50%)',
                     textAlign:'right',
-                    minWidth:'25px'
+                    minWidth:'30px'
                 }}
-                value={TwoDecimals(newMax)}
+                value={newMax}
                 onChange={e=>setNewMax(TwoDecimals(parseFloat(e.target.value)))}
             />
             <canvas id="colorbar-canvas" ref={canvasRef} width={512} height={24} onMouseDown={handleMouseDown}/>
@@ -181,7 +186,9 @@ const Colorbar = ({units, valueScales} : {units: string, valueScales: {maxVal: n
             }}>
                 {`${variable} [ ${units} ]`}
             </p>
-        {(cScale != 1 || cOffset != 0) && <RxReset size={25} style={{position:'absolute', top:'-25px', cursor:'pointer'}} onClick={()=>{setNewMin(valueScales.minVal); setNewMax(valueScales.maxVal)}}/>}
+        {(cScale != 1 || cOffset != 0) && <RxReset size={25} style={{position:'absolute', top:'-25px', cursor:'pointer'}} 
+            onClick={()=>{setNewMin(origMin); setNewMax(origMax)}}
+        />}
         <div
             style={{
                 position:'absolute',

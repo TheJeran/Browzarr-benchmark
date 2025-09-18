@@ -20,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+import { Card } from "@/components/ui/card"
 
 const Variables = ({
   openVariables,
@@ -149,7 +150,9 @@ const Variables = ({
 
         {popoverSide === "left" && showMeta && meta && (
           <div className="meta-options w-[300px]">
-            <MetaDataInfo meta={meta} setShowMeta={setShowMeta} />
+            <Card className="meta-container max-w-sm md:max-w-md p-4 mb-4 border border-muted select-none"> 
+            <MetaDataInfo meta={meta} setShowMeta={setShowMeta} setOpenVariables={setOpenVariables}/>
+            </Card>
           </div>
         )}
       </PopoverContent>
@@ -162,7 +165,7 @@ const Variables = ({
             </DialogTitle>
             <div className="mt-4">
               {meta && (
-                <MetaDataInfo meta={meta} setShowMeta={setShowMeta} noCard />
+                <MetaDataInfo meta={meta} setShowMeta={setShowMeta} setOpenVariables={setOpenVariables}/>
               )}
             </div>
           </DialogContent>

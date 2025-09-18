@@ -1,7 +1,7 @@
 import pointFrag from './pointFrag.glsl';
 import pointVert from './pointVertex.glsl';
 import vertexShader from './vertex.glsl';
-import fragmentShader from './fragment.glsl';
+import fragmentShader from './volFragment.glsl';
 import sphereFrag from './sphereFrag.glsl';
 import fragOpt from './fragmentOpt.glsl';
 import flatSphereFrag from './flatSphereFrag.glsl'
@@ -18,5 +18,5 @@ export {
     flatSphereFrag,
     bordersFrag,
     fragmentFlat,
-    flatFrag3D
+    flatFrag3D,
 }

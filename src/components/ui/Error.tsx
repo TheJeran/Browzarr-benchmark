@@ -19,7 +19,7 @@ const Error = () => {
     })))
   return (
     <>
-    {error && <Dialog open={true}>
+    {error && <Dialog open={true} onOpenChange={e=>setError(null)}>
         <DialogContent aria-describedby='Error Message' >
             <DialogTitle className="text-center text-lg font-semibold">
                 Error: {ErrorList[error as keyof typeof ErrorList].title}

@@ -1,5 +1,6 @@
 import * as zarr from "zarrita";
 import { ZarrMetadata, ZarrItem, ZarrTitleDescription } from "./Interfaces";
+import { useGlobalStore } from "@/utils/GlobalStates";
 
 export function formatBytes(bytes: number): string {
     const units = ["bytes", "KB", "MB", "GB", "TB", "PB"];
@@ -117,7 +118,7 @@ export async function GetTitleDescription(
 ): Promise<ZarrTitleDescription> {
   
   const group = await groupStore;
-  const description = 'attrs' in group ? ('description' in group.attrs ? String(group.attrs.description) : '') : null;
+  const description = 'attrs' in group ? ('description' in group.attrs ? String(group.attrs.description) : useGlobalStore.getState().initStore) : useGlobalStore.getState().initStore;
   const title = 'attrs' in group ? ('title' in group.attrs ? String(group.attrs.title) : '') : null;
 
   return { title, description };

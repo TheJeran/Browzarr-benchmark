@@ -4,12 +4,11 @@ THREE.Cache.enabled = true;
 import { GetZarrMetadata, GetVariableNames, GetTitleDescription } from '@/components/zarr/GetMetadata';
 import { ZarrDataset, GetStore } from '@/components/zarr/ZarrLoaderLRU';
 import { useEffect, useMemo } from 'react';
-import { PlotArea, Plot } from '@/components/plots';
+import { PlotArea, Plot, LandingShapes } from '@/components/plots';
 import { MainPanel } from '@/components/ui';
 import { Metadata, Loading, Navbar, Error } from '@/components/ui';
-import { useGlobalStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates';
+import { useGlobalStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
-import ScrollableLinksTable from './ui/VariablesTable';
 
 export function LandingHome() {
   const {
@@ -27,9 +26,7 @@ export function LandingHome() {
     setTitleDescription: state.setTitleDescription,
   })))
 
-  const { setMaxTextureSize } = usePlotStore(useShallow(state => ({
-    setMaxTextureSize: state.setMaxTextureSize
-  })))
+  
 
   const { currentStore, setCurrentStore } = useZarrStore(useShallow(state => ({
     currentStore: state.currentStore,
@@ -62,25 +59,16 @@ export function LandingHome() {
     return () => { isMounted = false; };
   }, [currentStore, setZMeta, setVariables, setTitleDescription])
 
-  useEffect(() => { // Set maxtexture size to warn users if custom data is too big
-    const renderer = new THREE.WebGLRenderer();
-    const gl = renderer.getContext();
-    setMaxTextureSize(gl.getParameter(gl.MAX_TEXTURE_SIZE))
-    return () => {
-    renderer.dispose();
-  };
-  },[setMaxTextureSize])
-
 
   return (
     <>
     <MainPanel/> 
-
+    {variable == 'Default' && <LandingShapes />}
     <Error />
     {!plotOn && <Navbar />}
     <Loading />
-
-    {variable === "Default" && <ScrollableLinksTable />}
+    
+    {/* {variable === "Default" && <ScrollableLinksTable />} */}
     {variable != "Default" && <Plot ZarrDS={ZarrDS} />}
     {metadata && <Metadata data={metadata} /> }
     {Object.keys(timeSeries).length >= 1 && <PlotArea />}

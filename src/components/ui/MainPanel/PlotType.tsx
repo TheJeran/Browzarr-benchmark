@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import '../css/MainPanel.css'
 import { useGlobalStore, usePlotStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
@@ -29,10 +29,25 @@ const PlotType = () => {
     plotType: state.plotType,
     setPlotType: state.setPlotType
   })))
-  const isFlat = useGlobalStore(state => state.isFlat)
+  const {isFlat, variable} = useGlobalStore(useShallow(state => ({
+    isFlat: state.isFlat,
+    variable: state.variable
+  })))
   // Responsive popover side
   const [popoverSide, setPopoverSide] = useState<"left" | "top">("left");
-  
+  const {dataShape, is4D} = useGlobalStore(useShallow(state => ({
+    dataShape: state.dataShape,
+    is4D: state.is4D
+  })))
+  const dataSize = useMemo(()=>{
+    if (is4D){
+      const product = dataShape.reduce((accum, val) => accum * val, 1)
+      return product / dataShape[0]
+    } else {
+      return dataShape.reduce((accum, val) => accum * val, 1)
+    }
+  },[dataShape, is4D])
+
   useEffect(() => {
     const handleResize = () => {
       setPopoverSide(window.innerWidth < 768 ? "top" : "left");
@@ -41,11 +56,12 @@ const PlotType = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <div>
+    <Popover >
+      <PopoverTrigger asChild >
+        <div
+          style={variable === 'Default' ? { pointerEvents: 'none' } : {}} // Since disabled from PopoverTrigger isn't used by div we just set it here isntead
+        >
           <Tooltip delayDuration={500} >
             <TooltipTrigger asChild>
               <div>
@@ -55,6 +71,9 @@ const PlotType = () => {
                 className='cursor-pointer hover:scale-90 transition-transform duration-100 ease-out'
                 tabIndex={0}
                 aria-label="Select plot type"
+                style={{
+                color: variable == 'Default' ? 'var(--text-disabled)' :''
+              }}
               >
                 {plotIcons[plotType as keyof typeof plotIcons]}
               </Button>
@@ -81,18 +100,33 @@ const PlotType = () => {
             return null
           }      
           else{
-            return <Button
+            const isLargePointCloud = val == 'point-cloud' && dataSize > 30e6;
+            const button = <Button
             key={val}
             variant={plotType === val ? "default" : "ghost"}
-            className="mb-2 w-12 h-12 flex items-center cursor-pointer justify-center transform transition-transform duration-100 ease-out hover:scale-90"
-              onClick={() => {
+            className={`mb-2 w-12 h-12 flex items-center ${isLargePointCloud ? 'bg-amber-400 hover:bg-amber-200' : null} cursor-pointer justify-center transform transition-transform duration-100 ease-out hover:scale-90`}
+            onClick={() => {
               setPlotType(val);
             }}
             aria-label={`Select ${val}`}
-          >
-            {plotIcons[val as keyof typeof plotIcons]}
-          </Button>
-          }
+            >
+              {plotIcons[val as keyof typeof plotIcons]}
+            </Button>
+
+            if (isLargePointCloud){
+              return <Tooltip key={'pc-warning-tooltip'} open={true}>
+                <TooltipTrigger asChild>
+                  <div key={'pc-warning'}>
+                    {button}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side='left'>
+                  Expect poor performance
+                </TooltipContent>
+              </Tooltip>
+            }
+            return button
+            }
           }
         )}
       </PopoverContent>

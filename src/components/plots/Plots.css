@@ -7,6 +7,15 @@
     background-color:var(--background-plot);
 }
 
+.landing-title{
+    position: fixed;
+    top: 10%;
+    left: 50%;
+    font-size: xx-large;
+    font-weight: 700;
+    transform: translateX(-50%);
+}
+
 .main-canvas{
     position: fixed;
     display: block;
