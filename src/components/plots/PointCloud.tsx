@@ -187,8 +187,7 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
         depth: texture.image.depth,
       };
     }, [texture]);
-    const aspectRatio = useMemo(()=>width/height,[width,height]);
-    const depthRatio = useMemo(()=>depth/height,[depth,height]);
+
     // Create buffer geometry
     const geometry = useMemo(() => {
       const geom = new THREE.BufferGeometry();
@@ -214,11 +213,9 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
         dimWidth: {value: dimWidth},
         timeScale: {value: timeScale},
         animateProg: {value: animProg},
-        depthRatio: {value: depthRatio},
-        aspectRatio: {value: aspectRatio},
         shape: {value: new THREE.Vector3(depth, height, width)},
-        flatBounds:{value: new THREE.Vector4(xRange[0], xRange[1], zRange[0]*depthRatio/2, zRange[1]*depthRatio/2)},
-        vertBounds:{value: new THREE.Vector2(yRange[0]/aspectRatio, yRange[1]/aspectRatio)},
+        flatBounds:{value: new THREE.Vector4(xRange[0], xRange[1], zRange[0], zRange[1])},
+        vertBounds:{value: new THREE.Vector2(yRange[0], yRange[1])},
       },
       vertexShader:pointVert,
       fragmentShader:pointFrag,
@@ -246,16 +243,15 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
       uniforms.dimWidth.value = dimWidth;
       uniforms.timeScale.value = timeScale;
       uniforms.animateProg.value = animProg;
-      uniforms.depthRatio.value = depthRatio;
       uniforms.flatBounds.value.set(
         xRange[0], xRange[1], 
-        zRange[0] * depthRatio / 2, zRange[1] * depthRatio / 2
+        zRange[0], zRange[1]
       );
       uniforms.vertBounds.value.set(
-        yRange[0] / aspectRatio, yRange[1] / aspectRatio
+        yRange[0], yRange[1]
       );
     }
-  }, [pointSize, colormap, cOffset, cScale, valueRange, scalePoints, scaleIntensity, pointIDs, stride, selectTS, animProg, timeScale, depthRatio, aspectRatio, xRange, yRange, zRange]);
+  }, [pointSize, colormap, cOffset, cScale, valueRange, scalePoints, scaleIntensity, pointIDs, stride, selectTS, animProg, timeScale, xRange, yRange, zRange]);
 
     return (
       <>

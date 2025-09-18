@@ -7,6 +7,7 @@ import { Slider as UISlider } from '@/components/ui/slider';
 import { SliderThumbs } from '@/components/ui/SliderThumbs';
 import { Button } from '../button';
 import { LuSettings } from "react-icons/lu";
+import { RxReset } from "react-icons/rx";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { Input } from '../input';
 import {
@@ -282,7 +283,11 @@ const PointOptions = () =>{
           value={[scaleIntensity]}
       onValueChange={(vals:number[]) => setScaleIntensity(vals[0])}
       /></>}
-      <b>Resize Time Dimension</b>
+      <div className='relative'>
+        {timeScale != 1 && <RxReset className='text-lg cursor-pointer absolute top-0 left-0 hover:scale-90 transition-transform duration-100 ease-out' onClick={e=> setTimeScale(1)}/>}
+        <b>Resize Time Dimension</b>
+      </div>
+      
         <UISlider
             className='w-full mb-2 mt-2'
             min={0.05}
