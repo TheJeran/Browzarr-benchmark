@@ -13,11 +13,10 @@ import { useCSSVariable } from '../ui';
 import * as THREE from 'three'
 
 const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolean, flipDown: boolean}) =>{
-  const {dimArrays, dimNames, dimUnits, shape, dataShape} = useGlobalStore(useShallow(state => ({
+  const {dimArrays, dimNames, dimUnits, dataShape} = useGlobalStore(useShallow(state => ({
     dimArrays: state.dimArrays,
     dimNames: state.dimNames,
     dimUnits: state.dimUnits,
-    shape: state.shape,
     dataShape: state.dataShape
   })))
 
@@ -45,8 +44,8 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
   const isPC = useMemo(()=>plotType == 'point-cloud',[plotType])
   const globalScale = isPC ? dataShape[2]/500 : 1
 
-  const depthRatio = useMemo(()=>dataShape[0]/dataShape[1]*timeScale/2,[dataShape, timeScale]);
-  const shapeRatio = useMemo(()=>shape.y/shape.x, [shape])
+  const depthRatio = useMemo(()=>dataShape[0]/dataShape[2]*timeScale,[dataShape, timeScale]);
+  const shapeRatio = useMemo(()=>dataShape[1]/dataShape[2], [dataShape])
 
   const secondaryColor = useCSSVariable('--text-plot') //replace with needed variable
   const colorHex = useMemo(()=>{
@@ -169,7 +168,7 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
             >{parseLoc(dimArrays[0][(Math.floor((dimLengths[0]-1)*idx*zValDelta)+Math.floor(dimLengths[0]*animProg))%dimLengths[0]],dimUnits[0])}</Text>
           </group>
         ))}
-        <group rotation={[-Math.PI/2, 0, flipY ? Math.PI/2 : -Math.PI/2]} position={[flipY ? 0.2*globalScale : -0.2*globalScale, 0, isPC ? (zRange[0]+zRange[1])/2*depthRatio*(globalScale/2) : (zRange[0]+zRange[1])/2]}>
+        <group rotation={[-Math.PI/2, 0, flipY ? Math.PI/2 : -Math.PI/2]} position={[flipY ? 0.2*globalScale : -0.2*globalScale, 0, isPC ? (zRange[0]+zRange[1])/2*depthRatio*(globalScale) : (zRange[0]+zRange[1])/2]}>
           <Text 
             key={'zTitle'}
             anchorX={'center'}
@@ -220,7 +219,7 @@ const HorizontalAxis = ({flipX, flipY, flipDown}: {flipX: boolean, flipY: boolea
            (((yRange[0] + 1)/2) <= (idx*yDimScale)/yResolution &&
            ((yRange[1] + 1)/2) >= (idx*yDimScale)/yResolution)
            &&       
-          <group key={`yGroup_${idx}`} position={[0, isPC ?  (-shape.y/2*globalScale + idx*yDimScale/(yResolution/2)*shapeRatio*globalScale) : -shape.y/2 + idx*yDimScale/(yResolution/2)*shapeRatio, 0]}>
+          <group key={`yGroup_${idx}`} position={[0, isPC ?  (-shapeRatio*globalScale + idx*yDimScale/(yResolution/2)*shapeRatio*globalScale) : -shapeRatio + idx*yDimScale/(yResolution/2)*shapeRatio, 0]}>
             <primitive key={idx} object={tickLine.clone()}  rotation={[0, flipY ? -Math.PI/2 :Math.PI/2 , 0]} />
             <Text 
               key={`text_${idx}`}

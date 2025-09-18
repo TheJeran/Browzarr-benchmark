@@ -187,8 +187,7 @@ export const PointCloud = ({textures, ZarrDS} : {textures:PCProps, ZarrDS: ZarrD
         depth: texture.image.depth,
       };
     }, [texture]);
-    const aspectRatio = useMemo(()=>width/height,[width,height]);
-    const depthRatio = useMemo(()=>depth/height,[depth,height]);
+
     // Create buffer geometry
     const geometry = useMemo(() => {
       const geom = new THREE.BufferGeometry();
