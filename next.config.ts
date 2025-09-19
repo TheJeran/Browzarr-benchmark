@@ -1,10 +1,17 @@
 import type { Configuration } from 'webpack';
 import path from 'path';
 
+const isProd = process.env.NODE_ENV === 'production';
+const basePath = isProd ? (process.env.BASE_PATH || '') : '';
+const targetFolder = process.env.TARGET_FOLDER || '';
+const assetPrefix = isProd && targetFolder !== '' ? './' : '';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export' as const,
-  basePath: process.env.NODE_ENV === 'production' ? '' : '',
+  basePath: basePath,
+  trailingSlash: true,
+  assetPrefix: assetPrefix,
   images: {
     unoptimized: true,
   },
