@@ -2,16 +2,16 @@ import type { Configuration } from 'webpack';
 import path from 'path';
 
 const isProd = process.env.NODE_ENV === 'production';
-const basePath = isProd ? (process.env.BASE_PATH || '') : '/Browzarr-benchmark/';
+const basePath = isProd ? (process.env.BASE_PATH || '') : '/Browzarr-benchmark';
 const targetFolder = process.env.TARGET_FOLDER || '';
 const assetPrefix = isProd && targetFolder !== '' ? './' : '';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export' as const,
-  basePath: '/Browzarr-benchmark/',
+  basePath: basePath,
   trailingSlash: true,
-  assetPrefix: '/Browzarr-benchmark/',
+  assetPrefix: assetPrefix,
   images: {
     unoptimized: true,
   },
