@@ -2,19 +2,20 @@
 import { ArrayMinMax, GetCurrentArray } from '@/utils/HelperFuncs';
 import * as THREE from 'three'
 import React, { useEffect, useRef } from 'react'
-import { DataReduction, Convolve, Multivariate2D, Multivariate3D, CUMSUM3D, Convolve2D } from '../computation/webGPU'
+import { DataReduction, Convolve, BufferCopy, Multivariate3D, CUMSUM3D, Convolve2D } from '../computation/webGPU'
 import { useGlobalStore, useAnalysisStore, usePlotStore, useZarrStore } from '@/utils/GlobalStates';
 import { useShallow } from 'zustand/shallow';
 import { ZarrDataset } from '../zarr/ZarrLoaderLRU';
-
+import CPUConvolve from '../computation/CPUConvolve';
 
 const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.SetStateAction<THREE.Data3DTexture | THREE.DataTexture | null>>, ZarrDS: ZarrDataset}) => {
     
-    const { strides, dataShape, valueScales, isFlat, setIsFlat, setDownloading, setShowLoading, setValueScales} = useGlobalStore(useShallow(state=>({
+    const { strides, dataShape, valueScales, isFlat, setShowLoading, setValueScales} = useGlobalStore(useShallow(state=>({
         strides: state.strides,
         dataShape: state.dataShape,
         valueScales: state.valueScales,
         isFlat: state.isFlat,
+
         setIsFlat: state.setIsFlat,
         setDownloading: state.setDownloading,
         setShowLoading: state.setShowLoading,
@@ -22,14 +23,14 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
     })))
 
     const setPlotType = usePlotStore(state => state.setPlotType)
-    const {axis, execute, operation, useTwo, variable2, 
-        valueScalesOrig, kernelSize, kernelDepth, kernelOperation, reverseDirection, analysisStore, analysisMode, analysisArray,
-        setValueScalesOrig, setAnalysisArray, setAnalysisMode} = useAnalysisStore(useShallow(state => ({
+    const {useCPU, execute, getBufferSpeed,
+                valueScalesOrig, kernelSize, kernelDepth, kernelOperation, analysisStore, analysisMode, analysisArray,
+                setCpuTime, setGpuTime,
+        setValueScalesOrig, setAnalysisArray, setBufferSpeed} = useAnalysisStore(useShallow(state => ({
         axis: state.axis,
         execute: state.execute,
-        operation: state.operation,
-        useTwo: state.useTwo,
-        variable2: state.variable2,
+        getBufferSpeed: state.getBufferSpeed,
+        useCPU: state.useCPU,
         valueScalesOrig: state.valueScalesOrig,
         kernelSize: state.kernelSize,
         kernelDepth: state.kernelDepth,
@@ -38,9 +39,11 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
         analysisStore: state.analysisStore,
         analysisMode: state.analysisMode,
         analysisArray: state.analysisArray,
+        setCpuTime: state.setCpuTime,
+        setGpuTime: state.setGpuTime,
         setValueScalesOrig: state.setValueScalesOrig,
         setAnalysisArray: state.setAnalysisArray,
-        setAnalysisMode: state.setAnalysisMode
+        setBufferSpeed: state.setBufferSpeed
     })))
 
     const zarrSlice = useZarrStore(state => state.slice)
@@ -53,201 +56,41 @@ const AnalysisWG = ({setTexture, ZarrDS} : {setTexture : React.Dispatch<React.Se
             return;
         }
         setShowLoading(true)
-        if (!useTwo){
-            if (operation != 'Convolution'){
-                const thisShape = dataShape.filter((e, idx) => idx != axis)
-                const is3D = operation == 'CUMSUM3D'
-                async function GPUCompute(){
-                    let newArray;
-                    if (operation == 'CUMSUM3D'){
-                        newArray = await CUMSUM3D(analysisMode ? analysisArray : dataArray, {shape:dataShape, strides}, axis, reverseDirection)
-                    }
-                    else{
-                        newArray = await DataReduction(analysisMode ? analysisArray : dataArray, {shape:dataShape, strides}, axis, operation)
-                    }
-                    if (!newArray){return;}
 
-                    let minVal, maxVal;
-                    if (['StDev', 'CUMSUM', 'CUMSUM3D', 'LinearSlope'].includes(operation)){
-                        [minVal,maxVal] = ArrayMinMax(newArray)
-                        if (!valueScalesOrig){
-                            setValueScalesOrig(valueScales)
-                        }
-                        setValueScales({minVal,maxVal})
-                    }else{
-                        if (!valueScalesOrig){
-                            minVal = valueScales.minVal;
-                            maxVal = valueScales.maxVal
-                        }
-                        else{
-                            minVal = valueScalesOrig.minVal;
-                            maxVal = valueScalesOrig.maxVal
-                            setValueScales(valueScalesOrig)
-                            setValueScalesOrig(null)
-                        }
-                    }
-                    const normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
-                    const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254)); 
-                    const newText = is3D ? new THREE.Data3DTexture(textureData, dataShape[2], dataShape[1], dataShape[0]): 
-                        new THREE.DataTexture(textureData, thisShape[1], thisShape[0], THREE.RedFormat, THREE.UnsignedByteType)
-                    if (is3D){
-                        newText.format = THREE.RedFormat;
-                        newText.minFilter = THREE.NearestFilter;
-                        newText.magFilter = THREE.NearestFilter;
-                    }
-                    newText.needsUpdate = true;
-                    setAnalysisArray(newArray)
-                    setTexture(newText)
-                    if (operation != 'CUMSUM3D'){
-                        setIsFlat(true);
-                        setPlotType('flat');
-                    }
-                    setAnalysisMode(true);
-                    setShowLoading(false);
+        async function Benchmark(useCPU: boolean){
+            if (getBufferSpeed){
+                for (let i=0; i< 20; i++){
+                    await BufferCopy(dataArray, dataShape)
                 }
-                GPUCompute();
+            } else if (useCPU){
+                for (let i=0; i< 20; i++){
+                   await CPUConvolve(dataArray, {shape:dataShape, strides}, {kernelDepth, kernelSize})
+                }
+            } else{
+                console.log("not here")
+                for (let i=0; i< 20; i++){
+                    await Convolve(dataArray, {shape:dataShape, strides}, 'StDevConvolution', {kernelDepth, kernelSize})
+                }
             }
-            else{
-                Convolve(analysisMode ? analysisArray : dataArray, {shape:dataShape, strides}, kernelOperation, {kernelDepth, kernelSize}).then(newArray=>{
-                    if (!newArray){return;}
-                    let minVal, maxVal;
-                    if (kernelOperation == 'StDev'){
-                        [minVal,maxVal] = ArrayMinMax(newArray )
-                        if (!valueScalesOrig){
-                            setValueScalesOrig(valueScales);
-                        }
-                        setValueScales({minVal,maxVal});
-                    }else{
-                        if (!valueScalesOrig){
-                            minVal = valueScales.minVal;
-                            maxVal = valueScales.maxVal;
-                        }
-                        else{
-                            minVal = valueScalesOrig.minVal;
-                            maxVal = valueScalesOrig.maxVal;
-                            setValueScales(valueScalesOrig);
-                            setValueScalesOrig(null);
-                        }
-                    }
-                    const normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
-                    const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254)); 
-                    const newText = new THREE.Data3DTexture(textureData, dataShape[2], dataShape[1], dataShape[0])
-                    newText.format = THREE.RedFormat;
-                    newText.minFilter = THREE.NearestFilter;
-                    newText.magFilter = THREE.NearestFilter;
-                    newText.needsUpdate = true;
-                    setAnalysisArray(newArray);
-                    setTexture(newText);
-                    setIsFlat(false);
-                    setPlotType('volume');
-                })
-                .then(e=>{
-                    setAnalysisMode(true);
-                    setShowLoading(false);
-                }) 
-            }
+            return null
         }
-        else{
-            async function MultiVariable(){
-                setDownloading(true)
-                variable2Array.current = await ZarrDS.GetArray(variable2, zarrSlice)
-                setDownloading(false)
-                if (['TwoVarLinearSlope2D', 'Correlation2D', 'Covariance2D'].includes(operation)){ //These are 2D operations
-                    const thisShape = dataShape.filter((e, idx) => idx != axis)
-                    //@ts-expect-error It won't be undefined here as Multivariate2D only outputs undefined if webGPU disabled. However, impossible to call if webGPU disabled so moot point
-                    const newArray: Float16Array = await Multivariate2D(analysisMode ? analysisArray : dataArray, variable2Array.current.data, {shape:dataShape, strides}, axis, operation)
-                    if (!valueScalesOrig){
-                            setValueScalesOrig(valueScales)
-                    }
-                    let [minVal, maxVal] = [-1, 1]; //Set to -1-1 for correlation
-                    if (['TwoVarLinearSlope2D', 'Covariance2D'].includes(operation)){
-                        [minVal, maxVal] = ArrayMinMax(newArray) //If slope get actual bounds
-                    }
-                    setValueScales({minVal,maxVal}) 
-                    const normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
-                    const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254)); 
-                    const newText = new THREE.DataTexture(textureData, thisShape[1], thisShape[0], THREE.RedFormat, THREE.UnsignedByteType)
-                    newText.needsUpdate = true;
-                    setAnalysisArray(newArray)
-                    setTexture(newText)
-                    setIsFlat(true)
-                    setPlotType('flat')
-                }
-                else{ //These are 3D operations
-                    //@ts-expect-error It won't be undefined here as correlate2D only outputs undefined if webGPU disabled. However, impossible to call if webGPU disabled
-                    const newArray: Float16Array = await Multivariate3D(analysisMode ? analysisArray : dataArray, variable2Array.current.data, {shape:dataShape, strides}, {kernelDepth, kernelSize}, operation)
-                    if (!valueScalesOrig){
-                            setValueScalesOrig(valueScales)
-                    }
-                    let [minVal, maxVal] = [-1, 1];
-                    if (['TwoVarLinearSlope3D', 'Covariance3D'].includes(operation)){
-                        [minVal, maxVal] = ArrayMinMax(newArray) //If slope get actual bounds
-                    }
-                    setValueScales({minVal,maxVal})
-                    const normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
-                    const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254)); 
-                    const newText = new THREE.Data3DTexture(textureData, dataShape[2], dataShape[1], dataShape[0])
-                    newText.format = THREE.RedFormat;
-                    newText.minFilter = THREE.NearestFilter;
-                    newText.magFilter = THREE.NearestFilter;
-                    newText.needsUpdate = true;
-                    setAnalysisArray(newArray);
-                    setTexture(newText);
-                    setIsFlat(false);
-                    setPlotType('volume');
-                }
+        const startTime = Date.now()
+        Benchmark(useCPU).then(()=> {
+            const endTime = Date.now()
+            const elapsedTime = ((endTime-startTime)/20)/1000 // 1000 is milliseconds => seconds
+            console.log(elapsedTime)
+            if (getBufferSpeed){
+                setBufferSpeed(elapsedTime)
+            } else if (useCPU){
+                setCpuTime(elapsedTime)
+            } else{
+                console.log("not here2")
+                setGpuTime(elapsedTime)
             }
-            MultiVariable().then(e=>{setAnalysisMode(true);setShowLoading(false)});
-        }
+            setShowLoading(false)
+        })
     },[execute])
 
-    //2D computations
-    useEffect(()=>{
-        const dataArray = GetCurrentArray(analysisStore) as Float16Array
-        if (dataArray.length <= 1 || !isFlat){
-            return;
-        }
-        setShowLoading(true)
-        if (!useTwo){
-            if (operation != 'Convolution'){
-                //Future Proof
-            }
-            else{
-                const thisShape = dataShape.length > 2 ? dataShape.slice(1) : dataShape // This may seem counter-productive since we can't get here if "isFlat". However, if 3D data was flattened the original shapes are still 3D
-                const thisStrides = strides.length > 2 ? strides.slice(1) : strides
-                Convolve2D(analysisMode ? analysisArray : dataArray, {shape:thisShape, strides:thisStrides}, kernelOperation, kernelSize).then(newArray=>{
-                    if (!newArray){return;}
-                    let minVal, maxVal;
-                    if (kernelOperation == 'StDev'){
-                        [minVal,maxVal] = ArrayMinMax(newArray )
-                        if (!valueScalesOrig){
-                            setValueScalesOrig(valueScales)
-                        }
-                        setValueScales({minVal,maxVal})
-                    }else{
-                        if (!valueScalesOrig){
-                            minVal = valueScales.minVal;
-                            maxVal = valueScales.maxVal
-                        }
-                        else{
-                            minVal = valueScalesOrig.minVal;
-                            maxVal = valueScalesOrig.maxVal
-                            setValueScales(valueScalesOrig)
-                            setValueScalesOrig(null)
-                        }
-                    }
-                    const normed = newArray.map(e=> (e-minVal)/(maxVal-minVal))
-                    const textureData = new Uint8Array(normed.map((i)=>isNaN(i) ? 255 : i*254));
-                    const newText = new THREE.DataTexture(textureData, thisShape[1], thisShape[0], THREE.RedFormat, THREE.UnsignedByteType)
-                    newText.needsUpdate = true;
-                    setAnalysisArray(newArray);
-                    setTexture(newText);
-                    setAnalysisMode(true);
-                    setShowLoading(false);
-                })
-            }
-        }
-    },[execute])
 
   return null
     
