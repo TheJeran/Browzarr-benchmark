@@ -6,6 +6,7 @@ const basePath = isProd ? (process.env.BASE_PATH || '') : '/Browzarr-benchmark';
 const targetFolder = process.env.TARGET_FOLDER || '';
 const assetPrefix = isProd && targetFolder !== '' ? './' : '';
 
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export' as const,
