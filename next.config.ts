@@ -2,7 +2,7 @@ import type { Configuration } from 'webpack';
 import path from 'path';
 
 const isProd = process.env.NODE_ENV === 'production';
-const basePath = isProd ? (process.env.BASE_PATH || '') : '';
+const basePath = isProd ? (process.env.BASE_PATH || '') : '/Browzarr-benchmark/';
 const targetFolder = process.env.TARGET_FOLDER || '';
 const assetPrefix = isProd && targetFolder !== '' ? './' : '';
 
