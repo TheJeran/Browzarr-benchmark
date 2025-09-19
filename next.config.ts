@@ -9,9 +9,9 @@ const assetPrefix = isProd && targetFolder !== '' ? './' : '';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export' as const,
-  basePath: basePath,
+  basePath: '/Browzarr-benchmark/',
   trailingSlash: true,
-  assetPrefix: assetPrefix,
+  assetPrefix: '/Browzarr-benchmark/',
   images: {
     unoptimized: true,
   },
